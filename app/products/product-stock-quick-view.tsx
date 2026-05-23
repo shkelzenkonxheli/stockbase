@@ -12,6 +12,8 @@ type ProductQuickVariant = {
   imagePath: string | null;
   stock: number;
   price?: number;
+  material?: string | null;
+  powerWatts?: string | null;
 };
 
 type ProductStockQuickViewProps = {
@@ -33,6 +35,8 @@ type VariantDraftRow = {
   size: string;
   stock: string;
 };
+
+type StockViewMode = "footwear" | "electronics" | "home";
 
 function getColorSwatchClass(color: string) {
   const normalized = color.trim().toLowerCase();
@@ -153,6 +157,28 @@ function IconMore() {
   );
 }
 
+function normalizeCategoryName(value: string) {
+  return value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim()
+    .toLowerCase();
+}
+
+function getStockViewMode(categoryName: string): StockViewMode {
+  const normalized = normalizeCategoryName(categoryName);
+
+  if (["patika", "kepuce", "sandale"].includes(normalized)) {
+    return "footwear";
+  }
+
+  if (normalized === "pajisje elektrike") {
+    return "electronics";
+  }
+
+  return "home";
+}
+
 export function ProductStockQuickView({
   productId,
   productName,
@@ -166,8 +192,9 @@ export function ProductStockQuickView({
   canDeleteColor = false,
 }: ProductStockQuickViewProps) {
   const router = useRouter();
-  const isElectricalCategory =
-    productBrand.trim().toLowerCase() === "pajisje elektrike";
+  const stockViewMode = getStockViewMode(productBrand);
+  const isElectricalCategory = stockViewMode === "electronics";
+  const isFootwearCategory = stockViewMode === "footwear";
   const [showStock, setShowStock] = useState(false);
   const [variantsState, setVariantsState] = useState(variants);
   const [previewImage, setPreviewImage] = useState<{
@@ -204,6 +231,11 @@ export function ProductStockQuickView({
   const [variantDraftSize, setVariantDraftSize] = useState("");
   const [variantDraftStock, setVariantDraftStock] = useState("");
   const [openColorActions, setOpenColorActions] = useState<string | null>(null);
+  const [stockEditorVariantId, setStockEditorVariantId] = useState<number | null>(null);
+  const [editStockVariantId, setEditStockVariantId] = useState<number | null>(null);
+  const [deleteVariantTarget, setDeleteVariantTarget] = useState<ProductQuickVariant | null>(
+    null,
+  );
   const [deleteColorTarget, setDeleteColorTarget] = useState<string | null>(null);
   const [deleteColorError, setDeleteColorError] = useState<string | null>(null);
   const [deletingColor, setDeletingColor] = useState(false);
@@ -275,6 +307,59 @@ export function ProductStockQuickView({
       );
   }, [isElectricalCategory, variantsState]);
 
+  const groupedBySpecification = useMemo(() => {
+    if (stockViewMode !== "home") {
+      return [];
+    }
+
+    const groups = new Map<
+      string,
+      {
+        title: string;
+        subtitle: string | null;
+        totalStock: number;
+        imagePath: string | null;
+        variants: ProductQuickVariant[];
+      }
+    >();
+
+    for (const variant of variantsState) {
+      const dimension = variant.size.trim() || "Variant pa madhesi";
+      const material = "";
+      const groupKey = `${dimension}::${material}`;
+      const currentGroup = groups.get(groupKey);
+
+      if (!currentGroup) {
+        groups.set(groupKey, {
+          title: dimension,
+          subtitle: material || null,
+          totalStock: variant.stock,
+          imagePath: variant.imagePath,
+          variants: [variant],
+        });
+        continue;
+      }
+
+      currentGroup.totalStock += variant.stock;
+      currentGroup.imagePath = currentGroup.imagePath || variant.imagePath;
+      currentGroup.variants.push(variant);
+    }
+
+    return [...groups.values()]
+      .map((group) => ({
+        ...group,
+        variants: [...group.variants].sort((left, right) =>
+          left.color.localeCompare(right.color, "sq", { sensitivity: "base" }),
+        ),
+      }))
+      .sort((left, right) =>
+        left.title.localeCompare(right.title, "sq", {
+          numeric: true,
+          sensitivity: "base",
+        }),
+      );
+  }, [stockViewMode, variantsState]);
+
   const totalStock = variantsState.reduce((sum, variant) => sum + variant.stock, 0);
   const stockTone = getStockTone(totalStock);
 
@@ -287,8 +372,16 @@ export function ProductStockQuickView({
   const colorVariantsForNewNumber = numberEditorColor
     ? groupedVariants.get(numberEditorColor) ?? []
     : [];
+  const variantForStockAdd = stockEditorVariantId
+    ? variantsState.find((variant) => variant.id === stockEditorVariantId) ?? null
+    : null;
+  const variantForStockEdit = editStockVariantId
+    ? variantsState.find((variant) => variant.id === editStockVariantId) ?? null
+    : null;
+  const stockEditorVariants = variantForStockAdd ? [variantForStockAdd] : colorEditorVariants;
+  const variantsForEditStock = variantForStockEdit ? [variantForStockEdit] : colorVariantsForEdit;
 
-  const totalAddedForColor = colorEditorVariants.reduce((sum, variant) => {
+  const totalAddedForColor = stockEditorVariants.reduce((sum, variant) => {
     const parsed = Number(stockInputs[variant.id] ?? 0);
     return sum + (parsed > 0 ? parsed : 0);
   }, 0);
@@ -435,6 +528,7 @@ export function ProductStockQuickView({
       );
       setStockInputs({});
       setStockEditorColor(null);
+      setStockEditorVariantId(null);
       setSuccessToast("Stoku u perditesua.");
       router.refresh();
     } catch {
@@ -445,7 +539,7 @@ export function ProductStockQuickView({
   }
 
   async function saveEditedStock() {
-    const updates = colorVariantsForEdit
+    const updates = variantsForEditStock
       .map((variant) => ({
         variantId: variant.id,
         currentStock: variant.stock,
@@ -504,6 +598,7 @@ export function ProductStockQuickView({
         })),
       );
       setEditStockColor(null);
+      setEditStockVariantId(null);
       setEditStockInputs({});
       setSuccessToast("Stoku u ndryshua.");
       router.refresh();
@@ -598,6 +693,21 @@ export function ProductStockQuickView({
       }))
       .filter((row) => row.size || row.stock || row.stock === 0);
 
+    if (stockViewMode !== "footwear" && cleanedRows.length === 0) {
+      const primaryValue = variantDraftSize.trim();
+      const primaryStock = Number(variantDraftStock);
+
+      if (!primaryValue || !Number.isInteger(primaryStock) || primaryStock < 0) {
+        setVariantError("Ploteso fushen kryesore dhe sasine.");
+        return;
+      }
+
+      cleanedRows.push({
+        size: primaryValue,
+        stock: primaryStock,
+      });
+    }
+
     if (cleanedRows.length === 0) {
       setVariantError("Shto te pakten nje numer.");
       return;
@@ -669,6 +779,48 @@ export function ProductStockQuickView({
     }
   }
 
+  async function deleteSingleVariant() {
+    if (!deleteVariantTarget) {
+      return;
+    }
+
+    setDeletingColor(true);
+    setDeleteColorError(null);
+
+    try {
+      const response = await fetch("/api/variants/quick-delete", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          productId,
+          variantId: deleteVariantTarget.id,
+        }),
+      });
+
+      const data = (await response.json().catch(() => null)) as
+        | { error?: string; deletedVariantId?: number }
+        | null;
+
+      if (!response.ok || !data?.deletedVariantId) {
+        setDeleteColorError(data?.error ?? "Fshirja e variantit deshtoi.");
+        return;
+      }
+
+      setVariantsState((current) =>
+        current.filter((variant) => variant.id !== data.deletedVariantId),
+      );
+      setDeleteVariantTarget(null);
+      setSuccessToast("Varianti u fshi.");
+      router.refresh();
+    } catch {
+      setDeleteColorError("Fshirja e variantit deshtoi.");
+    } finally {
+      setDeletingColor(false);
+    }
+  }
+
   async function deleteColorGroup() {
     if (!deleteColorTarget) {
       return;
@@ -714,6 +866,19 @@ export function ProductStockQuickView({
       setDeletingColor(false);
     }
   }
+
+  const quickVariantPrimaryLabel =
+    stockViewMode === "electronics"
+      ? "Modeli / versioni"
+      : stockViewMode === "home"
+        ? "Madhesia / dimensioni"
+        : "Numri";
+  const quickVariantModalDescription =
+    stockViewMode === "electronics"
+      ? "Krijo variant te ri me model/version, ngjyre, cmim dhe stok."
+      : stockViewMode === "home"
+        ? "Krijo variant te ri me madhesi/dimension, ngjyre, cmim dhe stok."
+        : "Krijo ngjyre te re dhe shto disa numra ne nje hap.";
 
   return (
     <>
@@ -834,7 +999,7 @@ export function ProductStockQuickView({
             </div>
 
             <div className="max-h-[70vh] space-y-4 overflow-y-auto px-5 py-5">
-              {isElectricalCategory ? (
+              {stockViewMode === "electronics" ? (
                 groupedByModel.map((group) => {
                   const groupStockTone = getStockTone(group.totalStock);
 
@@ -857,16 +1022,16 @@ export function ProductStockQuickView({
                         </span>
                       </div>
 
-                      <div className="mt-4 grid gap-2 sm:grid-cols-2 xl:grid-cols-4">
+                      <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
                         {group.variants.map((variant) => {
                           const variantStockTone = getStockTone(variant.stock);
 
                           return (
                             <div
                               key={variant.id}
-                              className="rounded-xl bg-white/70 px-2 py-2"
+                              className="rounded-2xl border border-slate-200 bg-white px-3 py-3"
                             >
-                              <div className="flex items-center gap-3">
+                              <div className="flex items-start gap-3">
                                 <button
                                   type="button"
                                   onClick={() =>
@@ -877,7 +1042,7 @@ export function ProductStockQuickView({
                                         })
                                       : undefined
                                   }
-                                  className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50"
+                                  className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-50"
                                   title={variant.imagePath ? "Hap foton" : "Pa foto"}
                                 >
                                   {variant.imagePath ? (
@@ -892,17 +1057,207 @@ export function ProductStockQuickView({
                                     </span>
                                   )}
                                 </button>
-                                <div className="flex min-w-0 flex-1 flex-col items-start gap-1">
+                                <div className="min-w-0 flex-1">
                                   <span
                                     className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${variantStockTone.badgeClassName}`}
                                   >
                                     {variant.stock} cope
                                   </span>
-                                  <span className="truncate text-sm font-medium text-slate-900">
+                                  <p className="mt-2 truncate text-sm font-semibold text-slate-900">
                                     {variant.color}
+                                  </p>
+                                  {(variant.powerWatts || variant.material) ? (
+                                    <p className="mt-1 truncate text-xs text-slate-500">
+                                      {variant.powerWatts || variant.material}
+                                    </p>
+                                  ) : null}
+                                </div>
+                              </div>
+                              {(canAdjustStock || canDeleteColor) ? (
+                                <div className="mt-3 flex flex-wrap gap-2">
+                                  {canAdjustStock ? (
+                                    <>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setStockEditorVariantId(variant.id);
+                                          setStockEditorColor(null);
+                                          setStockInputs({ [variant.id]: "" });
+                                          setStockReason("INCOMING_STOCK");
+                                          setStockError(null);
+                                        }}
+                                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
+                                      >
+                                        <IconBox />
+                                        Shto sasi
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setEditStockVariantId(variant.id);
+                                          setEditStockColor(null);
+                                          setEditStockInputs({ [variant.id]: String(variant.stock) });
+                                          setEditStockError(null);
+                                        }}
+                                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
+                                      >
+                                        <IconPencil />
+                                        Edito
+                                      </button>
+                                    </>
+                                  ) : null}
+                                  {canDeleteColor ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setDeleteVariantTarget(variant);
+                                        setDeleteColorError(null);
+                                      }}
+                                      className="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 transition hover:bg-rose-100"
+                                    >
+                                      <span className="inline-flex h-4 w-4 items-center justify-center text-base leading-none">
+                                        x
+                                      </span>
+                                      Fshi
+                                    </button>
+                                  ) : null}
+                                </div>
+                              ) : null}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </section>
+                  );
+                })
+              ) : stockViewMode === "home" ? (
+                groupedBySpecification.map((group) => {
+                  const groupStockTone = getStockTone(group.totalStock);
+
+                  return (
+                    <section
+                      key={`${group.title}-${group.subtitle ?? "base"}`}
+                      className="rounded-[24px] border border-slate-200 bg-slate-50/70 p-4"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0 flex-1">
+                          <h3 className="text-base font-semibold text-slate-900">
+                            {group.title}
+                          </h3>
+                          {group.subtitle ? (
+                            <p className="mt-1 text-sm text-slate-500">{group.subtitle}</p>
+                          ) : null}
+                        </div>
+
+                        <span
+                          className={`inline-flex rounded-full px-3 py-1 text-xs font-semibold ${groupStockTone.badgeClassName}`}
+                        >
+                          {group.totalStock} cope
+                        </span>
+                      </div>
+
+                      <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                        {group.variants.map((variant) => {
+                          const variantStockTone = getStockTone(variant.stock);
+
+                          return (
+                            <div
+                              key={variant.id}
+                              className="rounded-2xl border border-slate-200 bg-white px-3 py-3"
+                            >
+                              <div className="flex items-start gap-3">
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    variant.imagePath
+                                      ? setPreviewImage({
+                                          src: variant.imagePath,
+                                          alt: `${productName} ${group.title} ${variant.color}`,
+                                        })
+                                      : undefined
+                                  }
+                                  className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-50"
+                                  title={variant.imagePath ? "Hap foton" : "Pa foto"}
+                                >
+                                  {variant.imagePath ? (
+                                    <UploadedImage
+                                      src={variant.imagePath}
+                                      alt={`${productName} ${group.title} ${variant.color}`}
+                                      className="h-full w-full object-cover"
+                                    />
+                                  ) : (
+                                    <span className="text-[9px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                                      IMG
+                                    </span>
+                                  )}
+                                </button>
+
+                                <div className="min-w-0 flex-1">
+                                  <p className="truncate text-sm font-semibold text-slate-900">
+                                    {variant.color}
+                                  </p>
+                                  {(variant.material || variant.powerWatts) ? (
+                                    <p className="mt-1 truncate text-xs text-slate-500">
+                                      {variant.material || variant.powerWatts}
+                                    </p>
+                                  ) : null}
+                                  <span
+                                    className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${variantStockTone.badgeClassName}`}
+                                  >
+                                    {variant.stock} cope
                                   </span>
                                 </div>
                               </div>
+                              {(canAdjustStock || canDeleteColor) ? (
+                                <div className="mt-3 flex flex-wrap gap-2">
+                                  {canAdjustStock ? (
+                                    <>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setStockEditorVariantId(variant.id);
+                                          setStockEditorColor(null);
+                                          setStockInputs({ [variant.id]: "" });
+                                          setStockReason("INCOMING_STOCK");
+                                          setStockError(null);
+                                        }}
+                                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
+                                      >
+                                        <IconBox />
+                                        Shto sasi
+                                      </button>
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setEditStockVariantId(variant.id);
+                                          setEditStockColor(null);
+                                          setEditStockInputs({ [variant.id]: String(variant.stock) });
+                                          setEditStockError(null);
+                                        }}
+                                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
+                                      >
+                                        <IconPencil />
+                                        Edito
+                                      </button>
+                                    </>
+                                  ) : null}
+                                  {canDeleteColor ? (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        setDeleteVariantTarget(variant);
+                                        setDeleteColorError(null);
+                                      }}
+                                      className="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 transition hover:bg-rose-100"
+                                    >
+                                      <span className="inline-flex h-4 w-4 items-center justify-center text-base leading-none">
+                                        x
+                                      </span>
+                                      Fshi
+                                    </button>
+                                  ) : null}
+                                </div>
+                              ) : null}
                             </div>
                           );
                         })}
@@ -968,7 +1323,7 @@ export function ProductStockQuickView({
                         </div>
                       </div>
 
-                      {canAdjustStock ? (
+                      {canAdjustStock && isFootwearCategory ? (
                         <div className="relative shrink-0 self-start">
                           <button
                             type="button"
@@ -1202,12 +1557,13 @@ export function ProductStockQuickView({
         </div>
       ) : null}
 
-      {deleteColorTarget ? (
+      {deleteColorTarget || deleteVariantTarget ? (
         <div
           className="fixed inset-0 z-[96] flex items-center justify-center bg-slate-950/65 p-4"
           onClick={() => {
             if (!deletingColor) {
               setDeleteColorTarget(null);
+              setDeleteVariantTarget(null);
               setDeleteColorError(null);
             }
           }}
@@ -1219,10 +1575,24 @@ export function ProductStockQuickView({
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h3 className="text-lg font-semibold text-slate-950">
-                  Fshi ngjyren
+                  {deleteVariantTarget ? "Fshi variantin" : "Fshi ngjyren"}
                 </h3>
                 <p className="mt-1 text-sm text-slate-500">
-                  Kjo do fshije ngjyren <span className="font-semibold text-slate-900">{deleteColorTarget}</span> dhe te gjithe numrat e saj.
+                  {deleteVariantTarget ? (
+                    <>
+                      Kjo do fshije variantin{" "}
+                      <span className="font-semibold text-slate-900">
+                        {deleteVariantTarget.color}
+                        {deleteVariantTarget.size ? ` / ${deleteVariantTarget.size}` : ""}
+                      </span>
+                      .
+                    </>
+                  ) : (
+                    <>
+                      Kjo do fshije ngjyren{" "}
+                      <span className="font-semibold text-slate-900">{deleteColorTarget}</span> dhe te gjithe numrat e saj.
+                    </>
+                  )}
                 </p>
               </div>
               <button
@@ -1230,6 +1600,7 @@ export function ProductStockQuickView({
                 onClick={() => {
                   if (!deletingColor) {
                     setDeleteColorTarget(null);
+                    setDeleteVariantTarget(null);
                     setDeleteColorError(null);
                   }
                 }}
@@ -1262,23 +1633,24 @@ export function ProductStockQuickView({
               </button>
               <button
                 type="button"
-                onClick={() => void deleteColorGroup()}
+                onClick={() => void (deleteVariantTarget ? deleteSingleVariant() : deleteColorGroup())}
                 className="inline-flex items-center justify-center rounded-2xl bg-rose-600 px-4 py-3 text-sm font-semibold text-white transition hover:bg-rose-500 disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={deletingColor}
               >
-                {deletingColor ? "Duke fshire..." : "Fshi ngjyren"}
+                {deletingColor ? "Duke fshire..." : deleteVariantTarget ? "Fshi variantin" : "Fshi ngjyren"}
               </button>
             </div>
           </div>
         </div>
       ) : null}
 
-      {stockEditorColor ? (
+      {stockEditorColor || stockEditorVariantId ? (
         <div
           className="fixed inset-0 z-[96] flex items-center justify-center bg-slate-950/65 p-3 sm:p-4"
           onClick={() => {
             if (!savingStock) {
               setStockEditorColor(null);
+              setStockEditorVariantId(null);
               setStockError(null);
             }
           }}
@@ -1291,10 +1663,12 @@ export function ProductStockQuickView({
             <div className="flex items-start justify-between gap-4 px-5 pb-0 pt-5">
               <div>
                 <h3 className="text-lg font-semibold text-slate-950">
-                  Shto sasi - {stockEditorColor}
+                  Shto sasi - {variantForStockAdd ? `${variantForStockAdd.color}${variantForStockAdd.size ? ` / ${variantForStockAdd.size}` : ""}` : stockEditorColor}
                 </h3>
                 <p className="mt-1 text-sm text-slate-500">
-                  Zgjidh arsyen dhe vendos sa pale po shtohen per secilin numer.
+                  {variantForStockAdd
+                    ? "Zgjidh arsyen dhe vendos sa cope po shtohen per kete variant."
+                    : "Zgjidh arsyen dhe vendos sa pale po shtohen per secilin numer."}
                 </p>
               </div>
               <button
@@ -1322,10 +1696,10 @@ export function ProductStockQuickView({
                   <p className="mt-1 flex items-center gap-2 text-sm font-semibold text-slate-900">
                     <span
                       className={`inline-flex h-3 w-3 rounded-full ${getColorSwatchClass(
-                        stockEditorColor,
+                        variantForStockAdd ? variantForStockAdd.color : (stockEditorColor ?? ""),
                       )}`}
                     />
-                    {stockEditorColor}
+                    {variantForStockAdd ? variantForStockAdd.color : stockEditorColor}
                   </p>
                 </div>
                 <div className="text-left sm:text-right">
@@ -1353,7 +1727,7 @@ export function ProductStockQuickView({
               </label>
 
               <div className="space-y-3">
-                {colorEditorVariants.map((variant) => (
+                {stockEditorVariants.map((variant) => (
                   <div
                     key={`edit-${variant.id}-${variant.size}`}
                     className="grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 sm:grid-cols-[1fr_auto]"
@@ -1361,7 +1735,7 @@ export function ProductStockQuickView({
                     <div>
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-semibold text-slate-900">
-                          Nr {variant.size}
+                          {variantForStockAdd ? variant.size || variant.color : `Nr ${variant.size}`}
                         </p>
                         <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-600">
                           {variant.stock} ne stok
@@ -1403,6 +1777,7 @@ export function ProductStockQuickView({
                 onClick={() => {
                   if (!savingStock) {
                     setStockEditorColor(null);
+                    setStockEditorVariantId(null);
                     setStockError(null);
                   }
                 }}
@@ -1426,12 +1801,13 @@ export function ProductStockQuickView({
         </div>
       ) : null}
 
-      {editStockColor ? (
+      {editStockColor || editStockVariantId ? (
         <div
           className="fixed inset-0 z-[96] flex items-center justify-center bg-slate-950/65 p-3 sm:p-4"
           onClick={() => {
             if (!savingEditStock) {
               setEditStockColor(null);
+              setEditStockVariantId(null);
               setEditStockError(null);
             }
           }}
@@ -1444,10 +1820,12 @@ export function ProductStockQuickView({
             <div className="flex items-start justify-between gap-4 px-5 pb-0 pt-5">
               <div>
                 <h3 className="text-lg font-semibold text-slate-950">
-                  Edito stokun - {editStockColor}
+                  Edito stokun - {variantForStockEdit ? `${variantForStockEdit.color}${variantForStockEdit.size ? ` / ${variantForStockEdit.size}` : ""}` : editStockColor}
                 </h3>
                 <p className="mt-1 text-sm text-slate-500">
-                  Vendos stokun final per secilin numer te kesaj ngjyre.
+                  {variantForStockEdit
+                    ? "Vendos stokun final per kete variant."
+                    : "Vendos stokun final per secilin numer te kesaj ngjyre."}
                 </p>
               </div>
               <button
@@ -1468,7 +1846,7 @@ export function ProductStockQuickView({
             <div className="mt-5 flex-1 overflow-y-auto px-5 pb-4">
             <div className="rounded-[24px] border border-slate-200 bg-slate-50/80 p-3">
               <div className="space-y-3">
-                {colorVariantsForEdit.map((variant) => (
+                {variantsForEditStock.map((variant) => (
                   <div
                     key={`set-${variant.id}`}
                     className="grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 sm:grid-cols-[1fr_auto]"
@@ -1476,7 +1854,7 @@ export function ProductStockQuickView({
                     <div>
                       <div className="flex items-center gap-2">
                         <p className="text-sm font-semibold text-slate-900">
-                          Nr {variant.size}
+                          {variantForStockEdit ? variant.size || variant.color : `Nr ${variant.size}`}
                         </p>
                         <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-600">
                           aktual: {variant.stock}
@@ -1514,6 +1892,7 @@ export function ProductStockQuickView({
                 onClick={() => {
                   if (!savingEditStock) {
                     setEditStockColor(null);
+                    setEditStockVariantId(null);
                     setEditStockError(null);
                   }
                 }}
@@ -1706,9 +2085,9 @@ export function ProductStockQuickView({
                   Shto variant
                 </h3>
                 <p className="mt-1 text-sm text-slate-500">
-                  Krijo ngjyre te re dhe shto disa numra ne nje hap.
+                  {quickVariantModalDescription}
                 </p>
-                {availableColors.length > 0 ? (
+                {stockViewMode === "footwear" && availableColors.length > 0 ? (
                   <div className="mt-3 flex flex-wrap gap-2">
                     {availableColors.map((color) => (
                       <span
@@ -1742,7 +2121,7 @@ export function ProductStockQuickView({
 
             <div className="mt-5 flex-1 overflow-y-auto px-5 pb-4">
             <div className="rounded-[24px] border border-slate-200 bg-slate-50/80 p-4">
-              <div className="grid items-start gap-4 lg:grid-cols-[132px_minmax(0,1fr)]">
+              <div className={`grid items-start gap-4 ${stockViewMode === "footwear" ? "lg:grid-cols-[132px_minmax(0,1fr)]" : "lg:grid-cols-[148px_minmax(0,1fr)]"}`}>
                 <div className="self-start rounded-2xl border border-slate-200 bg-white p-3">
                   <button
                     type="button"
@@ -1799,10 +2178,10 @@ export function ProductStockQuickView({
                   </label>
                 </div>
 
-                <div className="space-y-4">
-                  <div className="grid gap-4 sm:grid-cols-2">
-                    <label className="space-y-2">
-                      <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                <div className="min-w-0 space-y-4">
+                  <div className={`grid gap-4 ${stockViewMode === "footwear" ? "sm:grid-cols-2" : "md:grid-cols-2"}`}>
+                    <label className="min-w-0 space-y-2">
+                      <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
                         Ngjyra e re
                       </span>
                       <input
@@ -1814,8 +2193,8 @@ export function ProductStockQuickView({
                       />
                     </label>
 
-                    <label className="space-y-2">
-                      <span className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                    <label className="min-w-0 space-y-2">
+                      <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
                         Cmimi
                       </span>
                       <input
@@ -1830,88 +2209,123 @@ export function ProductStockQuickView({
                     </label>
                   </div>
 
-                  {existingVariantColor ? (
+                  {stockViewMode === "footwear" && existingVariantColor ? (
                     <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
                       Kjo ngjyre ekziston tashme. Perdor `Shto numer`.
                     </div>
                   ) : null}
 
                   <div className="rounded-2xl border border-slate-200 bg-white p-4">
-                    <div>
-                      <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                        Numrat
-                      </p>
-                    </div>
-
-                    <div className="mt-3 grid gap-2 rounded-2xl border border-slate-200 bg-slate-50 p-2.5 grid-cols-[minmax(0,1fr)_88px_auto] sm:grid-cols-[minmax(0,1fr)_96px_auto]">
-                      <label className="space-y-2">
-                        <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
-                          Numri
-                        </span>
-                        <input
-                          type="text"
-                          value={variantDraftSize}
-                          onChange={(event) => setVariantDraftSize(event.target.value)}
-                          placeholder="44"
-                          className="w-full rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-100"
-                        />
-                      </label>
-                      <label className="space-y-2">
-                        <span className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
-                          Sasia
-                        </span>
-                        <input
-                          type="number"
-                          min="0"
-                          value={variantDraftStock}
-                          onChange={(event) => setVariantDraftStock(event.target.value)}
-                          placeholder="0"
-                          className="w-full rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-100"
-                        />
-                      </label>
-                      <button
-                        type="button"
-                        onClick={addVariantRow}
-                        className="inline-flex items-center justify-center gap-1 rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-[11px] font-medium text-slate-700 transition hover:bg-slate-50 self-end"
-                      >
-                        <IconPlus />
-                        Shto
-                      </button>
-                    </div>
-
-                    {variantRows.length > 0 ? (
-                      <div className="mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 p-3">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
-                          Numrat qe po shtohen
-                        </p>
-                        <div className="mt-3 grid grid-cols-2 gap-2 sm:flex sm:flex-wrap">
-                          {variantRows.map((row) => (
-                            <div
-                              key={row.id}
-                              className="inline-flex min-w-0 items-center justify-between gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 sm:max-w-full sm:justify-start"
-                            >
-                              <span className="text-sm font-semibold text-slate-900">
-                                Nr {row.size}
-                              </span>
-                              <span className="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600">
-                                {row.stock} cope
-                              </span>
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  setVariantRows((current) =>
-                                    current.filter((item) => item.id !== row.id),
-                                  )
-                                }
-                                className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-2 py-1 text-[10px] font-medium text-slate-600 transition hover:bg-slate-50"
-                              >
-                                Hiq
-                              </button>
-                            </div>
-                          ))}
+                    {stockViewMode === "footwear" ? (
+                      <>
+                        <div className="flex items-center justify-between gap-3">
+                          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                            Numrat
+                          </p>
+                          <p className="text-[11px] text-slate-400">
+                            Shto disa numra per te njejten ngjyre
+                          </p>
                         </div>
+
+                        <div className="mt-3 grid gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-3 md:grid-cols-[minmax(0,1fr)_120px_auto]">
+                          <label className="min-w-0 space-y-2">
+                            <span className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                              Numri
+                            </span>
+                            <input
+                              type="text"
+                              value={variantDraftSize}
+                              onChange={(event) => setVariantDraftSize(event.target.value)}
+                              placeholder="44"
+                              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-100"
+                            />
+                          </label>
+                          <label className="min-w-0 space-y-2">
+                            <span className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                              Sasia
+                            </span>
+                            <input
+                              type="number"
+                              min="0"
+                              value={variantDraftStock}
+                              onChange={(event) => setVariantDraftStock(event.target.value)}
+                              placeholder="0"
+                              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-100"
+                            />
+                          </label>
+                          <button
+                            type="button"
+                            onClick={addVariantRow}
+                            className="inline-flex h-[46px] items-center justify-center gap-1 rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50 self-end"
+                          >
+                            <IconPlus />
+                            Shto
+                          </button>
+                        </div>
+
+                        {variantRows.length > 0 ? (
+                          <div className="mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 p-3">
+                            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                              Numrat qe po shtohen
+                            </p>
+                            <div className="mt-3 flex flex-wrap gap-2">
+                              {variantRows.map((row) => (
+                                <div
+                                  key={row.id}
+                                  className="inline-flex min-w-0 items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2"
+                                >
+                                  <span className="text-sm font-semibold text-slate-900">
+                                    Nr {row.size}
+                                  </span>
+                                  <span className="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600">
+                                    {row.stock} cope
+                                  </span>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      setVariantRows((current) =>
+                                        current.filter((item) => item.id !== row.id),
+                                      )
+                                    }
+                                    className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-2 py-1 text-[10px] font-medium text-slate-600 transition hover:bg-slate-50"
+                                  >
+                                    Hiq
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ) : null}
+                      </>
+                    ) : (
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <label className="min-w-0 space-y-2">
+                          <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                            {quickVariantPrimaryLabel}
+                          </span>
+                          <input
+                            type="text"
+                            value={variantDraftSize}
+                            onChange={(event) => setVariantDraftSize(event.target.value)}
+                            placeholder={stockViewMode === "electronics" ? "p.sh. Wet & Dry 3L" : "p.sh. 140x70"}
+                            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-100"
+                          />
+                        </label>
+                        <label className="min-w-0 space-y-2">
+                          <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                            Sasia
+                          </span>
+                          <input
+                            type="number"
+                            min="0"
+                            value={variantDraftStock}
+                            onChange={(event) => setVariantDraftStock(event.target.value)}
+                            placeholder="0"
+                            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-100"
+                          />
+                        </label>
                       </div>
-                    ) : null}
+                    )}
                   </div>
                 </div>
               </div>
