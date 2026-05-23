@@ -42,12 +42,13 @@ Per setup fillestar:
 1. kopjo `.env.example` ne `.env`
 2. vendos databazen
 3. vendos `PLATFORM_ADMIN_EMAILS`
-4. vendos Cloudinary credentials nese perdor upload
+4. vendos `R2` credentials nese perdor upload
 
 Shenim:
 
 - billing manual punon edhe pa `STRIPE_*`
 - per Neon prefero `DIRECT_URL` per migrate
+- fotot tani ruhen ne `Cloudflare R2`
 
 ## Production Start
 

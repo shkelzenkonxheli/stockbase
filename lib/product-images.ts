@@ -1,5 +1,6 @@
-import { createHash } from "node:crypto";
 import path from "node:path";
+import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { buildAppAssetUrl, getR2Client, getR2Config } from "@/lib/r2";
 
 export class ProductImageUploadError extends Error {
   constructor(message: string) {
@@ -41,47 +42,6 @@ export async function listProductImages(productId: number) {
   return [];
 }
 
-function cloudinaryConfig() {
-  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
-  const apiKey = process.env.CLOUDINARY_API_KEY;
-  const apiSecret = process.env.CLOUDINARY_API_SECRET;
-  const appFolder = sanitizeCloudinaryFolder(
-    process.env.CLOUDINARY_APP_FOLDER || "stockbase",
-  );
-
-  if (!cloudName || !apiKey || !apiSecret) {
-    throw new ProductImageUploadError(
-      "Mungojne kredencialet e Cloudinary ne .env.",
-    );
-  }
-
-  return { cloudName, apiKey, apiSecret, appFolder };
-}
-
-function sanitizeCloudinaryFolder(value: string) {
-  return value
-    .split("/")
-    .map((segment) => sanitizeFileSegment(segment))
-    .filter(Boolean)
-    .join("/");
-}
-
-function buildCloudinarySignature(
-  params: Record<string, string | number>,
-  apiSecret: string,
-) {
-  const sortedEntries = Object.entries(params).sort(([left], [right]) =>
-    left.localeCompare(right),
-  );
-  const signatureBase = sortedEntries
-    .map(([key, value]) => `${key}=${value}`)
-    .join("&");
-
-  return createHash("sha1")
-    .update(`${signatureBase}${apiSecret}`)
-    .digest("hex");
-}
-
 export async function saveProductImage(productId: number, file: File) {
   if (!file || file.size === 0) {
     return null;
@@ -91,61 +51,40 @@ export async function saveProductImage(productId: number, file: File) {
     throw new ProductImageUploadError("File i zgjedhur nuk eshte foto valide.");
   }
 
-  const config = cloudinaryConfig();
+  let config;
+  let client;
 
-  if (!config) {
-    return null;
+  try {
+    config = getR2Config();
+    client = getR2Client();
+  } catch (error) {
+    throw new ProductImageUploadError(
+      error instanceof Error ? error.message : "Mungon konfigurimi i R2 ne .env.",
+    );
   }
 
   const originalBase = path.basename(file.name, path.extname(file.name));
   const safeBase = sanitizeFileSegment(originalBase) || "image";
   const extension = extensionFromFile(file);
-  const timestamp = Math.floor(Date.now() / 1000);
-  const publicId = `${config.appFolder}/products/${productId}/${Date.now()}-${safeBase}`.replace(
-    new RegExp(`${extension.replace(".", "\\.")}$`),
-    "",
-  );
-  const signature = buildCloudinarySignature(
-    {
-      public_id: publicId,
-      timestamp,
-    },
-    config.apiSecret,
-  );
-  const formData = new FormData();
+  const objectKey = `${config.appFolder}/products/${productId}/${Date.now()}-${safeBase}${extension}`;
 
-  formData.append("file", file);
-  formData.append("api_key", config.apiKey);
-  formData.append("timestamp", String(timestamp));
-  formData.append("public_id", publicId);
-  formData.append("signature", signature);
-
-  const response = await fetch(
-    `https://api.cloudinary.com/v1_1/${config.cloudName}/image/upload`,
-    {
-      method: "POST",
-      body: formData,
-    },
-  );
-
-  if (!response.ok) {
-    const errorResult = (await response.json().catch(() => null)) as
-      | { error?: { message?: string } }
-      | null;
-    const errorMessage =
-      errorResult?.error?.message ||
-      "Ngarkimi i fotos ne Cloudinary deshtoi.";
-
-    throw new ProductImageUploadError(errorMessage);
-  }
-
-  const result = (await response.json()) as { secure_url?: string };
-
-  if (!result.secure_url) {
+  try {
+    await client.send(
+      new PutObjectCommand({
+        Bucket: config.bucketName,
+        Key: objectKey,
+        Body: Buffer.from(await file.arrayBuffer()),
+        ContentType: file.type || "image/jpeg",
+        CacheControl: "public, max-age=31536000, immutable",
+      }),
+    );
+  } catch (error) {
     throw new ProductImageUploadError(
-      "Cloudinary nuk ktheu URL per foton e ngarkuar.",
+      error instanceof Error
+        ? `Ngarkimi i fotos ne R2 deshtoi: ${error.message}`
+        : "Ngarkimi i fotos ne R2 deshtoi.",
     );
   }
 
-  return result.secure_url;
+  return buildAppAssetUrl(objectKey);
 }

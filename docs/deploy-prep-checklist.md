@@ -26,10 +26,11 @@ Kontrollo minimalisht:
 - `PLATFORM_ADMIN_EMAILS`
 - `APP_URL`
 - `NEXT_PUBLIC_APP_URL`
-- `CLOUDINARY_CLOUD_NAME`
-- `CLOUDINARY_API_KEY`
-- `CLOUDINARY_API_SECRET`
-- `CLOUDINARY_APP_FOLDER`
+- `R2_ACCOUNT_ID`
+- `R2_BUCKET_NAME`
+- `R2_ACCESS_KEY_ID`
+- `R2_SECRET_ACCESS_KEY`
+- `R2_APP_FOLDER`
 
 Nese billing eshte manual:
 
@@ -52,7 +53,7 @@ Per cdo tenant demo / klient:
 
 ## 5. Asset / Upload Check
 
-- verifiko qe upload-et ne Cloudinary ruhen ne folderin e app-it
+- verifiko qe upload-et ne R2 ruhen ne folderin e app-it
 - testo upload te pakten per:
   - produkt normal
   - variant me foto
