@@ -436,6 +436,8 @@ export default async function OrdersPage({
           select: {
             size: true,
             color: true,
+            material: true,
+            powerWatts: true,
             imagePath: true,
             product: {
               select: {
@@ -457,6 +459,8 @@ export default async function OrdersPage({
               select: {
                 size: true,
                 color: true,
+                material: true,
+                powerWatts: true,
                 imagePath: true,
                 product: {
                   select: {
@@ -499,8 +503,11 @@ export default async function OrdersPage({
             id: item.id,
             name: item.variant.product.name,
             brand: item.variant.product.category.name,
+            category: item.variant.product.category.name,
             size: item.variant.size,
             color: item.variant.color,
+            material: item.variant.material,
+            powerWatts: item.variant.powerWatts,
             imagePath: item.variant.imagePath,
             quantity: item.quantity,
           }))
@@ -510,8 +517,11 @@ export default async function OrdersPage({
                 id: order.id,
                 name: order.variant.product.name,
                 brand: order.variant.product.category.name,
+                category: order.variant.product.category.name,
                 size: order.variant.size,
                 color: order.variant.color,
+                material: order.variant.material,
+                powerWatts: order.variant.powerWatts,
                 imagePath: order.variant.imagePath,
                 quantity: order.quantity ?? 0,
               },

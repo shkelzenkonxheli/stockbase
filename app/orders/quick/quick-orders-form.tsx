@@ -5,6 +5,7 @@ import { useEffect, useMemo, useState } from "react";
 import { ProductModelPicker } from "@/app/components/product-model-picker";
 import { VariantColorPicker } from "@/app/components/variant-color-picker";
 import { UploadedImage } from "@/app/components/uploaded-image";
+import { getOrderVariantSummary } from "@/lib/order-variant-display";
 
 type ProductOption = {
   id: number;
@@ -17,11 +18,14 @@ type OrderVariant = {
   id: number;
   productId: number;
   productLabel: string;
+  category: string;
   size: string;
   color: string;
   imagePath: string | null;
   stock: number;
   price: number;
+  material?: string | null;
+  powerWatts?: string | null;
 };
 
 type QuickOrdersFormProps = {
@@ -457,7 +461,7 @@ export function QuickOrdersForm({ action, products }: QuickOrdersFormProps) {
                         variant.imagePath
                           ? setLightboxImage({
                               src: variant.imagePath,
-                              alt: `${product.name} | Nr ${variant.size} | ${variant.color}`,
+                              alt: `${product.name} | ${getOrderVariantSummary(variant)}`,
                             })
                           : null
                       }
@@ -483,7 +487,7 @@ export function QuickOrdersForm({ action, products }: QuickOrdersFormProps) {
 
                   <div>
                     <span className="inline-flex rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-700">
-                      {variant.color} • Nr {variant.size}
+                      {getOrderVariantSummary(variant)}
                     </span>
                   </div>
 

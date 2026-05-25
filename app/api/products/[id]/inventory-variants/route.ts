@@ -36,6 +36,8 @@ export async function GET(_request: Request, context: RouteContext) {
       imagePath: true,
       stock: true,
       price: true,
+      material: true,
+      powerWatts: true,
       product: {
         select: {
           name: true,
@@ -55,11 +57,14 @@ export async function GET(_request: Request, context: RouteContext) {
       id: variant.id,
       productId: variant.productId,
       productLabel: `${variant.product.name} | ${variant.product.category.name}`,
+      category: variant.product.category.name,
       size: variant.size,
       color: variant.color,
       imagePath: variant.imagePath,
       stock: variant.stock,
       price: Number(variant.price),
+      material: variant.material,
+      powerWatts: variant.powerWatts,
     })),
   );
 }

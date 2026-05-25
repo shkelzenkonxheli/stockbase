@@ -499,6 +499,8 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                                   imagePath: variant.imagePath,
                                   stock: variant.stock,
                                   price: Number(variant.price),
+                                  material: variant.material,
+                                  powerWatts: variant.powerWatts,
                                 }))}
                                 showImageButton={false}
                                 iconOnly
@@ -611,6 +613,8 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                               imagePath: variant.imagePath,
                               stock: variant.stock,
                               price: Number(variant.price),
+                              material: variant.material,
+                              powerWatts: variant.powerWatts,
                             }))}
                             className="h-full w-full"
                             canAdjustStock={canQuickAdjustStock}

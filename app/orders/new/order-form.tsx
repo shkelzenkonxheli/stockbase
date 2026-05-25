@@ -5,16 +5,20 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ProductModelPicker } from "@/app/components/product-model-picker";
 import { VariantColorPicker } from "@/app/components/variant-color-picker";
 import { UploadedImage } from "@/app/components/uploaded-image";
+import { getOrderVariantSummary } from "@/lib/order-variant-display";
 
 type OrderVariant = {
   id: number;
   productId: number;
   productLabel: string;
+  category: string;
   size: string;
   color: string;
   imagePath: string | null;
   stock: number;
   price: number;
+  material?: string | null;
+  powerWatts?: string | null;
 };
 
 type ProductOption = {
@@ -699,7 +703,7 @@ export function OrderForm({ action, products }: OrderFormProps) {
                           {item.productLabel}
                         </p>
                         <p className="mt-1 text-xs text-slate-500">
-                          Nr {item.size} / {item.color}
+                          {getOrderVariantSummary(item)}
                         </p>
                       </div>
                     </div>

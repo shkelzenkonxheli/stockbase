@@ -89,7 +89,6 @@ export default async function NewProductPage({
   const errorMessage = resolvedSearchParams?.error;
   const catalogType = currentUser.tenant?.catalogType;
   const catalogTemplate = getCatalogTemplate(catalogType);
-  const recommendedCategories = new Set(catalogTemplate.recommendedCategories);
 
   if (currentUser.tenant?.id) {
     const tenantCategoriesCount = await prisma.category.count({
@@ -132,11 +131,14 @@ export default async function NewProductPage({
           <p className="mt-3 max-w-xl text-sm leading-6 text-slate-600 sm:text-base">
             Krijo produktin baze dhe lidhe me nje kategori. Pas ruajtjes kalon
             direkt te faqja e produktit per te shtuar variantet sipas
-            dimensionit, ngjyres, materialit ose fuqise.
+            kategorise reale te artikullit.
           </p>
           <div className="mt-4 rounded-2xl bg-slate-50 px-4 py-4 text-sm text-slate-600">
-            <p className="font-semibold text-slate-900">{catalogTemplate.label}</p>
-            <p className="mt-1">{catalogTemplate.variantFocus}</p>
+            <p className="font-semibold text-slate-900">Template baze: {catalogTemplate.label}</p>
+            <p className="mt-1">
+              Ky tenant mund te perdore disa kategori njekohesisht. Sjellja e varianteve
+              varet nga kategoria qe zgjedh te produkti.
+            </p>
           </div>
 
           {errorMessage ? (
@@ -234,23 +236,20 @@ export default async function NewProductPage({
         <aside className="rounded-[32px] border border-slate-200/80 bg-white p-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)] sm:p-7">
           <div className="rounded-[28px] bg-gradient-to-br from-orange-50 via-white to-sky-50 p-6">
             <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-              Kategorite
+              Kategorite aktive
             </p>
             <h2 className="mt-3 text-xl font-semibold tracking-tight text-slate-950">
               Struktura e inventarit
             </h2>
             <p className="mt-2 text-sm leading-6 text-slate-600">
-              {catalogTemplate.description}
+              Zgjidh kategorine sipas produktit. Cdo kategori ka formen dhe logjiken e vet
+              per variante, stok dhe porosi.
             </p>
             <div className="mt-6 space-y-4">
               {categories.map((category, index) => (
                 <div
                   key={category.id}
-                  className={`rounded-2xl border p-4 ${
-                    recommendedCategories.has(category.name as never)
-                      ? "border-slate-200 bg-white text-slate-900"
-                      : "border-white/80 bg-white/70 text-slate-600"
-                  }`}
+                  className="rounded-2xl border border-slate-200 bg-white p-4 text-slate-900"
                 >
                   <p className="text-sm font-semibold text-slate-900">
                     {index + 1}. {category.name}

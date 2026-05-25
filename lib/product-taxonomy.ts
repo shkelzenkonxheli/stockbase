@@ -691,6 +691,17 @@ export function getCategoryConfig(categoryName?: string | null): CategoryConfig 
   return matchedEntry?.[1] ?? DEFAULT_CONFIG;
 }
 
+function hasKnownCategoryConfig(categoryName?: string | null) {
+  if (!categoryName) {
+    return false;
+  }
+
+  const normalizedCategoryName = normalizeName(categoryName);
+  return Object.keys(CATEGORY_CONFIG).some(
+    (name) => normalizeName(name) === normalizedCategoryName,
+  );
+}
+
 export function getCatalogTemplate(catalogType?: CatalogType | null): CatalogTemplate {
   if (!catalogType) {
     return CATALOG_TEMPLATES.ELECTRONICS;
@@ -714,10 +725,11 @@ export function getCatalogAwareCategoryConfig(
   categoryOverride?: CategoryFieldOverride | null,
 ): CategoryConfig {
   const baseConfig = getCategoryConfig(categoryName);
+  const shouldUseTemplateDefaults = !hasKnownCategoryConfig(categoryName);
 
   let resolvedConfig = baseConfig;
 
-  if (catalogType === "FOOTWEAR") {
+  if (shouldUseTemplateDefaults && catalogType === "FOOTWEAR") {
     resolvedConfig = {
       ...baseConfig,
       description:
@@ -738,7 +750,7 @@ export function getCatalogAwareCategoryConfig(
       sharedVariantImageByColor: true,
       variantHelper: "Shto nje ngjyre me nje foto, pastaj shto numrat, stokun dhe cmimin per secilin numer.",
     };
-  } else if (catalogType === "DECOR") {
+  } else if (shouldUseTemplateDefaults && catalogType === "DECOR") {
     resolvedConfig = {
       ...baseConfig,
       sizeLabel: "Dimensioni",
@@ -748,7 +760,7 @@ export function getCatalogAwareCategoryConfig(
       showPowerField: false,
       variantHelper: "Per cdo variant ruaj dimensionin, materialin, ngjyren dhe cmimin.",
     };
-  } else if (catalogType === "HOME_GOODS") {
+  } else if (shouldUseTemplateDefaults && catalogType === "HOME_GOODS") {
     resolvedConfig = {
       ...baseConfig,
       showPowerField: false,

@@ -1,6 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { FlashMessage } from "@/app/components/flash-message";
+import { ConfirmActionButton } from "@/app/components/confirm-action-button";
 import { SettingsListViewEditor } from "@/app/components/settings-list-view-editor";
 import { SettingsCategoryCard } from "@/app/components/settings-category-card";
 import { SettingsTabs } from "@/app/components/settings-tabs";
@@ -193,12 +194,26 @@ async function deleteCategory(formData: FormData) {
     where: { id: categoryId, tenantId },
     select: {
       id: true,
+      isActive: true,
       _count: { select: { products: true } },
     },
   });
 
   if (!category) {
     redirect("/settings?error=category-missing");
+  }
+
+  if (category.isActive) {
+    const activeCategoriesCount = await prisma.category.count({
+      where: {
+        tenantId,
+        isActive: true,
+      },
+    });
+
+    if (activeCategoriesCount <= 1) {
+      redirect("/settings?error=last-active-category");
+    }
   }
 
   if (category._count.products > 0) {
@@ -542,6 +557,41 @@ function getMessage(success?: string, error?: string) {
     };
   }
 
+  if (success === "category-deleted") {
+    return {
+      type: "success" as const,
+      text: "Kategoria u fshi me sukses.",
+    };
+  }
+
+  if (success === "category-archived") {
+    return {
+      type: "success" as const,
+      text: "Kategoria u arkivua me sukses.",
+    };
+  }
+
+  if (error === "last-active-category") {
+    return {
+      type: "error" as const,
+      text: "Duhet te mbetet te pakten nje kategori aktive.",
+    };
+  }
+
+  if (error === "category-missing") {
+    return {
+      type: "error" as const,
+      text: "Kategoria nuk u gjet.",
+    };
+  }
+
+  if (error === "category-action") {
+    return {
+      type: "error" as const,
+      text: "Veprimi mbi kategorine deshtoi.",
+    };
+  }
+
   return null;
 }
 
@@ -788,6 +838,18 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
                               <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
                                 Konfiguroje te tab-i Variablat
                               </span>
+                              <ConfirmActionButton
+                                action={deleteCategory}
+                                fieldName="categoryId"
+                                fieldValue={category.id}
+                                confirmMessage={
+                                  category.productCount > 0
+                                    ? "Kjo kategori ka produkte. Do te arkivohet dhe nuk do te shfaqet per produkte te reja. Vazhdon?"
+                                    : "A je i sigurt qe don ta fshish kete kategori?"
+                                }
+                                buttonLabel={category.productCount > 0 ? "Arkivo" : "Fshi"}
+                                className="inline-flex items-center justify-center rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700 transition hover:bg-rose-100"
+                              />
                             </div>
                           </div>
                         </div>

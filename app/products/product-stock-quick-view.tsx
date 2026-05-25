@@ -223,6 +223,8 @@ export function ProductStockQuickView({
   const [showVariantCreator, setShowVariantCreator] = useState(false);
   const [variantColor, setVariantColor] = useState("");
   const [variantPrice, setVariantPrice] = useState("");
+  const [variantMaterial, setVariantMaterial] = useState("");
+  const [variantPowerWatts, setVariantPowerWatts] = useState("");
   const [variantError, setVariantError] = useState<string | null>(null);
   const [creatingVariant, setCreatingVariant] = useState(false);
   const [variantImageFile, setVariantImageFile] = useState<File | null>(null);
@@ -231,6 +233,9 @@ export function ProductStockQuickView({
   const [variantDraftSize, setVariantDraftSize] = useState("");
   const [variantDraftStock, setVariantDraftStock] = useState("");
   const [openColorActions, setOpenColorActions] = useState<string | null>(null);
+  const [variantActionsTarget, setVariantActionsTarget] = useState<ProductQuickVariant | null>(
+    null,
+  );
   const [stockEditorVariantId, setStockEditorVariantId] = useState<number | null>(null);
   const [editStockVariantId, setEditStockVariantId] = useState<number | null>(null);
   const [deleteVariantTarget, setDeleteVariantTarget] = useState<ProductQuickVariant | null>(
@@ -325,7 +330,7 @@ export function ProductStockQuickView({
 
     for (const variant of variantsState) {
       const dimension = variant.size.trim() || "Variant pa madhesi";
-      const material = "";
+      const material = variant.material?.trim() || "";
       const groupKey = `${dimension}::${material}`;
       const currentGroup = groups.get(groupKey);
 
@@ -420,6 +425,8 @@ export function ProductStockQuickView({
     setShowVariantCreator(false);
     setVariantColor("");
     setVariantPrice("");
+    setVariantMaterial("");
+    setVariantPowerWatts("");
     setVariantRows([]);
     setVariantDraftSize("");
     setVariantDraftStock("");
@@ -745,6 +752,12 @@ export function ProductStockQuickView({
         formData.append("size", row.size);
         formData.append("stock", String(row.stock));
         formData.append("price", String(parsedPrice));
+        if (variantMaterial.trim()) {
+          formData.append("material", variantMaterial.trim());
+        }
+        if (variantPowerWatts.trim()) {
+          formData.append("powerWatts", variantPowerWatts.trim());
+        }
 
         if (index === 0 && variantImageFile) {
           formData.append("image", variantImageFile);
@@ -879,6 +892,12 @@ export function ProductStockQuickView({
       : stockViewMode === "home"
         ? "Krijo variant te ri me madhesi/dimension, ngjyre, cmim dhe stok."
         : "Krijo ngjyre te re dhe shto disa numra ne nje hap.";
+  const quickVariantExtraLabel =
+    stockViewMode === "electronics"
+      ? "Fuqia (opsionale)"
+      : stockViewMode === "home"
+        ? "Materiali (opsional)"
+        : null;
 
   return (
     <>
@@ -1029,9 +1048,21 @@ export function ProductStockQuickView({
                           return (
                             <div
                               key={variant.id}
-                              className="rounded-2xl border border-slate-200 bg-white px-3 py-3"
+                              className="relative rounded-2xl border border-slate-200 bg-white px-3 py-3"
                             >
-                              <div className="flex items-start gap-3">
+                              {(canAdjustStock || canDeleteColor) ? (
+                                <div className="absolute right-3 top-3 z-10">
+                                  <button
+                                    type="button"
+                                    onClick={() => setVariantActionsTarget(variant)}
+                                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900"
+                                    aria-label={`Veprimet per ${variant.color}`}
+                                  >
+                                    <IconMore />
+                                  </button>
+                                </div>
+                              ) : null}
+                              <div className="flex items-start gap-3 pr-12">
                                 <button
                                   type="button"
                                   onClick={() =>
@@ -1073,56 +1104,6 @@ export function ProductStockQuickView({
                                   ) : null}
                                 </div>
                               </div>
-                              {(canAdjustStock || canDeleteColor) ? (
-                                <div className="mt-3 flex flex-wrap gap-2">
-                                  {canAdjustStock ? (
-                                    <>
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          setStockEditorVariantId(variant.id);
-                                          setStockEditorColor(null);
-                                          setStockInputs({ [variant.id]: "" });
-                                          setStockReason("INCOMING_STOCK");
-                                          setStockError(null);
-                                        }}
-                                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
-                                      >
-                                        <IconBox />
-                                        Shto sasi
-                                      </button>
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          setEditStockVariantId(variant.id);
-                                          setEditStockColor(null);
-                                          setEditStockInputs({ [variant.id]: String(variant.stock) });
-                                          setEditStockError(null);
-                                        }}
-                                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
-                                      >
-                                        <IconPencil />
-                                        Edito
-                                      </button>
-                                    </>
-                                  ) : null}
-                                  {canDeleteColor ? (
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setDeleteVariantTarget(variant);
-                                        setDeleteColorError(null);
-                                      }}
-                                      className="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 transition hover:bg-rose-100"
-                                    >
-                                      <span className="inline-flex h-4 w-4 items-center justify-center text-base leading-none">
-                                        x
-                                      </span>
-                                      Fshi
-                                    </button>
-                                  ) : null}
-                                </div>
-                              ) : null}
                             </div>
                           );
                         })}
@@ -1163,9 +1144,21 @@ export function ProductStockQuickView({
                           return (
                             <div
                               key={variant.id}
-                              className="rounded-2xl border border-slate-200 bg-white px-3 py-3"
+                              className="relative rounded-2xl border border-slate-200 bg-white px-3 py-3"
                             >
-                              <div className="flex items-start gap-3">
+                              {(canAdjustStock || canDeleteColor) ? (
+                                <div className="absolute right-3 top-3 z-10">
+                                  <button
+                                    type="button"
+                                    onClick={() => setVariantActionsTarget(variant)}
+                                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900"
+                                    aria-label={`Veprimet per ${variant.color}`}
+                                  >
+                                    <IconMore />
+                                  </button>
+                                </div>
+                              ) : null}
+                              <div className="flex items-start gap-3 pr-12">
                                 <button
                                   type="button"
                                   onClick={() =>
@@ -1208,56 +1201,6 @@ export function ProductStockQuickView({
                                   </span>
                                 </div>
                               </div>
-                              {(canAdjustStock || canDeleteColor) ? (
-                                <div className="mt-3 flex flex-wrap gap-2">
-                                  {canAdjustStock ? (
-                                    <>
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          setStockEditorVariantId(variant.id);
-                                          setStockEditorColor(null);
-                                          setStockInputs({ [variant.id]: "" });
-                                          setStockReason("INCOMING_STOCK");
-                                          setStockError(null);
-                                        }}
-                                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
-                                      >
-                                        <IconBox />
-                                        Shto sasi
-                                      </button>
-                                      <button
-                                        type="button"
-                                        onClick={() => {
-                                          setEditStockVariantId(variant.id);
-                                          setEditStockColor(null);
-                                          setEditStockInputs({ [variant.id]: String(variant.stock) });
-                                          setEditStockError(null);
-                                        }}
-                                        className="inline-flex items-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-700 transition hover:bg-slate-100"
-                                      >
-                                        <IconPencil />
-                                        Edito
-                                      </button>
-                                    </>
-                                  ) : null}
-                                  {canDeleteColor ? (
-                                    <button
-                                      type="button"
-                                      onClick={() => {
-                                        setDeleteVariantTarget(variant);
-                                        setDeleteColorError(null);
-                                      }}
-                                      className="inline-flex items-center gap-1.5 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-medium text-rose-700 transition hover:bg-rose-100"
-                                    >
-                                      <span className="inline-flex h-4 w-4 items-center justify-center text-base leading-none">
-                                        x
-                                      </span>
-                                      Fshi
-                                    </button>
-                                  ) : null}
-                                </div>
-                              ) : null}
                             </div>
                           );
                         })}
@@ -1552,6 +1495,92 @@ export function ProductStockQuickView({
                 alt={previewImage.alt}
                 className="h-auto max-h-[80vh] w-full object-contain bg-slate-50"
               />
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {variantActionsTarget ? (
+        <div
+          className="fixed inset-0 z-[96] flex items-center justify-center bg-slate-950/45 p-4"
+          onClick={() => setVariantActionsTarget(null)}
+        >
+          <div
+            className={`${modalCardClass()} max-w-sm`}
+            onClick={(event) => event.stopPropagation()}
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 className="text-lg font-semibold text-slate-950">
+                  Veprimet e variantit
+                </h3>
+                <p className="mt-1 text-sm text-slate-500">
+                  {variantActionsTarget.color}
+                  {variantActionsTarget.size ? ` / ${variantActionsTarget.size}` : ""}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setVariantActionsTarget(null)}
+                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900"
+                aria-label="Mbyll"
+              >
+                x
+              </button>
+            </div>
+
+            <div className="mt-5 space-y-2">
+              {canAdjustStock ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setStockEditorVariantId(variantActionsTarget.id);
+                      setStockEditorColor(null);
+                      setStockInputs({ [variantActionsTarget.id]: "" });
+                      setStockReason("INCOMING_STOCK");
+                      setStockError(null);
+                      setVariantActionsTarget(null);
+                    }}
+                    className="flex w-full items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                  >
+                    <IconBox />
+                    Shto sasi
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEditStockVariantId(variantActionsTarget.id);
+                      setEditStockColor(null);
+                      setEditStockInputs({
+                        [variantActionsTarget.id]: String(variantActionsTarget.stock),
+                      });
+                      setEditStockError(null);
+                      setVariantActionsTarget(null);
+                    }}
+                    className="flex w-full items-center gap-2 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                  >
+                    <IconPencil />
+                    Edito stokun
+                  </button>
+                </>
+              ) : null}
+              {canDeleteColor ? (
+                <button
+                  type="button"
+                  onClick={() => {
+                    setDeleteVariantTarget(variantActionsTarget);
+                    setDeleteColorError(null);
+                    setVariantActionsTarget(null);
+                  }}
+                  className="flex w-full items-center gap-2 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-left text-sm font-medium text-rose-700 transition hover:bg-rose-100"
+                >
+                  <span className="inline-flex h-4 w-4 items-center justify-center text-base leading-none">
+                    x
+                  </span>
+                  Fshi variantin
+                </button>
+              ) : null}
             </div>
           </div>
         </div>
@@ -2298,32 +2327,52 @@ export function ProductStockQuickView({
                         ) : null}
                       </>
                     ) : (
-                      <div className="grid gap-4 md:grid-cols-2">
-                        <label className="min-w-0 space-y-2">
-                          <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                            {quickVariantPrimaryLabel}
-                          </span>
-                          <input
-                            type="text"
-                            value={variantDraftSize}
-                            onChange={(event) => setVariantDraftSize(event.target.value)}
-                            placeholder={stockViewMode === "electronics" ? "p.sh. Wet & Dry 3L" : "p.sh. 140x70"}
-                            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-100"
-                          />
-                        </label>
-                        <label className="min-w-0 space-y-2">
-                          <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                            Sasia
-                          </span>
-                          <input
-                            type="number"
-                            min="0"
-                            value={variantDraftStock}
-                            onChange={(event) => setVariantDraftStock(event.target.value)}
-                            placeholder="0"
-                            className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-100"
-                          />
-                        </label>
+                      <div className="space-y-4">
+                        <div className="grid gap-4 md:grid-cols-2">
+                          <label className="min-w-0 space-y-2">
+                            <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                              {quickVariantPrimaryLabel}
+                            </span>
+                            <input
+                              type="text"
+                              value={variantDraftSize}
+                              onChange={(event) => setVariantDraftSize(event.target.value)}
+                              placeholder={stockViewMode === "electronics" ? "p.sh. Wet & Dry 3L" : "p.sh. 140x70"}
+                              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-100"
+                            />
+                          </label>
+                          <label className="min-w-0 space-y-2">
+                            <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                              Sasia
+                            </span>
+                            <input
+                              type="number"
+                              min="0"
+                              value={variantDraftStock}
+                              onChange={(event) => setVariantDraftStock(event.target.value)}
+                              placeholder="0"
+                              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-100"
+                            />
+                          </label>
+                        </div>
+                        {quickVariantExtraLabel ? (
+                          <label className="min-w-0 space-y-2">
+                            <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                              {quickVariantExtraLabel}
+                            </span>
+                            <input
+                              type="text"
+                              value={stockViewMode === "electronics" ? variantPowerWatts : variantMaterial}
+                              onChange={(event) =>
+                                stockViewMode === "electronics"
+                                  ? setVariantPowerWatts(event.target.value)
+                                  : setVariantMaterial(event.target.value)
+                              }
+                              placeholder={stockViewMode === "electronics" ? "p.sh. 1800W" : "p.sh. Pambuk 100%"}
+                              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-100"
+                            />
+                          </label>
+                        ) : null}
                       </div>
                     )}
                   </div>

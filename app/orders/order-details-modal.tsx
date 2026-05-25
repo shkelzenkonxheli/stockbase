@@ -2,13 +2,17 @@
 
 import { useId, useRef } from "react";
 import { UploadedImage } from "@/app/components/uploaded-image";
+import { getOrderVariantSummary } from "@/lib/order-variant-display";
 
 type OrderItem = {
   id: number;
   name: string;
   brand: string;
+  category: string;
   size: string;
   color: string;
+  material?: string | null;
+  powerWatts?: string | null;
   imagePath?: string | null;
   quantity: number;
 };
@@ -162,10 +166,7 @@ export function OrderDetailsModal({
                   </div>
                   <div className="mt-3 flex flex-wrap gap-2 text-sm">
                     <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-slate-700">
-                      Nr {item.size}
-                    </span>
-                    <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-slate-700">
-                      {item.color}
+                      {getOrderVariantSummary(item)}
                     </span>
                     <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 font-medium text-emerald-700">
                       {item.quantity} cope

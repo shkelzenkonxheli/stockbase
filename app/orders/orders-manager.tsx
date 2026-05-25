@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { ConfirmActionForm } from "@/app/components/confirm-action-form";
 import { UploadedImage } from "@/app/components/uploaded-image";
+import { getOrderVariantSummary } from "@/lib/order-variant-display";
 import type { OrderListViewConfig } from "@/lib/product-taxonomy";
 import { OrderDetailsModal } from "./order-details-modal";
 
@@ -13,8 +14,11 @@ type OrderItem = {
   id: number;
   name: string;
   brand: string;
+  category: string;
   size: string;
   color: string;
+  material?: string | null;
+  powerWatts?: string | null;
   imagePath?: string | null;
   quantity: number;
 };
@@ -264,7 +268,7 @@ export function OrdersManager({
                     {viewConfig.visibility.variantSummary ? (
                       <p className="mt-1 text-sm text-slate-500">
                         {order.items[0]
-                          ? `${order.items[0].color} / Nr ${order.items[0].size}`
+                          ? getOrderVariantSummary(order.items[0])
                           : "Pa variant"}
                       </p>
                     ) : null}
@@ -386,12 +390,12 @@ export function OrdersManager({
                           className="mt-1 truncate text-sm text-slate-500"
                           title={
                             order.items[0]
-                              ? `${order.items[0].color} / Nr ${order.items[0].size}`
+                              ? getOrderVariantSummary(order.items[0])
                               : "Pa variant"
                           }
                         >
                           {order.items[0]
-                            ? `${order.items[0].color} / Nr ${order.items[0].size}`
+                            ? getOrderVariantSummary(order.items[0])
                             : "Pa variant"}
                         </p>
                       ) : null}

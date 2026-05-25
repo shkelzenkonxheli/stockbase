@@ -1,7 +1,6 @@
-"use client";
-
 import { useEffect, useMemo, useRef, useState } from "react";
 import { UploadedImage } from "@/app/components/uploaded-image";
+import { getOrderVariantMode, getOrderVariantSummary } from "@/lib/order-variant-display";
 
 type VariantOption = {
   id: number;
@@ -9,6 +8,9 @@ type VariantOption = {
   color: string;
   imagePath: string | null;
   availableStock: number;
+  category: string;
+  material?: string | null;
+  powerWatts?: string | null;
 };
 
 type VariantColorPickerProps = {
@@ -49,7 +51,14 @@ export function VariantColorPicker({
   const rootRef = useRef<HTMLDivElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
+  const pickerMode = getOrderVariantMode(variants[0]?.category ?? "");
+  const isFootwearMode = pickerMode === "footwear";
+
   const colorGroups = useMemo(() => {
+    if (!isFootwearMode) {
+      return [] as ColorGroup[];
+    }
+
     const map = new Map<string, ColorGroup>();
 
     for (const variant of variants) {
@@ -82,7 +91,7 @@ export function VariantColorPicker({
         }),
       ),
     }));
-  }, [variants]);
+  }, [isFootwearMode, variants]);
 
   const selectedVariant =
     variants.find((variant) => String(variant.id) === selectedVariantId) ?? null;
@@ -129,7 +138,7 @@ export function VariantColorPicker({
         <button
           type="button"
           onClick={() => {
-            if (!disabled && colorGroups.length > 0) {
+            if (!disabled && variants.length > 0) {
               setHoverPreview(null);
               setPickerOpen((current) => !current);
             }
@@ -138,9 +147,7 @@ export function VariantColorPicker({
           className="flex h-11 w-full items-center justify-between rounded-xl border border-slate-200 bg-white px-3 text-left text-sm font-medium text-slate-900 outline-none transition hover:border-slate-300 focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100 disabled:cursor-not-allowed disabled:bg-slate-50 disabled:text-slate-400"
         >
           <span className="truncate">
-            {selectedVariant
-              ? `${selectedVariant.color} • Nr ${selectedVariant.size}`
-              : placeholder}
+            {selectedVariant ? getOrderVariantSummary(selectedVariant) : placeholder}
           </span>
           <svg
             aria-hidden="true"
@@ -163,89 +170,132 @@ export function VariantColorPicker({
             ref={dropdownRef}
             className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-30 rounded-2xl border border-slate-200 bg-white shadow-[0_18px_40px_rgba(15,23,42,0.14)]"
           >
-            {colorGroups.length === 0 ? (
+            {variants.length === 0 ? (
               <div className="px-4 py-4 text-sm text-slate-500">{emptyLabel}</div>
             ) : (
               <div className="max-h-72 overflow-y-auto p-2">
-                <div className="space-y-1">
-                  {colorGroups.map((group) => {
-                    const selected = group.variants.some(
-                      (variant) => String(variant.id) === selectedVariantId,
-                    );
+                {isFootwearMode ? (
+                  <div className="space-y-1">
+                    {colorGroups.map((group) => {
+                      const selected = group.variants.some(
+                        (variant) => String(variant.id) === selectedVariantId,
+                      );
 
-                    return (
-                      <div key={group.key}>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setHoverPreview(null);
-                            setPickerOpen(false);
-                            setActiveColorKey(group.key);
-                          }}
-                          className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition ${
-                            selected
-                              ? "bg-emerald-50 text-slate-950"
-                              : "hover:bg-slate-50"
-                          }`}
-                        >
-                          <span
-                            className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50"
-                            onMouseEnter={(event) => {
-                              if (!group.imagePath || !dropdownRef.current) {
-                                return;
-                              }
-
-                              const imageRect =
-                                event.currentTarget.getBoundingClientRect();
-                              const dropdownRect =
-                                dropdownRef.current.getBoundingClientRect();
-
-                              setHoverPreview({
-                                imagePath: group.imagePath,
-                                color: group.color,
-                                top:
-                                  imageRect.top -
-                                  dropdownRect.top +
-                                  imageRect.height / 2 -
-                                  18,
-                                left:
-                                  imageRect.left -
-                                  dropdownRect.left +
-                                  imageRect.width +
-                                  8,
-                              });
+                      return (
+                        <div key={group.key}>
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setHoverPreview(null);
+                              setPickerOpen(false);
+                              setActiveColorKey(group.key);
                             }}
-                            onMouseLeave={() => setHoverPreview(null)}
+                            className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition ${
+                              selected
+                                ? "bg-emerald-50 text-slate-950"
+                                : "hover:bg-slate-50"
+                            }`}
                           >
-                            {group.imagePath ? (
-                              <UploadedImage
-                                src={group.imagePath}
-                                alt={group.color}
-                                className="h-full w-full object-cover"
-                              />
-                            ) : (
-                              <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-300">
-                                IMG
+                            <span
+                              className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50"
+                              onMouseEnter={(event) => {
+                                if (!group.imagePath || !dropdownRef.current) {
+                                  return;
+                                }
+
+                                const imageRect =
+                                  event.currentTarget.getBoundingClientRect();
+                                const dropdownRect =
+                                  dropdownRef.current.getBoundingClientRect();
+
+                                setHoverPreview({
+                                  imagePath: group.imagePath,
+                                  color: group.color,
+                                  top:
+                                    imageRect.top -
+                                    dropdownRect.top +
+                                    imageRect.height / 2 -
+                                    18,
+                                  left:
+                                    imageRect.left -
+                                    dropdownRect.left +
+                                    imageRect.width +
+                                    8,
+                                });
+                              }}
+                              onMouseLeave={() => setHoverPreview(null)}
+                            >
+                              {group.imagePath ? (
+                                <UploadedImage
+                                  src={group.imagePath}
+                                  alt={group.color}
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-300">
+                                  IMG
+                                </span>
+                              )}
+                            </span>
+                            <span className="min-w-0">
+                              <span className="block truncate text-sm font-semibold text-slate-900">
+                                {group.color}
                               </span>
-                            )}
-                          </span>
-                          <span className="min-w-0">
-                            <span className="block truncate text-sm font-semibold text-slate-900">
-                              {group.color}
+                              <span className="mt-0.5 block text-xs text-slate-500">
+                                {group.totalStock} ne stok
+                              </span>
                             </span>
-                            <span className="mt-0.5 block text-xs text-slate-500">
-                              {group.totalStock} ne stok
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+                ) : (
+                  <div className="space-y-1">
+                    {variants.map((variant) => (
+                      <button
+                        key={variant.id}
+                        type="button"
+                        onClick={() => {
+                          setHoverPreview(null);
+                          setPickerOpen(false);
+                          onSelectVariant(String(variant.id));
+                        }}
+                        className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left transition ${
+                          String(variant.id) === selectedVariantId
+                            ? "bg-emerald-50 text-slate-950"
+                            : "hover:bg-slate-50"
+                        }`}
+                      >
+                        <span className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50">
+                          {variant.imagePath ? (
+                            <UploadedImage
+                              src={variant.imagePath}
+                              alt={variant.color}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : (
+                            <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-300">
+                              IMG
                             </span>
+                          )}
+                        </span>
+                        <span className="min-w-0">
+                          <span className="block truncate text-sm font-semibold text-slate-900">
+                            {getOrderVariantSummary(variant)}
                           </span>
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
+                          <span className="mt-0.5 block text-xs text-slate-500">
+                            {variant.availableStock} ne stok
+                          </span>
+                        </span>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
 
-            {hoverPreview ? (
+            {hoverPreview && isFootwearMode ? (
               <div
                 className="pointer-events-none absolute z-40 hidden w-40 -translate-y-1/2 rounded-2xl border border-slate-200 bg-white p-2 shadow-[0_20px_44px_rgba(15,23,42,0.18)] lg:block"
                 style={{
@@ -269,7 +319,7 @@ export function VariantColorPicker({
         ) : null}
       </div>
 
-      {activeColor ? (
+      {isFootwearMode && activeColor ? (
         <div className="fixed inset-0 z-[120] flex items-end justify-center bg-slate-950/55 p-4 sm:items-center">
           <button
             type="button"
