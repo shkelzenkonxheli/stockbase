@@ -2,10 +2,15 @@
 
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { FormSubmitButton } from "./form-submit-button";
 
 type EditUserModalProps = {
   action: (formData: FormData) => void | Promise<void>;
   open: boolean;
+  message?: {
+    type: "error" | "success";
+    text: string;
+  } | null;
   user:
     | {
         id: number;
@@ -16,7 +21,7 @@ type EditUserModalProps = {
     | null;
 };
 
-export function EditUserModal({ action, open, user }: EditUserModalProps) {
+export function EditUserModal({ action, open, user, message }: EditUserModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const router = useRouter();
 
@@ -70,6 +75,17 @@ export function EditUserModal({ action, open, user }: EditUserModalProps) {
 
       {user ? (
         <div className="space-y-5 px-5 py-5 sm:px-6">
+          {message ? (
+            <div
+              className={`rounded-2xl px-4 py-3 text-sm ${
+                message.type === "error"
+                  ? "border border-rose-200 bg-rose-50 text-rose-700"
+                  : "border border-emerald-200 bg-emerald-50 text-emerald-700"
+              }`}
+            >
+              {message.text}
+            </div>
+          ) : null}
           <form action={action} className="space-y-5">
             <input type="hidden" name="userId" value={user.id} />
 
@@ -115,12 +131,11 @@ export function EditUserModal({ action, open, user }: EditUserModalProps) {
               </select>
             </div>
 
-            <button
-              type="submit"
+            <FormSubmitButton
+              idleLabel="Ruaj ndryshimet"
+              pendingLabel="Duke ruajtur..."
               className="inline-flex w-full items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_25px_rgba(15,23,42,0.18)] transition hover:bg-slate-800"
-            >
-              Ruaj ndryshimet
-            </button>
+            />
           </form>
         </div>
       ) : null}

@@ -5,7 +5,7 @@ import type { Prisma } from "@/app/generated/prisma/client";
 import { ConfirmActionForm } from "@/app/components/confirm-action-form";
 import { hasRole, requireUser } from "@/lib/auth";
 import { LOW_STOCK_THRESHOLD } from "@/lib/inventory";
-import { getProductListViewConfig, parseTenantCatalogConfig, type ProductListFieldKey } from "@/lib/product-taxonomy";
+import { getProductListViewConfig, type ProductListFieldKey } from "@/lib/product-taxonomy";
 import { prisma } from "@/lib/prisma";
 import { ProductsFilters } from "./products-filters";
 import { ProductStockQuickView } from "./product-stock-quick-view";
@@ -75,58 +75,6 @@ async function deleteProduct(formData: FormData) {
   revalidatePath("/products");
 }
 
-async function updateProductsLayout(formData: FormData) {
-  "use server";
-
-  const currentUser = await requireUser();
-  const tenantId = currentUser.tenant?.id;
-  if (!tenantId || !hasRole(currentUser, ["SUPER_ADMIN"])) {
-    return;
-  }
-
-  const layout = formData.get("layout")?.toString() === "list" ? "list" : "grid";
-  const density = formData.get("density")?.toString() === "compact" ? "compact" : "comfortable";
-  const settings = await prisma.tenantSettings.findUnique({
-    where: { tenantId },
-    select: { catalogConfig: true },
-  });
-  const currentConfig = parseTenantCatalogConfig(settings?.catalogConfig) ?? {};
-  const currentProductListView = getProductListViewConfig(currentConfig);
-
-  await prisma.tenantSettings.upsert({
-    where: { tenantId },
-    create: {
-      tenantId,
-      businessName: currentUser.tenant?.businessName ?? currentUser.tenant?.name,
-      primaryColor: currentUser.tenant?.primaryColor ?? null,
-      currency: currentUser.tenant?.currency ?? "EUR",
-      language: currentUser.tenant?.language ?? "sq",
-      catalogConfig: {
-        ...currentConfig,
-        productListView: {
-          ...currentProductListView,
-          layout,
-          density,
-        },
-      },
-    },
-    update: {
-      catalogConfig: {
-        ...currentConfig,
-        productListView: {
-          ...currentProductListView,
-          layout,
-          density,
-        },
-      },
-    },
-  });
-
-  revalidatePath("/products");
-  revalidatePath("/settings");
-  redirect("/products");
-}
-
 export default async function ProductsPage({ searchParams }: ProductsPageProps) {
   const currentUser = await requireUser();
   const tenant = currentUser.tenant;
@@ -136,7 +84,12 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   const tenantId = tenant.id;
   const canManageInventory = hasRole(currentUser, ["SUPER_ADMIN"]);
   const canQuickAdjustStock = hasRole(currentUser, ["SUPER_ADMIN", "WAREHOUSE"]);
-  const productListView = getProductListViewConfig(tenant.catalogConfig);
+  const savedProductListView = getProductListViewConfig(tenant.catalogConfig);
+  const productListView = {
+    ...savedProductListView,
+    layout: "list" as const,
+    density: "comfortable" as const,
+  };
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const searchQuery = resolvedSearchParams?.q?.trim() || "";
   const selectedCategory = resolvedSearchParams?.category?.trim() || "";
@@ -198,6 +151,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
             color: true,
             material: true,
             powerWatts: true,
+            locationCode: true,
             sku: true,
             imagePath: true,
             stock: true,
@@ -258,70 +212,6 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-              {canManageInventory ? (
-                <div className="flex items-center gap-2 rounded-2xl border border-slate-300 bg-slate-50 p-1">
-                  <form action={updateProductsLayout}>
-                    <input type="hidden" name="layout" value="grid" />
-                    <input type="hidden" name="density" value={productListView.density} />
-                    <button
-                      type="submit"
-                      className={`rounded-[14px] px-4 py-2 text-sm font-medium transition ${
-                        productListView.layout === "grid"
-                          ? "bg-slate-950 text-white"
-                          : "text-slate-700 hover:bg-white"
-                      }`}
-                    >
-                      Grid
-                    </button>
-                  </form>
-                  <form action={updateProductsLayout}>
-                    <input type="hidden" name="layout" value="list" />
-                    <input type="hidden" name="density" value={productListView.density} />
-                    <button
-                      type="submit"
-                      className={`rounded-[14px] px-4 py-2 text-sm font-medium transition ${
-                        productListView.layout === "list"
-                          ? "bg-slate-950 text-white"
-                          : "text-slate-700 hover:bg-white"
-                      }`}
-                    >
-                      Liste
-                    </button>
-                  </form>
-                </div>
-              ) : null}
-              {canManageInventory && productListView.layout === "list" ? (
-                <div className="flex items-center gap-2 rounded-2xl border border-slate-300 bg-slate-50 p-1">
-                  <form action={updateProductsLayout}>
-                    <input type="hidden" name="layout" value={productListView.layout} />
-                    <input type="hidden" name="density" value="comfortable" />
-                    <button
-                      type="submit"
-                      className={`rounded-[14px] px-4 py-2 text-sm font-medium transition ${
-                        productListView.density === "comfortable"
-                          ? "bg-slate-950 text-white"
-                          : "text-slate-700 hover:bg-white"
-                      }`}
-                    >
-                      Comfortable
-                    </button>
-                  </form>
-                  <form action={updateProductsLayout}>
-                    <input type="hidden" name="layout" value={productListView.layout} />
-                    <input type="hidden" name="density" value="compact" />
-                    <button
-                      type="submit"
-                      className={`rounded-[14px] px-4 py-2 text-sm font-medium transition ${
-                        productListView.density === "compact"
-                          ? "bg-slate-950 text-white"
-                          : "text-slate-700 hover:bg-white"
-                      }`}
-                    >
-                      Compact
-                    </button>
-                  </form>
-                </div>
-              ) : null}
               <Link
                 href="/"
                 className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-white"
@@ -366,14 +256,161 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
               </p>
             </div>
           ) : (
-            <div
-              className={
-                productListView.layout === "list"
-                  ? "overflow-x-auto p-4 sm:p-5"
-                  : "grid gap-4 p-4 sm:grid-cols-2 sm:p-5 xl:grid-cols-3"
-              }
-            >
-              {productListView.layout === "list" ? (
+            <div className="p-4 sm:p-5">
+              <div className="space-y-3 lg:hidden">
+                {products.map((product) => {
+                  const dimensions = [...new Set(product.variants.map((variant) => variant.size))];
+                  const colors = [...new Set(product.variants.map((variant) => variant.color))];
+                  const materials = [
+                    ...new Set(product.variants.map((variant) => variant.material).filter(Boolean)),
+                  ];
+                  const watts = [
+                    ...new Set(product.variants.map((variant) => variant.powerWatts).filter(Boolean)),
+                  ];
+                  const totalStock = product.variants.reduce((sum, variant) => sum + variant.stock, 0);
+                  const prices = product.variants.map((variant) => Number(variant.price));
+                  const minPrice = prices.length > 0 ? Math.min(...prices) : null;
+                  const maxPrice = prices.length > 0 ? Math.max(...prices) : null;
+                  const previewVariant =
+                    product.variants.find((variant) => variant.imagePath) ?? product.variants[0];
+                  const fieldValues: Record<ProductListFieldKey, string | null> = {
+                    brand: product.brand ?? null,
+                    category: product.category.name,
+                    stock: totalStock.toLocaleString("sq-AL"),
+                    price:
+                      minPrice === null
+                        ? "-"
+                        : minPrice === maxPrice
+                          ? `${minPrice.toFixed(2)} EUR`
+                          : `${minPrice.toFixed(2)} - ${maxPrice?.toFixed(2)} EUR`,
+                    sizes: dimensions.length > 0 ? dimensions.join(", ") : "-",
+                    colors: colors.length > 0 ? colors.join(", ") : "-",
+                    materials: materials.length > 0 ? materials.join(", ") : null,
+                    power: watts.length > 0 ? watts.join(", ") : null,
+                  };
+                  const fieldLabels: Record<ProductListFieldKey, string> = {
+                    brand: "Brandi",
+                    category: "Kategoria",
+                    stock: "Stoku",
+                    price: "Cmimi",
+                    sizes: "Madhesia",
+                    colors: "Ngjyrat",
+                    materials: "Materialet",
+                    power: "Fuqia",
+                  };
+
+                  return (
+                    <article
+                      key={product.id}
+                      className="relative rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm"
+                    >
+                      <details className="absolute right-4 top-4 z-10 lg:hidden">
+                        <summary className="flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900">
+                          <svg viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" className="h-4 w-4">
+                            <circle cx="4.5" cy="10" r="1.4" />
+                            <circle cx="10" cy="10" r="1.4" />
+                            <circle cx="15.5" cy="10" r="1.4" />
+                          </svg>
+                        </summary>
+                        <div className="absolute right-0 mt-2 w-48 overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 shadow-[0_18px_40px_rgba(15,23,42,0.14)]">
+                          <div className="flex flex-col gap-2">
+                            <ProductStockQuickView
+                              productId={product.id}
+                              productName={product.brand ? `${product.brand} ${product.name}` : product.name}
+                              productBrand={product.category.name}
+                              imagePath={previewVariant?.imagePath ?? null}
+                              variants={product.variants.map((variant) => ({
+                                id: variant.id,
+                                size: variant.size,
+                                color: variant.color,
+                                imagePath: variant.imagePath,
+                                stock: variant.stock,
+                                price: Number(variant.price),
+                                material: variant.material,
+                                powerWatts: variant.powerWatts,
+                                locationCode: variant.locationCode,
+                              }))}
+                              showImageButton={false}
+                              canAdjustStock={canQuickAdjustStock}
+                              canDeleteColor={canManageInventory}
+                              className="w-full"
+                            />
+                            <Link
+                              href={`/products/${product.id}`}
+                              className="inline-flex w-full items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+                            >
+                              Menaxho
+                            </Link>
+                            {canManageInventory ? (
+                              <Link
+                                href={`/products/${product.id}/edit`}
+                                className="inline-flex w-full items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+                              >
+                                Edito
+                              </Link>
+                            ) : null}
+                            {canManageInventory && product.variants.length === 0 ? (
+                              <ConfirmActionForm
+                                action={deleteProduct}
+                                hiddenFields={[{ name: "productId", value: product.id }]}
+                                confirmMessage="A je i sigurt qe don ta fshish kete produkt?"
+                                buttonLabel="Fshi"
+                                className="inline-flex w-full items-center justify-center rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm font-semibold text-rose-700 transition hover:bg-rose-100"
+                              />
+                            ) : null}
+                          </div>
+                        </div>
+                      </details>
+
+                      <div className="flex items-start gap-3">
+                        <div className="h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
+                          <ProductStockQuickView
+                            productId={product.id}
+                            productName={product.brand ? `${product.brand} ${product.name}` : product.name}
+                            productBrand={product.category.name}
+                            imagePath={previewVariant?.imagePath ?? null}
+                            variants={product.variants.map((variant) => ({
+                              id: variant.id,
+                              size: variant.size,
+                              color: variant.color,
+                              imagePath: variant.imagePath,
+                              stock: variant.stock,
+                              price: Number(variant.price),
+                              material: variant.material,
+                              powerWatts: variant.powerWatts,
+                              locationCode: variant.locationCode,
+                            }))}
+                            className="h-full w-full"
+                            canAdjustStock={canQuickAdjustStock}
+                            canDeleteColor={canManageInventory}
+                          />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h2 className="truncate text-base font-semibold text-slate-950">
+                            {product.name}
+                          </h2>
+                          <p className="mt-1 text-xs text-slate-500">
+                            {product.variants.length} variante
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="mt-4 grid grid-cols-1 gap-2 text-sm text-slate-600">
+                        {productListView.order
+                          .filter((key) => productListView.visibility[key] && fieldValues[key])
+                          .map((key) => (
+                            <p key={key} className="break-words">
+                              <span className="font-medium text-slate-800">{fieldLabels[key]}:</span>{" "}
+                              {fieldValues[key]}
+                            </p>
+                          ))}
+                      </div>
+                    </article>
+                  );
+                })}
+              </div>
+
+              <div className="hidden overflow-x-auto lg:block">
                 <table className="min-w-full text-sm">
                   <colgroup>
                     <col className="w-[280px]" />
@@ -395,11 +432,11 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                   </colgroup>
                   <thead className="sticky top-0 z-10 bg-slate-50/95 text-left backdrop-blur">
                     <tr className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-                      <th className={`px-4 ${productListView.density === "compact" ? "py-3" : "py-4"}`}>Produkti</th>
+                      <th className="px-4 py-4">Produkti</th>
                       {productListView.order
                         .filter((key) => productListView.visibility[key])
                         .map((key) => (
-                          <th key={key} className={`px-4 ${productListView.density === "compact" ? "py-3" : "py-4"}`}>
+                          <th key={key} className="px-4 py-4">
                             {{
                               brand: "Brandi",
                               category: "Kategoria",
@@ -412,7 +449,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                             }[key]}
                           </th>
                         ))}
-                      <th className={`px-4 text-right ${productListView.density === "compact" ? "py-3" : "py-4"}`}>Veprime</th>
+                      <th className="px-4 py-4 text-right">Veprime</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 bg-white">
@@ -449,7 +486,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
                       return (
                         <tr key={product.id} className="align-top transition hover:bg-slate-50/75">
-                          <td className={`px-4 ${productListView.density === "compact" ? "py-3" : "py-4"}`}>
+                          <td className="px-4 py-4">
                             <div className="flex items-start gap-3">
                               <div className="h-12 w-12 shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
                                 <ProductStockQuickView
@@ -464,6 +501,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                                     imagePath: variant.imagePath,
                                     stock: variant.stock,
                                     price: Number(variant.price),
+                                    locationCode: variant.locationCode,
                                   }))}
                                   className="h-full w-full"
                                   canAdjustStock={canQuickAdjustStock}
@@ -479,13 +517,13 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                           {productListView.order
                             .filter((key) => productListView.visibility[key])
                             .map((key) => (
-                              <td key={key} className={`px-4 text-slate-600 ${productListView.density === "compact" ? "py-3" : "py-4"}`}>
+                              <td key={key} className="px-4 py-4 text-slate-600">
                                 <span className="block max-w-[220px] truncate" title={fieldValues[key] ?? "-"}>
                                   {fieldValues[key] ?? "-"}
                                 </span>
                               </td>
                             ))}
-                          <td className={`px-4 ${productListView.density === "compact" ? "py-3" : "py-4"}`}>
+                          <td className="px-4 py-4">
                             <div className="flex items-center justify-end gap-2 whitespace-nowrap">
                               <ProductStockQuickView
                                 productId={product.id}
@@ -501,6 +539,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                                   price: Number(variant.price),
                                   material: variant.material,
                                   powerWatts: variant.powerWatts,
+                                  locationCode: variant.locationCode,
                                 }))}
                                 showImageButton={false}
                                 iconOnly
@@ -541,167 +580,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                     })}
                   </tbody>
                 </table>
-              ) : products.map((product) => {
-                const dimensions = [...new Set(product.variants.map((variant) => variant.size))];
-                const colors = [...new Set(product.variants.map((variant) => variant.color))];
-                const materials = [
-                  ...new Set(product.variants.map((variant) => variant.material).filter(Boolean)),
-                ];
-                const watts = [
-                  ...new Set(product.variants.map((variant) => variant.powerWatts).filter(Boolean)),
-                ];
-                const totalStock = product.variants.reduce((sum, variant) => sum + variant.stock, 0);
-                const prices = product.variants.map((variant) => Number(variant.price));
-                const minPrice = prices.length > 0 ? Math.min(...prices) : null;
-                const maxPrice = prices.length > 0 ? Math.max(...prices) : null;
-                const previewVariant =
-                  product.variants.find((variant) => variant.imagePath) ?? product.variants[0];
-                const fieldValues: Record<ProductListFieldKey, string | null> = {
-                  brand: product.brand ?? null,
-                  category: product.category.name,
-                  stock: totalStock.toLocaleString("sq-AL"),
-                  price:
-                    minPrice === null
-                      ? "-"
-                      : minPrice === maxPrice
-                        ? `${minPrice.toFixed(2)} EUR`
-                        : `${minPrice.toFixed(2)} - ${maxPrice?.toFixed(2)} EUR`,
-                  sizes: dimensions.length > 0 ? dimensions.join(", ") : "-",
-                  colors: colors.length > 0 ? colors.join(", ") : "-",
-                  materials: materials.length > 0 ? materials.join(", ") : null,
-                  power: watts.length > 0 ? watts.join(", ") : null,
-                };
-                const fieldLabels: Record<ProductListFieldKey, string> = {
-                  brand: "Brandi",
-                  category: "Kategoria",
-                  stock: "Stoku",
-                  price: "Cmimi",
-                  sizes: "Madhesia",
-                  colors: "Ngjyrat",
-                  materials: "Materialet",
-                  power: "Fuqia",
-                };
-                const orderedVisibleFields = productListView.order.filter(
-                  (key) => productListView.visibility[key] && fieldValues[key],
-                );
-
-                return (
-                  <article
-                    key={product.id}
-                    className={`rounded-[26px] border border-slate-200 bg-white p-4 shadow-sm ${
-                      productListView.layout === "list" ? "lg:p-5" : ""
-                    }`}
-                  >
-                    <div
-                      className={`flex gap-4 ${
-                        productListView.layout === "list"
-                          ? "flex-col lg:flex-row lg:items-start lg:justify-between"
-                          : "items-start justify-between"
-                      }`}
-                    >
-                      <div className="flex min-w-0 items-start gap-3">
-                        <div className="h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
-                          <ProductStockQuickView
-                            productId={product.id}
-                            productName={product.brand ? `${product.brand} ${product.name}` : product.name}
-                            productBrand={product.category.name}
-                            imagePath={previewVariant?.imagePath ?? null}
-                            variants={product.variants.map((variant) => ({
-                              id: variant.id,
-                              size: variant.size,
-                              color: variant.color,
-                              imagePath: variant.imagePath,
-                              stock: variant.stock,
-                              price: Number(variant.price),
-                              material: variant.material,
-                              powerWatts: variant.powerWatts,
-                            }))}
-                            className="h-full w-full"
-                            canAdjustStock={canQuickAdjustStock}
-                            canDeleteColor={canManageInventory}
-                          />
-                        </div>
-                        <div className="min-w-0">
-                          <h2 className="text-base font-semibold text-slate-950">{product.name}</h2>
-                        </div>
-                      </div>
-                      <div
-                        className={`${
-                          productListView.layout === "list"
-                            ? "flex items-center justify-between gap-3 lg:flex-col lg:items-end"
-                            : ""
-                        }`}
-                      >
-                        <span className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">
-                          {product.variants.length} var
-                        </span>
-                      </div>
-                    </div>
-
-                    <div
-                      className={`${
-                        productListView.layout === "list"
-                          ? "mt-4 grid gap-4 lg:grid-cols-[minmax(0,1fr)_360px]"
-                          : ""
-                      }`}
-                    >
-                      {orderedVisibleFields.length > 0 ? (
-                      <div className="space-y-2 text-sm text-slate-600">
-                        {orderedVisibleFields.map((key) => (
-                          <p key={key}>
-                            <span className="font-medium text-slate-800">{fieldLabels[key]}:</span>{" "}
-                            {fieldValues[key]}
-                          </p>
-                        ))}
-                      </div>
-                    ) : null}
-
-                    <div className={`grid grid-cols-1 gap-2 sm:grid-cols-4 ${productListView.layout === "list" ? "lg:self-start" : "mt-4"}`}>
-                      <ProductStockQuickView
-                        productId={product.id}
-                        productName={product.brand ? `${product.brand} ${product.name}` : product.name}
-                        productBrand={product.category.name}
-                        imagePath={previewVariant?.imagePath ?? null}
-                        variants={product.variants.map((variant) => ({
-                          id: variant.id,
-                          size: variant.size,
-                          color: variant.color,
-                          imagePath: variant.imagePath,
-                          stock: variant.stock,
-                          price: Number(variant.price),
-                        }))}
-                        showImageButton={false}
-                        canAdjustStock={canQuickAdjustStock}
-                        canDeleteColor={canManageInventory}
-                      />
-                      <Link
-                        href={`/products/${product.id}`}
-                        className="inline-flex w-full items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
-                      >
-                        Menaxho
-                      </Link>
-                      {canManageInventory ? (
-                        <Link
-                          href={`/products/${product.id}/edit`}
-                          className="inline-flex w-full items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
-                        >
-                          Edito
-                        </Link>
-                      ) : null}
-                      {canManageInventory && product.variants.length === 0 ? (
-                        <ConfirmActionForm
-                          action={deleteProduct}
-                          hiddenFields={[{ name: "productId", value: product.id }]}
-                          confirmMessage="A je i sigurt qe don ta fshish kete produkt?"
-                          buttonLabel="Fshi"
-                          className="inline-flex w-full items-center justify-center rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700 transition hover:bg-rose-100"
-                        />
-                      ) : null}
-                    </div>
-                    </div>
-                  </article>
-                );
-              })}
+              </div>
             </div>
           )}
         </section>

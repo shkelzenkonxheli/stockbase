@@ -2,10 +2,16 @@
 
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { getPasswordPolicyHint } from "@/lib/password-policy";
+import { FormSubmitButton } from "./form-submit-button";
 
 type ResetPasswordModalProps = {
   action: (formData: FormData) => void | Promise<void>;
   open: boolean;
+  message?: {
+    type: "error" | "success";
+    text: string;
+  } | null;
   user:
     | {
         id: number;
@@ -18,6 +24,7 @@ type ResetPasswordModalProps = {
 export function ResetPasswordModal({
   action,
   open,
+  message,
   user,
 }: ResetPasswordModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -78,6 +85,17 @@ export function ResetPasswordModal({
 
       {user ? (
         <div className="space-y-5 px-5 py-5 sm:px-6">
+          {message ? (
+            <div
+              className={`rounded-2xl px-4 py-3 text-sm ${
+                message.type === "error"
+                  ? "border border-rose-200 bg-rose-50 text-rose-700"
+                  : "border border-emerald-200 bg-emerald-50 text-emerald-700"
+              }`}
+            >
+              {message.text}
+            </div>
+          ) : null}
           <form action={action} className="space-y-5">
             <input type="hidden" name="userId" value={user.id} />
 
@@ -93,16 +111,15 @@ export function ResetPasswordModal({
                 name="password"
                 type="password"
                 className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-200"
-                placeholder="Minimum 6 karaktere"
+                placeholder={getPasswordPolicyHint()}
               />
             </div>
 
-            <button
-              type="submit"
+            <FormSubmitButton
+              idleLabel="Ruaj password-in"
+              pendingLabel="Duke ruajtur..."
               className="inline-flex w-full items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_25px_rgba(15,23,42,0.18)] transition hover:bg-slate-800"
-            >
-              Ruaj password-in
-            </button>
+            />
           </form>
         </div>
       ) : null}

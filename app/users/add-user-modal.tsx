@@ -2,6 +2,8 @@
 
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { getPasswordPolicyHint } from "@/lib/password-policy";
+import { FormSubmitButton } from "./form-submit-button";
 
 type AddUserModalProps = {
   action: (formData: FormData) => void | Promise<void>;
@@ -126,7 +128,7 @@ export function AddUserModal({ action, open, message }: AddUserModalProps) {
                   name="password"
                   type="password"
                   className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-200"
-                  placeholder="Minimum 6 karaktere"
+                  placeholder={getPasswordPolicyHint()}
                 />
               </div>
 
@@ -147,12 +149,11 @@ export function AddUserModal({ action, open, message }: AddUserModalProps) {
               </div>
             </div>
 
-            <button
-              type="submit"
+            <FormSubmitButton
+              idleLabel="Krijo userin"
+              pendingLabel="Duke krijuar..."
               className="inline-flex w-full items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_25px_rgba(15,23,42,0.18)] transition hover:bg-slate-800"
-            >
-              Krijo userin
-            </button>
+            />
           </form>
         </div>
       </dialog>

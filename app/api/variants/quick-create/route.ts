@@ -20,6 +20,7 @@ type QuickCreatePayload = {
   price?: number;
   material?: string;
   powerWatts?: string;
+  locationCode?: string;
 };
 
 export async function POST(request: Request) {
@@ -49,6 +50,7 @@ export async function POST(request: Request) {
             : undefined,
         material: formData.get("material")?.toString(),
         powerWatts: formData.get("powerWatts")?.toString(),
+        locationCode: formData.get("locationCode")?.toString(),
       };
       const candidate = formData.get("image");
       imageFile = candidate instanceof File && candidate.size > 0 ? candidate : null;
@@ -66,6 +68,7 @@ export async function POST(request: Request) {
   const price = Number(payload.price);
   const material = String(payload.material ?? "").trim() || null;
   const powerWatts = String(payload.powerWatts ?? "").trim() || null;
+  const locationCode = String(payload.locationCode ?? "").trim() || null;
 
   if (
     !Number.isInteger(productId) ||
@@ -172,6 +175,7 @@ export async function POST(request: Request) {
       imagePath: uploadedImagePath,
       material,
       powerWatts,
+      locationCode,
       sku: ensureUniqueSku(baseSku, usedSkus),
     },
   });
@@ -213,6 +217,7 @@ export async function POST(request: Request) {
       imagePath: uploadedImagePath,
       material,
       powerWatts,
+      locationCode,
     },
   });
 }

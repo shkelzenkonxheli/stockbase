@@ -13,9 +13,14 @@ type OrderItem = {
   color: string;
   material?: string | null;
   powerWatts?: string | null;
+  locationCode?: string | null;
   imagePath?: string | null;
   quantity: number;
 };
+
+function getOrderItemTitle(item: OrderItem) {
+  return [item.brand, item.name].filter(Boolean).join(" ");
+}
 
 type OrderDetailsModalProps = {
   orderId: number;
@@ -27,6 +32,8 @@ type OrderDetailsModalProps = {
   reference: string | null;
   notes: string | null;
   items: OrderItem[];
+  className?: string;
+  buttonLabel?: string;
 };
 
 export function OrderDetailsModal({
@@ -39,6 +46,8 @@ export function OrderDetailsModal({
   reference,
   notes,
   items,
+  className,
+  buttonLabel,
 }: OrderDetailsModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
@@ -48,22 +57,29 @@ export function OrderDetailsModal({
       <button
         type="button"
         onClick={() => dialogRef.current?.showModal()}
-        className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700"
+        className={
+          className ??
+          "inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-700"
+        }
         aria-label={`Shiko porosine ${orderId}`}
       >
-        <svg
-          aria-hidden="true"
-          viewBox="0 0 20 20"
-          fill="none"
-          className="h-4 w-4"
-        >
-          <path
-            d="M1.75 10C3.15 6.55 6.19 4.25 10 4.25S16.85 6.55 18.25 10C16.85 13.45 13.81 15.75 10 15.75S3.15 13.45 1.75 10Z"
-            stroke="currentColor"
-            strokeWidth="1.6"
-          />
-          <circle cx="10" cy="10" r="2.5" stroke="currentColor" strokeWidth="1.6" />
-        </svg>
+        {buttonLabel ? (
+          <span>{buttonLabel}</span>
+        ) : (
+          <svg
+            aria-hidden="true"
+            viewBox="0 0 20 20"
+            fill="none"
+            className="h-4 w-4"
+          >
+            <path
+              d="M1.75 10C3.15 6.55 6.19 4.25 10 4.25S16.85 6.55 18.25 10C16.85 13.45 13.81 15.75 10 15.75S3.15 13.45 1.75 10Z"
+              stroke="currentColor"
+              strokeWidth="1.6"
+            />
+            <circle cx="10" cy="10" r="2.5" stroke="currentColor" strokeWidth="1.6" />
+          </svg>
+        )}
       </button>
 
       <dialog
@@ -150,17 +166,14 @@ export function OrderDetailsModal({
                       {item.imagePath ? (
                         <UploadedImage
                           src={item.imagePath}
-                          alt={`${item.name} ${item.color}`}
+                          alt={`${getOrderItemTitle(item)} ${item.color}`}
                           className="h-full w-full object-cover"
                         />
                       ) : null}
                     </div>
                     <div>
                       <p className="font-semibold text-slate-950">
-                        {item.name}
-                      </p>
-                      <p className="mt-1 text-sm text-slate-600">
-                        {item.brand}
+                        {getOrderItemTitle(item)}
                       </p>
                     </div>
                   </div>
@@ -168,6 +181,11 @@ export function OrderDetailsModal({
                     <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-slate-700">
                       {getOrderVariantSummary(item)}
                     </span>
+                    {item.locationCode ? (
+                      <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-slate-700">
+                        Lok: {item.locationCode}
+                      </span>
+                    ) : null}
                     <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 font-medium text-emerald-700">
                       {item.quantity} cope
                     </span>

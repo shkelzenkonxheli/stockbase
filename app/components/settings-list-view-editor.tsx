@@ -32,6 +32,7 @@ const PRODUCT_ITEMS: ListItem<ProductListFieldKey>[] = [
 const ORDER_ITEMS: ListItem<OrderListFieldKey>[] = [
   { key: "productImage", label: "Foto e produktit" },
   { key: "variantSummary", label: "Ngjyra / numri" },
+  { key: "location", label: "Lokacioni" },
   { key: "customerName", label: "Emri i klientit" },
   { key: "phone", label: "Telefoni" },
   { key: "quantity", label: "Sasia" },

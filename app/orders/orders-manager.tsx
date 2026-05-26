@@ -19,6 +19,7 @@ type OrderItem = {
   color: string;
   material?: string | null;
   powerWatts?: string | null;
+  locationCode?: string | null;
   imagePath?: string | null;
   quantity: number;
 };
@@ -84,6 +85,7 @@ export function OrdersManager({
       !["productImage", "variantSummary"].includes(field) && viewConfig.visibility[field],
   );
   const desktopFieldLabels: Record<string, string> = {
+    location: "Lokacioni",
     customerName: "Klienti",
     phone: "Telefoni",
     quantity: "Cope",
@@ -192,6 +194,34 @@ export function OrdersManager({
     </div>
   );
 
+  const renderMobileActions = (order: OrderSummary) => (
+    <div className="flex flex-wrap items-center gap-2">
+      <OrderDetailsModal
+        orderId={order.id}
+        customerName={order.customerName}
+        phone={order.phone}
+        sourceLabel={sourceLabels[order.source]}
+        createdAtDateLabel={order.createdAtDateLabel}
+        createdAtTimeLabel={order.createdAtTimeLabel}
+        reference={order.instagram}
+        notes={order.notes}
+        items={order.items}
+        className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+        buttonLabel="Shiko"
+      />
+
+      {canDeleteOrders ? (
+        <ConfirmActionForm
+          action={deleteOrderAction}
+          hiddenFields={[{ name: "orderId", value: order.id }]}
+          confirmMessage="A je i sigurt qe don ta fshish kete porosi? Ky veprim nuk kthehet mbrapa."
+          buttonLabel="Fshi"
+          className="inline-flex items-center justify-center rounded-xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm font-semibold text-rose-700 transition hover:bg-rose-100"
+        />
+      ) : null}
+    </div>
+  );
+
   const renderOrderImage = (item: OrderItem | undefined) => (
     <button
       type="button"
@@ -199,7 +229,7 @@ export function OrdersManager({
         item?.imagePath
           ? setPreviewImage({
               src: item.imagePath,
-              alt: `${item.brand} ${item.name}`,
+              alt: [item.brand, item.name].filter(Boolean).join(" "),
             })
           : undefined
       }
@@ -217,6 +247,9 @@ export function OrdersManager({
       ) : null}
     </button>
   );
+
+  const getOrderTitle = (item: OrderItem | undefined) =>
+    item ? [item.brand, item.name].filter(Boolean).join(" ") : "";
 
   return (
     <div className="space-y-4">
@@ -242,15 +275,14 @@ export function OrdersManager({
         </div>
       ) : null}
 
-      {viewConfig.layout === "grid" ? (
-      <div className="grid gap-4 p-4 sm:p-5">
+      <div className="grid gap-4 p-4 sm:p-5 lg:hidden">
         {orders.map((order) => (
           <article
             key={order.id}
             className="rounded-[26px] border border-slate-200 bg-white p-4 shadow-sm"
           >
             <div className="flex items-start justify-between gap-3">
-              <div className="flex items-start gap-3">
+              <div className="flex min-w-0 items-start gap-3">
                 {canDeleteOrders ? (
                   <input
                     type="checkbox"
@@ -259,14 +291,14 @@ export function OrdersManager({
                     className="mt-1 h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-300"
                   />
                 ) : null}
-              <div className="flex items-start gap-3">
+                <div className="flex min-w-0 items-start gap-3">
                   {viewConfig.visibility.productImage ? renderOrderImage(order.items[0]) : null}
-                  <div>
-                    <h2 className="font-semibold text-slate-950">
-                      {order.items[0]?.brand} {order.items[0]?.name}
+                  <div className="min-w-0">
+                    <h2 className="truncate font-semibold text-slate-950">
+                      {getOrderTitle(order.items[0])}
                     </h2>
                     {viewConfig.visibility.variantSummary ? (
-                      <p className="mt-1 text-sm text-slate-500">
+                      <p className="mt-1 line-clamp-2 text-sm text-slate-500">
                         {order.items[0]
                           ? getOrderVariantSummary(order.items[0])
                           : "Pa variant"}
@@ -275,19 +307,26 @@ export function OrdersManager({
                     {viewConfig.visibility.customerName ? (
                       <p className="mt-1 text-sm text-slate-600">{order.customerName}</p>
                     ) : null}
+                    {viewConfig.visibility.location && order.items[0]?.locationCode ? (
+                      <p className="mt-1 text-xs text-slate-500">
+                        Lok: {order.items[0].locationCode}
+                      </p>
+                    ) : null}
                     {viewConfig.visibility.phone ? (
                       <p className="mt-1 text-xs text-slate-500">{order.phone}</p>
                     ) : null}
                   </div>
                 </div>
               </div>
-              {viewConfig.visibility.status ? (
-                <span
-                  className={`inline-flex rounded-xl border px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] ${statusStyles[order.status]}`}
-                >
-                  {order.status}
-                </span>
-              ) : null}
+              <div className="shrink-0">
+                {viewConfig.visibility.status ? (
+                  <span
+                    className={`inline-flex rounded-xl border px-3 py-2 text-[11px] font-semibold uppercase tracking-[0.14em] ${statusStyles[order.status]}`}
+                  >
+                    {order.status}
+                  </span>
+                ) : null}
+              </div>
             </div>
 
             <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -313,16 +352,14 @@ export function OrdersManager({
               ) : null}
             </div>
 
-            <div className="mt-4 flex flex-col gap-2">
-              {renderActions(order)}
+            <div className="mt-4">
+              {renderMobileActions(order)}
             </div>
           </article>
         ))}
       </div>
-      ) : null}
 
-      {viewConfig.layout === "list" ? (
-      <div className="overflow-x-auto">
+      <div className="hidden overflow-x-auto lg:block">
         <table className="min-w-full text-sm">
           <colgroup>
             {canDeleteOrders ? <col className="w-[70px]" /> : null}
@@ -383,7 +420,7 @@ export function OrdersManager({
                     {viewConfig.visibility.productImage ? renderOrderImage(order.items[0]) : null}
                     <div>
                       <p className="truncate font-semibold text-slate-950">
-                        {order.items[0]?.brand} {order.items[0]?.name}
+                        {getOrderTitle(order.items[0])}
                       </p>
                       {viewConfig.visibility.variantSummary ? (
                         <p
@@ -408,6 +445,16 @@ export function OrdersManager({
                       <td key={field} className={`px-5 text-slate-700 ${viewConfig.density === "compact" ? "py-3" : "py-4"}`}>
                         <span className="block truncate" title={order.customerName}>
                           {order.customerName}
+                        </span>
+                      </td>
+                    );
+                  }
+
+                  if (field === "location") {
+                    return (
+                      <td key={field} className={`px-5 text-slate-600 ${viewConfig.density === "compact" ? "py-3" : "py-4"}`}>
+                        <span className="block truncate" title={order.items[0]?.locationCode ?? "-"}>
+                          {order.items[0]?.locationCode ?? "-"}
                         </span>
                       </td>
                     );
@@ -473,7 +520,6 @@ export function OrdersManager({
           </tbody>
         </table>
       </div>
-      ) : null}
 
       {previewImage ? (
         <div

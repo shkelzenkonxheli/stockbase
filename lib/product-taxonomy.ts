@@ -116,6 +116,7 @@ export type ProductListFieldKey = (typeof PRODUCT_LIST_FIELD_KEYS)[number];
 export const ORDER_LIST_FIELD_KEYS = [
   "productImage",
   "variantSummary",
+  "location",
   "customerName",
   "phone",
   "quantity",
@@ -163,6 +164,7 @@ const DEFAULT_ORDER_LIST_VIEW: OrderListViewConfig = {
   visibility: {
     productImage: true,
     variantSummary: true,
+    location: false,
     customerName: true,
     phone: true,
     quantity: true,

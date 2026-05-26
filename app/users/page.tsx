@@ -525,11 +525,17 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
           </div>
         </section>
 
-        <EditUserModal action={updateUser} open={Boolean(editUser)} user={editUser} />
+        <EditUserModal
+          action={updateUser}
+          open={Boolean(editUser)}
+          user={editUser}
+          message={editUser ? message : null}
+        />
         <ResetPasswordModal
           action={resetUserPassword}
           open={Boolean(resetUser)}
           user={resetUser}
+          message={resetUser ? message : null}
         />
       </div>
     </main>

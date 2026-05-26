@@ -1,9 +1,8 @@
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import type { Prisma } from "@/app/generated/prisma/client";
 import { hasRole, requireRole, requireUser } from "@/lib/auth";
-import { getOrderListViewConfig, parseTenantCatalogConfig } from "@/lib/product-taxonomy";
+import { getOrderListViewConfig } from "@/lib/product-taxonomy";
 import { prisma } from "@/lib/prisma";
 import { OrdersFilters } from "./orders-filters";
 import { OrdersManager } from "./orders-manager";
@@ -289,58 +288,6 @@ async function bulkDeleteOrders(formData: FormData) {
   revalidatePath("/orders/new");
 }
 
-async function updateOrdersLayout(formData: FormData) {
-  "use server";
-
-  const currentUser = await requireUser();
-  const tenantId = currentUser.tenant?.id;
-  if (!tenantId || !hasRole(currentUser, ["SUPER_ADMIN"])) {
-    return;
-  }
-
-  const layout = formData.get("layout")?.toString() === "list" ? "list" : "grid";
-  const density = formData.get("density")?.toString() === "compact" ? "compact" : "comfortable";
-  const settings = await prisma.tenantSettings.findUnique({
-    where: { tenantId },
-    select: { catalogConfig: true },
-  });
-  const currentConfig = parseTenantCatalogConfig(settings?.catalogConfig) ?? {};
-  const currentOrderListView = getOrderListViewConfig(currentConfig);
-
-  await prisma.tenantSettings.upsert({
-    where: { tenantId },
-    create: {
-      tenantId,
-      businessName: currentUser.tenant?.businessName ?? currentUser.tenant?.name,
-      primaryColor: currentUser.tenant?.primaryColor ?? null,
-      currency: currentUser.tenant?.currency ?? "EUR",
-      language: currentUser.tenant?.language ?? "sq",
-      catalogConfig: {
-        ...currentConfig,
-        orderListView: {
-          ...currentOrderListView,
-          layout,
-          density,
-        },
-      },
-    },
-    update: {
-      catalogConfig: {
-        ...currentConfig,
-        orderListView: {
-          ...currentOrderListView,
-          layout,
-          density,
-        },
-      },
-    },
-  });
-
-  revalidatePath("/orders");
-  revalidatePath("/settings");
-  redirect("/orders");
-}
-
 export default async function OrdersPage({
   searchParams,
 }: OrdersPageProps) {
@@ -350,7 +297,12 @@ export default async function OrdersPage({
     return null;
   }
   const tenantId = tenant.id;
-  const orderListView = getOrderListViewConfig(tenant.catalogConfig);
+  const savedOrderListView = getOrderListViewConfig(tenant.catalogConfig);
+  const orderListView = {
+    ...savedOrderListView,
+    layout: "list" as const,
+    density: "comfortable" as const,
+  };
   const canCreateOrders = hasRole(currentUser, ["SUPER_ADMIN", "SELLER"]);
   const canDeleteOrders = hasRole(currentUser, ["SUPER_ADMIN"]);
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
@@ -438,10 +390,12 @@ export default async function OrdersPage({
             color: true,
             material: true,
             powerWatts: true,
+            locationCode: true,
             imagePath: true,
             product: {
               select: {
                 name: true,
+                brand: true,
                 category: {
                   select: {
                     name: true,
@@ -461,10 +415,12 @@ export default async function OrdersPage({
                 color: true,
                 material: true,
                 powerWatts: true,
+                locationCode: true,
                 imagePath: true,
                 product: {
                   select: {
                     name: true,
+                    brand: true,
                     category: {
                       select: {
                         name: true,
@@ -502,12 +458,13 @@ export default async function OrdersPage({
         ? order.items.map((item) => ({
             id: item.id,
             name: item.variant.product.name,
-            brand: item.variant.product.category.name,
+            brand: item.variant.product.brand ?? "",
             category: item.variant.product.category.name,
             size: item.variant.size,
             color: item.variant.color,
             material: item.variant.material,
             powerWatts: item.variant.powerWatts,
+            locationCode: item.variant.locationCode,
             imagePath: item.variant.imagePath,
             quantity: item.quantity,
           }))
@@ -516,12 +473,13 @@ export default async function OrdersPage({
               {
                 id: order.id,
                 name: order.variant.product.name,
-                brand: order.variant.product.category.name,
+                brand: order.variant.product.brand ?? "",
                 category: order.variant.product.category.name,
                 size: order.variant.size,
                 color: order.variant.color,
                 material: order.variant.material,
                 powerWatts: order.variant.powerWatts,
+                locationCode: order.variant.locationCode,
                 imagePath: order.variant.imagePath,
                 quantity: order.quantity ?? 0,
               },
@@ -562,70 +520,6 @@ export default async function OrdersPage({
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-              {canDeleteOrders ? (
-                <div className="flex items-center gap-2 rounded-2xl border border-slate-300 bg-slate-50 p-1">
-                  <form action={updateOrdersLayout}>
-                    <input type="hidden" name="layout" value="grid" />
-                    <input type="hidden" name="density" value={orderListView.density} />
-                    <button
-                      type="submit"
-                      className={`rounded-[14px] px-4 py-2 text-sm font-medium transition ${
-                        orderListView.layout === "grid"
-                          ? "bg-slate-950 text-white"
-                          : "text-slate-700 hover:bg-white"
-                      }`}
-                    >
-                      Grid
-                    </button>
-                  </form>
-                  <form action={updateOrdersLayout}>
-                    <input type="hidden" name="layout" value="list" />
-                    <input type="hidden" name="density" value={orderListView.density} />
-                    <button
-                      type="submit"
-                      className={`rounded-[14px] px-4 py-2 text-sm font-medium transition ${
-                        orderListView.layout === "list"
-                          ? "bg-slate-950 text-white"
-                          : "text-slate-700 hover:bg-white"
-                      }`}
-                    >
-                      Liste
-                    </button>
-                  </form>
-                </div>
-              ) : null}
-              {canDeleteOrders && orderListView.layout === "list" ? (
-                <div className="flex items-center gap-2 rounded-2xl border border-slate-300 bg-slate-50 p-1">
-                  <form action={updateOrdersLayout}>
-                    <input type="hidden" name="layout" value={orderListView.layout} />
-                    <input type="hidden" name="density" value="comfortable" />
-                    <button
-                      type="submit"
-                      className={`rounded-[14px] px-4 py-2 text-sm font-medium transition ${
-                        orderListView.density === "comfortable"
-                          ? "bg-slate-950 text-white"
-                          : "text-slate-700 hover:bg-white"
-                      }`}
-                    >
-                      Comfortable
-                    </button>
-                  </form>
-                  <form action={updateOrdersLayout}>
-                    <input type="hidden" name="layout" value={orderListView.layout} />
-                    <input type="hidden" name="density" value="compact" />
-                    <button
-                      type="submit"
-                      className={`rounded-[14px] px-4 py-2 text-sm font-medium transition ${
-                        orderListView.density === "compact"
-                          ? "bg-slate-950 text-white"
-                          : "text-slate-700 hover:bg-white"
-                      }`}
-                    >
-                      Compact
-                    </button>
-                  </form>
-                </div>
-              ) : null}
               {canCreateOrders ? (
                 <>
                   <Link

@@ -122,6 +122,7 @@ export const VariantScalarFieldEnum = {
   imagePath: 'imagePath',
   material: 'material',
   powerWatts: 'powerWatts',
+  locationCode: 'locationCode',
   customAttributes: 'customAttributes',
   tenantId: 'tenantId'
 } as const

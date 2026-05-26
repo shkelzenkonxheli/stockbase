@@ -71,7 +71,7 @@ export function ProductsFilters({
       }}
     >
       <div className="grid gap-3 lg:grid-cols-[minmax(0,1.5fr)_220px_220px_140px]">
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row">
           <div className="relative min-w-0 flex-1">
             <svg
               viewBox="0 0 24 24"
@@ -90,7 +90,7 @@ export function ProductsFilters({
           </div>
           <button
             type="submit"
-            className="inline-flex shrink-0 items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+            className="inline-flex shrink-0 items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 sm:min-w-[96px]"
           >
             Kerko
           </button>

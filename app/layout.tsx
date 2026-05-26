@@ -269,6 +269,11 @@ export default async function RootLayout({
                       </div>
                     </div>
                   </div>
+                  <div className="border-t border-slate-100 px-4 py-3 xl:hidden">
+                    <div className="-mx-1 overflow-x-auto pb-1">
+                      <AppShellNav items={navItems} orientation="horizontal" />
+                    </div>
+                  </div>
                 </header>
 
                 <div className="flex-1">{children}</div>

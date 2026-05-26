@@ -58,6 +58,7 @@ model Variant {
   imagePath      String?
   material       String?
   powerWatts     String?
+  locationCode   String?
   customAttributes Json?
   tenantId       Int?
   orders         Order[]

@@ -56,6 +56,7 @@ export type VariantMinAggregateOutputType = {
   imagePath: string | null
   material: string | null
   powerWatts: string | null
+  locationCode: string | null
   tenantId: number | null
 }
 
@@ -73,6 +74,7 @@ export type VariantMaxAggregateOutputType = {
   imagePath: string | null
   material: string | null
   powerWatts: string | null
+  locationCode: string | null
   tenantId: number | null
 }
 
@@ -90,6 +92,7 @@ export type VariantCountAggregateOutputType = {
   imagePath: number
   material: number
   powerWatts: number
+  locationCode: number
   customAttributes: number
   tenantId: number
   _all: number
@@ -126,6 +129,7 @@ export type VariantMinAggregateInputType = {
   imagePath?: true
   material?: true
   powerWatts?: true
+  locationCode?: true
   tenantId?: true
 }
 
@@ -143,6 +147,7 @@ export type VariantMaxAggregateInputType = {
   imagePath?: true
   material?: true
   powerWatts?: true
+  locationCode?: true
   tenantId?: true
 }
 
@@ -160,6 +165,7 @@ export type VariantCountAggregateInputType = {
   imagePath?: true
   material?: true
   powerWatts?: true
+  locationCode?: true
   customAttributes?: true
   tenantId?: true
   _all?: true
@@ -265,6 +271,7 @@ export type VariantGroupByOutputType = {
   imagePath: string | null
   material: string | null
   powerWatts: string | null
+  locationCode: string | null
   customAttributes: runtime.JsonValue | null
   tenantId: number | null
   _count: VariantCountAggregateOutputType | null
@@ -306,6 +313,7 @@ export type VariantWhereInput = {
   imagePath?: Prisma.StringNullableFilter<"Variant"> | string | null
   material?: Prisma.StringNullableFilter<"Variant"> | string | null
   powerWatts?: Prisma.StringNullableFilter<"Variant"> | string | null
+  locationCode?: Prisma.StringNullableFilter<"Variant"> | string | null
   customAttributes?: Prisma.JsonNullableFilter<"Variant">
   tenantId?: Prisma.IntNullableFilter<"Variant"> | number | null
   orders?: Prisma.OrderListRelationFilter
@@ -329,6 +337,7 @@ export type VariantOrderByWithRelationInput = {
   imagePath?: Prisma.SortOrderInput | Prisma.SortOrder
   material?: Prisma.SortOrderInput | Prisma.SortOrder
   powerWatts?: Prisma.SortOrderInput | Prisma.SortOrder
+  locationCode?: Prisma.SortOrderInput | Prisma.SortOrder
   customAttributes?: Prisma.SortOrderInput | Prisma.SortOrder
   tenantId?: Prisma.SortOrderInput | Prisma.SortOrder
   orders?: Prisma.OrderOrderByRelationAggregateInput
@@ -355,6 +364,7 @@ export type VariantWhereUniqueInput = Prisma.AtLeast<{
   imagePath?: Prisma.StringNullableFilter<"Variant"> | string | null
   material?: Prisma.StringNullableFilter<"Variant"> | string | null
   powerWatts?: Prisma.StringNullableFilter<"Variant"> | string | null
+  locationCode?: Prisma.StringNullableFilter<"Variant"> | string | null
   customAttributes?: Prisma.JsonNullableFilter<"Variant">
   tenantId?: Prisma.IntNullableFilter<"Variant"> | number | null
   orders?: Prisma.OrderListRelationFilter
@@ -378,6 +388,7 @@ export type VariantOrderByWithAggregationInput = {
   imagePath?: Prisma.SortOrderInput | Prisma.SortOrder
   material?: Prisma.SortOrderInput | Prisma.SortOrder
   powerWatts?: Prisma.SortOrderInput | Prisma.SortOrder
+  locationCode?: Prisma.SortOrderInput | Prisma.SortOrder
   customAttributes?: Prisma.SortOrderInput | Prisma.SortOrder
   tenantId?: Prisma.SortOrderInput | Prisma.SortOrder
   _count?: Prisma.VariantCountOrderByAggregateInput
@@ -404,6 +415,7 @@ export type VariantScalarWhereWithAggregatesInput = {
   imagePath?: Prisma.StringNullableWithAggregatesFilter<"Variant"> | string | null
   material?: Prisma.StringNullableWithAggregatesFilter<"Variant"> | string | null
   powerWatts?: Prisma.StringNullableWithAggregatesFilter<"Variant"> | string | null
+  locationCode?: Prisma.StringNullableWithAggregatesFilter<"Variant"> | string | null
   customAttributes?: Prisma.JsonNullableWithAggregatesFilter<"Variant">
   tenantId?: Prisma.IntNullableWithAggregatesFilter<"Variant"> | number | null
 }
@@ -420,6 +432,7 @@ export type VariantCreateInput = {
   imagePath?: string | null
   material?: string | null
   powerWatts?: string | null
+  locationCode?: string | null
   customAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   orders?: Prisma.OrderCreateNestedManyWithoutVariantInput
   items?: Prisma.OrderItemCreateNestedManyWithoutVariantInput
@@ -442,6 +455,7 @@ export type VariantUncheckedCreateInput = {
   imagePath?: string | null
   material?: string | null
   powerWatts?: string | null
+  locationCode?: string | null
   customAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tenantId?: number | null
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutVariantInput
@@ -461,6 +475,7 @@ export type VariantUpdateInput = {
   imagePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   material?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   powerWatts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locationCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   orders?: Prisma.OrderUpdateManyWithoutVariantNestedInput
   items?: Prisma.OrderItemUpdateManyWithoutVariantNestedInput
@@ -483,6 +498,7 @@ export type VariantUncheckedUpdateInput = {
   imagePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   material?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   powerWatts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locationCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tenantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   orders?: Prisma.OrderUncheckedUpdateManyWithoutVariantNestedInput
@@ -504,6 +520,7 @@ export type VariantCreateManyInput = {
   imagePath?: string | null
   material?: string | null
   powerWatts?: string | null
+  locationCode?: string | null
   customAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tenantId?: number | null
 }
@@ -520,6 +537,7 @@ export type VariantUpdateManyMutationInput = {
   imagePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   material?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   powerWatts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locationCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
@@ -537,6 +555,7 @@ export type VariantUncheckedUpdateManyInput = {
   imagePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   material?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   powerWatts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locationCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tenantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
@@ -565,6 +584,7 @@ export type VariantCountOrderByAggregateInput = {
   imagePath?: Prisma.SortOrder
   material?: Prisma.SortOrder
   powerWatts?: Prisma.SortOrder
+  locationCode?: Prisma.SortOrder
   customAttributes?: Prisma.SortOrder
   tenantId?: Prisma.SortOrder
 }
@@ -591,6 +611,7 @@ export type VariantMaxOrderByAggregateInput = {
   imagePath?: Prisma.SortOrder
   material?: Prisma.SortOrder
   powerWatts?: Prisma.SortOrder
+  locationCode?: Prisma.SortOrder
   tenantId?: Prisma.SortOrder
 }
 
@@ -608,6 +629,7 @@ export type VariantMinOrderByAggregateInput = {
   imagePath?: Prisma.SortOrder
   material?: Prisma.SortOrder
   powerWatts?: Prisma.SortOrder
+  locationCode?: Prisma.SortOrder
   tenantId?: Prisma.SortOrder
 }
 
@@ -777,6 +799,7 @@ export type VariantCreateWithoutProductInput = {
   imagePath?: string | null
   material?: string | null
   powerWatts?: string | null
+  locationCode?: string | null
   customAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   orders?: Prisma.OrderCreateNestedManyWithoutVariantInput
   items?: Prisma.OrderItemCreateNestedManyWithoutVariantInput
@@ -797,6 +820,7 @@ export type VariantUncheckedCreateWithoutProductInput = {
   imagePath?: string | null
   material?: string | null
   powerWatts?: string | null
+  locationCode?: string | null
   customAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tenantId?: number | null
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutVariantInput
@@ -847,6 +871,7 @@ export type VariantScalarWhereInput = {
   imagePath?: Prisma.StringNullableFilter<"Variant"> | string | null
   material?: Prisma.StringNullableFilter<"Variant"> | string | null
   powerWatts?: Prisma.StringNullableFilter<"Variant"> | string | null
+  locationCode?: Prisma.StringNullableFilter<"Variant"> | string | null
   customAttributes?: Prisma.JsonNullableFilter<"Variant">
   tenantId?: Prisma.IntNullableFilter<"Variant"> | number | null
 }
@@ -863,6 +888,7 @@ export type VariantCreateWithoutStockMovementsInput = {
   imagePath?: string | null
   material?: string | null
   powerWatts?: string | null
+  locationCode?: string | null
   customAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   orders?: Prisma.OrderCreateNestedManyWithoutVariantInput
   items?: Prisma.OrderItemCreateNestedManyWithoutVariantInput
@@ -884,6 +910,7 @@ export type VariantUncheckedCreateWithoutStockMovementsInput = {
   imagePath?: string | null
   material?: string | null
   powerWatts?: string | null
+  locationCode?: string | null
   customAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tenantId?: number | null
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutVariantInput
@@ -918,6 +945,7 @@ export type VariantUpdateWithoutStockMovementsInput = {
   imagePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   material?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   powerWatts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locationCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   orders?: Prisma.OrderUpdateManyWithoutVariantNestedInput
   items?: Prisma.OrderItemUpdateManyWithoutVariantNestedInput
@@ -939,6 +967,7 @@ export type VariantUncheckedUpdateWithoutStockMovementsInput = {
   imagePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   material?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   powerWatts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locationCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tenantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   orders?: Prisma.OrderUncheckedUpdateManyWithoutVariantNestedInput
@@ -957,6 +986,7 @@ export type VariantCreateWithoutOrdersInput = {
   imagePath?: string | null
   material?: string | null
   powerWatts?: string | null
+  locationCode?: string | null
   customAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   items?: Prisma.OrderItemCreateNestedManyWithoutVariantInput
   stockMovements?: Prisma.StockMovementCreateNestedManyWithoutVariantInput
@@ -978,6 +1008,7 @@ export type VariantUncheckedCreateWithoutOrdersInput = {
   imagePath?: string | null
   material?: string | null
   powerWatts?: string | null
+  locationCode?: string | null
   customAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tenantId?: number | null
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutVariantInput
@@ -1012,6 +1043,7 @@ export type VariantUpdateWithoutOrdersInput = {
   imagePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   material?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   powerWatts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locationCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   items?: Prisma.OrderItemUpdateManyWithoutVariantNestedInput
   stockMovements?: Prisma.StockMovementUpdateManyWithoutVariantNestedInput
@@ -1033,6 +1065,7 @@ export type VariantUncheckedUpdateWithoutOrdersInput = {
   imagePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   material?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   powerWatts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locationCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tenantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutVariantNestedInput
@@ -1051,6 +1084,7 @@ export type VariantCreateWithoutItemsInput = {
   imagePath?: string | null
   material?: string | null
   powerWatts?: string | null
+  locationCode?: string | null
   customAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   orders?: Prisma.OrderCreateNestedManyWithoutVariantInput
   stockMovements?: Prisma.StockMovementCreateNestedManyWithoutVariantInput
@@ -1072,6 +1106,7 @@ export type VariantUncheckedCreateWithoutItemsInput = {
   imagePath?: string | null
   material?: string | null
   powerWatts?: string | null
+  locationCode?: string | null
   customAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tenantId?: number | null
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutVariantInput
@@ -1106,6 +1141,7 @@ export type VariantUpdateWithoutItemsInput = {
   imagePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   material?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   powerWatts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locationCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   orders?: Prisma.OrderUpdateManyWithoutVariantNestedInput
   stockMovements?: Prisma.StockMovementUpdateManyWithoutVariantNestedInput
@@ -1127,6 +1163,7 @@ export type VariantUncheckedUpdateWithoutItemsInput = {
   imagePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   material?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   powerWatts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locationCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tenantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   orders?: Prisma.OrderUncheckedUpdateManyWithoutVariantNestedInput
@@ -1145,6 +1182,7 @@ export type VariantCreateWithoutTenantInput = {
   imagePath?: string | null
   material?: string | null
   powerWatts?: string | null
+  locationCode?: string | null
   customAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   orders?: Prisma.OrderCreateNestedManyWithoutVariantInput
   items?: Prisma.OrderItemCreateNestedManyWithoutVariantInput
@@ -1166,6 +1204,7 @@ export type VariantUncheckedCreateWithoutTenantInput = {
   imagePath?: string | null
   material?: string | null
   powerWatts?: string | null
+  locationCode?: string | null
   customAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutVariantInput
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutVariantInput
@@ -1211,6 +1250,7 @@ export type VariantCreateManyProductInput = {
   imagePath?: string | null
   material?: string | null
   powerWatts?: string | null
+  locationCode?: string | null
   customAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tenantId?: number | null
 }
@@ -1227,6 +1267,7 @@ export type VariantUpdateWithoutProductInput = {
   imagePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   material?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   powerWatts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locationCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   orders?: Prisma.OrderUpdateManyWithoutVariantNestedInput
   items?: Prisma.OrderItemUpdateManyWithoutVariantNestedInput
@@ -1247,6 +1288,7 @@ export type VariantUncheckedUpdateWithoutProductInput = {
   imagePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   material?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   powerWatts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locationCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tenantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   orders?: Prisma.OrderUncheckedUpdateManyWithoutVariantNestedInput
@@ -1267,6 +1309,7 @@ export type VariantUncheckedUpdateManyWithoutProductInput = {
   imagePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   material?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   powerWatts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locationCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   tenantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
@@ -1285,6 +1328,7 @@ export type VariantCreateManyTenantInput = {
   imagePath?: string | null
   material?: string | null
   powerWatts?: string | null
+  locationCode?: string | null
   customAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
@@ -1300,6 +1344,7 @@ export type VariantUpdateWithoutTenantInput = {
   imagePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   material?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   powerWatts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locationCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   orders?: Prisma.OrderUpdateManyWithoutVariantNestedInput
   items?: Prisma.OrderItemUpdateManyWithoutVariantNestedInput
@@ -1321,6 +1366,7 @@ export type VariantUncheckedUpdateWithoutTenantInput = {
   imagePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   material?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   powerWatts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locationCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
   orders?: Prisma.OrderUncheckedUpdateManyWithoutVariantNestedInput
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutVariantNestedInput
@@ -1341,6 +1387,7 @@ export type VariantUncheckedUpdateManyWithoutTenantInput = {
   imagePath?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   material?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   powerWatts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  locationCode?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   customAttributes?: Prisma.NullableJsonNullValueInput | runtime.InputJsonValue
 }
 
@@ -1407,6 +1454,7 @@ export type VariantSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   imagePath?: boolean
   material?: boolean
   powerWatts?: boolean
+  locationCode?: boolean
   customAttributes?: boolean
   tenantId?: boolean
   orders?: boolean | Prisma.Variant$ordersArgs<ExtArgs>
@@ -1431,6 +1479,7 @@ export type VariantSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Exten
   imagePath?: boolean
   material?: boolean
   powerWatts?: boolean
+  locationCode?: boolean
   customAttributes?: boolean
   tenantId?: boolean
   product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
@@ -1451,6 +1500,7 @@ export type VariantSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
   imagePath?: boolean
   material?: boolean
   powerWatts?: boolean
+  locationCode?: boolean
   customAttributes?: boolean
   tenantId?: boolean
   product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
@@ -1471,11 +1521,12 @@ export type VariantSelectScalar = {
   imagePath?: boolean
   material?: boolean
   powerWatts?: boolean
+  locationCode?: boolean
   customAttributes?: boolean
   tenantId?: boolean
 }
 
-export type VariantOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "productId" | "size" | "color" | "stock" | "createdAt" | "price" | "updatedAt" | "sku" | "barcode" | "imagePath" | "material" | "powerWatts" | "customAttributes" | "tenantId", ExtArgs["result"]["variant"]>
+export type VariantOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "productId" | "size" | "color" | "stock" | "createdAt" | "price" | "updatedAt" | "sku" | "barcode" | "imagePath" | "material" | "powerWatts" | "locationCode" | "customAttributes" | "tenantId", ExtArgs["result"]["variant"]>
 export type VariantInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   orders?: boolean | Prisma.Variant$ordersArgs<ExtArgs>
   items?: boolean | Prisma.Variant$itemsArgs<ExtArgs>
@@ -1516,6 +1567,7 @@ export type $VariantPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     imagePath: string | null
     material: string | null
     powerWatts: string | null
+    locationCode: string | null
     customAttributes: runtime.JsonValue | null
     tenantId: number | null
   }, ExtArgs["result"]["variant"]>
@@ -1959,6 +2011,7 @@ export interface VariantFieldRefs {
   readonly imagePath: Prisma.FieldRef<"Variant", 'String'>
   readonly material: Prisma.FieldRef<"Variant", 'String'>
   readonly powerWatts: Prisma.FieldRef<"Variant", 'String'>
+  readonly locationCode: Prisma.FieldRef<"Variant", 'String'>
   readonly customAttributes: Prisma.FieldRef<"Variant", 'Json'>
   readonly tenantId: Prisma.FieldRef<"Variant", 'Int'>
 }

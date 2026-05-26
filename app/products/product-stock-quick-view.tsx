@@ -14,6 +14,7 @@ type ProductQuickVariant = {
   price?: number;
   material?: string | null;
   powerWatts?: string | null;
+  locationCode?: string | null;
 };
 
 type ProductStockQuickViewProps = {
@@ -211,6 +212,7 @@ export function ProductStockQuickView({
 
   const [editStockColor, setEditStockColor] = useState<string | null>(null);
   const [editStockInputs, setEditStockInputs] = useState<Record<number, string>>({});
+  const [editStockLocation, setEditStockLocation] = useState("");
   const [editStockError, setEditStockError] = useState<string | null>(null);
   const [savingEditStock, setSavingEditStock] = useState(false);
 
@@ -225,6 +227,7 @@ export function ProductStockQuickView({
   const [variantPrice, setVariantPrice] = useState("");
   const [variantMaterial, setVariantMaterial] = useState("");
   const [variantPowerWatts, setVariantPowerWatts] = useState("");
+  const [variantLocation, setVariantLocation] = useState("");
   const [variantError, setVariantError] = useState<string | null>(null);
   const [creatingVariant, setCreatingVariant] = useState(false);
   const [variantImageFile, setVariantImageFile] = useState<File | null>(null);
@@ -385,6 +388,9 @@ export function ProductStockQuickView({
     : null;
   const stockEditorVariants = variantForStockAdd ? [variantForStockAdd] : colorEditorVariants;
   const variantsForEditStock = variantForStockEdit ? [variantForStockEdit] : colorVariantsForEdit;
+  const currentEditLocation = variantForStockEdit
+    ? variantForStockEdit.locationCode ?? ""
+    : colorVariantsForEdit[0]?.locationCode ?? "";
 
   const totalAddedForColor = stockEditorVariants.reduce((sum, variant) => {
     const parsed = Number(stockInputs[variant.id] ?? 0);
@@ -427,6 +433,7 @@ export function ProductStockQuickView({
     setVariantPrice("");
     setVariantMaterial("");
     setVariantPowerWatts("");
+    setVariantLocation("");
     setVariantRows([]);
     setVariantDraftSize("");
     setVariantDraftStock("");
@@ -546,21 +553,24 @@ export function ProductStockQuickView({
   }
 
   async function saveEditedStock() {
+    const normalizedLocation = editStockLocation.trim() || null;
     const updates = variantsForEditStock
       .map((variant) => ({
         variantId: variant.id,
         currentStock: variant.stock,
         nextStock: Number(editStockInputs[variant.id]),
+        currentLocation: variant.locationCode ?? null,
+        nextLocation: normalizedLocation,
       }))
       .filter(
         (item) =>
           Number.isInteger(item.nextStock) &&
           item.nextStock >= 0 &&
-          item.nextStock !== item.currentStock,
+          (item.nextStock !== item.currentStock || item.nextLocation !== item.currentLocation),
       );
 
     if (updates.length === 0) {
-      setEditStockError("Ndrysho te pakten nje stok per ta ruajtur.");
+      setEditStockError("Ndrysho stokun ose lokacionin per ta ruajtur.");
       return;
     }
 
@@ -579,6 +589,7 @@ export function ProductStockQuickView({
               productId,
               variantId: item.variantId,
               stock: item.nextStock,
+              locationCode: item.nextLocation,
             }),
           }),
         ),
@@ -602,11 +613,16 @@ export function ProductStockQuickView({
         current.map((variant) => ({
           ...variant,
           stock: updateMap.get(variant.id) ?? variant.stock,
+          locationCode:
+            updates.find((item) => item.variantId === variant.id)?.nextLocation ??
+            variant.locationCode ??
+            null,
         })),
       );
       setEditStockColor(null);
       setEditStockVariantId(null);
       setEditStockInputs({});
+      setEditStockLocation("");
       setSuccessToast("Stoku u ndryshua.");
       router.refresh();
     } catch {
@@ -757,6 +773,9 @@ export function ProductStockQuickView({
         }
         if (variantPowerWatts.trim()) {
           formData.append("powerWatts", variantPowerWatts.trim());
+        }
+        if (variantLocation.trim()) {
+          formData.append("locationCode", variantLocation.trim());
         }
 
         if (index === 0 && variantImageFile) {
@@ -944,23 +963,23 @@ export function ProductStockQuickView({
       </button>
 
       {successToast ? (
-        <div className="fixed bottom-4 right-4 z-[120] rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700 shadow-lg">
+        <div className="fixed inset-x-4 bottom-4 z-[120] rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-center text-sm font-medium text-emerald-700 shadow-lg sm:left-auto sm:right-4 sm:w-auto sm:text-left">
           {successToast}
         </div>
       ) : null}
 
       {showStock ? (
         <div
-          className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/55 p-4"
+          className="fixed inset-0 z-[90] flex items-end justify-center bg-slate-950/55 p-0 sm:items-center sm:p-4"
           onClick={() => setShowStock(false)}
         >
           <div
-            className="w-full max-w-2xl rounded-[28px] bg-white shadow-2xl"
+            className="flex max-h-[88vh] w-full flex-col rounded-t-[28px] bg-white shadow-2xl sm:max-h-[85vh] sm:max-w-2xl sm:rounded-[28px]"
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-5">
-              <div className="flex items-center gap-4">
-                <div className="h-16 w-16 overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
+            <div className="flex flex-col gap-4 border-b border-slate-100 px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-5 sm:py-5">
+              <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+                <div className="h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 sm:h-16 sm:w-16">
                   {imagePath ? (
                     <UploadedImage
                       src={imagePath}
@@ -969,11 +988,11 @@ export function ProductStockQuickView({
                     />
                   ) : null}
                 </div>
-                <div>
-                  <p className="text-xl font-semibold text-slate-950">
+                <div className="min-w-0">
+                  <p className="truncate text-lg font-semibold text-slate-950 sm:text-xl">
                     {productName}
                   </p>
-                  <p className="mt-1 text-sm text-slate-500">{productBrand}</p>
+                  <p className="mt-1 truncate text-sm text-slate-500">{productBrand}</p>
                   <span
                     className={`mt-3 inline-flex rounded-full px-3 py-1 text-xs font-semibold ${stockTone.badgeClassName}`}
                   >
@@ -982,7 +1001,7 @@ export function ProductStockQuickView({
                 </div>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 self-end sm:self-auto">
                 {canAdjustStock ? (
                   <button
                     type="button"
@@ -1017,7 +1036,7 @@ export function ProductStockQuickView({
               </div>
             </div>
 
-            <div className="max-h-[70vh] space-y-4 overflow-y-auto px-5 py-5">
+            <div className="flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:px-5 sm:py-5">
               {stockViewMode === "electronics" ? (
                 groupedByModel.map((group) => {
                   const groupStockTone = getStockTone(group.totalStock);
@@ -1100,6 +1119,11 @@ export function ProductStockQuickView({
                                   {(variant.powerWatts || variant.material) ? (
                                     <p className="mt-1 truncate text-xs text-slate-500">
                                       {variant.powerWatts || variant.material}
+                                    </p>
+                                  ) : null}
+                                  {variant.locationCode ? (
+                                    <p className="mt-1 truncate text-xs text-slate-500">
+                                      Lok: {variant.locationCode}
                                     </p>
                                   ) : null}
                                 </div>
@@ -1192,6 +1216,11 @@ export function ProductStockQuickView({
                                   {(variant.material || variant.powerWatts) ? (
                                     <p className="mt-1 truncate text-xs text-slate-500">
                                       {variant.material || variant.powerWatts}
+                                    </p>
+                                  ) : null}
+                                  {variant.locationCode ? (
+                                    <p className="mt-1 truncate text-xs text-slate-500">
+                                      Lok: {variant.locationCode}
                                     </p>
                                   ) : null}
                                   <span
@@ -1325,6 +1354,7 @@ export function ProductStockQuickView({
                                         ]),
                                       ),
                                     );
+                                    setEditStockLocation(colorVariants[0]?.locationCode ?? "");
                                     setEditStockError(null);
                                   }}
                                   className="flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-left text-[13px] font-medium text-slate-700 transition hover:bg-slate-50"
@@ -1407,6 +1437,7 @@ export function ProductStockQuickView({
                                         ]),
                                       ),
                                     );
+                                    setEditStockLocation(colorVariants[0]?.locationCode ?? "");
                                     setEditStockError(null);
                                   }}
                                   className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-slate-700 transition hover:bg-slate-50"
@@ -1440,7 +1471,7 @@ export function ProductStockQuickView({
                       ) : null}
                     </div>
 
-                    <div className="mt-4 flex flex-wrap gap-2.5">
+                    <div className="mt-4 grid grid-cols-2 gap-2.5 sm:flex sm:flex-wrap">
                       {colorVariants.map((variant) => {
                         const tone =
                           variant.stock > 0 && variant.stock <= LOW_STOCK_THRESHOLD
@@ -1452,14 +1483,19 @@ export function ProductStockQuickView({
                         return (
                           <div
                             key={`${color}-${variant.size}-${variant.id}`}
-                            className={`min-w-[92px] rounded-2xl border px-3 py-2.5 ${tone}`}
+                            className={`min-w-0 rounded-2xl border px-3 py-2.5 sm:min-w-[92px] ${tone}`}
                           >
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.14em]">
+                            <p className="truncate text-[11px] font-semibold uppercase tracking-[0.14em]">
                               Nr {variant.size}
                             </p>
-                            <p className="mt-1 text-xs font-medium">
+                            <p className="mt-1 truncate text-xs font-medium">
                               {variant.stock} ne stok
                             </p>
+                            {variant.locationCode ? (
+                              <p className="mt-1 truncate text-[11px] font-medium opacity-80">
+                                Lok: {variant.locationCode}
+                              </p>
+                            ) : null}
                           </div>
                         );
                       })}
@@ -1555,6 +1591,7 @@ export function ProductStockQuickView({
                       setEditStockInputs({
                         [variantActionsTarget.id]: String(variantActionsTarget.stock),
                       });
+                      setEditStockLocation(variantActionsTarget.locationCode ?? "");
                       setEditStockError(null);
                       setVariantActionsTarget(null);
                     }}
@@ -1837,6 +1874,7 @@ export function ProductStockQuickView({
             if (!savingEditStock) {
               setEditStockColor(null);
               setEditStockVariantId(null);
+              setEditStockLocation("");
               setEditStockError(null);
             }
           }}
@@ -1862,7 +1900,9 @@ export function ProductStockQuickView({
                 onClick={() => {
                   if (!savingEditStock) {
                     setEditStockColor(null);
+                    setEditStockVariantId(null);
                     setEditStockError(null);
+                    setEditStockLocation("");
                   }
                 }}
                 className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900"
@@ -1873,6 +1913,30 @@ export function ProductStockQuickView({
             </div>
 
             <div className="mt-5 flex-1 overflow-y-auto px-5 pb-4">
+            <div className="mb-4 rounded-2xl border border-slate-200 bg-white p-4">
+              <label className="block space-y-2">
+                <span className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                  Lokacioni
+                </span>
+                <input
+                  type="text"
+                  value={editStockLocation}
+                  onChange={(event) => setEditStockLocation(event.target.value)}
+                  placeholder={isFootwearCategory ? "p.sh. Sektori 1-10 / 7" : "p.sh. Sektori 11-20 / 4"}
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-100"
+                />
+              </label>
+              <p className="mt-2 text-xs text-slate-500">
+                {isFootwearCategory
+                  ? "Ky lokacion do te ruhet per gjithe ngjyren."
+                  : "Lokacion opsional per kete variant."}
+              </p>
+              {!editStockLocation && currentEditLocation ? (
+                <p className="mt-1 text-xs text-slate-400">
+                  Lokacioni aktual: {currentEditLocation}
+                </p>
+              ) : null}
+            </div>
             <div className="rounded-[24px] border border-slate-200 bg-slate-50/80 p-3">
               <div className="space-y-3">
                 {variantsForEditStock.map((variant) => (
@@ -1922,6 +1986,7 @@ export function ProductStockQuickView({
                   if (!savingEditStock) {
                     setEditStockColor(null);
                     setEditStockVariantId(null);
+                    setEditStockLocation("");
                     setEditStockError(null);
                   }
                 }}
@@ -2238,6 +2303,19 @@ export function ProductStockQuickView({
                     </label>
                   </div>
 
+                  <label className="min-w-0 space-y-2">
+                    <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                      Lokacioni (opsional)
+                    </span>
+                    <input
+                      type="text"
+                      value={variantLocation}
+                      onChange={(event) => setVariantLocation(event.target.value)}
+                      placeholder={stockViewMode === "footwear" ? "p.sh. Sektori 1-10 / 7" : "p.sh. Sektori 11-20 / 4"}
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-100"
+                    />
+                  </label>
+
                   {stockViewMode === "footwear" && existingVariantColor ? (
                     <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
                       Kjo ngjyre ekziston tashme. Perdor `Shto numer`.
@@ -2285,7 +2363,7 @@ export function ProductStockQuickView({
                           <button
                             type="button"
                             onClick={addVariantRow}
-                            className="inline-flex h-[46px] items-center justify-center gap-1 rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50 self-end"
+                            className="inline-flex h-[46px] w-full items-center justify-center gap-1 self-end rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50 md:w-auto"
                           >
                             <IconPlus />
                             Shto

@@ -95,25 +95,7 @@ export function OrdersFilters({
 
   return (
     <div className="grid grid-cols-1 gap-3 lg:grid-cols-[180px_180px_minmax(0,1fr)]">
-      <input
-        type="date"
-        value={date}
-        onChange={(event) => setDate(event.target.value)}
-        className="h-12 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:bg-white"
-      />
-
-      <select
-        value={source}
-        onChange={(event) => setSource(event.target.value)}
-        className="h-12 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:bg-white"
-      >
-        <option value="">Filtra te tjere</option>
-        <option value="INSTAGRAM">Instagram</option>
-        <option value="STORE">Shitore</option>
-        <option value="WHOLESALE">Shumice</option>
-      </select>
-
-      <div className="space-y-1">
+      <div className="order-3 space-y-1 lg:order-3">
         <div className="relative">
           <svg
             viewBox="0 0 24 24"
@@ -136,6 +118,24 @@ export function OrdersFilters({
             : "Kerko automatikisht sapo te shkruash"}
         </p>
       </div>
+
+      <input
+        type="date"
+        value={date}
+        onChange={(event) => setDate(event.target.value)}
+        className="order-1 h-12 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:bg-white lg:order-1"
+      />
+
+      <select
+        value={source}
+        onChange={(event) => setSource(event.target.value)}
+        className="order-2 h-12 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:bg-white lg:order-2"
+      >
+        <option value="">Filtra te tjere</option>
+        <option value="INSTAGRAM">Instagram</option>
+        <option value="STORE">Shitore</option>
+        <option value="WHOLESALE">Shumice</option>
+      </select>
     </div>
   );
 }

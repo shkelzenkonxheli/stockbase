@@ -7,6 +7,7 @@ type SetStockPayload = {
   productId?: number;
   variantId?: number;
   stock?: number;
+  locationCode?: string | null;
 };
 
 export async function POST(request: Request) {
@@ -28,6 +29,10 @@ export async function POST(request: Request) {
   const productId = Number(payload.productId);
   const variantId = Number(payload.variantId);
   const stock = Number(payload.stock);
+  const locationCode =
+    typeof payload.locationCode === "string"
+      ? payload.locationCode.trim() || null
+      : null;
 
   if (
     !Number.isInteger(productId) ||
@@ -57,11 +62,11 @@ export async function POST(request: Request) {
 
   await prisma.variant.update({
     where: { id: variantId },
-    data: { stock },
+    data: { stock, locationCode },
   });
 
   revalidatePath("/products");
   revalidatePath(`/products/${productId}`);
 
-  return NextResponse.json({ ok: true, stock });
+  return NextResponse.json({ ok: true, stock, locationCode });
 }
