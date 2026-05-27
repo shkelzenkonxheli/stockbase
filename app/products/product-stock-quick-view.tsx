@@ -974,12 +974,12 @@ export function ProductStockQuickView({
           onClick={() => setShowStock(false)}
         >
           <div
-            className="flex max-h-[88vh] w-full flex-col rounded-t-[28px] bg-white shadow-2xl sm:max-h-[85vh] sm:max-w-2xl sm:rounded-[28px]"
+            className="flex h-screen max-h-screen w-full flex-col overflow-hidden bg-white shadow-2xl sm:h-auto sm:max-h-[85vh] sm:max-w-2xl sm:rounded-[28px]"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex flex-col gap-4 border-b border-slate-100 px-4 py-4 sm:flex-row sm:items-start sm:justify-between sm:px-5 sm:py-5">
               <div className="flex min-w-0 items-center gap-3 sm:gap-4">
-                <div className="h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 sm:h-16 sm:w-16">
+                <div className="h-12 w-12 shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-slate-100 sm:h-16 sm:w-16">
                   {imagePath ? (
                     <UploadedImage
                       src={imagePath}
@@ -989,7 +989,7 @@ export function ProductStockQuickView({
                   ) : null}
                 </div>
                 <div className="min-w-0">
-                  <p className="truncate text-lg font-semibold text-slate-950 sm:text-xl">
+                  <p className="truncate text-base font-semibold text-slate-950 sm:text-xl">
                     {productName}
                   </p>
                   <p className="mt-1 truncate text-sm text-slate-500">{productBrand}</p>
@@ -1001,7 +1001,7 @@ export function ProductStockQuickView({
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 self-end sm:self-auto">
+              <div className="grid w-full grid-cols-[minmax(0,1fr)_40px] items-center gap-2 sm:flex sm:w-auto sm:self-auto">
                 {canAdjustStock ? (
                   <button
                     type="button"
@@ -1019,7 +1019,7 @@ export function ProductStockQuickView({
                       setVariantImagePreview(null);
                       setVariantError(null);
                     }}
-                    className="inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-xs font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 sm:px-3 sm:text-sm"
+                    className="inline-flex min-w-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-xl border border-slate-200 bg-white px-2.5 py-2 text-xs font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50 sm:flex-none sm:px-3 sm:text-sm"
                   >
                     <IconPlus />
                     Shto variant
@@ -1028,7 +1028,7 @@ export function ProductStockQuickView({
                 <button
                   type="button"
                   onClick={() => setShowStock(false)}
-                  className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900"
+                  className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:bg-slate-50 hover:text-slate-900"
                   aria-label="Mbyll"
                 >
                   x
@@ -1036,7 +1036,7 @@ export function ProductStockQuickView({
               </div>
             </div>
 
-            <div className="flex-1 space-y-4 overflow-y-auto px-4 py-4 sm:px-5 sm:py-5">
+            <div className="flex-1 space-y-4 overflow-y-auto overflow-x-hidden px-4 py-4 sm:px-5 sm:py-5">
               {stockViewMode === "electronics" ? (
                 groupedByModel.map((group) => {
                   const groupStockTone = getStockTone(group.totalStock);
@@ -1044,9 +1044,9 @@ export function ProductStockQuickView({
                   return (
                     <section
                       key={group.model}
-                      className="rounded-[24px] border border-slate-200 bg-slate-50/70 p-4"
+                      className="rounded-[24px] border border-slate-200 bg-slate-50/70 p-3 sm:p-4"
                     >
-                      <div className="flex items-start justify-between gap-3">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
                         <div className="min-w-0 flex-1">
                           <h3 className="text-base font-semibold text-slate-900">
                             {group.model}
@@ -1060,28 +1060,16 @@ export function ProductStockQuickView({
                         </span>
                       </div>
 
-                      <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                      <div className="mt-3 space-y-2.5 md:grid md:grid-cols-2 md:gap-3 md:space-y-0 xl:grid-cols-3">
                         {group.variants.map((variant) => {
                           const variantStockTone = getStockTone(variant.stock);
 
                           return (
                             <div
                               key={variant.id}
-                              className="relative rounded-2xl border border-slate-200 bg-white px-3 py-3"
+                              className="relative rounded-2xl border border-slate-200 bg-white p-3"
                             >
-                              {(canAdjustStock || canDeleteColor) ? (
-                                <div className="absolute right-3 top-3 z-10">
-                                  <button
-                                    type="button"
-                                    onClick={() => setVariantActionsTarget(variant)}
-                                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900"
-                                    aria-label={`Veprimet per ${variant.color}`}
-                                  >
-                                    <IconMore />
-                                  </button>
-                                </div>
-                              ) : null}
-                              <div className="flex items-start gap-3 pr-12">
+                              <div className="flex items-start gap-3">
                                 <button
                                   type="button"
                                   onClick={() =>
@@ -1092,7 +1080,7 @@ export function ProductStockQuickView({
                                         })
                                       : undefined
                                   }
-                                  className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-50"
+                                  className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50 sm:h-14 sm:w-14 sm:rounded-2xl"
                                   title={variant.imagePath ? "Hap foton" : "Pa foto"}
                                 >
                                   {variant.imagePath ? (
@@ -1108,24 +1096,41 @@ export function ProductStockQuickView({
                                   )}
                                 </button>
                                 <div className="min-w-0 flex-1">
+                                  <div className="flex items-start justify-between gap-2">
+                                    <div className="min-w-0">
+                                      <p className="truncate text-sm font-semibold text-slate-900">
+                                        {variant.color}
+                                      </p>
+                                      {(variant.powerWatts || variant.material) ? (
+                                        <p className="mt-0.5 truncate text-xs text-slate-500">
+                                          {variant.powerWatts || variant.material}
+                                        </p>
+                                      ) : null}
+                                      {variant.locationCode ? (
+                                        <p className="mt-0.5 truncate text-xs text-slate-500">
+                                          Lok: {variant.locationCode}
+                                        </p>
+                                      ) : null}
+                                    </div>
+                                    {(canAdjustStock || canDeleteColor) ? (
+                                      <button
+                                        type="button"
+                                        onClick={() => setVariantActionsTarget(variant)}
+                                        className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900"
+                                        aria-label={`Veprimet per ${variant.color}`}
+                                      >
+                                        <IconMore />
+                                      </button>
+                                    ) : null}
+                                  </div>
+                                  {(variant.powerWatts || variant.material) ? (
+                                    <></>
+                                  ) : null}
                                   <span
-                                    className={`inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${variantStockTone.badgeClassName}`}
+                                    className={`mt-2 inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${variantStockTone.badgeClassName}`}
                                   >
                                     {variant.stock} cope
                                   </span>
-                                  <p className="mt-2 truncate text-sm font-semibold text-slate-900">
-                                    {variant.color}
-                                  </p>
-                                  {(variant.powerWatts || variant.material) ? (
-                                    <p className="mt-1 truncate text-xs text-slate-500">
-                                      {variant.powerWatts || variant.material}
-                                    </p>
-                                  ) : null}
-                                  {variant.locationCode ? (
-                                    <p className="mt-1 truncate text-xs text-slate-500">
-                                      Lok: {variant.locationCode}
-                                    </p>
-                                  ) : null}
                                 </div>
                               </div>
                             </div>
@@ -1142,9 +1147,9 @@ export function ProductStockQuickView({
                   return (
                     <section
                       key={`${group.title}-${group.subtitle ?? "base"}`}
-                      className="rounded-[24px] border border-slate-200 bg-slate-50/70 p-4"
+                      className="rounded-[24px] border border-slate-200 bg-slate-50/70 p-3 sm:p-4"
                     >
-                      <div className="flex items-start justify-between gap-3">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
                         <div className="min-w-0 flex-1">
                           <h3 className="text-base font-semibold text-slate-900">
                             {group.title}
@@ -1161,28 +1166,16 @@ export function ProductStockQuickView({
                         </span>
                       </div>
 
-                      <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+                      <div className="mt-3 space-y-2.5 md:grid md:grid-cols-2 md:gap-3 md:space-y-0 xl:grid-cols-3">
                         {group.variants.map((variant) => {
                           const variantStockTone = getStockTone(variant.stock);
 
                           return (
                             <div
                               key={variant.id}
-                              className="relative rounded-2xl border border-slate-200 bg-white px-3 py-3"
+                              className="relative rounded-2xl border border-slate-200 bg-white p-3"
                             >
-                              {(canAdjustStock || canDeleteColor) ? (
-                                <div className="absolute right-3 top-3 z-10">
-                                  <button
-                                    type="button"
-                                    onClick={() => setVariantActionsTarget(variant)}
-                                    className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900"
-                                    aria-label={`Veprimet per ${variant.color}`}
-                                  >
-                                    <IconMore />
-                                  </button>
-                                </div>
-                              ) : null}
-                              <div className="flex items-start gap-3 pr-12">
+                              <div className="flex items-start gap-3">
                                 <button
                                   type="button"
                                   onClick={() =>
@@ -1193,7 +1186,7 @@ export function ProductStockQuickView({
                                         })
                                       : undefined
                                   }
-                                  className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-50"
+                                  className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-xl border border-slate-200 bg-slate-50 sm:h-14 sm:w-14 sm:rounded-2xl"
                                   title={variant.imagePath ? "Hap foton" : "Pa foto"}
                                 >
                                   {variant.imagePath ? (
@@ -1210,21 +1203,35 @@ export function ProductStockQuickView({
                                 </button>
 
                                 <div className="min-w-0 flex-1">
-                                  <p className="truncate text-sm font-semibold text-slate-900">
-                                    {variant.color}
-                                  </p>
-                                  {(variant.material || variant.powerWatts) ? (
-                                    <p className="mt-1 truncate text-xs text-slate-500">
-                                      {variant.material || variant.powerWatts}
-                                    </p>
-                                  ) : null}
-                                  {variant.locationCode ? (
-                                    <p className="mt-1 truncate text-xs text-slate-500">
-                                      Lok: {variant.locationCode}
-                                    </p>
-                                  ) : null}
+                                  <div className="flex items-start justify-between gap-2">
+                                    <div className="min-w-0">
+                                      <p className="truncate text-sm font-semibold text-slate-900">
+                                        {variant.color}
+                                      </p>
+                                      {(variant.material || variant.powerWatts) ? (
+                                        <p className="mt-0.5 truncate text-xs text-slate-500">
+                                          {variant.material || variant.powerWatts}
+                                        </p>
+                                      ) : null}
+                                      {variant.locationCode ? (
+                                        <p className="mt-0.5 truncate text-xs text-slate-500">
+                                          Lok: {variant.locationCode}
+                                        </p>
+                                      ) : null}
+                                    </div>
+                                    {(canAdjustStock || canDeleteColor) ? (
+                                      <button
+                                        type="button"
+                                        onClick={() => setVariantActionsTarget(variant)}
+                                        className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900"
+                                        aria-label={`Veprimet per ${variant.color}`}
+                                      >
+                                        <IconMore />
+                                      </button>
+                                    ) : null}
+                                  </div>
                                   <span
-                                    className={`mt-1 inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${variantStockTone.badgeClassName}`}
+                                    className={`mt-2 inline-flex rounded-full px-2 py-0.5 text-[10px] font-semibold ${variantStockTone.badgeClassName}`}
                                   >
                                     {variant.stock} cope
                                   </span>
@@ -1250,10 +1257,10 @@ export function ProductStockQuickView({
                 return (
                   <section
                     key={color}
-                    className="rounded-[24px] border border-slate-200 bg-slate-50/70 p-4"
+                    className="rounded-[24px] border border-slate-200 bg-slate-50/70 p-3 sm:p-4"
                   >
                     <div className="flex items-start justify-between gap-3">
-                      <div className="flex min-w-0 flex-1 items-center gap-4">
+                      <div className="flex min-w-0 flex-1 items-center gap-3 sm:gap-4">
                         <button
                           type="button"
                           onClick={() =>
@@ -1264,7 +1271,7 @@ export function ProductStockQuickView({
                                 })
                               : undefined
                           }
-                          className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-white"
+                          className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-white sm:h-16 sm:w-16"
                           title={colorImage ? "Hap foton" : "Pa foto"}
                         >
                           {colorImage ? (
@@ -1387,8 +1394,8 @@ export function ProductStockQuickView({
                                 className="fixed inset-0 z-20 bg-slate-950/15 sm:hidden"
                                 onClick={() => setOpenColorActions(null)}
                               />
-                              <div className="fixed inset-x-4 bottom-4 z-30 rounded-[24px] border border-slate-200 bg-white p-2 shadow-2xl sm:hidden">
-                                <div className="mb-2 px-2 pt-1">
+                              <div className="fixed inset-x-0 bottom-0 z-30 rounded-t-[24px] border border-slate-200 bg-white p-3 shadow-2xl sm:hidden">
+                                <div className="mb-2 px-1 pt-1">
                                   <p className="text-sm font-semibold text-slate-900">
                                     {color}
                                   </p>
@@ -1471,7 +1478,7 @@ export function ProductStockQuickView({
                       ) : null}
                     </div>
 
-                    <div className="mt-4 grid grid-cols-2 gap-2.5 sm:flex sm:flex-wrap">
+                    <div className="mt-4 grid grid-cols-1 gap-2.5 sm:flex sm:flex-wrap">
                       {colorVariants.map((variant) => {
                         const tone =
                           variant.stock > 0 && variant.stock <= LOW_STOCK_THRESHOLD
@@ -1538,11 +1545,11 @@ export function ProductStockQuickView({
 
       {variantActionsTarget ? (
         <div
-          className="fixed inset-0 z-[96] flex items-center justify-center bg-slate-950/45 p-4"
+          className="fixed inset-0 z-[96] flex items-end justify-center bg-slate-950/45 p-0 sm:items-center sm:p-4"
           onClick={() => setVariantActionsTarget(null)}
         >
           <div
-            className={`${modalCardClass()} max-w-sm`}
+            className={`${modalCardClass()} w-full rounded-t-[28px] p-4 sm:max-w-sm sm:rounded-[28px] sm:p-5`}
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4">
@@ -1625,7 +1632,7 @@ export function ProductStockQuickView({
 
       {deleteColorTarget || deleteVariantTarget ? (
         <div
-          className="fixed inset-0 z-[96] flex items-center justify-center bg-slate-950/65 p-4"
+          className="fixed inset-0 z-[96] flex items-end justify-center bg-slate-950/65 p-0 sm:items-center sm:p-4"
           onClick={() => {
             if (!deletingColor) {
               setDeleteColorTarget(null);
@@ -1635,7 +1642,7 @@ export function ProductStockQuickView({
           }}
         >
           <div
-            className={`${modalCardClass()} max-w-md`}
+            className={`${modalCardClass()} w-full rounded-t-[28px] p-4 sm:max-w-md sm:rounded-[28px] sm:p-5`}
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4">
@@ -1712,7 +1719,7 @@ export function ProductStockQuickView({
 
       {stockEditorColor || stockEditorVariantId ? (
         <div
-          className="fixed inset-0 z-[96] flex items-center justify-center bg-slate-950/65 p-3 sm:p-4"
+          className="fixed inset-0 z-[96] flex items-end justify-center bg-slate-950/65 p-0 sm:items-center sm:p-4"
           onClick={() => {
             if (!savingStock) {
               setStockEditorColor(null);
@@ -1722,11 +1729,11 @@ export function ProductStockQuickView({
           }}
         >
           <div
-            className={`${modalCardClass()} max-h-[calc(100vh-24px)] max-w-xl overflow-hidden p-0 sm:max-h-[calc(100vh-32px)]`}
+            className={`${modalCardClass()} max-h-[92vh] w-full overflow-hidden rounded-t-[28px] p-0 sm:max-h-[calc(100vh-32px)] sm:max-w-xl sm:rounded-[28px]`}
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="flex max-h-[calc(100vh-24px)] flex-col sm:max-h-[calc(100vh-32px)]">
-            <div className="flex items-start justify-between gap-4 px-5 pb-0 pt-5">
+            <div className="flex max-h-[92vh] flex-col sm:max-h-[calc(100vh-32px)]">
+            <div className="flex items-start justify-between gap-4 px-4 pb-0 pt-4 sm:px-5 sm:pt-5">
               <div>
                 <h3 className="text-lg font-semibold text-slate-950">
                   Shto sasi - {variantForStockAdd ? `${variantForStockAdd.color}${variantForStockAdd.size ? ` / ${variantForStockAdd.size}` : ""}` : stockEditorColor}
@@ -1752,7 +1759,7 @@ export function ProductStockQuickView({
               </button>
             </div>
 
-            <div className="mt-5 flex-1 overflow-y-auto px-5 pb-4">
+            <div className="mt-4 flex-1 overflow-y-auto px-4 pb-5 sm:mt-5 sm:px-5">
             <div className="rounded-[24px] border border-slate-200 bg-slate-50/80 p-3">
               <div className="mb-3 grid gap-3 rounded-2xl bg-white px-4 py-3 sm:grid-cols-[1fr_auto] sm:items-center">
                 <div>
@@ -1796,20 +1803,20 @@ export function ProductStockQuickView({
                 {stockEditorVariants.map((variant) => (
                   <div
                     key={`edit-${variant.id}-${variant.size}`}
-                    className="grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 sm:grid-cols-[1fr_auto]"
+                    className="rounded-2xl border border-slate-200 bg-white px-4 py-3"
                   >
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-semibold text-slate-900">
-                          {variantForStockAdd ? variant.size || variant.color : `Nr ${variant.size}`}
-                        </p>
-                        <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-600">
-                          {variant.stock} ne stok
-                        </span>
-                      </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-sm font-semibold text-slate-900">
+                        {variantForStockAdd ? variant.size || variant.color : `Nr ${variant.size}`}
+                      </p>
+                      <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-600">
+                        {variant.stock} ne stok
+                      </span>
                     </div>
-                    <div className="flex items-center gap-2 sm:justify-end">
-                      <span className="text-sm font-semibold text-slate-400">+</span>
+                    <label className="mt-3 block space-y-2">
+                      <span className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                        Sasia qe po shtohet
+                      </span>
                       <input
                         type="number"
                         min="0"
@@ -1822,9 +1829,9 @@ export function ProductStockQuickView({
                           }))
                         }
                         placeholder="0"
-                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-right text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-100 sm:w-24"
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-100 sm:max-w-[120px] sm:text-right"
                       />
-                    </div>
+                    </label>
                   </div>
                 ))}
               </div>
@@ -1837,7 +1844,7 @@ export function ProductStockQuickView({
               </div>
             ) : null}
 
-            <div className="mt-5 flex flex-col-reverse gap-3 border-t border-slate-100 bg-white px-5 pb-5 pt-4 sm:flex-row sm:justify-end">
+            <div className="mt-4 flex flex-col-reverse gap-3 border-t border-slate-100 bg-white px-4 pb-4 pt-4 sm:mt-5 sm:flex-row sm:justify-end sm:px-5 sm:pb-5">
               <button
                 type="button"
                 onClick={() => {
@@ -1869,7 +1876,7 @@ export function ProductStockQuickView({
 
       {editStockColor || editStockVariantId ? (
         <div
-          className="fixed inset-0 z-[96] flex items-center justify-center bg-slate-950/65 p-3 sm:p-4"
+          className="fixed inset-0 z-[96] flex items-end justify-center bg-slate-950/65 p-0 sm:items-center sm:p-4"
           onClick={() => {
             if (!savingEditStock) {
               setEditStockColor(null);
@@ -1880,11 +1887,11 @@ export function ProductStockQuickView({
           }}
         >
           <div
-            className={`${modalCardClass()} max-h-[calc(100vh-24px)] max-w-xl overflow-hidden p-0 sm:max-h-[calc(100vh-32px)]`}
+            className={`${modalCardClass()} max-h-[92vh] w-full overflow-hidden rounded-t-[28px] p-0 sm:max-h-[calc(100vh-32px)] sm:max-w-xl sm:rounded-[28px]`}
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="flex max-h-[calc(100vh-24px)] flex-col sm:max-h-[calc(100vh-32px)]">
-            <div className="flex items-start justify-between gap-4 px-5 pb-0 pt-5">
+            <div className="flex max-h-[92vh] flex-col sm:max-h-[calc(100vh-32px)]">
+            <div className="flex items-start justify-between gap-4 px-4 pb-0 pt-4 sm:px-5 sm:pt-5">
               <div>
                 <h3 className="text-lg font-semibold text-slate-950">
                   Edito stokun - {variantForStockEdit ? `${variantForStockEdit.color}${variantForStockEdit.size ? ` / ${variantForStockEdit.size}` : ""}` : editStockColor}
@@ -1912,7 +1919,7 @@ export function ProductStockQuickView({
               </button>
             </div>
 
-            <div className="mt-5 flex-1 overflow-y-auto px-5 pb-4">
+            <div className="mt-4 flex-1 overflow-y-auto px-4 pb-5 sm:mt-5 sm:px-5">
             <div className="mb-4 rounded-2xl border border-slate-200 bg-white p-4">
               <label className="block space-y-2">
                 <span className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
@@ -1942,31 +1949,34 @@ export function ProductStockQuickView({
                 {variantsForEditStock.map((variant) => (
                   <div
                     key={`set-${variant.id}`}
-                    className="grid grid-cols-1 gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3 sm:grid-cols-[1fr_auto]"
+                    className="rounded-2xl border border-slate-200 bg-white px-4 py-3"
                   >
-                    <div>
-                      <div className="flex items-center gap-2">
-                        <p className="text-sm font-semibold text-slate-900">
-                          {variantForStockEdit ? variant.size || variant.color : `Nr ${variant.size}`}
-                        </p>
-                        <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-600">
-                          aktual: {variant.stock}
-                        </span>
-                      </div>
+                    <div className="flex flex-wrap items-center gap-2">
+                      <p className="text-sm font-semibold text-slate-900">
+                        {variantForStockEdit ? variant.size || variant.color : `Nr ${variant.size}`}
+                      </p>
+                      <span className="inline-flex rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-medium text-slate-600">
+                        aktual: {variant.stock}
+                      </span>
                     </div>
-                    <input
-                      type="number"
-                      min="0"
-                      inputMode="numeric"
-                      value={editStockInputs[variant.id] ?? ""}
-                      onChange={(event) =>
-                        setEditStockInputs((current) => ({
-                          ...current,
-                          [variant.id]: event.target.value,
-                        }))
-                      }
-                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-right text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-100 sm:w-24"
-                    />
+                    <label className="mt-3 block space-y-2">
+                      <span className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                        Stoku final
+                      </span>
+                      <input
+                        type="number"
+                        min="0"
+                        inputMode="numeric"
+                        value={editStockInputs[variant.id] ?? ""}
+                        onChange={(event) =>
+                          setEditStockInputs((current) => ({
+                            ...current,
+                            [variant.id]: event.target.value,
+                          }))
+                        }
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-100 sm:max-w-[120px] sm:text-right"
+                      />
+                    </label>
                   </div>
                 ))}
               </div>
@@ -1979,7 +1989,7 @@ export function ProductStockQuickView({
               </div>
             ) : null}
 
-            <div className="mt-5 flex flex-col-reverse gap-3 border-t border-slate-100 bg-white px-5 pb-5 pt-4 sm:flex-row sm:justify-end">
+            <div className="mt-4 flex flex-col-reverse gap-3 border-t border-slate-100 bg-white px-4 pb-4 pt-4 sm:mt-5 sm:flex-row sm:justify-end sm:px-5 sm:pb-5">
               <button
                 type="button"
                 onClick={() => {
@@ -2012,7 +2022,7 @@ export function ProductStockQuickView({
 
       {numberEditorColor ? (
         <div
-          className="fixed inset-0 z-[96] flex items-center justify-center bg-slate-950/65 p-3 sm:p-4"
+          className="fixed inset-0 z-[96] flex items-end justify-center bg-slate-950/65 p-0 sm:items-center sm:p-4"
           onClick={() => {
             if (!creatingNumber) {
               setNumberEditorColor(null);
@@ -2021,11 +2031,11 @@ export function ProductStockQuickView({
           }}
         >
           <div
-            className={`${modalCardClass()} max-h-[calc(100vh-24px)] max-w-xl overflow-hidden p-0 sm:max-h-[calc(100vh-32px)]`}
+            className={`${modalCardClass()} max-h-[92vh] w-full overflow-hidden rounded-t-[28px] p-0 sm:max-h-[calc(100vh-32px)] sm:max-w-xl sm:rounded-[28px]`}
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="flex max-h-[calc(100vh-24px)] flex-col sm:max-h-[calc(100vh-32px)]">
-            <div className="flex items-start justify-between gap-4 px-5 pb-0 pt-5">
+            <div className="flex max-h-[92vh] flex-col sm:max-h-[calc(100vh-32px)]">
+            <div className="flex items-start justify-between gap-4 px-4 pb-0 pt-4 sm:px-5 sm:pt-5">
               <div>
                 <h3 className="text-lg font-semibold text-slate-950">
                   Shto numer - {numberEditorColor}
@@ -2130,7 +2140,7 @@ export function ProductStockQuickView({
               </div>
             ) : null}
 
-            <div className="mt-5 flex flex-col-reverse gap-3 border-t border-slate-100 bg-white px-5 pb-5 pt-4 sm:flex-row sm:justify-end">
+            <div className="mt-4 flex flex-col-reverse gap-3 border-t border-slate-100 bg-white px-4 pb-4 pt-4 sm:mt-5 sm:flex-row sm:justify-end sm:px-5 sm:pb-5">
               <button
                 type="button"
                 onClick={() => {
@@ -2161,7 +2171,7 @@ export function ProductStockQuickView({
 
       {showVariantCreator ? (
         <div
-          className="fixed inset-0 z-[96] flex items-center justify-center bg-slate-950/65 p-3 sm:p-4"
+          className="fixed inset-0 z-[96] flex items-end justify-center bg-slate-950/65 p-0 sm:items-center sm:p-4"
           onClick={() => {
             if (!creatingVariant) {
               resetVariantCreator();
@@ -2169,11 +2179,11 @@ export function ProductStockQuickView({
           }}
         >
           <div
-            className={`${modalCardClass()} max-h-[calc(100vh-24px)] max-w-3xl overflow-hidden p-0 sm:max-h-[calc(100vh-32px)]`}
+            className={`${modalCardClass()} max-h-[92vh] w-full overflow-hidden rounded-t-[28px] p-0 sm:max-h-[calc(100vh-32px)] sm:max-w-3xl sm:rounded-[28px]`}
             onClick={(event) => event.stopPropagation()}
           >
-            <div className="flex max-h-[calc(100vh-24px)] flex-col sm:max-h-[calc(100vh-32px)]">
-            <div className="flex items-start justify-between gap-4 px-5 pb-0 pt-5">
+            <div className="flex max-h-[92vh] flex-col sm:max-h-[calc(100vh-32px)]">
+            <div className="flex items-start justify-between gap-4 px-4 pb-0 pt-4 sm:px-5 sm:pt-5">
               <div>
                 <h3 className="text-lg font-semibold text-slate-950">
                   Shto variant
@@ -2213,10 +2223,10 @@ export function ProductStockQuickView({
               </button>
             </div>
 
-            <div className="mt-5 flex-1 overflow-y-auto px-5 pb-4">
-            <div className="rounded-[24px] border border-slate-200 bg-slate-50/80 p-4">
+            <div className="mt-4 flex-1 overflow-y-auto px-4 pb-6 sm:mt-5 sm:px-5">
+            <div className="rounded-[24px] border border-slate-200 bg-slate-50/80 p-3 sm:p-4">
               <div className={`grid items-start gap-4 ${stockViewMode === "footwear" ? "lg:grid-cols-[132px_minmax(0,1fr)]" : "lg:grid-cols-[148px_minmax(0,1fr)]"}`}>
-                <div className="self-start rounded-2xl border border-slate-200 bg-white p-3">
+                <div className="self-start rounded-2xl border border-slate-200 bg-white p-3 lg:max-w-[148px]">
                   <button
                     type="button"
                     onClick={() =>
@@ -2227,7 +2237,7 @@ export function ProductStockQuickView({
                           })
                         : undefined
                     }
-                    className="flex h-[92px] w-full items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-50"
+                    className="flex h-[88px] w-full items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 sm:h-[92px]"
                     title={variantImagePreview ? "Hap foton" : "Pa foto"}
                   >
                     {variantImagePreview ? (
@@ -2334,7 +2344,7 @@ export function ProductStockQuickView({
                           </p>
                         </div>
 
-                        <div className="mt-3 grid gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-3 md:grid-cols-[minmax(0,1fr)_120px_auto]">
+                        <div className="mt-3 grid gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-3 sm:grid-cols-[minmax(0,1fr)_120px_auto]">
                           <label className="min-w-0 space-y-2">
                             <span className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
                               Numri
@@ -2406,7 +2416,7 @@ export function ProductStockQuickView({
                       </>
                     ) : (
                       <div className="space-y-4">
-                        <div className="grid gap-4 md:grid-cols-2">
+                        <div className="grid gap-4 sm:grid-cols-2">
                           <label className="min-w-0 space-y-2">
                             <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
                               {quickVariantPrimaryLabel}
@@ -2465,7 +2475,7 @@ export function ProductStockQuickView({
               </div>
             ) : null}
 
-            <div className="mt-5 flex flex-col-reverse gap-3 border-t border-slate-100 bg-white px-5 pb-5 pt-4 sm:flex-row sm:justify-end">
+            <div className="mt-4 flex flex-col-reverse gap-3 border-t border-slate-100 bg-white px-4 pb-4 pt-4 sm:mt-5 sm:flex-row sm:justify-end sm:px-5 sm:pb-5">
               <button
                 type="button"
                 onClick={() => {
