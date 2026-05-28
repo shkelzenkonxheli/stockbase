@@ -282,8 +282,28 @@ export default async function RootLayout({
                     </div>
                   </div>
                   <div className="border-t border-slate-100 px-4 py-3 xl:hidden">
-                    <div className="-mx-1 overflow-x-auto pb-1">
-                      <AppShellNav items={navItems} orientation="horizontal" />
+                    <details className="relative sm:hidden">
+                      <summary className="flex h-11 w-full cursor-pointer list-none items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-white">
+                        <span>Menu</span>
+                        <svg
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                          aria-hidden="true"
+                          className="h-4 w-4"
+                        >
+                          <circle cx="4.5" cy="10" r="1.4" />
+                          <circle cx="10" cy="10" r="1.4" />
+                          <circle cx="15.5" cy="10" r="1.4" />
+                        </svg>
+                      </summary>
+                      <div className="absolute left-0 right-0 z-30 mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 shadow-[0_18px_40px_rgba(15,23,42,0.14)]">
+                        <AppShellNav items={navItems} />
+                      </div>
+                    </details>
+                    <div className="hidden sm:block">
+                      <div className="-mx-1 overflow-x-auto pb-1">
+                        <AppShellNav items={navItems} orientation="horizontal" />
+                      </div>
                     </div>
                   </div>
                 </header>

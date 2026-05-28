@@ -248,21 +248,19 @@ async function updateTenantSettings(formData: FormData) {
 
   const businessName = formData.get("businessName")?.toString().trim();
   const catalogType = formData.get("catalogType")?.toString().trim() as CatalogType | undefined;
-  const currency = formData.get("currency")?.toString().trim().toUpperCase();
   const language = formData.get("language")?.toString().trim().toLowerCase();
-  const primaryColor = formData.get("primaryColor")?.toString().trim() || null;
   const newCategoryName = formData.get("newCategoryName")?.toString().trim();
   const newCategoryPreset = formData.get("newCategoryPreset")?.toString().trim() as
     | ProductCategoryName
     | undefined;
 
-  if (!businessName || !catalogType || !currency || !language) {
+  if (!businessName || !catalogType || !language) {
     redirect("/settings?error=validation");
   }
 
   const existingSettings = await prisma.tenantSettings.findUnique({
     where: { tenantId },
-    select: { catalogConfig: true },
+    select: { catalogConfig: true, currency: true, primaryColor: true },
   });
   const existingTenantConfig = parseTenantCatalogConfig(existingSettings?.catalogConfig);
   const currentProductListView = getProductListViewConfig(existingTenantConfig);
@@ -407,16 +405,16 @@ async function updateTenantSettings(formData: FormData) {
       create: {
         tenantId,
         businessName,
-        currency,
         language,
-        primaryColor,
+        currency: existingSettings?.currency ?? "EUR",
+        primaryColor: existingSettings?.primaryColor ?? null,
         catalogConfig,
       },
       update: {
         businessName,
-        currency,
         language,
-        primaryColor,
+        currency: existingSettings?.currency ?? "EUR",
+        primaryColor: existingSettings?.primaryColor ?? null,
         catalogConfig,
       },
     }),
@@ -553,7 +551,7 @@ function getMessage(success?: string, error?: string) {
   if (error === "validation") {
     return {
       type: "error" as const,
-      text: "Ploteso emrin e biznesit, llojin e katalogut, monedhen dhe gjuhen.",
+      text: "Ploteso emrin e biznesit, llojin e katalogut dhe gjuhen.",
     };
   }
 
@@ -626,7 +624,6 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
     await ensureTenantCategories(tenantId, tenant.catalogType);
   }
 
-  const catalogTemplate = getCatalogTemplate(tenant.catalogType);
   const tenantCatalogConfig = parseTenantCatalogConfig(tenant.settings?.catalogConfig);
   const productListView = getProductListViewConfig(tenantCatalogConfig);
   const orderListView = getOrderListViewConfig(tenantCatalogConfig);
@@ -688,91 +685,109 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
           />
         ) : null}
 
-        <section className="grid gap-6 xl:grid-cols-[minmax(0,1.15fr)_340px]">
+        <section>
           <form
             action={updateTenantSettings}
             className="rounded-[30px] border border-slate-200 bg-white px-5 py-6 shadow-[0_18px_45px_rgba(15,23,42,0.06)] sm:px-6 lg:px-8"
           >
-            <div className="grid gap-5 sm:grid-cols-2">
-              <div className="space-y-2 sm:col-span-2">
-                <label htmlFor="businessName" className="block text-sm font-medium text-slate-800">
-                  Emri i biznesit
-                </label>
-                <input
-                  id="businessName"
-                  name="businessName"
-                  type="text"
-                  defaultValue={tenant.settings?.businessName ?? tenant.name}
-                  className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-200"
-                />
-              </div>
-
-              <div className="space-y-2 sm:col-span-2">
-                <label htmlFor="catalogType" className="block text-sm font-medium text-slate-800">
-                  Lloji i katalogut
-                </label>
-                <select
-                  id="catalogType"
-                  name="catalogType"
-                  defaultValue={tenant.catalogType}
-                  className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-200"
-                >
-                  {catalogOptions.map((option) => (
-                    <option key={option.value} value={option.value}>
-                      {option.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="currency" className="block text-sm font-medium text-slate-800">
-                  Monedha
-                </label>
-                <input
-                  id="currency"
-                  name="currency"
-                  type="text"
-                  maxLength={3}
-                  defaultValue={tenant.settings?.currency ?? "EUR"}
-                  className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 uppercase text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-200"
-                />
-              </div>
-
-              <div className="space-y-2">
-                <label htmlFor="language" className="block text-sm font-medium text-slate-800">
-                  Gjuha
-                </label>
-                <select
-                  id="language"
-                  name="language"
-                  defaultValue={tenant.settings?.language ?? "sq"}
-                  className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-200"
-                >
-                  <option value="sq">Shqip</option>
-                  <option value="en">English</option>
-                </select>
-              </div>
-
-              <div className="space-y-2 sm:col-span-2">
-                <label htmlFor="primaryColor" className="block text-sm font-medium text-slate-800">
-                  Ngjyra primare
-                </label>
-                <input
-                  id="primaryColor"
-                  name="primaryColor"
-                  type="text"
-                  defaultValue={tenant.settings?.primaryColor ?? ""}
-                  placeholder="#0f172a"
-                  className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-200"
-                />
-              </div>
-            </div>
-
-            <div className="mt-8 border-t border-slate-200 pt-6">
+            <div className="mx-auto max-w-3xl space-y-6">
               <SettingsTabs
+                settings={
+                  <div className="mx-auto max-w-2xl space-y-5">
+                    <section className="rounded-[24px] border border-slate-200 bg-white p-4 sm:p-5">
+                      <div className="grid gap-5 sm:grid-cols-2">
+                        <div className="space-y-2 sm:col-span-2">
+                          <label htmlFor="businessName" className="block text-sm font-medium text-slate-800">
+                            Emri i biznesit
+                          </label>
+                          <input
+                            id="businessName"
+                            name="businessName"
+                            type="text"
+                            defaultValue={tenant.settings?.businessName ?? tenant.name}
+                            className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-200"
+                          />
+                        </div>
+
+                        <div className="space-y-2 sm:col-span-2">
+                          <label htmlFor="catalogType" className="block text-sm font-medium text-slate-800">
+                            Lloji i katalogut
+                          </label>
+                          <select
+                            id="catalogType"
+                            name="catalogType"
+                            defaultValue={tenant.catalogType}
+                            className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-200"
+                          >
+                            {catalogOptions.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label htmlFor="language" className="block text-sm font-medium text-slate-800">
+                            Gjuha
+                          </label>
+                          <select
+                            id="language"
+                            name="language"
+                            defaultValue={tenant.settings?.language ?? "sq"}
+                            className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-200"
+                          >
+                            <option value="sq">Shqip</option>
+                            <option value="en">English</option>
+                          </select>
+                        </div>
+
+                      </div>
+                    </section>
+
+                    <section className="rounded-[24px] border border-slate-200 bg-white p-4 sm:p-5">
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                        Subscription
+                      </p>
+                      <div className="mt-4 space-y-3 text-sm text-slate-600">
+                        <p>
+                          <span className="font-medium text-slate-900">Statusi:</span>{" "}
+                          {tenant.subscription?.status ?? "-"}
+                        </p>
+                        <p>
+                          <span className="font-medium text-slate-900">Plan:</span>{" "}
+                          {tenant.subscription?.planCode ?? "Trial / pa plan"}
+                        </p>
+                        <p>
+                          <span className="font-medium text-slate-900">Trial deri:</span>{" "}
+                          {tenant.subscription?.trialEnd
+                            ? new Intl.DateTimeFormat("sq-AL", {
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "numeric",
+                              }).format(tenant.subscription.trialEnd)
+                            : "-"}
+                        </p>
+                        <p>
+                          <span className="font-medium text-slate-900">Periudha aktive deri:</span>{" "}
+                          {tenant.subscription?.currentPeriodEnd
+                            ? new Intl.DateTimeFormat("sq-AL", {
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "numeric",
+                              }).format(tenant.subscription.currentPeriodEnd)
+                            : "-"}
+                        </p>
+                      </div>
+
+                      <p className="mt-4 rounded-2xl bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-700">
+                        Per momentin aktivizimi behet manualisht nga platforma.
+                      </p>
+                    </section>
+                  </div>
+                }
                 categories={
-                  <div className="space-y-5">
+                  <div className="mx-auto max-w-3xl space-y-5">
                     <section className="rounded-[24px] border border-dashed border-slate-300 bg-white p-4 sm:p-5">
                       <p className="text-base font-semibold text-slate-950">Shto kategori te re</p>
                       <div className="mt-4 grid gap-4 sm:grid-cols-2">
@@ -858,7 +873,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
                   </div>
                 }
                 variables={
-                  <div className="space-y-5">
+                  <div className="mx-auto max-w-3xl space-y-5">
                     <div>
                       <p className="text-sm font-semibold text-slate-950">Variablat sipas kategorise</p>
                       <p className="mt-1 text-sm text-slate-600">
@@ -882,7 +897,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
                   </div>
                 }
                 view={
-                  <section className="space-y-4 rounded-[24px] border border-slate-200 bg-slate-50/70 p-4 sm:p-5">
+                  <section className="mx-auto max-w-3xl space-y-4 rounded-[24px] border border-slate-200 bg-slate-50/70 p-4 sm:p-5">
                     <div>
                       <p className="text-base font-semibold text-slate-950">Pamja e listave</p>
                       <p className="mt-1 text-sm text-slate-600">
@@ -899,81 +914,17 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
               />
             </div>
 
-            <div className="mt-6 flex flex-col gap-3 sm:flex-row">
-              <button
-                type="submit"
-                className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_25px_rgba(15,23,42,0.18)] transition hover:bg-slate-800"
-              >
-                Ruaj ndryshimet
-              </button>
+            <div className="mx-auto mt-8 max-w-3xl border-t border-slate-200 pt-5">
+              <div className="mx-auto max-w-2xl">
+                <button
+                  type="submit"
+                  className="inline-flex w-full items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_25px_rgba(15,23,42,0.18)] transition hover:bg-slate-800 sm:w-auto sm:min-w-[220px]"
+                >
+                  Ruaj ndryshimet
+                </button>
+              </div>
             </div>
           </form>
-
-          <aside className="space-y-6">
-            <section className="rounded-[30px] border border-slate-200 bg-white px-5 py-6 shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                Template aktiv
-              </p>
-              <h2 className="mt-3 text-2xl font-semibold tracking-tight text-slate-950">
-                {catalogTemplate.label}
-              </h2>
-              <p className="mt-3 text-sm leading-6 text-slate-600">
-                {catalogTemplate.description}
-              </p>
-              <div className="mt-5 rounded-2xl bg-slate-50 px-4 py-4">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-                  Fokus i varianteve
-                </p>
-                <p className="mt-2 text-sm font-medium text-slate-900">
-                  {catalogTemplate.variantFocus}
-                </p>
-              </div>
-            </section>
-
-            <section className="rounded-[30px] border border-slate-200 bg-white px-5 py-6 shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-500">
-                Subscription
-              </p>
-              <div className="mt-4 space-y-3 text-sm text-slate-600">
-                <p>
-                  <span className="font-medium text-slate-900">Statusi:</span>{" "}
-                  {tenant.subscription?.status ?? "-"}
-                </p>
-                <p>
-                  <span className="font-medium text-slate-900">Plan:</span>{" "}
-                  {tenant.subscription?.planCode ?? "Trial / pa plan"}
-                </p>
-                <p>
-                  <span className="font-medium text-slate-900">Trial deri:</span>{" "}
-                  {tenant.subscription?.trialEnd
-                    ? new Intl.DateTimeFormat("sq-AL", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      }).format(tenant.subscription.trialEnd)
-                    : "-"}
-                </p>
-                <p>
-                  <span className="font-medium text-slate-900">Periudha aktive deri:</span>{" "}
-                  {tenant.subscription?.currentPeriodEnd
-                    ? new Intl.DateTimeFormat("sq-AL", {
-                        day: "2-digit",
-                        month: "2-digit",
-                        year: "numeric",
-                      }).format(tenant.subscription.currentPeriodEnd)
-                    : "-"}
-                </p>
-              </div>
-
-              <div className="mt-5 space-y-3">
-                <p className="rounded-2xl bg-slate-50 px-4 py-3 text-sm leading-6 text-slate-700">
-                  Per momentin aktivizimi behet manualisht. Klienti mund te paguaje
-                  cash, ndersa administratori i platformes e aktivizon tenant-in nga
-                  paneli `Platforma`.
-                </p>
-              </div>
-            </section>
-          </aside>
         </section>
       </div>
     </main>

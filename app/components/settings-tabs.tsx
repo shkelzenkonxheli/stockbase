@@ -2,26 +2,28 @@
 
 import { useState } from "react";
 
-type TabKey = "categories" | "variables" | "view";
+type TabKey = "settings" | "categories" | "variables" | "view";
 
 type SettingsTabsProps = {
+  settings: React.ReactNode;
   categories: React.ReactNode;
   variables: React.ReactNode;
   view: React.ReactNode;
 };
 
 const TABS: Array<{ key: TabKey; label: string }> = [
+  { key: "settings", label: "Cilesimet" },
   { key: "categories", label: "Kategorite" },
   { key: "variables", label: "Variablat" },
   { key: "view", label: "Pamja" },
 ];
 
-export function SettingsTabs({ categories, variables, view }: SettingsTabsProps) {
-  const [activeTab, setActiveTab] = useState<TabKey>("categories");
+export function SettingsTabs({ settings, categories, variables, view }: SettingsTabsProps) {
+  const [activeTab, setActiveTab] = useState<TabKey>("settings");
 
   return (
     <div className="space-y-5">
-      <div className="overflow-x-auto">
+      <div className="mx-auto max-w-2xl overflow-x-auto">
         <div className="flex min-w-max gap-2 rounded-[24px] border border-slate-200 bg-slate-50 p-2">
           {TABS.map((tab) => (
             <button
@@ -40,6 +42,7 @@ export function SettingsTabs({ categories, variables, view }: SettingsTabsProps)
         </div>
       </div>
 
+      <div className={activeTab === "settings" ? "block" : "hidden"}>{settings}</div>
       <div className={activeTab === "categories" ? "block" : "hidden"}>{categories}</div>
       <div className={activeTab === "variables" ? "block" : "hidden"}>{variables}</div>
       <div className={activeTab === "view" ? "block" : "hidden"}>{view}</div>
