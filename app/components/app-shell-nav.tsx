@@ -44,6 +44,12 @@ export function AppShellNav({
           <Link
             key={item.href}
             href={item.href}
+            onClick={(event) => {
+              const details = event.currentTarget.closest("details");
+              if (details) {
+                details.removeAttribute("open");
+              }
+            }}
             className={`flex items-center gap-3 rounded-2xl text-sm font-medium transition ${
               isHorizontal ? "shrink-0 px-3 py-2" : "px-3 py-2.5"
             } ${

@@ -65,6 +65,7 @@ async function createVariants(formData: FormData) {
         imageFieldName?: unknown;
         size?: unknown;
         color?: unknown;
+        locationCode?: unknown;
         material?: unknown;
         powerWatts?: unknown;
         sku?: unknown;
@@ -78,6 +79,7 @@ async function createVariants(formData: FormData) {
       const imageFieldName = String(candidate.imageFieldName ?? "").trim();
       const size = String(candidate.size ?? "").trim();
       const color = String(candidate.color ?? "").trim();
+      const locationCode = String(candidate.locationCode ?? "").trim() || null;
       const material = String(candidate.material ?? "").trim() || null;
       const powerWatts = String(candidate.powerWatts ?? "").trim() || null;
       const sku = normalizeVariantCode(String(candidate.sku ?? ""));
@@ -95,6 +97,7 @@ async function createVariants(formData: FormData) {
         imageFieldName,
         size,
         color,
+        locationCode,
         material,
         powerWatts,
         sku,
@@ -269,6 +272,7 @@ async function createVariants(formData: FormData) {
             productId,
             size: row.size,
             color: row.color,
+            locationCode: row.locationCode,
             material: row.material,
             powerWatts: row.powerWatts,
             sku: ensureUniqueSku(baseSku, usedSkus),

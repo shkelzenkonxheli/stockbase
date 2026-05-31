@@ -190,13 +190,13 @@ export default async function ReportsPage({
           </div>
         </section>
 
-        <section className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(300px,0.65fr)]">
+        <section className="grid gap-6 2xl:grid-cols-[minmax(0,1.35fr)_minmax(300px,0.65fr)]">
           <div className="space-y-6">
             <section className="rounded-[26px] border border-slate-200 bg-white p-5 shadow-[0_14px_40px_rgba(15,23,42,0.07)] print:break-inside-avoid print:shadow-none">
               <h2 className="text-[24px] font-semibold tracking-tight text-slate-950">
                 Shitjet sipas burimit
               </h2>
-              <div className="mt-6 grid gap-4 sm:grid-cols-3">
+              <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {report.sourceBreakdown.map((item) => (
                   <div
                     key={item.source}
@@ -299,7 +299,7 @@ export default async function ReportsPage({
           </div>
         </section>
 
-        <section className="grid gap-6 xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)]">
+        <section className="grid gap-6 2xl:grid-cols-[minmax(0,1.35fr)_minmax(280px,0.65fr)]">
           <TopModelsPanel models={report.topModels} />
 
           <section className="rounded-[26px] border border-slate-200 bg-white p-5 shadow-[0_14px_40px_rgba(15,23,42,0.07)] print:break-inside-avoid print:shadow-none">

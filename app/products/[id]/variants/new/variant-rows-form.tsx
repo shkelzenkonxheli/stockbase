@@ -10,6 +10,7 @@ type VariantRow = {
   imageFieldName: string;
   size: string;
   color: string;
+  locationCode: string;
   material: string;
   powerWatts: string;
   sku: string;
@@ -31,6 +32,7 @@ type FootwearSizeRow = {
 type FootwearColorGroup = {
   id: string;
   color: string;
+  locationCode: string;
   imageFieldName: string;
   imagePath: string;
   sizes: FootwearSizeRow[];
@@ -54,6 +56,7 @@ const createEmptyRow = (): VariantRow => {
     imageFieldName: `variant-image-${id}`,
     size: "",
     color: "",
+    locationCode: "",
     material: "",
     powerWatts: "",
     sku: "",
@@ -78,6 +81,7 @@ const createFootwearColorGroup = (): FootwearColorGroup => {
   return {
     id,
     color: "",
+    locationCode: "",
     imageFieldName: `variant-image-${id}`,
     imagePath: "",
     sizes: [createFootwearSizeRow()],
@@ -223,7 +227,7 @@ export function VariantRowsForm({
 
   const updateColorGroup = (
     groupId: string,
-    field: keyof Pick<FootwearColorGroup, "color" | "imagePath">,
+    field: keyof Pick<FootwearColorGroup, "color" | "imagePath" | "locationCode">,
     value: string,
   ) => {
     setColorGroups((current) =>
@@ -324,6 +328,7 @@ export function VariantRowsForm({
             imageFieldName: group.imageFieldName,
             size: sizeRow.size,
             color: group.color,
+            locationCode: group.locationCode,
             material: "",
             powerWatts: "",
             sku: "",
@@ -339,6 +344,7 @@ export function VariantRowsForm({
             imageFieldName,
             size,
             color,
+            locationCode,
             material,
             powerWatts,
             sku,
@@ -351,6 +357,7 @@ export function VariantRowsForm({
             imageFieldName,
             size,
             color,
+            locationCode,
             material,
             powerWatts,
             sku,
@@ -495,6 +502,18 @@ export function VariantRowsForm({
                             />
                           </div>
                         )}
+                      </label>
+
+                      <label className="space-y-2">
+                        <FieldLabel>Lokacioni (opsional)</FieldLabel>
+                        <FieldInput
+                          type="text"
+                          value={group.locationCode}
+                          onChange={(event) =>
+                            updateColorGroup(group.id, "locationCode", event.target.value)
+                          }
+                          placeholder="p.sh. Sektori 1-10 / 7"
+                        />
                       </label>
 
                       <div className="space-y-3">
@@ -711,6 +730,16 @@ export function VariantRowsForm({
                             placeholder={categoryConfig?.sizePlaceholder ?? "50x70 cm"}
                           />
                         )}
+                      </label>
+
+                      <label className="space-y-2">
+                        <FieldLabel>Lokacioni (opsional)</FieldLabel>
+                        <FieldInput
+                          type="text"
+                          value={row.locationCode}
+                          onChange={(event) => updateRow(row.id, "locationCode", event.target.value)}
+                          placeholder="p.sh. Sektori 11-20 / 4"
+                        />
                       </label>
 
                       {showMaterialField ? (

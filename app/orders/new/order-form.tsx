@@ -545,8 +545,8 @@ export function OrderForm({ action, products }: OrderFormProps) {
                 : false;
 
               return (
-                <div key={row.id} className="rounded-[24px] px-4 py-4">
-                  <div className="grid gap-3 md:grid-cols-[minmax(130px,0.75fr)_minmax(150px,0.95fr)_minmax(210px,1.15fr)_72px_110px_28px] md:items-end">
+                <div key={row.id} className="rounded-[24px] border border-slate-200 bg-slate-50/60 px-4 py-4">
+                  <div className="grid gap-3 lg:grid-cols-[minmax(130px,0.75fr)_minmax(150px,0.95fr)_minmax(210px,1.15fr)_72px_110px_44px] lg:items-end">
                     <div className="space-y-2">
                       <label className="block text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
                         Kategoria
@@ -631,7 +631,7 @@ export function OrderForm({ action, products }: OrderFormProps) {
                       </div>
                     </div>
 
-                    <div className="flex h-11 items-center justify-center">
+                    <div className="flex h-11 items-center justify-start lg:justify-center">
                       <button
                         type="button"
                         onClick={() => commitRow(row.id)}
@@ -670,7 +670,7 @@ export function OrderForm({ action, products }: OrderFormProps) {
                 {selectedItems.map((item) => (
                   <div
                     key={item.rowId}
-                    className="flex items-center justify-between gap-4 rounded-[20px] border border-slate-200 bg-white px-4 py-3"
+                    className="flex flex-col gap-4 rounded-[20px] border border-slate-200 bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
                   >
                     <div className="flex min-w-0 items-center gap-3">
                       <button
@@ -708,7 +708,7 @@ export function OrderForm({ action, products }: OrderFormProps) {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-between gap-3 sm:justify-end">
                       <span className="text-sm font-semibold text-slate-900">
                         {item.price.toFixed(2)} EUR
                       </span>

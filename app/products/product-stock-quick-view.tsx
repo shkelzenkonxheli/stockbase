@@ -2368,7 +2368,7 @@ export function ProductStockQuickView({
                     </label>
                   </div>
 
-                  <label className="min-w-0 space-y-2">
+                  <label className="mt-1 block min-w-0 space-y-2">
                     <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
                       Lokacioni (opsional)
                     </span>

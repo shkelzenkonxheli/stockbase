@@ -321,7 +321,55 @@ export default async function IncomingStockPage({
               </div>
             ) : (
               <div className="mt-5 overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
-                <div className="overflow-x-auto">
+                <div className="grid gap-3 p-4 lg:hidden">
+                  {recentMovements.map((movement) => (
+                    <article
+                      key={movement.id}
+                      className="rounded-[22px] border border-slate-200 bg-slate-50/70 p-4"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="min-w-0">
+                          <p className="truncate font-semibold text-slate-900">
+                            {movement.variant.product.name}
+                          </p>
+                          <p className="mt-1 text-xs text-slate-500">
+                            {movement.variant.product.category.name}
+                          </p>
+                        </div>
+                        <span
+                          className={`inline-flex items-center rounded-full border px-3 py-1 text-xs font-semibold ${reasonStyles[movement.reason]}`}
+                        >
+                          {reasonLabels[movement.reason]}
+                        </span>
+                      </div>
+
+                      <div className="mt-3 grid grid-cols-2 gap-3 text-sm">
+                        <div>
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                            Varianti
+                          </p>
+                          <p className="mt-1 text-slate-700">
+                            Nr {movement.variant.size} / {movement.variant.color}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
+                            Sasia
+                          </p>
+                          <p className="mt-1 font-semibold text-emerald-600">
+                            +{movement.quantity}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="mt-3 text-xs text-slate-500">
+                        {dateTimeFormatter.format(movement.createdAt)}
+                      </div>
+                    </article>
+                  ))}
+                </div>
+
+                <div className="hidden overflow-x-auto lg:block">
                   <table className="min-w-full text-sm">
                     <thead className="border-b border-slate-100 bg-slate-50 text-left">
                       <tr className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
