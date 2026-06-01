@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { hasRole, requireUser } from "@/lib/auth";
 import { LOW_STOCK_THRESHOLD } from "@/lib/inventory";
@@ -5,6 +6,10 @@ import { prisma } from "@/lib/prisma";
 import { getCatalogTemplate } from "@/lib/product-taxonomy";
 
 const BUSINESS_TIME_ZONE = "Europe/Belgrade";
+
+export const metadata: Metadata = {
+  title: "Paneli",
+};
 
 type ActionTile = {
   title: string;
@@ -116,6 +121,7 @@ export default async function Home() {
   const canCreateOrders = hasRole(currentUser, ["SUPER_ADMIN", "SELLER"]);
   const canManageOrders = hasRole(currentUser, ["SUPER_ADMIN", "SELLER", "WAREHOUSE"]);
   const canManageUsers = hasRole(currentUser, ["SUPER_ADMIN"]);
+  const canViewReports = hasRole(currentUser, ["SUPER_ADMIN"]);
 
   const today = getDateStringInTimeZone(new Date(), BUSINESS_TIME_ZONE);
   const { start: dateFrom, end: dateTo } = getTimeZoneDayBounds(today, BUSINESS_TIME_ZONE);
@@ -239,6 +245,22 @@ export default async function Home() {
       icon: (
         <svg viewBox="0 0 24 24" className="h-6 w-6 fill-none stroke-current stroke-[1.8]">
           <path d="m12 19 6-6M12 19l-6-6M12 5v14" />
+        </svg>
+      ),
+    },
+    {
+      title: "Raportet",
+      subtitle: "Shiko shitjet, burimet dhe performancen e muajit aktual.",
+      href: "/reports",
+      accent: "bg-[linear-gradient(135deg,#0891b2_0%,#06b6d4_100%)]",
+      pill: "Shitjet dhe analiza",
+      visible: canViewReports,
+      icon: (
+        <svg viewBox="0 0 24 24" className="h-6 w-6 fill-none stroke-current stroke-[1.8]">
+          <path d="M4 19h16" />
+          <path d="M7 16V9" />
+          <path d="M12 16V5" />
+          <path d="M17 16v-3" />
         </svg>
       ),
     },

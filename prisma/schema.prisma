@@ -120,6 +120,7 @@ model OrderItem {
   orderId   Int
   variantId Int
   quantity  Int
+  unitPrice Decimal  @db.Decimal(10, 2)
   createdAt DateTime @default(now())
   order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
   variant   Variant  @relation(fields: [variantId], references: [id])

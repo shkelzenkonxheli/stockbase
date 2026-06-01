@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -5,7 +6,12 @@ import type { Prisma } from "@/app/generated/prisma/client";
 import { ConfirmActionForm } from "@/app/components/confirm-action-form";
 import { hasRole, requireUser } from "@/lib/auth";
 import { LOW_STOCK_THRESHOLD } from "@/lib/inventory";
-import { getProductListViewConfig, type ProductListFieldKey } from "@/lib/product-taxonomy";
+import {
+  getCatalogAwareCategoryConfig,
+  getProductListViewConfig,
+  parseCategoryFieldConfig,
+  type ProductListFieldKey,
+} from "@/lib/product-taxonomy";
 import { prisma } from "@/lib/prisma";
 import { ProductsFilters } from "./products-filters";
 import { ProductStockQuickView } from "./product-stock-quick-view";
@@ -33,6 +39,10 @@ function IconPencil() {
 }
 
 const PAGE_SIZE = 20;
+
+export const metadata: Metadata = {
+  title: "Produktet",
+};
 
 type ProductsPageProps = {
   searchParams?: Promise<{
@@ -143,7 +153,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
         id: true,
         name: true,
         brand: true,
-        category: { select: { name: true } },
+        category: { select: { name: true, config: true } },
         variants: {
           select: {
             id: true,
@@ -318,6 +328,12 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                               productId={product.id}
                               productName={product.brand ? `${product.brand} ${product.name}` : product.name}
                               productBrand={product.category.name}
+                              categoryConfig={getCatalogAwareCategoryConfig(
+                                tenant.catalogType,
+                                product.category.name,
+                                tenant.catalogConfig,
+                                parseCategoryFieldConfig(product.category.config),
+                              )}
                               imagePath={previewVariant?.imagePath ?? null}
                               variants={product.variants.map((variant) => ({
                                 id: variant.id,
@@ -368,6 +384,12 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                             productId={product.id}
                             productName={product.brand ? `${product.brand} ${product.name}` : product.name}
                             productBrand={product.category.name}
+                            categoryConfig={getCatalogAwareCategoryConfig(
+                              tenant.catalogType,
+                              product.category.name,
+                              tenant.catalogConfig,
+                              parseCategoryFieldConfig(product.category.config),
+                            )}
                             imagePath={previewVariant?.imagePath ?? null}
                             variants={product.variants.map((variant) => ({
                               id: variant.id,
@@ -493,6 +515,12 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                                   productId={product.id}
                                   productName={product.brand ? `${product.brand} ${product.name}` : product.name}
                                   productBrand={product.category.name}
+                                  categoryConfig={getCatalogAwareCategoryConfig(
+                                    tenant.catalogType,
+                                    product.category.name,
+                                    tenant.catalogConfig,
+                                    parseCategoryFieldConfig(product.category.config),
+                                  )}
                                   imagePath={previewVariant?.imagePath ?? null}
                                   variants={product.variants.map((variant) => ({
                                     id: variant.id,
@@ -529,6 +557,12 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                                 productId={product.id}
                                 productName={product.brand ? `${product.brand} ${product.name}` : product.name}
                                 productBrand={product.category.name}
+                                categoryConfig={getCatalogAwareCategoryConfig(
+                                  tenant.catalogType,
+                                  product.category.name,
+                                  tenant.catalogConfig,
+                                  parseCategoryFieldConfig(product.category.config),
+                                )}
                                 imagePath={previewVariant?.imagePath ?? null}
                                 variants={product.variants.map((variant) => ({
                                   id: variant.id,

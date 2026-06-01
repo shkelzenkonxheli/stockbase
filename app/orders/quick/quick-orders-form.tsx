@@ -39,6 +39,7 @@ type QuickOrderRow = {
   productId: string;
   variantId: string;
   quantity: string;
+  unitPrice: string;
 };
 
 const sourceOptions: Array<{ value: OrderSource; label: string }> = [
@@ -47,12 +48,13 @@ const sourceOptions: Array<{ value: OrderSource; label: string }> = [
   { value: "WHOLESALE", label: "Shumice" },
 ];
 
-function createRow(productId: number, variantId: number): QuickOrderRow {
+function createRow(productId: number, variantId: number, unitPrice: number): QuickOrderRow {
   return {
     id: crypto.randomUUID(),
     productId: String(productId),
     variantId: String(variantId),
     quantity: "1",
+    unitPrice: unitPrice.toFixed(2),
   };
 }
 
@@ -331,8 +333,15 @@ export function QuickOrdersForm({ action, products }: QuickOrdersFormProps) {
       .map((row) => ({
         variantId: Number(row.variantId),
         quantity: Number(row.quantity),
+        unitPrice: Number(row.unitPrice),
       }))
-      .filter((row) => row.variantId > 0 && row.quantity > 0),
+      .filter(
+        (row) =>
+          row.variantId > 0 &&
+          row.quantity > 0 &&
+          !Number.isNaN(row.unitPrice) &&
+          row.unitPrice >= 0,
+      ),
   );
 
   const totalQuantity = rows.reduce(
@@ -385,12 +394,29 @@ export function QuickOrdersForm({ action, products }: QuickOrdersFormProps) {
         );
       }
 
-      return [...currentRows, createRow(productId, variantId)];
+      const variant = currentVariants.find((item) => item.id === variantId);
+      return [
+        ...currentRows,
+        createRow(productId, variantId, variant?.price ?? 0),
+      ];
     });
 
     setVariantModalOpen(false);
     setSizeModalOpen(false);
     setSelectedColorKey("");
+  };
+
+  const updateUnitPrice = (rowId: string, value: string) => {
+    setRows((currentRows) =>
+      currentRows.map((row) =>
+        row.id === rowId
+          ? {
+              ...row,
+              unitPrice: value,
+            }
+          : row,
+      ),
+    );
   };
 
   const changeQuantity = (rowId: string, delta: number) => {
@@ -640,8 +666,15 @@ export function QuickOrdersForm({ action, products }: QuickOrdersFormProps) {
                     </div>
 
                     <div className="flex items-center justify-between gap-3">
-                      <div className="text-sm font-semibold text-slate-950">
-                        €{variant.price.toFixed(2)}
+                      <div className="w-28">
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={row.unitPrice}
+                          onChange={(event) => updateUnitPrice(row.id, event.target.value)}
+                          className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-950 outline-none transition focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100"
+                        />
                       </div>
                       <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-2 py-1.5 shadow-sm">
                         <button
@@ -703,8 +736,15 @@ export function QuickOrdersForm({ action, products }: QuickOrdersFormProps) {
                       </span>
                     </div>
 
-                    <div className="text-sm font-semibold text-slate-950">
-                      €{variant.price.toFixed(2)}
+                    <div>
+                      <input
+                        type="number"
+                        min="0"
+                        step="0.01"
+                        value={row.unitPrice}
+                        onChange={(event) => updateUnitPrice(row.id, event.target.value)}
+                        className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-950 outline-none transition focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100"
+                      />
                     </div>
 
                     <div className="flex items-center gap-3">

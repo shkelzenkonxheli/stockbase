@@ -132,9 +132,8 @@ export function ReportPdfDocument({ report }: { report: MonthlySalesReport }) {
             <Text style={styles.statMeta}>Gjithe porosite e muajit</Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statLabel}>Copa</Text>
-            <Text style={styles.statValue}>{report.totalPairs}</Text>
-            <Text style={styles.statMeta}>Patika te shitura ne total</Text>
+            <Text style={styles.statLabel}>Shitjet totale</Text>
+            <Text style={styles.statValue}>{report.totalRevenue.toFixed(2)} EUR</Text>
           </View>
           <View style={styles.statCard}>
             <Text style={styles.statLabel}>Modele aktive</Text>
@@ -157,7 +156,7 @@ export function ReportPdfDocument({ report }: { report: MonthlySalesReport }) {
             <View key={item.source} style={styles.sourceCard}>
               <Text style={styles.statLabel}>{item.label}</Text>
               <Text style={styles.statValue}>{item.quantity}</Text>
-              <Text style={styles.statMeta}>Copa te shitura</Text>
+              <Text style={styles.statMeta}>€{item.revenue.toFixed(2)}</Text>
             </View>
           ))}
         </View>

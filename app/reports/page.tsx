@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { AutoPrintOnMount } from "./auto-print-on-mount";
@@ -14,6 +15,10 @@ type ReportsPageProps = {
     month?: string;
     print?: string;
   }>;
+};
+
+export const metadata: Metadata = {
+  title: "Raportet",
 };
 
 function sourceIcon(source: string) {
@@ -148,14 +153,11 @@ export default async function ReportsPage({
 
           <div className="rounded-[22px] border border-slate-200 bg-white px-4 py-4 shadow-sm print:break-inside-avoid print:shadow-none">
             <div className="border-l-[3px] border-sky-300 pl-4">
-              <p className="text-sm text-slate-500">Artikujt total</p>
-              <div className="mt-3 flex items-end gap-3">
+              <p className="text-sm text-slate-500">Shitjet totale</p>
+              <div className="mt-3">
                 <p className="text-4xl font-semibold tracking-tight text-slate-950">
-                  {report.totalPairs}
+                  {report.totalRevenue.toFixed(2)} EUR
                 </p>
-                <span className="pb-1 text-sm font-medium text-slate-500">
-                  Mes. {report.averageItemsPerOrder.toFixed(2)}/porosi
-                </span>
               </div>
             </div>
           </div>
@@ -215,6 +217,9 @@ export default async function ReportsPage({
                       {item.quantity}
                     </p>
                     <p className="mt-2 text-sm text-slate-500">{item.label}</p>
+                    <p className="mt-1 text-xs font-medium text-slate-500">
+                      €{item.revenue.toFixed(2)}
+                    </p>
                   </div>
                 ))}
               </div>

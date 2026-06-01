@@ -15,6 +15,7 @@ import {
   normalizeVariantCode,
 } from "@/lib/variant-codes";
 import {
+  buildVariantIdentityKey,
   getCatalogAwareCategoryConfig,
   parseCategoryFieldConfig,
   parseVariantCustomAttributes,
@@ -120,6 +121,8 @@ async function createVariants(formData: FormData) {
       select: {
         size: true,
         color: true,
+        material: true,
+        powerWatts: true,
         barcode: true,
       },
     }),
@@ -158,8 +161,13 @@ async function createVariants(formData: FormData) {
   const sizeIsRequired = !categoryConfig.showPowerField || categoryConfig.sizeLabel !== "Versioni (opsional)";
 
   const existingKeys = new Set(
-    existingProductVariants.map(
-      (variant) => `${variant.size}::${variant.color.toLowerCase()}`,
+    existingProductVariants.map((variant) =>
+      buildVariantIdentityKey(categoryConfig, {
+        size: variant.size,
+        color: variant.color,
+        material: (variant as { material?: string | null }).material ?? null,
+        powerWatts: (variant as { powerWatts?: string | null }).powerWatts ?? null,
+      }),
     ),
   );
   const usedSkus = new Set(
@@ -173,33 +181,6 @@ async function createVariants(formData: FormData) {
       .filter((barcode): barcode is string => Boolean(barcode)),
   );
 
-  const seenRowKeys = new Set<string>();
-  const duplicateRowsInRequest = new Set<string>();
-
-  for (const row of normalizedRows) {
-    const effectiveSize = row.size || "__no-size__";
-    const key = `${effectiveSize}::${row.color.toLowerCase()}`;
-
-    if (seenRowKeys.has(key)) {
-      duplicateRowsInRequest.add(key);
-      continue;
-    }
-
-    seenRowKeys.add(key);
-  }
-
-  if (duplicateRowsInRequest.size > 0) {
-    const [firstDuplicate] = [...duplicateRowsInRequest];
-    const [size, color] = firstDuplicate.split("::");
-    const duplicateLabel = size === "__no-size__" ? color : `Nr ${size} / ${color}`;
-
-    redirect(
-      `/products/${productId}/variants/new?error=${encodeURIComponent(
-        `Varianti ${duplicateLabel} eshte shkruar me shume se nje here.`,
-      )}`,
-    );
-  }
-
   const validRowsWithCategory = normalizedRows.filter((row) => {
     if (sizeIsRequired && !row.size) {
       return false;
@@ -212,8 +193,47 @@ async function createVariants(formData: FormData) {
     return;
   }
 
+  const seenRowKeys = new Set<string>();
+  let firstDuplicateRow: (typeof validRowsWithCategory)[number] | null = null;
+
+  for (const row of validRowsWithCategory) {
+    const key = buildVariantIdentityKey(categoryConfig, {
+      size: row.size,
+      color: row.color,
+      material: row.material,
+      powerWatts: row.powerWatts,
+    });
+
+    if (seenRowKeys.has(key)) {
+      firstDuplicateRow = row;
+      continue;
+    }
+
+    seenRowKeys.add(key);
+  }
+
+  if (firstDuplicateRow) {
+    const firstDuplicate = firstDuplicateRow;
+    const duplicateLabel = firstDuplicate?.size
+      ? `${firstDuplicate.color} / ${firstDuplicate.size}`
+      : firstDuplicate?.color ?? "ky variant";
+
+    redirect(
+      `/products/${productId}/variants/new?error=${encodeURIComponent(
+        `Varianti ${duplicateLabel} eshte shkruar me shume se nje here.`,
+      )}`,
+    );
+  }
+
   const alreadyExistingRows = validRowsWithCategory.filter((row) =>
-    existingKeys.has(`${row.size || "__no-size__"}::${row.color.toLowerCase()}`),
+    existingKeys.has(
+      buildVariantIdentityKey(categoryConfig, {
+        size: row.size,
+        color: row.color,
+        material: row.material,
+        powerWatts: row.powerWatts,
+      }),
+    ),
   );
 
   if (alreadyExistingRows.length > 0) {

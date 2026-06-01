@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import type { Prisma } from "@/app/generated/prisma/client";
@@ -9,6 +10,10 @@ import { OrdersManager } from "./orders-manager";
 
 const PAGE_SIZE = 20;
 const BUSINESS_TIME_ZONE = "Europe/Belgrade";
+
+export const metadata: Metadata = {
+  title: "Porosite",
+};
 
 type OrdersPageProps = {
   searchParams?: Promise<{
@@ -409,6 +414,7 @@ export default async function OrdersPage({
           select: {
             id: true,
             quantity: true,
+            unitPrice: true,
             variant: {
               select: {
                 size: true,
@@ -467,6 +473,7 @@ export default async function OrdersPage({
             locationCode: item.variant.locationCode,
             imagePath: item.variant.imagePath,
             quantity: item.quantity,
+            unitPrice: Number(item.unitPrice),
           }))
         : order.variant
           ? [

@@ -783,6 +783,37 @@ export function getCatalogAwareCategoryConfig(
   };
 }
 
+function normalizeVariantIdentityPart(value?: string | null) {
+  return String(value ?? "")
+    .trim()
+    .toLowerCase();
+}
+
+export function buildVariantIdentityKey(
+  categoryConfig: CategoryConfig,
+  variant: {
+    size?: string | null;
+    color?: string | null;
+    material?: string | null;
+    powerWatts?: string | null;
+  },
+) {
+  const parts = [
+    normalizeVariantIdentityPart(variant.color),
+    normalizeVariantIdentityPart(variant.size),
+  ];
+
+  if (categoryConfig.showMaterialField) {
+    parts.push(normalizeVariantIdentityPart(variant.material));
+  }
+
+  if (categoryConfig.showPowerField) {
+    parts.push(normalizeVariantIdentityPart(variant.powerWatts));
+  }
+
+  return parts.join("::");
+}
+
 export function getCategoryDescription(categoryName?: string | null) {
   return getCategoryConfig(categoryName).description;
 }

@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -73,6 +74,10 @@ async function createProduct(formData: FormData) {
 
   redirect(`/products/${product.id}`);
 }
+
+export const metadata: Metadata = {
+  title: "Shto Produkt",
+};
 
 type NewProductPageProps = {
   searchParams?: Promise<{

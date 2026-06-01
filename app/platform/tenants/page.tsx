@@ -1,4 +1,5 @@
 import { revalidatePath } from "next/cache";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { requirePlatformAdmin } from "@/lib/auth";
@@ -167,6 +168,10 @@ async function suspendTenant(formData: FormData) {
   revalidatePath("/platform/tenants");
   redirect("/platform/tenants?success=suspended");
 }
+
+export const metadata: Metadata = {
+  title: "Tenantet",
+};
 
 type PlatformTenantsPageProps = {
   searchParams?: Promise<{

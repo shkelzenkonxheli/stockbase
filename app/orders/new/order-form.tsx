@@ -1,11 +1,9 @@
-﻿"use client";
+"use client";
 
 import Link from "next/link";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { ProductModelPicker } from "@/app/components/product-model-picker";
-import { VariantColorPicker } from "@/app/components/variant-color-picker";
+import { useEffect, useMemo, useState } from "react";
 import { UploadedImage } from "@/app/components/uploaded-image";
-import { getOrderVariantSummary } from "@/lib/order-variant-display";
+import { getOrderVariantMode, getOrderVariantSummary } from "@/lib/order-variant-display";
 
 type OrderVariant = {
   id: number;
@@ -25,6 +23,7 @@ type ProductOption = {
   id: number;
   name: string;
   brand: string;
+  category: string;
   imagePath: string | null;
 };
 
@@ -37,11 +36,10 @@ type OrderSource = "INSTAGRAM" | "STORE" | "WHOLESALE";
 
 type OrderItemRow = {
   id: string;
-  brand: string;
   productId: string;
   variantId: string;
   quantity: string;
-  committed: boolean;
+  unitPrice: string;
 };
 
 const sourceOptions: Array<{ value: OrderSource; label: string }> = [
@@ -50,14 +48,13 @@ const sourceOptions: Array<{ value: OrderSource; label: string }> = [
   { value: "WHOLESALE", label: "Shumice" },
 ];
 
-function createEmptyRow(): OrderItemRow {
+function createRow(productId: number, variantId: number, unitPrice: number): OrderItemRow {
   return {
     id: crypto.randomUUID(),
-    brand: "",
-    productId: "",
-    variantId: "",
+    productId: String(productId),
+    variantId: String(variantId),
     quantity: "1",
-    committed: false,
+    unitPrice: unitPrice.toFixed(2),
   };
 }
 
@@ -65,12 +62,7 @@ function getSourceIcon(source: OrderSource) {
   switch (source) {
     case "INSTAGRAM":
       return (
-        <svg
-          aria-hidden="true"
-          viewBox="0 0 20 20"
-          fill="none"
-          className="h-4 w-4"
-        >
+        <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" className="h-4 w-4">
           <rect
             x="4.25"
             y="4.25"
@@ -80,24 +72,13 @@ function getSourceIcon(source: OrderSource) {
             stroke="currentColor"
             strokeWidth="1.5"
           />
-          <circle
-            cx="10"
-            cy="10"
-            r="2.75"
-            stroke="currentColor"
-            strokeWidth="1.5"
-          />
+          <circle cx="10" cy="10" r="2.75" stroke="currentColor" strokeWidth="1.5" />
           <circle cx="14" cy="6" r="0.9" fill="currentColor" />
         </svg>
       );
     case "STORE":
       return (
-        <svg
-          aria-hidden="true"
-          viewBox="0 0 20 20"
-          fill="none"
-          className="h-4 w-4"
-        >
+        <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" className="h-4 w-4">
           <path
             d="M4 7.25 5.25 4.5h9.5L16 7.25"
             stroke="currentColor"
@@ -109,22 +90,12 @@ function getSourceIcon(source: OrderSource) {
             stroke="currentColor"
             strokeWidth="1.5"
           />
-          <path
-            d="M8 10.25h4"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-          />
+          <path d="M8 10.25h4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
         </svg>
       );
     default:
       return (
-        <svg
-          aria-hidden="true"
-          viewBox="0 0 20 20"
-          fill="none"
-          className="h-4 w-4"
-        >
+        <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" className="h-4 w-4">
           <path
             d="M10 3.25 16 6.5v7L10 16.75 4 13.5v-7l6-3.25Z"
             stroke="currentColor"
@@ -143,65 +114,54 @@ function getSourceIcon(source: OrderSource) {
 
 export function OrderForm({ action, products }: OrderFormProps) {
   const [source, setSource] = useState<OrderSource>("INSTAGRAM");
-  const [rows, setRows] = useState<OrderItemRow[]>([createEmptyRow()]);
+  const [rows, setRows] = useState<OrderItemRow[]>([]);
   const [rowErrors, setRowErrors] = useState<Record<string, string>>({});
-  const [variantsByProduct, setVariantsByProduct] = useState<
-    Record<number, OrderVariant[]>
-  >({});
-  const [loadingProducts, setLoadingProducts] = useState<
-    Record<number, boolean>
-  >({});
-  const [previewImage, setPreviewImage] = useState<{
-    src: string;
-    alt: string;
-  } | null>(null);
-  const quantityInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+  const [variantsByProduct, setVariantsByProduct] = useState<Record<number, OrderVariant[]>>(
+    {},
+  );
+  const [loadingProducts, setLoadingProducts] = useState<Record<number, boolean>>({});
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedBrand, setSelectedBrand] = useState("");
+  const [productSearch, setProductSearch] = useState("");
+  const [selectedProductId, setSelectedProductId] = useState("");
+  const [productModalOpen, setProductModalOpen] = useState(false);
+  const [variantModalOpen, setVariantModalOpen] = useState(false);
+  const [sizeModalOpen, setSizeModalOpen] = useState(false);
+  const [selectedColorKey, setSelectedColorKey] = useState("");
+  const [previewImage, setPreviewImage] = useState<{ src: string; alt: string } | null>(null);
 
   useEffect(() => {
-    const productIdsToLoad = [
-      ...new Set(
-        rows
-          .map((row) => Number(row.productId))
-          .filter(
-            (productId) => productId > 0 && !variantsByProduct[productId],
-          ),
-      ),
-    ];
+    const productId = Number(selectedProductId);
 
-    if (productIdsToLoad.length === 0) {
+    if (!productId || variantsByProduct[productId]) {
       return;
     }
 
     let isCancelled = false;
 
     const loadVariants = async () => {
-      for (const productId of productIdsToLoad) {
-        setLoadingProducts((current) => ({ ...current, [productId]: true }));
+      setLoadingProducts((current) => ({ ...current, [productId]: true }));
 
-        try {
-          const response = await fetch(`/api/products/${productId}/variants`, {
-            cache: "no-store",
-          });
+      try {
+        const response = await fetch(`/api/products/${productId}/variants`, {
+          cache: "no-store",
+        });
 
-          if (!response.ok) {
-            continue;
-          }
+        if (!response.ok) {
+          return;
+        }
 
-          const data = (await response.json()) as OrderVariant[];
+        const data = (await response.json()) as OrderVariant[];
 
-          if (!isCancelled) {
-            setVariantsByProduct((current) => ({
-              ...current,
-              [productId]: data,
-            }));
-          }
-        } finally {
-          if (!isCancelled) {
-            setLoadingProducts((current) => ({
-              ...current,
-              [productId]: false,
-            }));
-          }
+        if (!isCancelled) {
+          setVariantsByProduct((current) => ({
+            ...current,
+            [productId]: data,
+          }));
+        }
+      } finally {
+        if (!isCancelled) {
+          setLoadingProducts((current) => ({ ...current, [productId]: false }));
         }
       }
     };
@@ -211,7 +171,7 @@ export function OrderForm({ action, products }: OrderFormProps) {
     return () => {
       isCancelled = true;
     };
-  }, [rows, variantsByProduct]);
+  }, [selectedProductId, variantsByProduct]);
 
   useEffect(() => {
     if (Object.keys(rowErrors).length === 0) {
@@ -225,28 +185,293 @@ export function OrderForm({ action, products }: OrderFormProps) {
     return () => window.clearTimeout(timeoutId);
   }, [rowErrors]);
 
+  useEffect(() => {
+    if (!selectedProductId) {
+      setVariantModalOpen(false);
+      setSizeModalOpen(false);
+      setSelectedColorKey("");
+    }
+  }, [selectedProductId]);
+
+  useEffect(() => {
+    if (!selectedCategory) {
+      setProductModalOpen(false);
+    }
+  }, [selectedCategory]);
+
+  const categories = useMemo(
+    () =>
+      [...new Set(products.map((product) => product.category))].sort((a, b) =>
+        a.localeCompare(b),
+      ),
+    [products],
+  );
+
+  const selectedCategoryMode = getOrderVariantMode(selectedCategory);
+  const isFootwearCategory = selectedCategoryMode === "footwear";
+
+  const categoryProducts = useMemo(
+    () =>
+      selectedCategory
+        ? products.filter((product) => product.category === selectedCategory)
+        : [],
+    [products, selectedCategory],
+  );
+
+  const categoryBrands = useMemo(
+    () =>
+      [...new Set(categoryProducts.map((product) => product.brand).filter(Boolean))].sort(
+        (a, b) => a.localeCompare(b),
+      ),
+    [categoryProducts],
+  );
+
+  const filteredProducts = useMemo(() => {
+    if (!selectedCategory) {
+      return [];
+    }
+
+    if (!isFootwearCategory) {
+      return categoryProducts;
+    }
+
+    if (!selectedBrand) {
+      return [];
+    }
+
+    return categoryProducts.filter((product) => product.brand === selectedBrand);
+  }, [categoryProducts, isFootwearCategory, selectedBrand, selectedCategory]);
+
+  const visibleProducts = useMemo(() => {
+    const query = productSearch.trim().toLowerCase();
+
+    if (!query) {
+      return filteredProducts;
+    }
+
+    return filteredProducts.filter((product) => product.name.toLowerCase().includes(query));
+  }, [filteredProducts, productSearch]);
+
+  const currentProductId = Number(selectedProductId);
+  const currentProduct = products.find((product) => product.id === currentProductId) ?? null;
+  const currentVariants = currentProductId ? variantsByProduct[currentProductId] ?? [] : [];
+  const currentProductLoading = currentProductId ? Boolean(loadingProducts[currentProductId]) : false;
+
   const reservedByVariant = useMemo(() => {
     const totals = new Map<number, number>();
 
     for (const row of rows) {
       const variantId = Number(row.variantId);
-      const quantity = Number(row.quantity) || 0;
+      const quantity = Number(row.quantity);
 
-      if (!variantId || quantity <= 0) {
+      if (!variantId) {
         continue;
       }
 
-      totals.set(variantId, (totals.get(variantId) ?? 0) + quantity);
+      totals.set(variantId, (totals.get(variantId) ?? 0) + (quantity > 0 ? quantity : 0));
     }
 
     return totals;
   }, [rows]);
 
-  const updateRow = (
-    rowId: string,
-    field: keyof Omit<OrderItemRow, "id">,
-    value: string,
-  ) => {
+  const variantOptions = currentVariants
+    .map((variant) => ({
+      ...variant,
+      availableStock: variant.stock - (reservedByVariant.get(variant.id) ?? 0),
+    }))
+    .filter((variant) => variant.availableStock > 0)
+    .sort((a, b) => {
+      const colorComparison = a.color.localeCompare(b.color, "sq", {
+        sensitivity: "base",
+      });
+
+      if (colorComparison !== 0) {
+        return colorComparison;
+      }
+
+      return a.size.localeCompare(b.size, "sq", {
+        numeric: true,
+        sensitivity: "base",
+      });
+    });
+
+  const colorGroups = useMemo(() => {
+    if (!isFootwearCategory) {
+      return [];
+    }
+
+    const map = new Map<string, { key: string; color: string; imagePath: string | null; totalStock: number }>();
+
+    for (const variant of variantOptions) {
+      const key = variant.color.trim().toLowerCase();
+      const current = map.get(key);
+
+      if (current) {
+        current.totalStock += variant.availableStock;
+        if (!current.imagePath && variant.imagePath) {
+          current.imagePath = variant.imagePath;
+        }
+      } else {
+        map.set(key, {
+          key,
+          color: variant.color,
+          imagePath: variant.imagePath,
+          totalStock: variant.availableStock,
+        });
+      }
+    }
+
+    return [...map.values()].sort((a, b) =>
+      a.color.localeCompare(b.color, "sq", { sensitivity: "base" }),
+    );
+  }, [isFootwearCategory, variantOptions]);
+
+  const selectedColorVariants = useMemo(() => {
+    if (!selectedColorKey) {
+      return [];
+    }
+
+    return variantOptions
+      .filter((variant) => variant.color.trim().toLowerCase() === selectedColorKey)
+      .sort((a, b) =>
+        a.size.localeCompare(b.size, "sq", { numeric: true, sensitivity: "base" }),
+      );
+  }, [selectedColorKey, variantOptions]);
+
+  const selectedItems = rows
+    .map((row) => {
+      const productId = Number(row.productId);
+      const variantId = Number(row.variantId);
+      const product = products.find((item) => item.id === productId) ?? null;
+      const variant =
+        Object.values(variantsByProduct)
+          .flat()
+          .find((item) => item.id === variantId) ?? null;
+
+      if (!product || !variant) {
+        return null;
+      }
+
+      return { row, product, variant };
+    })
+    .filter(
+      (
+        item,
+      ): item is {
+        row: OrderItemRow;
+        product: ProductOption;
+        variant: OrderVariant;
+      } => item !== null,
+    );
+
+  const subtotal = selectedItems.reduce(
+    (sum, item) => sum + (Number(item.row.quantity) || 0) * (Number(item.row.unitPrice) || 0),
+    0,
+  );
+  const shipping = 0;
+  const grandTotal = subtotal + shipping;
+  const serializedItems = JSON.stringify(
+    rows
+      .map((row) => ({
+        variantId: Number(row.variantId),
+        quantity: Number(row.quantity),
+        unitPrice: Number(row.unitPrice),
+      }))
+      .filter(
+        (row) =>
+          row.variantId > 0 &&
+          row.quantity > 0 &&
+          !Number.isNaN(row.unitPrice) &&
+          row.unitPrice >= 0,
+      ),
+  );
+
+  const addSelectedVariant = (variantIdValue: string) => {
+    const productId = Number(selectedProductId);
+    const variantId = Number(variantIdValue);
+
+    if (!productId || !variantId) {
+      return;
+    }
+
+    setRows((currentRows) => {
+      const existingRow = currentRows.find((row) => Number(row.variantId) === variantId);
+
+      if (existingRow) {
+        const variant = currentVariants.find((item) => item.id === variantId);
+        const currentQuantity = Number(existingRow.quantity) || 0;
+
+        if (!variant || currentQuantity >= variant.stock) {
+          setRowErrors((current) => ({
+            ...current,
+            [existingRow.id]: "Nuk ka stok te mjaftueshem per kete sasi.",
+          }));
+          return currentRows;
+        }
+
+        setRowErrors((current) => {
+          if (!current[existingRow.id]) {
+            return current;
+          }
+
+          const next = { ...current };
+          delete next[existingRow.id];
+          return next;
+        });
+
+        return currentRows.map((row) =>
+          row.id === existingRow.id
+            ? {
+                ...row,
+                quantity: String((Number(row.quantity) || 1) + 1),
+              }
+            : row,
+        );
+      }
+
+      const variant = currentVariants.find((item) => item.id === variantId);
+      return [...currentRows, createRow(productId, variantId, variant?.price ?? 0)];
+    });
+
+    setVariantModalOpen(false);
+    setSizeModalOpen(false);
+    setSelectedColorKey("");
+  };
+
+  const updateUnitPrice = (rowId: string, value: string) => {
+    setRows((currentRows) =>
+      currentRows.map((row) =>
+        row.id === rowId
+          ? {
+              ...row,
+              unitPrice: value,
+            }
+          : row,
+      ),
+    );
+  };
+
+  const changeQuantity = (rowId: string, delta: number) => {
+    const selectedRow = rows.find((row) => row.id === rowId);
+
+    if (!selectedRow) {
+      return;
+    }
+
+    const variant = Object.values(variantsByProduct)
+      .flat()
+      .find((item) => item.id === Number(selectedRow.variantId));
+    const currentQuantity = Number(selectedRow.quantity) || 1;
+    const nextQuantity = Math.max(1, currentQuantity + delta);
+
+    if (delta > 0 && variant && nextQuantity > variant.stock) {
+      setRowErrors((current) => ({
+        ...current,
+        [rowId]: "Nuk ka stok te mjaftueshem per kete sasi.",
+      }));
+      return;
+    }
+
     setRowErrors((current) => {
       if (!current[rowId]) {
         return current;
@@ -263,29 +488,9 @@ export function OrderForm({ action, products }: OrderFormProps) {
           return row;
         }
 
-        if (field === "brand") {
-          return {
-            ...row,
-            brand: value,
-            productId: "",
-            variantId: "",
-            committed: false,
-          };
-        }
-
-        if (field === "productId") {
-          return {
-            ...row,
-            productId: value,
-            variantId: "",
-            committed: false,
-          };
-        }
-
         return {
           ...row,
-          [field]: value,
-          committed: false,
+          quantity: String(nextQuantity),
         };
       }),
     );
@@ -302,138 +507,11 @@ export function OrderForm({ action, products }: OrderFormProps) {
       return next;
     });
 
-    setRows((currentRows) => {
-      const nextRows = currentRows.filter((row) => row.id !== rowId);
-      const hasDraft = nextRows.some((row) => !row.committed);
-
-      if (nextRows.length === 0) {
-        return [createEmptyRow()];
-      }
-
-      return hasDraft ? nextRows : [...nextRows, createEmptyRow()];
-    });
+    setRows((currentRows) => currentRows.filter((row) => row.id !== rowId));
   };
-
-  const commitRow = (rowId: string) => {
-    const rowToCommit = rows.find((row) => row.id === rowId);
-
-    if (
-      !rowToCommit ||
-      !rowToCommit.productId ||
-      !rowToCommit.variantId ||
-      Number(rowToCommit.quantity) <= 0
-    ) {
-      return;
-    }
-
-    const selectedProductId = Number(rowToCommit.productId);
-    const productVariants = selectedProductId
-      ? (variantsByProduct[selectedProductId] ?? [])
-      : [];
-    const currentVariantId = Number(rowToCommit.variantId);
-    const currentQuantity = Number(rowToCommit.quantity) || 0;
-    const reservedElsewhere =
-      (reservedByVariant.get(currentVariantId) ?? 0) - currentQuantity;
-    const selectedVariant = productVariants.find(
-      (variant) => variant.id === currentVariantId,
-    );
-    const availableStock = selectedVariant
-      ? Math.max(selectedVariant.stock - reservedElsewhere, 0)
-      : 0;
-
-    if (!selectedVariant || currentQuantity > availableStock) {
-      setRowErrors((current) => ({
-        ...current,
-        [rowId]: "Nuk ka stok te mjaftueshem per kete sasi.",
-      }));
-      quantityInputRefs.current[rowId]?.focus();
-      quantityInputRefs.current[rowId]?.select();
-      return;
-    }
-
-    setRowErrors((current) => {
-      if (!current[rowId]) {
-        return current;
-      }
-
-      const next = { ...current };
-      delete next[rowId];
-      return next;
-    });
-
-    setRows((currentRows) => {
-      const alreadyExists = currentRows.some(
-        (row) =>
-          row.id !== rowId &&
-          row.committed &&
-          row.variantId === rowToCommit.variantId,
-      );
-
-      const nextRows = currentRows.map((row) =>
-        row.id === rowId ? createEmptyRow() : row,
-      );
-
-      if (alreadyExists) {
-        return nextRows;
-      }
-
-      return [
-        { ...rowToCommit, committed: true, id: crypto.randomUUID() },
-        ...nextRows,
-      ];
-    });
-  };
-
-  const allLoadedVariants = Object.values(variantsByProduct).flat();
-  const brands = [...new Set(products.map((product) => product.brand))].sort(
-    (a, b) => a.localeCompare(b, "sq"),
-  );
-
-  const selectedItems = rows
-    .filter((row) => row.committed)
-    .map((row) => {
-      const variant = allLoadedVariants.find(
-        (item) => item.id === Number(row.variantId),
-      );
-
-      if (!variant) {
-        return null;
-      }
-
-      return {
-        rowId: row.id,
-        ...variant,
-        quantity: Number(row.quantity) || 0,
-      };
-    })
-    .filter(
-      (item): item is OrderVariant & { rowId: string; quantity: number } =>
-        item !== null,
-    );
-
-  const pendingRows = rows.filter((row) => !row.committed).slice(0, 1);
-
-  const subtotal = selectedItems.reduce(
-    (sum, item) => sum + item.quantity * item.price,
-    0,
-  );
-  const shipping = 0;
-  const grandTotal = subtotal + shipping;
-  const serializedItems = JSON.stringify(
-    rows
-      .filter((row) => row.committed)
-      .map((row) => ({
-        variantId: Number(row.variantId),
-        quantity: Number(row.quantity),
-      }))
-      .filter((row) => row.variantId > 0 && row.quantity > 0),
-  );
 
   return (
-    <form
-      action={action}
-      className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_312px]"
-    >
+    <form action={action} className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_312px]">
       <input type="hidden" name="source" value={source} />
       <input type="hidden" name="items" value={serializedItems} />
 
@@ -470,12 +548,7 @@ export function OrderForm({ action, products }: OrderFormProps) {
           <div className="flex flex-col gap-4 border-b border-slate-200 px-5 py-5 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-700">
-                <svg
-                  aria-hidden="true"
-                  viewBox="0 0 20 20"
-                  fill="none"
-                  className="h-5 w-5"
-                >
+                <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" className="h-5 w-5">
                   <path
                     d="M4.75 5.5h10.5M6 4v3m8-3v3M4.75 7v8.25h10.5V7"
                     stroke="currentColor"
@@ -492,266 +565,274 @@ export function OrderForm({ action, products }: OrderFormProps) {
                 </svg>
               </div>
               <div>
-                <p className="text-xl font-semibold text-slate-950">
-                  Detajet e Produktit
-                </p>
+                <p className="text-xl font-semibold text-slate-950">Detajet e Produktit</p>
               </div>
             </div>
           </div>
 
           <div className="space-y-4 px-5 py-5">
-            {pendingRows.map((row) => {
-              const rowVariantId = Number(row.variantId);
-              const rowQuantity = Number(row.quantity) || 0;
-              const selectedProductId = Number(row.productId);
-              const brandProducts = row.brand
-                ? products.filter(
-                    (product) =>
-                      product.brand.toLowerCase() === row.brand.toLowerCase(),
-                  )
-                : products;
-              const productVariants = selectedProductId
-                ? (variantsByProduct[selectedProductId] ?? [])
-                : [];
-              const filteredVariants = productVariants
-                .map((variant) => {
-                  const reservedElsewhere =
-                    (reservedByVariant.get(variant.id) ?? 0) -
-                    (variant.id === rowVariantId ? rowQuantity : 0);
+            <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
+              <select
+                value={selectedCategory}
+                onChange={(event) => {
+                  const nextCategory = event.target.value;
+                  setSelectedCategory(nextCategory);
+                  setSelectedBrand("");
+                  setProductSearch("");
+                  setSelectedProductId("");
+                  setProductModalOpen(
+                    Boolean(nextCategory) && getOrderVariantMode(nextCategory) !== "footwear",
+                  );
+                  setVariantModalOpen(false);
+                  setSizeModalOpen(false);
+                  setSelectedColorKey("");
+                }}
+                className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100"
+              >
+                <option value="">Zgjidh kategorine</option>
+                {categories.map((category) => (
+                  <option key={category} value={category}>
+                    {category}
+                  </option>
+                ))}
+              </select>
 
-                  return {
-                    ...variant,
-                    availableStock: Math.max(
-                      variant.stock - reservedElsewhere,
-                      0,
-                    ),
-                  };
-                })
-                .filter(
-                  (variant) =>
-                    variant.availableStock > 0 || variant.id === rowVariantId,
-                )
-                .sort(
-                  (a, b) =>
-                    a.color.localeCompare(b.color, "sq", {
-                      sensitivity: "base",
-                    }) || a.size.localeCompare(b.size, "sq", { numeric: true }),
-                );
-              const selectedVariant = filteredVariants.find(
-                (variant) => variant.id === Number(row.variantId),
-              );
-              const isLoadingVariants = selectedProductId
-                ? Boolean(loadingProducts[selectedProductId])
-                : false;
+              {isFootwearCategory ? (
+                <select
+                  value={selectedBrand}
+                  onChange={(event) => {
+                    const nextBrand = event.target.value;
+                    setSelectedBrand(nextBrand);
+                    setProductSearch("");
+                    setSelectedProductId("");
+                    setProductModalOpen(Boolean(nextBrand));
+                    setVariantModalOpen(false);
+                    setSizeModalOpen(false);
+                    setSelectedColorKey("");
+                  }}
+                  disabled={!selectedCategory}
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100 disabled:cursor-not-allowed disabled:bg-slate-50"
+                >
+                  <option value="">Zgjidh brandin</option>
+                  {categoryBrands.map((brand) => (
+                    <option key={brand} value={brand}>
+                      {brand}
+                    </option>
+                  ))}
+                </select>
+              ) : null}
+            </div>
 
-              return (
-                <div key={row.id} className="rounded-[24px] border border-slate-200 bg-slate-50/60 px-4 py-4">
-                  <div className="grid gap-3 lg:grid-cols-[minmax(130px,0.75fr)_minmax(150px,0.95fr)_minmax(210px,1.15fr)_72px_110px_44px] lg:items-end">
-                    <div className="space-y-2">
-                      <label className="block text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-                        Kategoria
-                      </label>
-                      <select
-                        value={row.brand}
-                        onChange={(event) =>
-                          updateRow(row.id, "brand", event.target.value)
-                        }
-                        className="h-11 w-full min-w-0 rounded-xl border border-slate-200 bg-white px-3 text-sm font-medium text-slate-900 outline-none transition focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100"
-                      >
-                        <option value="">Zgjidh kategorine</option>
-                        {brands.map((brand) => (
-                          <option key={brand} value={brand}>
-                            {brand}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="block text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-                        Produkti
-                      </label>
-                      <ProductModelPicker
-                        products={brandProducts}
-                        selectedProductId={row.productId}
-                        onSelect={(value) => updateRow(row.id, "productId", value)}
-                        disabled={!row.brand}
-                        placeholder={!row.brand ? "Zgjidh kategorine" : "Zgjidh produktin"}
-                        emptyLabel="Nuk ka produkte per kete kategori."
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="block text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-                        Varianti
-                      </label>
-                      <VariantColorPicker
-                        variants={filteredVariants}
-                        selectedVariantId={row.variantId}
-                        onSelectVariant={(value) => updateRow(row.id, "variantId", value)}
-                        disabled={!row.productId || isLoadingVariants}
-                        placeholder={
-                          !row.productId
-                            ? "Zgjidh produktin"
-                            : isLoadingVariants
-                              ? "Duke ngarkuar..."
-                              : "Zgjidh ngjyren"
-                        }
-                        emptyLabel="Nuk ka variante me stok."
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="block text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-                        Sasia
-                      </label>
-                      <input
-                        type="number"
-                        min="1"
-                        value={row.quantity}
-                        onChange={(event) =>
-                          updateRow(row.id, "quantity", event.target.value)
-                        }
-                        max={selectedVariant?.availableStock ?? undefined}
-                        ref={(element) => {
-                          quantityInputRefs.current[row.id] = element;
-                        }}
-                        className="h-11 w-full rounded-xl border border-slate-200 bg-white px-2 text-center text-sm font-semibold text-slate-900 outline-none transition focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100"
-                      />
-                    </div>
-
-                    <div className="space-y-2">
-                      <label className="block text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-400">
-                        Cmimi
-                      </label>
-                      <div className="flex h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-3 text-center text-sm font-semibold text-slate-900">
-                        {selectedVariant
-                          ? `${selectedVariant.price.toFixed(2)} EUR`
-                          : "-"}
-                      </div>
-                    </div>
-
-                    <div className="flex h-11 items-center justify-start lg:justify-center">
-                      <button
-                        type="button"
-                        onClick={() => commitRow(row.id)}
-                        disabled={!row.variantId}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-emerald-200 bg-emerald-50 text-emerald-700 transition hover:bg-emerald-100 disabled:cursor-not-allowed disabled:border-slate-200 disabled:bg-slate-100 disabled:text-slate-400"
-                        aria-label="Shto ne liste"
-                      >
-                        <svg
-                          aria-hidden="true"
-                          viewBox="0 0 20 20"
-                          fill="none"
-                          className="h-4 w-4"
-                        >
-                          <path
-                            d="M10 4v12M4 10h12"
-                            stroke="currentColor"
-                            strokeWidth="1.8"
-                            strokeLinecap="round"
-                          />
-                        </svg>
-                      </button>
-                    </div>
-                  </div>
-
-                  {rowErrors[row.id] ? (
-                    <p className="mt-3 text-sm font-medium text-rose-600">
-                      {rowErrors[row.id]}
-                    </p>
-                  ) : null}
+            {selectedCategory ? (
+              <div className="flex flex-col gap-3 rounded-[24px] border border-slate-200 bg-slate-50/70 p-4 sm:flex-row sm:items-center sm:justify-between">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                    Filtri aktiv
+                  </p>
+                  <p className="mt-1 text-sm font-semibold text-slate-950">
+                    {isFootwearCategory && selectedBrand
+                      ? `${selectedCategory} / ${selectedBrand}`
+                      : selectedCategory}
+                  </p>
                 </div>
-              );
-            })}
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!isFootwearCategory || selectedBrand) {
+                      setProductModalOpen(true);
+                    }
+                  }}
+                  disabled={isFootwearCategory && !selectedBrand}
+                  className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-semibold text-slate-800 transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:bg-slate-100 disabled:text-slate-400"
+                >
+                  Zgjidh modelin
+                </button>
+              </div>
+            ) : null}
 
             {selectedItems.length > 0 ? (
               <div className="space-y-3 border-t border-slate-200 pt-4">
-                {selectedItems.map((item) => (
+                {selectedItems.map(({ row, product, variant }) => (
                   <div
-                    key={item.rowId}
-                    className="flex flex-col gap-4 rounded-[20px] border border-slate-200 bg-white px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+                    key={row.id}
+                    className="rounded-[20px] border border-slate-200 bg-slate-50/60 px-4 py-4"
                   >
-                    <div className="flex min-w-0 items-center gap-3">
-                      <button
-                        type="button"
-                        onClick={() =>
-                          item.imagePath
-                            ? setPreviewImage({
-                                src: item.imagePath,
-                                alt: `${item.productLabel} ${item.color}`,
-                              })
-                            : undefined
-                        }
-                        className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-50"
-                      >
-                        {item.imagePath ? (
-                          <UploadedImage
-                            src={item.imagePath}
-                            alt={`${item.productLabel} ${item.color}`}
-                            className="h-full w-full object-cover"
-                          />
-                        ) : (
-                          <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-300">
-                            IMG
-                          </span>
-                        )}
-                      </button>
+                    <div className="space-y-4 lg:hidden">
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex min-w-0 items-center gap-3">
+                          <button
+                            type="button"
+                            onClick={() =>
+                              variant.imagePath
+                                ? setPreviewImage({
+                                    src: variant.imagePath,
+                                    alt: `${product.name} | ${getOrderVariantSummary(variant)}`,
+                                  })
+                                : null
+                            }
+                            className="h-12 w-12 shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50"
+                          >
+                            {variant.imagePath ? (
+                              <UploadedImage
+                                src={variant.imagePath}
+                                alt={`${product.name} ${variant.color}`}
+                                className="h-full w-full object-cover"
+                              />
+                            ) : null}
+                          </button>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-semibold text-slate-950">
+                              {product.name}
+                            </p>
+                            <p className="mt-1 text-xs text-slate-500">{product.brand}</p>
+                            <div className="mt-2">
+                              <span className="inline-flex rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-700">
+                                {getOrderVariantSummary(variant)}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
 
-                      <div className="min-w-0">
-                        <p className="truncate text-sm font-semibold text-slate-950">
-                          {item.productLabel}
-                        </p>
-                        <p className="mt-1 text-xs text-slate-500">
-                          {getOrderVariantSummary(item)}
-                        </p>
+                        <button
+                          type="button"
+                          onClick={() => removeRow(row.id)}
+                          className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-lg leading-none text-rose-500 transition hover:bg-rose-50"
+                          aria-label="Hiq"
+                        >
+                          ×
+                        </button>
+                      </div>
+
+                      <div className="flex items-center justify-between gap-3">
+                        <div className="w-28">
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={row.unitPrice}
+                            onChange={(event) => updateUnitPrice(row.id, event.target.value)}
+                            className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-950 outline-none transition focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100"
+                          />
+                        </div>
+                        <div className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-2 py-1.5 shadow-sm">
+                          <button
+                            type="button"
+                            onClick={() => changeQuantity(row.id, -1)}
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-100 text-base font-semibold text-slate-700 transition hover:bg-slate-200"
+                          >
+                            -
+                          </button>
+                          <span className="min-w-7 text-center text-sm font-semibold text-slate-950">
+                            {row.quantity}
+                          </span>
+                          <button
+                            type="button"
+                            onClick={() => changeQuantity(row.id, 1)}
+                            className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-blue-600 text-base font-semibold text-white transition hover:bg-blue-500"
+                          >
+                            +
+                          </button>
+                        </div>
                       </div>
                     </div>
 
-                    <div className="flex items-center justify-between gap-3 sm:justify-end">
-                      <span className="text-sm font-semibold text-slate-900">
-                        {item.price.toFixed(2)} EUR
-                      </span>
-                      <span className="rounded-full bg-slate-100 px-3 py-1 text-xs font-semibold text-slate-600">
-                        x{item.quantity}
-                      </span>
-                      <button
-                        type="button"
-                        onClick={() => removeRow(item.rowId)}
-                        className="inline-flex h-8 w-8 items-center justify-center rounded-full text-rose-500 transition hover:bg-rose-50"
-                        aria-label={`Hiq ${item.productLabel}`}
-                      >
-                        <svg
-                          aria-hidden="true"
-                          viewBox="0 0 20 20"
-                          fill="none"
-                          className="h-4 w-4"
+                    <div className="hidden lg:grid lg:grid-cols-[minmax(0,1.5fr)_minmax(160px,1fr)_120px_120px_80px] lg:items-center lg:gap-5">
+                      <div className="flex min-w-0 items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            variant.imagePath
+                              ? setPreviewImage({
+                                  src: variant.imagePath,
+                                  alt: `${product.name} | ${getOrderVariantSummary(variant)}`,
+                                })
+                              : null
+                          }
+                          className="h-12 w-12 shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-slate-50"
                         >
-                          <path
-                            d="M6 6l8 8M14 6l-8 8"
-                            stroke="currentColor"
-                            strokeWidth="1.8"
-                            strokeLinecap="round"
-                          />
-                        </svg>
-                      </button>
+                          {variant.imagePath ? (
+                            <UploadedImage
+                              src={variant.imagePath}
+                              alt={`${product.name} ${variant.color}`}
+                              className="h-full w-full object-cover"
+                            />
+                          ) : null}
+                        </button>
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-semibold text-slate-950">
+                            {product.name}
+                          </p>
+                          <p className="mt-1 text-xs text-slate-500">{product.brand}</p>
+                        </div>
+                      </div>
+
+                      <div>
+                        <span className="inline-flex rounded-full bg-sky-100 px-3 py-1 text-xs font-semibold text-sky-700">
+                          {getOrderVariantSummary(variant)}
+                        </span>
+                      </div>
+
+                      <div>
+                        <input
+                          type="number"
+                          min="0"
+                          step="0.01"
+                          value={row.unitPrice}
+                          onChange={(event) => updateUnitPrice(row.id, event.target.value)}
+                          className="h-10 w-full rounded-xl border border-slate-200 bg-white px-3 text-sm font-semibold text-slate-950 outline-none transition focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100"
+                        />
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <button
+                          type="button"
+                          onClick={() => changeQuantity(row.id, -1)}
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-slate-200 text-base font-semibold text-slate-700 transition hover:bg-slate-300"
+                        >
+                          -
+                        </button>
+                        <span className="min-w-6 text-center text-sm font-semibold text-slate-950">
+                          {row.quantity}
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => changeQuantity(row.id, 1)}
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-emerald-300 text-base font-semibold text-slate-950 transition hover:bg-emerald-400"
+                        >
+                          +
+                        </button>
+                      </div>
+
+                      <div className="flex justify-end">
+                        <button
+                          type="button"
+                          onClick={() => removeRow(row.id)}
+                          className="rounded-xl px-2.5 py-2 text-lg leading-none text-rose-500 transition hover:bg-rose-50"
+                          aria-label="Hiq"
+                        >
+                          ×
+                        </button>
+                      </div>
                     </div>
+
+                    {rowErrors[row.id] ? (
+                      <p className="mt-3 text-sm font-medium text-rose-600">{rowErrors[row.id]}</p>
+                    ) : null}
                   </div>
                 ))}
               </div>
-            ) : null}
+            ) : (
+              <div className="rounded-[24px] border border-dashed border-slate-200 bg-slate-50 px-4 py-10 text-center text-sm text-slate-500">
+                Zgjidh kategorine dhe produktin per ta shtuar ne liste.
+              </div>
+            )}
           </div>
         </section>
 
         <section className="rounded-[28px] border border-slate-200 bg-white p-5 shadow-sm">
           <div className="mb-5 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-slate-100 text-slate-700">
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 20 20"
-                fill="none"
-                className="h-5 w-5"
-              >
+              <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" className="h-5 w-5">
                 <path
                   d="M10 5.25a2.25 2.25 0 1 0 0-4.5 2.25 2.25 0 0 0 0 4.5ZM4.25 17.25v-.5A3.75 3.75 0 0 1 8 13h4a3.75 3.75 0 0 1 3.75 3.75v.5"
                   stroke="currentColor"
@@ -761,17 +842,12 @@ export function OrderForm({ action, products }: OrderFormProps) {
                 />
               </svg>
             </div>
-            <p className="text-xl font-semibold text-slate-950">
-              Informacioni i Klientit
-            </p>
+            <p className="text-xl font-semibold text-slate-950">Informacioni i Klientit</p>
           </div>
 
           <div className="grid gap-4 lg:grid-cols-3">
             <div>
-              <label
-                htmlFor="customerName"
-                className="mb-2 block text-sm font-medium text-slate-700"
-              >
+              <label htmlFor="customerName" className="mb-2 block text-sm font-medium text-slate-700">
                 Emri i Klientit
               </label>
               <input
@@ -784,10 +860,7 @@ export function OrderForm({ action, products }: OrderFormProps) {
             </div>
 
             <div>
-              <label
-                htmlFor="phone"
-                className="mb-2 block text-sm font-medium text-slate-700"
-              >
+              <label htmlFor="phone" className="mb-2 block text-sm font-medium text-slate-700">
                 Telefoni
               </label>
               <input
@@ -800,10 +873,7 @@ export function OrderForm({ action, products }: OrderFormProps) {
             </div>
 
             <div>
-              <label
-                htmlFor="instagram"
-                className="mb-2 block text-sm font-medium text-slate-700"
-              >
+              <label htmlFor="instagram" className="mb-2 block text-sm font-medium text-slate-700">
                 Username / Referenca
               </label>
               <input
@@ -822,12 +892,7 @@ export function OrderForm({ action, products }: OrderFormProps) {
         <section className="rounded-[28px] bg-[#0f256c] px-5 py-6 text-white shadow-[0_22px_40px_rgba(15,37,108,0.2)]">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/10">
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 20 20"
-                fill="none"
-                className="h-5 w-5"
-              >
+              <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" className="h-5 w-5">
                 <path
                   d="M5 5.75h10M5 10h10M5 14.25h7"
                   stroke="currentColor"
@@ -841,9 +906,7 @@ export function OrderForm({ action, products }: OrderFormProps) {
 
           <dl className="mt-6 space-y-4 text-sm">
             <div className="flex items-center justify-between gap-4">
-              <dt className="text-white/70">
-                Produkte ({selectedItems.length})
-              </dt>
+              <dt className="text-white/70">Produkte ({selectedItems.length})</dt>
               <dd className="rounded-lg bg-white/10 px-2.5 py-1 text-xs font-semibold">
                 {selectedItems.length} items
               </dd>
@@ -872,12 +935,7 @@ export function OrderForm({ action, products }: OrderFormProps) {
             className="mt-8 inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-emerald-500 px-5 py-4 text-sm font-semibold text-white shadow-[0_10px_25px_rgba(16,185,129,0.25)] transition hover:bg-emerald-400"
           >
             Krijo Porosine
-            <svg
-              aria-hidden="true"
-              viewBox="0 0 20 20"
-              fill="none"
-              className="h-4 w-4"
-            >
+            <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" className="h-4 w-4">
               <path
                 d="M4.75 10h10.5M11 6.25 14.75 10 11 13.75"
                 stroke="currentColor"
@@ -897,9 +955,302 @@ export function OrderForm({ action, products }: OrderFormProps) {
         </Link>
       </aside>
 
+      {productModalOpen && selectedCategory ? (
+        <div className="fixed inset-0 z-[88] flex items-center justify-center bg-slate-950/55 p-4">
+          <button
+            type="button"
+            onClick={() => setProductModalOpen(false)}
+            className="absolute inset-0 cursor-default"
+            aria-label="Mbyll modelet"
+          />
+
+          <div className="relative z-[89] flex w-full max-w-6xl flex-col overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-[0_24px_64px_rgba(15,23,42,0.2)]">
+            <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-5 sm:px-6">
+              <div className="min-w-0">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                  Modelet
+                </p>
+                <h3 className="mt-2 truncate text-2xl font-semibold tracking-tight text-slate-950">
+                  {isFootwearCategory && selectedBrand
+                    ? `${selectedCategory} / ${selectedBrand}`
+                    : selectedCategory}
+                </h3>
+                <p className="mt-1 text-sm text-slate-500">
+                  Zgjidh modelin dhe pastaj variantin me stok.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setProductModalOpen(false)}
+                className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-xl font-semibold text-slate-500 transition hover:border-slate-300 hover:text-slate-900"
+                aria-label="Mbyll"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="max-h-[72vh] overflow-y-auto px-5 py-5 sm:px-6">
+              <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <input
+                  type="text"
+                  value={productSearch}
+                  onChange={(event) => setProductSearch(event.target.value)}
+                  placeholder="Kerko modelin"
+                  className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-400 focus:bg-white focus:ring-4 focus:ring-emerald-100 sm:max-w-sm"
+                />
+                <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">
+                  {visibleProducts.length} modele
+                </span>
+              </div>
+
+              {visibleProducts.length === 0 ? (
+                <div className="rounded-[24px] border border-dashed border-slate-200 bg-slate-50 px-4 py-12 text-center text-sm text-slate-500">
+                  Nuk u gjet asnje produkt per kete kategori.
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-6 xl:grid-cols-7">
+                  {visibleProducts.map((product) => (
+                    <button
+                      key={product.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedProductId(String(product.id));
+                        setProductModalOpen(false);
+                        setVariantModalOpen(true);
+                      }}
+                      className="group overflow-hidden rounded-[20px] border border-slate-200 bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
+                    >
+                      <div className="aspect-square overflow-hidden bg-slate-100">
+                        {product.imagePath ? (
+                          <UploadedImage
+                            src={product.imagePath}
+                            alt={product.name}
+                            className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+                          />
+                        ) : (
+                          <div className="flex h-full w-full items-center justify-center text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-300">
+                            IMG
+                          </div>
+                        )}
+                      </div>
+                      <div className="px-2.5 py-2">
+                        <p className="line-clamp-2 text-[11px] font-semibold text-slate-950 sm:text-xs">
+                          {product.name}
+                        </p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {variantModalOpen && currentProduct ? (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/55 p-4">
+          <button
+            type="button"
+            onClick={() => setVariantModalOpen(false)}
+            className="absolute inset-0 cursor-default"
+            aria-label="Mbyll variantet"
+          />
+
+          <div className="relative z-[91] flex w-full max-w-4xl flex-col overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-[0_24px_64px_rgba(15,23,42,0.2)]">
+            <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-5 sm:px-6">
+              <div className="min-w-0">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                  {isFootwearCategory ? "Ngjyrat" : "Variantet"}
+                </p>
+                <h3 className="mt-2 truncate text-2xl font-semibold tracking-tight text-slate-950">
+                  {currentProduct.name}
+                </h3>
+                <p className="mt-1 text-sm text-slate-500">
+                  {isFootwearCategory
+                    ? "Zgjidh ngjyren dhe pastaj numrin."
+                    : "Zgjidh variantin qe do ta shtosh ne porosi."}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setVariantModalOpen(false)}
+                className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-xl font-semibold text-slate-500 transition hover:border-slate-300 hover:text-slate-900"
+                aria-label="Mbyll"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="max-h-[72vh] overflow-y-auto px-4 py-4 sm:px-5 sm:py-5">
+              {currentProductLoading ? (
+                <div className="rounded-[24px] border border-slate-200 bg-slate-50 px-4 py-12 text-center text-sm text-slate-500">
+                  Duke ngarkuar variantet...
+                </div>
+              ) : variantOptions.length === 0 ? (
+                <div className="rounded-[24px] border border-dashed border-slate-200 bg-slate-50 px-4 py-12 text-center text-sm text-slate-500">
+                  Nuk ka variante me stok.
+                </div>
+              ) : (
+                <div className="mb-4 flex items-center justify-between gap-3">
+                  <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-slate-600">
+                    {isFootwearCategory ? `${colorGroups.length} ngjyra` : `${variantOptions.length} variante`}
+                  </span>
+                </div>
+              )}
+
+              {!currentProductLoading && variantOptions.length > 0 && isFootwearCategory ? (
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-5">
+                  {colorGroups.map((group) => (
+                    <button
+                      key={group.key}
+                      type="button"
+                      onClick={() => {
+                        setSelectedColorKey(group.key);
+                        setVariantModalOpen(false);
+                        setSizeModalOpen(true);
+                      }}
+                      className="group overflow-hidden rounded-[18px] border border-slate-200 bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
+                    >
+                      <span className="flex aspect-square w-full items-center justify-center overflow-hidden bg-slate-100">
+                        {group.imagePath ? (
+                          <UploadedImage
+                            src={group.imagePath}
+                            alt={`${currentProduct.name} ${group.color}`}
+                            className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+                          />
+                        ) : (
+                          <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-300">
+                            IMG
+                          </span>
+                        )}
+                      </span>
+                      <span className="block min-w-0 px-2 py-2">
+                        <span className="block line-clamp-2 text-[10px] font-semibold text-slate-950 sm:text-[11px]">
+                          {group.color}
+                        </span>
+                        <span className="mt-1.5 inline-flex rounded-full bg-emerald-100 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-700 sm:text-[10px]">
+                          {group.totalStock} ne stok
+                        </span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+
+              {!currentProductLoading && variantOptions.length > 0 && !isFootwearCategory ? (
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-5">
+                  {variantOptions.map((variant) => (
+                    <button
+                      key={variant.id}
+                      type="button"
+                      onClick={() => addSelectedVariant(String(variant.id))}
+                      className="group overflow-hidden rounded-[18px] border border-slate-200 bg-white text-left shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
+                    >
+                      <span className="flex aspect-square w-full items-center justify-center overflow-hidden bg-slate-100">
+                        {variant.imagePath ? (
+                          <UploadedImage
+                            src={variant.imagePath}
+                            alt={`${currentProduct.name} ${variant.color}`}
+                            className="h-full w-full object-cover transition duration-300 group-hover:scale-[1.03]"
+                          />
+                        ) : (
+                          <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-300">
+                            IMG
+                          </span>
+                        )}
+                      </span>
+                      <span className="block min-w-0 px-2 py-2">
+                        <span className="block line-clamp-2 text-[10px] font-semibold text-slate-950 sm:text-[11px]">
+                          {getOrderVariantSummary(variant)}
+                        </span>
+                        <span className="mt-1.5 inline-flex rounded-full bg-emerald-100 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-700 sm:text-[10px]">
+                          {variant.availableStock} ne stok
+                        </span>
+                        <span className="mt-1.5 block text-[11px] font-semibold text-slate-950 sm:text-xs">
+                          €{variant.price.toFixed(2)}
+                        </span>
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              ) : null}
+            </div>
+          </div>
+        </div>
+      ) : null}
+
+      {sizeModalOpen && currentProduct ? (
+        <div className="fixed inset-0 z-[92] flex items-center justify-center bg-slate-950/60 p-4">
+          <button
+            type="button"
+            onClick={() => setSizeModalOpen(false)}
+            className="absolute inset-0 cursor-default"
+            aria-label="Mbyll numrat"
+          />
+
+          <div className="relative z-[93] flex w-full max-w-3xl flex-col overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-[0_24px_64px_rgba(15,23,42,0.2)]">
+            <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-5 sm:px-6">
+              <div className="min-w-0">
+                <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                  Numrat
+                </p>
+                <h3 className="mt-2 truncate text-2xl font-semibold tracking-tight text-slate-950">
+                  {currentProduct.name}
+                </h3>
+                <p className="mt-1 text-sm text-slate-500">
+                  {selectedColorVariants[0]?.color
+                    ? `Zgjidh numrin per ngjyren ${selectedColorVariants[0].color}.`
+                    : "Zgjidh numrin."}
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSizeModalOpen(false)}
+                className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-xl font-semibold text-slate-500 transition hover:border-slate-300 hover:text-slate-900"
+                aria-label="Mbyll"
+              >
+                ×
+              </button>
+            </div>
+
+            <div className="max-h-[72vh] overflow-y-auto px-4 py-4 sm:px-5 sm:py-5">
+              {selectedColorVariants.length === 0 ? (
+                <div className="rounded-[24px] border border-dashed border-slate-200 bg-slate-50 px-4 py-12 text-center text-sm text-slate-500">
+                  Nuk ka numra me stok per kete ngjyre.
+                </div>
+              ) : (
+                <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 lg:grid-cols-5">
+                  {selectedColorVariants.map((variant) => (
+                    <button
+                      key={variant.id}
+                      type="button"
+                      onClick={() => addSelectedVariant(String(variant.id))}
+                      className="rounded-[18px] border border-slate-200 bg-white px-2 py-3 text-left shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:shadow-md"
+                    >
+                      <span className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                        Nr
+                      </span>
+                      <span className="mt-1 block text-lg font-semibold text-slate-950">
+                        {variant.size}
+                      </span>
+                      <span className="mt-2 inline-flex rounded-full bg-emerald-100 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-700 sm:text-[10px]">
+                        {variant.availableStock} ne stok
+                      </span>
+                      <span className="mt-1.5 block text-[11px] font-semibold text-slate-950 sm:text-xs">
+                        €{variant.price.toFixed(2)}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+      ) : null}
+
       {previewImage ? (
         <div
-          className="fixed inset-0 z-[90] flex items-center justify-center bg-slate-950/75 p-4"
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/75 p-4"
           onClick={() => setPreviewImage(null)}
         >
           <div
@@ -912,12 +1263,7 @@ export function OrderForm({ action, products }: OrderFormProps) {
               className="absolute right-4 top-4 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full bg-slate-950/80 text-white transition hover:bg-slate-950"
               aria-label="Mbyll foton"
             >
-              <svg
-                aria-hidden="true"
-                viewBox="0 0 20 20"
-                fill="none"
-                className="h-4 w-4"
-              >
+              <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" className="h-4 w-4">
                 <path
                   d="M6 6l8 8M14 6l-8 8"
                   stroke="currentColor"
@@ -939,3 +1285,5 @@ export function OrderForm({ action, products }: OrderFormProps) {
     </form>
   );
 }
+
+

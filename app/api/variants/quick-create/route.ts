@@ -7,6 +7,11 @@ import {
 } from "@/lib/product-images";
 import { prisma } from "@/lib/prisma";
 import {
+  buildVariantIdentityKey,
+  getCatalogAwareCategoryConfig,
+  parseCategoryFieldConfig,
+} from "@/lib/product-taxonomy";
+import {
   buildBarcodeFromVariantId,
   buildVariantSku,
   ensureUniqueSku,
@@ -89,10 +94,18 @@ export async function POST(request: Request) {
           id: true,
           size: true,
           color: true,
+          material: true,
+          powerWatts: true,
           imagePath: true,
           price: true,
           sku: true,
           barcode: true,
+        },
+      },
+      category: {
+        select: {
+          name: true,
+          config: true,
         },
       },
     },
@@ -102,15 +115,42 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Produkti nuk u gjet." }, { status: 404 });
   }
 
+  const categoryConfig = getCatalogAwareCategoryConfig(
+    currentUser.tenant?.catalogType,
+    product.category?.name,
+    currentUser.tenant?.catalogConfig,
+    parseCategoryFieldConfig(product.category?.config),
+  );
+
+  const candidateKey = buildVariantIdentityKey(categoryConfig, {
+    color,
+    size,
+    material,
+    powerWatts,
+  });
+
   const duplicateVariant = product.variants.find(
     (variant) =>
-      variant.size.trim().toLowerCase() === size.toLowerCase() &&
-      variant.color.trim().toLowerCase() === color.toLowerCase(),
+      buildVariantIdentityKey(categoryConfig, {
+        color: variant.color,
+        size: variant.size,
+        material: variant.material,
+        powerWatts: variant.powerWatts,
+      }) === candidateKey,
   );
 
   if (duplicateVariant) {
+    const duplicateLabel = [
+      color,
+      size,
+      categoryConfig.showMaterialField ? material : null,
+      categoryConfig.showPowerField ? powerWatts : null,
+    ]
+      .filter(Boolean)
+      .join(" / ");
+
     return NextResponse.json(
-      { error: `Varianti Nr ${size} / ${color} ekziston tashme.` },
+      { error: `Varianti ${duplicateLabel} ekziston tashme.` },
       { status: 409 },
     );
   }

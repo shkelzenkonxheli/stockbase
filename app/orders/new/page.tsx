@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { FlashMessage } from "@/app/components/flash-message";
@@ -9,6 +10,10 @@ type NewOrderPageProps = {
   searchParams?: Promise<{
     error?: string;
   }>;
+};
+
+export const metadata: Metadata = {
+  title: "Porosi e Re",
 };
 
 async function createOrder(formData: FormData) {
@@ -53,18 +58,32 @@ async function createOrder(formData: FormData) {
         return null;
       }
 
-      const candidate = item as { variantId?: unknown; quantity?: unknown };
+      const candidate = item as {
+        variantId?: unknown;
+        quantity?: unknown;
+        unitPrice?: unknown;
+      };
       const variantId = Number(candidate.variantId);
       const quantity = Number(candidate.quantity);
+      const unitPrice = Number(candidate.unitPrice);
 
-      if (!variantId || Number.isNaN(quantity) || quantity <= 0) {
+      if (
+        !variantId ||
+        Number.isNaN(quantity) ||
+        quantity <= 0 ||
+        Number.isNaN(unitPrice) ||
+        unitPrice < 0
+      ) {
         return null;
       }
 
-      return { variantId, quantity };
+      return { variantId, quantity, unitPrice };
     })
     .filter(
-      (item): item is { variantId: number; quantity: number } => item !== null,
+      (
+        item,
+      ): item is { variantId: number; quantity: number; unitPrice: number } =>
+        item !== null,
     );
 
   if (items.length === 0) {
@@ -123,6 +142,7 @@ async function createOrder(formData: FormData) {
         orderId: order.id,
         variantId: item.variantId,
         quantity: item.quantity,
+        unitPrice: item.unitPrice,
       })),
     });
 
@@ -198,6 +218,7 @@ export default async function NewOrderPage({
     select: {
       id: true,
       name: true,
+      brand: true,
       category: {
         select: {
           name: true,
@@ -245,7 +266,8 @@ export default async function NewOrderPage({
           products={products.map((product) => ({
             id: product.id,
             name: product.name,
-            brand: product.category.name,
+            brand: product.brand ?? "",
+            category: product.category.name,
             imagePath: product.variants[0]?.imagePath ?? null,
           }))}
         />

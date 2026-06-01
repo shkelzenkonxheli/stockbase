@@ -1,10 +1,15 @@
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
+import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { FlashMessage } from "@/app/components/flash-message";
 import { requireRole } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { QuickOrdersForm } from "./quick-orders-form";
+
+export const metadata: Metadata = {
+  title: "Porosi te Shpejta",
+};
 
 type QuickOrdersPageProps = {
   searchParams?: Promise<{
@@ -53,18 +58,27 @@ async function createQuickOrders(formData: FormData) {
       const candidate = row as {
         variantId?: unknown;
         quantity?: unknown;
+        unitPrice?: unknown;
       };
 
       const variantId = Number(candidate.variantId);
       const quantity = Number(candidate.quantity);
+      const unitPrice = Number(candidate.unitPrice);
 
-      if (!variantId || Number.isNaN(quantity) || quantity <= 0) {
+      if (
+        !variantId ||
+        Number.isNaN(quantity) ||
+        quantity <= 0 ||
+        Number.isNaN(unitPrice) ||
+        unitPrice < 0
+      ) {
         return null;
       }
 
       return {
         variantId,
         quantity,
+        unitPrice,
       };
     })
     .filter(
@@ -73,6 +87,7 @@ async function createQuickOrders(formData: FormData) {
       ): row is {
         variantId: number;
         quantity: number;
+        unitPrice: number;
       } => row !== null,
     );
 
@@ -133,6 +148,7 @@ async function createQuickOrders(formData: FormData) {
             create: {
               variantId: row.variantId,
               quantity: row.quantity,
+              unitPrice: row.unitPrice,
             },
           },
         },

@@ -5,6 +5,7 @@ import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { UploadedImage } from "@/app/components/uploaded-image";
 import { LOW_STOCK_THRESHOLD, getStockTone } from "@/lib/inventory";
+import type { CategoryConfig } from "@/lib/product-taxonomy";
 
 type ProductQuickVariant = {
   id: number;
@@ -24,6 +25,7 @@ type ProductStockQuickViewProps = {
   productBrand: string;
   imagePath: string | null;
   variants: ProductQuickVariant[];
+  categoryConfig?: CategoryConfig;
   className?: string;
   showImageButton?: boolean;
   iconOnly?: boolean;
@@ -67,6 +69,10 @@ function getColorSwatchClass(color: string) {
 
 function modalCardClass() {
   return "w-full rounded-[28px] bg-white p-5 shadow-2xl";
+}
+
+function modalOverlayClass() {
+  return "fixed inset-0 z-[260] flex items-center justify-center bg-slate-950/82 p-4";
 }
 
 function IconPlus() {
@@ -181,12 +187,68 @@ function getStockViewMode(categoryName: string): StockViewMode {
   return "home";
 }
 
+function normalizeIdentityPart(value?: string | null) {
+  return String(value ?? "").trim().toLowerCase();
+}
+
+function buildQuickVariantIdentityKey(
+  stockViewMode: StockViewMode,
+  variant: {
+    color?: string | null;
+    size?: string | null;
+    material?: string | null;
+    powerWatts?: string | null;
+  },
+  categoryConfig?: CategoryConfig,
+) {
+  const parts = [
+    normalizeIdentityPart(variant.color),
+    normalizeIdentityPart(variant.size),
+  ];
+
+  if (stockViewMode !== "footwear" && (categoryConfig?.showMaterialField ?? stockViewMode === "home")) {
+    parts.push(normalizeIdentityPart(variant.material));
+  }
+
+  if (stockViewMode !== "footwear" && (categoryConfig?.showPowerField ?? stockViewMode === "electronics")) {
+    parts.push(normalizeIdentityPart(variant.powerWatts));
+  }
+
+  return parts.join("::");
+}
+
+function formatQuickVariantLabel(
+  stockViewMode: StockViewMode,
+  variant: {
+    color?: string | null;
+    size?: string | null;
+    material?: string | null;
+    powerWatts?: string | null;
+  },
+  categoryConfig?: CategoryConfig,
+) {
+  const parts = [variant.color?.trim(), variant.size?.trim()].filter(Boolean) as string[];
+
+  if (stockViewMode !== "footwear" && (categoryConfig?.showMaterialField ?? stockViewMode === "home")) {
+    const material = variant.material?.trim();
+    if (material) parts.push(material);
+  }
+
+  if (stockViewMode !== "footwear" && (categoryConfig?.showPowerField ?? stockViewMode === "electronics")) {
+    const power = variant.powerWatts?.trim();
+    if (power) parts.push(power);
+  }
+
+  return parts.join(" / ");
+}
+
 export function ProductStockQuickView({
   productId,
   productName,
   productBrand,
   imagePath,
   variants,
+  categoryConfig,
   className = "",
   showImageButton = true,
   iconOnly = false,
@@ -502,18 +564,55 @@ export function ProductStockQuickView({
       return;
     }
 
-    const normalizedSize = size.toLowerCase();
-    const alreadyAdded = variantRows.some(
-      (row) => row.size.trim().toLowerCase() === normalizedSize,
+    const candidateKey = buildQuickVariantIdentityKey(
+      stockViewMode,
+      {
+        color: variantColor,
+        size,
+        material: variantMaterial,
+        powerWatts: variantPowerWatts,
+      },
+      categoryConfig,
+    );
+    const alreadyAdded = variantRows.some((row) =>
+      buildQuickVariantIdentityKey(
+        stockViewMode,
+        {
+          color: variantColor,
+          size: row.size,
+          material: variantMaterial,
+          powerWatts: variantPowerWatts,
+        },
+        categoryConfig,
+      ) === candidateKey,
     );
     const alreadyExists = variantsState.some(
       (variant) =>
-        variant.color.trim().toLowerCase() === normalizedVariantColor &&
-        variant.size.trim().toLowerCase() === normalizedSize,
+        buildQuickVariantIdentityKey(
+          stockViewMode,
+          {
+            color: variant.color,
+            size: variant.size,
+            material: variant.material,
+            powerWatts: variant.powerWatts,
+          },
+          categoryConfig,
+        ) === candidateKey,
     );
 
     if (alreadyAdded || alreadyExists) {
-      setVariantError(`Numri ${size} ekziston tashme per kete ngjyre.`);
+      setVariantError(
+        `Varianti ${formatQuickVariantLabel(
+          stockViewMode,
+          {
+            color: variantColor,
+            size,
+            material: variantMaterial,
+            powerWatts: variantPowerWatts,
+          },
+          categoryConfig,
+        )} ekziston tashme.`,
+      );
       return;
     }
 
@@ -736,7 +835,7 @@ export function ProductStockQuickView({
       return;
     }
 
-    if (existingVariantColor) {
+    if (stockViewMode === "footwear" && existingVariantColor) {
       setVariantError("Kjo ngjyre ekziston tashme. Perdor Shto numer.");
       return;
     }
@@ -793,14 +892,34 @@ export function ProductStockQuickView({
       return;
     }
 
-    const seenSizes = new Set<string>();
+    const seenVariantKeys = new Set<string>();
     for (const row of cleanedRows) {
-      const normalizedSize = row.size.toLowerCase();
-      if (seenSizes.has(normalizedSize)) {
-        setVariantError(`Numri ${row.size} eshte shkruar me shume se nje here.`);
+      const candidateKey = buildQuickVariantIdentityKey(
+        stockViewMode,
+        {
+          color,
+          size: row.size,
+          material: variantMaterial,
+          powerWatts: variantPowerWatts,
+        },
+        categoryConfig,
+      );
+      if (seenVariantKeys.has(candidateKey)) {
+        setVariantError(
+          `Varianti ${formatQuickVariantLabel(
+            stockViewMode,
+            {
+              color,
+              size: row.size,
+              material: variantMaterial,
+              powerWatts: variantPowerWatts,
+            },
+            categoryConfig,
+          )} eshte shkruar me shume se nje here.`,
+        );
         return;
       }
-      seenSizes.add(normalizedSize);
+      seenVariantKeys.add(candidateKey);
     }
 
     setCreatingVariant(true);
@@ -948,23 +1067,24 @@ export function ProductStockQuickView({
   }
 
   const quickVariantPrimaryLabel =
-    stockViewMode === "electronics"
+    categoryConfig?.sizeLabel ??
+    (stockViewMode === "electronics"
       ? "Modeli / versioni"
       : stockViewMode === "home"
         ? "Madhesia / dimensioni"
-        : "Numri";
+        : "Numri");
   const quickVariantModalDescription =
     stockViewMode === "electronics"
       ? "Krijo variant te ri me model/version, ngjyre, cmim dhe stok."
       : stockViewMode === "home"
         ? "Krijo variant te ri me madhesi/dimension, ngjyre, cmim dhe stok."
         : "Krijo ngjyre te re dhe shto disa numra ne nje hap.";
-  const quickVariantExtraLabel =
-    stockViewMode === "electronics"
-      ? "Fuqia (opsionale)"
-      : stockViewMode === "home"
-        ? "Materiali (opsional)"
-        : null;
+  const quickVariantColorLabel = categoryConfig?.colorLabel ?? "Ngjyra";
+  const showQuickMaterialField =
+    stockViewMode !== "footwear" && (categoryConfig?.showMaterialField ?? stockViewMode === "home");
+  const showQuickPowerField =
+    stockViewMode !== "footwear" &&
+    (categoryConfig?.showPowerField ?? stockViewMode === "electronics");
 
   return (
     <>
@@ -1598,15 +1718,16 @@ export function ProductStockQuickView({
         </div>
       ) : null}
 
-      {variantActionsTarget ? (
-        <div
-          className="fixed inset-0 z-[210] flex items-center justify-center bg-slate-950/60 p-4"
-          onClick={() => setVariantActionsTarget(null)}
-        >
-          <div
-            className={`${modalCardClass()} w-full max-w-[320px] p-4 sm:max-w-sm sm:p-5`}
-            onClick={(event) => event.stopPropagation()}
-          >
+      {hasMounted && variantActionsTarget
+        ? createPortal(
+            <div
+              className={modalOverlayClass()}
+              onClick={() => setVariantActionsTarget(null)}
+            >
+              <div
+                className={`${modalCardClass()} w-[min(90vw,320px)] p-4 sm:max-w-sm sm:p-5`}
+                onClick={(event) => event.stopPropagation()}
+              >
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h3 className="text-lg font-semibold text-slate-950">
@@ -1681,25 +1802,28 @@ export function ProductStockQuickView({
                 </button>
               ) : null}
             </div>
-                  </div>
-                </div>
-              ) : null}
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
 
-      {deleteColorTarget || deleteVariantTarget ? (
-        <div
-          className="fixed inset-0 z-[210] flex items-center justify-center bg-slate-950/72 p-4"
-          onClick={() => {
-            if (!deletingColor) {
-              setDeleteColorTarget(null);
-              setDeleteVariantTarget(null);
-              setDeleteColorError(null);
-            }
-          }}
-        >
-          <div
-            className={`${modalCardClass()} w-[min(92vw,360px)] p-4 sm:max-w-md sm:p-5`}
-            onClick={(event) => event.stopPropagation()}
-          >
+      {hasMounted && (deleteColorTarget || deleteVariantTarget)
+        ? createPortal(
+            <div
+              className={modalOverlayClass()}
+              onClick={() => {
+                if (!deletingColor) {
+                  setDeleteColorTarget(null);
+                  setDeleteVariantTarget(null);
+                  setDeleteColorError(null);
+                }
+              }}
+            >
+              <div
+                className={`${modalCardClass()} w-[min(90vw,344px)] p-4 sm:max-w-md sm:p-5`}
+                onClick={(event) => event.stopPropagation()}
+              >
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h3 className="text-lg font-semibold text-slate-950">
@@ -1768,25 +1892,28 @@ export function ProductStockQuickView({
                 {deletingColor ? "Duke fshire..." : deleteVariantTarget ? "Fshi variantin" : "Fshi ngjyren"}
               </button>
             </div>
-          </div>
-        </div>
-      ) : null}
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
 
-      {stockEditorColor || stockEditorVariantId ? (
-        <div
-          className="fixed inset-0 z-[210] flex items-center justify-center bg-slate-950/72 p-4"
-          onClick={() => {
-            if (!savingStock) {
-              setStockEditorColor(null);
-              setStockEditorVariantId(null);
-              setStockError(null);
-            }
-          }}
-        >
-          <div
-            className={`${modalCardClass()} max-h-[78dvh] w-[min(92vw,420px)] overflow-hidden p-0 sm:max-h-[calc(100vh-32px)] sm:max-w-xl`}
-            onClick={(event) => event.stopPropagation()}
-          >
+      {hasMounted && (stockEditorColor || stockEditorVariantId)
+        ? createPortal(
+            <div
+              className={modalOverlayClass()}
+              onClick={() => {
+                if (!savingStock) {
+                  setStockEditorColor(null);
+                  setStockEditorVariantId(null);
+                  setStockError(null);
+                }
+              }}
+            >
+              <div
+                className={`${modalCardClass()} max-h-[74dvh] w-[min(90vw,392px)] overflow-hidden p-0 sm:max-h-[calc(100vh-32px)] sm:max-w-xl`}
+                onClick={(event) => event.stopPropagation()}
+              >
             <div className="flex max-h-[78dvh] flex-col sm:max-h-[calc(100vh-32px)]">
             <div className="flex items-start justify-between gap-4 px-4 pb-0 pt-4 sm:px-5 sm:pt-5">
               <div>
@@ -1925,26 +2052,29 @@ export function ProductStockQuickView({
               </button>
             </div>
             </div>
-          </div>
-        </div>
-      ) : null}
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
 
-      {editStockColor || editStockVariantId ? (
-        <div
-          className="fixed inset-0 z-[210] flex items-center justify-center bg-slate-950/72 p-4"
-          onClick={() => {
-            if (!savingEditStock) {
-              setEditStockColor(null);
-              setEditStockVariantId(null);
-              setEditStockLocation("");
-              setEditStockError(null);
-            }
-          }}
-        >
-          <div
-            className={`${modalCardClass()} max-h-[78dvh] w-[min(92vw,420px)] overflow-hidden p-0 sm:max-h-[calc(100vh-32px)] sm:max-w-xl`}
-            onClick={(event) => event.stopPropagation()}
-          >
+      {hasMounted && (editStockColor || editStockVariantId)
+        ? createPortal(
+            <div
+              className={modalOverlayClass()}
+              onClick={() => {
+                if (!savingEditStock) {
+                  setEditStockColor(null);
+                  setEditStockVariantId(null);
+                  setEditStockLocation("");
+                  setEditStockError(null);
+                }
+              }}
+            >
+              <div
+                className={`${modalCardClass()} max-h-[74dvh] w-[min(90vw,392px)] overflow-hidden p-0 sm:max-h-[calc(100vh-32px)] sm:max-w-xl`}
+                onClick={(event) => event.stopPropagation()}
+              >
             <div className="flex max-h-[78dvh] flex-col sm:max-h-[calc(100vh-32px)]">
             <div className="flex items-start justify-between gap-4 px-4 pb-0 pt-4 sm:px-5 sm:pt-5">
               <div>
@@ -2071,24 +2201,27 @@ export function ProductStockQuickView({
               </button>
             </div>
             </div>
-          </div>
-        </div>
-      ) : null}
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
 
-      {numberEditorColor ? (
-        <div
-          className="fixed inset-0 z-[210] flex items-center justify-center bg-slate-950/72 p-4"
-          onClick={() => {
-            if (!creatingNumber) {
-              setNumberEditorColor(null);
-              setCreateError(null);
-            }
-          }}
-        >
-          <div
-            className={`${modalCardClass()} max-h-[78dvh] w-[min(92vw,420px)] overflow-hidden p-0 sm:max-h-[calc(100vh-32px)] sm:max-w-xl`}
-            onClick={(event) => event.stopPropagation()}
-          >
+      {hasMounted && numberEditorColor
+        ? createPortal(
+            <div
+              className={modalOverlayClass()}
+              onClick={() => {
+                if (!creatingNumber) {
+                  setNumberEditorColor(null);
+                  setCreateError(null);
+                }
+              }}
+            >
+              <div
+                className={`${modalCardClass()} max-h-[74dvh] w-[min(90vw,392px)] overflow-hidden p-0 sm:max-h-[calc(100vh-32px)] sm:max-w-xl`}
+                onClick={(event) => event.stopPropagation()}
+              >
             <div className="flex max-h-[78dvh] flex-col sm:max-h-[calc(100vh-32px)]">
             <div className="flex items-start justify-between gap-4 px-4 pb-0 pt-4 sm:px-5 sm:pt-5">
               <div>
@@ -2220,23 +2353,26 @@ export function ProductStockQuickView({
               </button>
             </div>
             </div>
-          </div>
-        </div>
-      ) : null}
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
 
-      {showVariantCreator ? (
-        <div
-          className="fixed inset-0 z-[210] flex items-center justify-center bg-slate-950/72 p-4"
-          onClick={() => {
-            if (!creatingVariant) {
-              resetVariantCreator();
-            }
-          }}
-        >
-          <div
-            className={`${modalCardClass()} max-h-[80dvh] w-[min(92vw,560px)] overflow-hidden p-0 sm:max-h-[calc(100vh-32px)] sm:max-w-3xl`}
-            onClick={(event) => event.stopPropagation()}
-          >
+      {hasMounted && showVariantCreator
+        ? createPortal(
+            <div
+              className={modalOverlayClass()}
+              onClick={() => {
+                if (!creatingVariant) {
+                  resetVariantCreator();
+                }
+              }}
+            >
+              <div
+                className={`${modalCardClass()} max-h-[76dvh] w-[min(90vw,520px)] overflow-hidden p-0 sm:max-h-[calc(100vh-32px)] sm:max-w-3xl`}
+                onClick={(event) => event.stopPropagation()}
+              >
             <div className="flex max-h-[80dvh] flex-col sm:max-h-[calc(100vh-32px)]">
             <div className="flex items-start justify-between gap-4 px-4 pb-0 pt-4 sm:px-5 sm:pt-5">
               <div>
@@ -2341,13 +2477,13 @@ export function ProductStockQuickView({
                   <div className={`grid gap-4 ${stockViewMode === "footwear" ? "sm:grid-cols-2" : "md:grid-cols-2"}`}>
                     <label className="min-w-0 space-y-2">
                       <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                        Ngjyra e re
+                        {quickVariantColorLabel}
                       </span>
                       <input
                         type="text"
                         value={variantColor}
                         onChange={(event) => setVariantColor(event.target.value)}
-                        placeholder="Blue"
+                        placeholder={categoryConfig?.colorPlaceholder ?? "Blue"}
                         className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-100"
                       />
                     </label>
@@ -2480,7 +2616,10 @@ export function ProductStockQuickView({
                               type="text"
                               value={variantDraftSize}
                               onChange={(event) => setVariantDraftSize(event.target.value)}
-                              placeholder={stockViewMode === "electronics" ? "p.sh. Wet & Dry 3L" : "p.sh. 140x70"}
+                              placeholder={
+                                categoryConfig?.sizePlaceholder ??
+                                (stockViewMode === "electronics" ? "p.sh. Wet & Dry 3L" : "p.sh. 140x70")
+                              }
                               className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-100"
                             />
                           </label>
@@ -2498,20 +2637,30 @@ export function ProductStockQuickView({
                             />
                           </label>
                         </div>
-                        {quickVariantExtraLabel ? (
+                        {showQuickMaterialField ? (
                           <label className="min-w-0 space-y-2">
                             <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                              {quickVariantExtraLabel}
+                              {categoryConfig?.materialLabel ?? "Materiali"}
                             </span>
                             <input
                               type="text"
-                              value={stockViewMode === "electronics" ? variantPowerWatts : variantMaterial}
-                              onChange={(event) =>
-                                stockViewMode === "electronics"
-                                  ? setVariantPowerWatts(event.target.value)
-                                  : setVariantMaterial(event.target.value)
-                              }
-                              placeholder={stockViewMode === "electronics" ? "p.sh. 1800W" : "p.sh. Pambuk 100%"}
+                              value={variantMaterial}
+                              onChange={(event) => setVariantMaterial(event.target.value)}
+                              placeholder={categoryConfig?.materialPlaceholder ?? "p.sh. Pambuk 100%"}
+                              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-100"
+                            />
+                          </label>
+                        ) : null}
+                        {showQuickPowerField ? (
+                          <label className="min-w-0 space-y-2">
+                            <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                              {categoryConfig?.powerLabel ?? "Fuqia"}
+                            </span>
+                            <input
+                              type="text"
+                              value={variantPowerWatts}
+                              onChange={(event) => setVariantPowerWatts(event.target.value)}
+                              placeholder={categoryConfig?.powerPlaceholder ?? "p.sh. 1800W"}
                               className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-100"
                             />
                           </label>
@@ -2554,9 +2703,11 @@ export function ProductStockQuickView({
               </button>
             </div>
             </div>
-          </div>
-        </div>
-      ) : null}
+              </div>
+            </div>,
+            document.body,
+          )
+        : null}
             </>,
             document.body,
           )

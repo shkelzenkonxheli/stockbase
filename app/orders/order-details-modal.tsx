@@ -16,6 +16,7 @@ type OrderItem = {
   locationCode?: string | null;
   imagePath?: string | null;
   quantity: number;
+  unitPrice?: number;
 };
 
 function getOrderItemTitle(item: OrderItem) {
@@ -189,6 +190,16 @@ export function OrderDetailsModal({
                     <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 font-medium text-emerald-700">
                       {item.quantity} cope
                     </span>
+                    {typeof item.unitPrice === "number" ? (
+                      <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-slate-700">
+                        €{item.unitPrice.toFixed(2)}
+                      </span>
+                    ) : null}
+                    {typeof item.unitPrice === "number" ? (
+                      <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-slate-700">
+                        Totali: €{(item.unitPrice * item.quantity).toFixed(2)}
+                      </span>
+                    ) : null}
                   </div>
                 </div>
               ))}

@@ -61,11 +61,19 @@ export type MonthlySalesReport = {
   monthLabel: string;
   ordersCount: number;
   totalPairs: number;
+  totalRevenue: number;
   averageItemsPerOrder: number;
+  averageOrderValue: number;
   activeModelsCount: number;
   topSourceLabel: string | null;
   topSourceQuantity: number;
-  sourceBreakdown: Array<{ source: string; label: string; quantity: number }>;
+  topSourceRevenue: number;
+  sourceBreakdown: Array<{
+    source: string;
+    label: string;
+    quantity: number;
+    revenue: number;
+  }>;
   topModels: Array<{
     brand: string;
     name: string;
@@ -74,7 +82,7 @@ export type MonthlySalesReport = {
     status: "IN_STOCK" | "LOW_STOCK" | "OUT_OF_STOCK";
   }>;
   topBrands: Array<{ brand: string; quantity: number }>;
-  dailySales: Array<{ date: string; quantity: number }>;
+  dailySales: Array<{ date: string; quantity: number; revenue: number }>;
 };
 
 export async function getMonthlySalesReport(selectedMonth: string, tenantId: number) {
@@ -105,6 +113,7 @@ export async function getMonthlySalesReport(selectedMonth: string, tenantId: num
       },
       select: {
         quantity: true,
+        unitPrice: true,
         order: {
           select: {
             source: true,
@@ -132,13 +141,20 @@ export async function getMonthlySalesReport(selectedMonth: string, tenantId: num
   ]);
 
   const totalPairs = orderItems.reduce((sum, item) => sum + item.quantity, 0);
+  const totalRevenue = orderItems.reduce(
+    (sum, item) => sum + item.quantity * Number(item.unitPrice),
+    0,
+  );
 
   const sourceMap = orderItems.reduce(
     (acc, item) => {
-      acc[item.order.source] = (acc[item.order.source] ?? 0) + item.quantity;
+      const current = acc[item.order.source] ?? { quantity: 0, revenue: 0 };
+      current.quantity += item.quantity;
+      current.revenue += item.quantity * Number(item.unitPrice);
+      acc[item.order.source] = current;
       return acc;
     },
-    {} as Record<string, number>,
+    {} as Record<string, { quantity: number; revenue: number }>,
   );
 
   const sourceLabels: Record<string, string> = {
@@ -148,7 +164,7 @@ export async function getMonthlySalesReport(selectedMonth: string, tenantId: num
   };
 
   const topSourceEntry =
-    Object.entries(sourceMap).sort((a, b) => b[1] - a[1])[0] ?? null;
+    Object.entries(sourceMap).sort((a, b) => b[1].quantity - a[1].quantity)[0] ?? null;
 
   const modelMap = orderItems.reduce(
     (acc, item) => {
@@ -196,10 +212,13 @@ export async function getMonthlySalesReport(selectedMonth: string, tenantId: num
         month: "2-digit",
       }).format(item.order.createdAt);
 
-      acc.set(key, (acc.get(key) ?? 0) + item.quantity);
+      const current = acc.get(key) ?? { quantity: 0, revenue: 0 };
+      current.quantity += item.quantity;
+      current.revenue += item.quantity * Number(item.unitPrice);
+      acc.set(key, current);
       return acc;
     },
-    new Map<string, number>(),
+    new Map<string, { quantity: number; revenue: number }>(),
   );
 
   const productIds = [...new Set([...modelMap.values()].map((item) => item.productId))];
@@ -261,7 +280,8 @@ export async function getMonthlySalesReport(selectedMonth: string, tenantId: num
     (source) => ({
       source,
       label: sourceLabels[source],
-      quantity: sourceMap[source] ?? 0,
+      quantity: sourceMap[source]?.quantity ?? 0,
+      revenue: sourceMap[source]?.revenue ?? 0,
     }),
   );
 
@@ -271,7 +291,11 @@ export async function getMonthlySalesReport(selectedMonth: string, tenantId: num
     .slice(0, 8);
 
   const dailySales = [...dailyMap.entries()]
-    .map(([date, quantity]) => ({ date, quantity }))
+    .map(([date, values]) => ({
+      date,
+      quantity: values.quantity,
+      revenue: values.revenue,
+    }))
     .sort((a, b) => {
       const [aday, amonth] = a.date.split(".").map(Number);
       const [bday, bmonth] = b.date.split(".").map(Number);
@@ -289,10 +313,13 @@ export async function getMonthlySalesReport(selectedMonth: string, tenantId: num
     monthLabel,
     ordersCount,
     totalPairs,
+    totalRevenue,
     averageItemsPerOrder: ordersCount > 0 ? totalPairs / ordersCount : 0,
+    averageOrderValue: ordersCount > 0 ? totalRevenue / ordersCount : 0,
     activeModelsCount: modelMap.size,
     topSourceLabel: topSourceEntry ? sourceLabels[topSourceEntry[0]] : null,
-    topSourceQuantity: topSourceEntry?.[1] ?? 0,
+    topSourceQuantity: topSourceEntry?.[1].quantity ?? 0,
+    topSourceRevenue: topSourceEntry?.[1].revenue ?? 0,
     sourceBreakdown,
     topModels,
     topBrands,

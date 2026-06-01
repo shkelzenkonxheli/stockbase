@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -11,6 +12,10 @@ type NewTenantPageProps = {
   searchParams?: Promise<{
     error?: string;
   }>;
+};
+
+export const metadata: Metadata = {
+  title: "Krijo Tenant",
 };
 
 async function createTenant(formData: FormData) {

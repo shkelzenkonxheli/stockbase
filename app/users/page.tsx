@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { ConfirmActionForm } from "@/app/components/confirm-action-form";
@@ -17,6 +18,10 @@ type UsersPageProps = {
     edit?: string;
     reset?: string;
   }>;
+};
+
+export const metadata: Metadata = {
+  title: "Userat",
 };
 
 async function createUser(formData: FormData) {

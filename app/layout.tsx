@@ -20,8 +20,16 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "StockBase",
+  title: {
+    default: "StockBase",
+    template: "%s | StockBase",
+  },
   description: "Menaxhimi i stokut, produkteve dhe porosive",
+  icons: {
+    icon: "/stock-app-logo.svg",
+    shortcut: "/stock-app-logo.svg",
+    apple: "/stock-app-logo.svg",
+  },
 };
 
 function roleLabel(role: string) {
@@ -65,7 +73,7 @@ export default async function RootLayout({
     ? [
         {
           href: "/",
-          label: "Pulti",
+          label: "Paneli",
           icon: (
             <svg
               viewBox="0 0 24 24"

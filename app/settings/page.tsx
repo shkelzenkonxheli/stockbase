@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { FlashMessage } from "@/app/components/flash-message";
@@ -36,6 +37,10 @@ type SettingsPageProps = {
     success?: string;
     error?: string;
   }>;
+};
+
+export const metadata: Metadata = {
+  title: "Settings",
 };
 
 function normalizeCategoryName(value: string) {

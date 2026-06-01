@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Image from "next/image";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
@@ -16,6 +17,10 @@ type LoginPageProps = {
   searchParams?: Promise<{
     error?: string;
   }>;
+};
+
+export const metadata: Metadata = {
+  title: "Hyrje",
 };
 
 async function login(formData: FormData) {

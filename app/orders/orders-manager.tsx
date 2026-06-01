@@ -22,6 +22,7 @@ type OrderItem = {
   locationCode?: string | null;
   imagePath?: string | null;
   quantity: number;
+  unitPrice?: number;
 };
 
 type OrderSummary = {
