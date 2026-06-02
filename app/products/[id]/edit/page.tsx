@@ -6,6 +6,7 @@ import { requireRole } from "@/lib/auth";
 import { ensureTenantCategories } from "@/lib/categories";
 import {
   getCatalogAwareCategoryConfig,
+  getWarehouseConfig,
   parseCategoryFieldConfig,
 } from "@/lib/product-taxonomy";
 import { prisma } from "@/lib/prisma";
@@ -28,6 +29,7 @@ async function updateProduct(formData: FormData) {
   const productId = Number(formData.get("productId"));
   const name = formData.get("name")?.toString().trim();
   const brand = formData.get("brand")?.toString().trim() || null;
+  const warehouseName = formData.get("warehouseName")?.toString().trim() || null;
   const categoryId = Number(formData.get("categoryId"));
   if (!productId || !name || !categoryId || !tenantId) {
     return;
@@ -56,6 +58,7 @@ async function updateProduct(formData: FormData) {
       id: { not: productId },
       name: { equals: name, mode: "insensitive" },
       brand: brand ? { equals: brand, mode: "insensitive" } : null,
+      warehouseName: warehouseName ? { equals: warehouseName, mode: "insensitive" } : null,
       categoryId,
     },
     select: { id: true },
@@ -74,6 +77,7 @@ async function updateProduct(formData: FormData) {
     data: {
       name,
       brand,
+      warehouseName,
       categoryId,
     },
   });
@@ -134,6 +138,7 @@ export default async function EditProductPage({
     currentUser.tenant?.catalogConfig,
     parseCategoryFieldConfig(product.category?.config),
   );
+  const warehouseConfig = getWarehouseConfig(currentUser.tenant?.catalogConfig);
 
   return (
     <main className="min-h-screen bg-[linear-gradient(180deg,#f8fafc_0%,#eef2f7_100%)] px-4 py-6 sm:px-6 lg:px-8">
@@ -226,6 +231,27 @@ export default async function EditProductPage({
               ))}
             </select>
           </div>
+
+          {warehouseConfig.enabled ? (
+            <div className="space-y-2">
+              <label htmlFor="warehouseName" className="block text-sm font-medium text-slate-800">
+                Depoja
+              </label>
+              <select
+                id="warehouseName"
+                name="warehouseName"
+                defaultValue={product.warehouseName ?? ""}
+                className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-200"
+              >
+                <option value="">Pa depo</option>
+                {warehouseConfig.options.map((option) => (
+                  <option key={option} value={option}>
+                    {option}
+                  </option>
+                ))}
+              </select>
+            </div>
+          ) : null}
 
           <div className="flex flex-col gap-3 pt-3 sm:flex-row">
             <button

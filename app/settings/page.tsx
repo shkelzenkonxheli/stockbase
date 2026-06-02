@@ -17,6 +17,7 @@ import {
   getOrderListViewConfig,
   getProductListViewConfig,
   getCatalogTemplate,
+  getWarehouseConfig,
   ORDER_LIST_FIELD_KEYS,
   parseCategoryFieldConfig,
   sanitizeCustomVariantFields,
@@ -356,6 +357,14 @@ async function updateTenantSettings(formData: FormData) {
 
   const catalogConfig: TenantCatalogConfig = {
     categoryOverrides,
+    warehouse: {
+      enabled: isTruthyField(formData.get("warehouseEnabled")),
+      options: ((formData.get("warehouseOptions")?.toString() ?? "")
+        .split(/\r?\n|,/)
+        .map((item) => item.trim())
+        .filter(Boolean)
+        .filter((value, index, array) => array.indexOf(value) === index)),
+    },
     productListView: parseProductListViewConfig(
       formData.get("productListViewConfig"),
       currentProductListView,
@@ -632,6 +641,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
   const tenantCatalogConfig = parseTenantCatalogConfig(tenant.settings?.catalogConfig);
   const productListView = getProductListViewConfig(tenantCatalogConfig);
   const orderListView = getOrderListViewConfig(tenantCatalogConfig);
+  const warehouseConfig = getWarehouseConfig(tenantCatalogConfig);
   const catalogOptions = CATALOG_TYPES.map((type) => ({
     value: type,
     label: getCatalogTemplate(type).label,
@@ -746,7 +756,46 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
                             <option value="en">English</option>
                           </select>
                         </div>
+                      </div>
+                    </section>
 
+                    <section className="rounded-[24px] border border-slate-200 bg-white p-4 sm:p-5">
+                      <div className="space-y-4">
+                        <div className="flex flex-wrap items-center justify-between gap-3">
+                          <div>
+                            <p className="text-sm font-semibold text-slate-950">Depoja</p>
+                            <p className="mt-1 text-sm text-slate-600">
+                              Aktivizo zgjedhjen e depos te produktet dhe shfaqe ne stok e porosi.
+                            </p>
+                          </div>
+                          <label className="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
+                            <input
+                              type="checkbox"
+                              name="warehouseEnabled"
+                              value="true"
+                              defaultChecked={warehouseConfig.enabled}
+                              className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-300"
+                            />
+                            Shfaq depo
+                          </label>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label htmlFor="warehouseOptions" className="block text-sm font-medium text-slate-800">
+                            Emrat e depove
+                          </label>
+                          <textarea
+                            id="warehouseOptions"
+                            name="warehouseOptions"
+                            defaultValue={warehouseConfig.options.join("\n")}
+                            rows={3}
+                            className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-200"
+                            placeholder={"Depo 1\nDepo 2"}
+                          />
+                          <p className="text-xs text-slate-500">
+                            Shkruaj nje depo per rresht. Nese aktivizohet, produkti mund te lidhet me nje depo.
+                          </p>
+                        </div>
                       </div>
                     </section>
 

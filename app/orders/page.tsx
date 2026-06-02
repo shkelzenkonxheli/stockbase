@@ -401,6 +401,7 @@ export default async function OrdersPage({
               select: {
                 name: true,
                 brand: true,
+                warehouseName: true,
                 category: {
                   select: {
                     name: true,
@@ -427,6 +428,7 @@ export default async function OrdersPage({
                   select: {
                     name: true,
                     brand: true,
+                    warehouseName: true,
                     category: {
                       select: {
                         name: true,
@@ -465,6 +467,7 @@ export default async function OrdersPage({
             id: item.id,
             name: item.variant.product.name,
             brand: item.variant.product.brand ?? "",
+            warehouseName: item.variant.product.warehouseName ?? null,
             category: item.variant.product.category.name,
             size: item.variant.size,
             color: item.variant.color,
@@ -481,6 +484,7 @@ export default async function OrdersPage({
                 id: order.id,
                 name: order.variant.product.name,
                 brand: order.variant.product.brand ?? "",
+                warehouseName: order.variant.product.warehouseName ?? null,
                 category: order.variant.product.category.name,
                 size: order.variant.size,
                 color: order.variant.color,

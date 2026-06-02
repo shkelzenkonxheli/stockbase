@@ -8,6 +8,7 @@ type OrderItem = {
   id: number;
   name: string;
   brand: string;
+  warehouseName?: string | null;
   category: string;
   size: string;
   color: string;
@@ -21,6 +22,14 @@ type OrderItem = {
 
 function getOrderItemTitle(item: OrderItem) {
   return [item.brand, item.name].filter(Boolean).join(" ");
+}
+
+function getOrderItemLocation(item: OrderItem) {
+  if (item.warehouseName && item.locationCode) {
+    return `${item.warehouseName} / ${item.locationCode}`;
+  }
+
+  return item.warehouseName ?? item.locationCode ?? null;
 }
 
 type OrderDetailsModalProps = {
@@ -182,9 +191,9 @@ export function OrderDetailsModal({
                     <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-slate-700">
                       {getOrderVariantSummary(item)}
                     </span>
-                    {item.locationCode ? (
+                    {getOrderItemLocation(item) ? (
                       <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-slate-700">
-                        Lok: {item.locationCode}
+                        Lok: {getOrderItemLocation(item)}
                       </span>
                     ) : null}
                     <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 font-medium text-emerald-700">

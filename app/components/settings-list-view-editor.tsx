@@ -21,6 +21,7 @@ type SettingsListViewEditorProps = {
 const PRODUCT_ITEMS: ListItem<ProductListFieldKey>[] = [
   { key: "brand", label: "Brandi" },
   { key: "category", label: "Kategoria" },
+  { key: "warehouse", label: "Depoja" },
   { key: "stock", label: "Stoku" },
   { key: "price", label: "Cmimi" },
   { key: "sizes", label: "Madhesia / Numri" },

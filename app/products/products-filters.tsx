@@ -7,16 +7,20 @@ type ProductsFiltersProps = {
   searchQuery: string;
   selectedCategory: string;
   selectedModel: string;
+  selectedWarehouse: string;
   categories: string[];
   models: string[];
+  warehouses: string[];
 };
 
 export function ProductsFilters({
   searchQuery,
   selectedCategory,
   selectedModel,
+  selectedWarehouse,
   categories,
   models,
+  warehouses,
 }: ProductsFiltersProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -25,6 +29,7 @@ export function ProductsFilters({
   const [query, setQuery] = useState(searchQuery);
   const [category, setCategory] = useState(selectedCategory);
   const [model, setModel] = useState(selectedModel);
+  const [warehouse, setWarehouse] = useState(selectedWarehouse);
 
   const filteredModels = category
     ? [
@@ -39,7 +44,7 @@ export function ProductsFilters({
     : [...new Set(models.map((modelOption) => modelOption.split("::")[1] ?? modelOption))];
 
   const updateFilters = useCallback(
-    (nextQuery: string, nextCategory: string, nextModel: string) => {
+    (nextQuery: string, nextCategory: string, nextModel: string, nextWarehouse: string) => {
       const params = new URLSearchParams(searchParams.toString());
 
       params.delete("page");
@@ -52,6 +57,9 @@ export function ProductsFilters({
 
       if (nextModel.trim()) params.set("model", nextModel.trim());
       else params.delete("model");
+
+      if (nextWarehouse.trim()) params.set("warehouse", nextWarehouse.trim());
+      else params.delete("warehouse");
 
       const nextUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
 
@@ -67,10 +75,10 @@ export function ProductsFilters({
       className="space-y-3"
       onSubmit={(event) => {
         event.preventDefault();
-        updateFilters(query, category, model);
+        updateFilters(query, category, model, warehouse);
       }}
     >
-      <div className="grid gap-3 lg:grid-cols-[minmax(0,1.5fr)_220px_220px_140px]">
+      <div className="grid gap-3 lg:grid-cols-[minmax(0,1.5fr)_220px_220px_220px_140px]">
         <div className="flex flex-col gap-2 sm:flex-row">
           <div className="relative min-w-0 flex-1">
             <svg
@@ -90,8 +98,16 @@ export function ProductsFilters({
           </div>
           <button
             type="submit"
-            className="inline-flex shrink-0 items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 sm:min-w-[96px]"
+            className="inline-flex shrink-0 items-center justify-center rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 sm:min-w-[84px]"
           >
+            <svg
+              viewBox="0 0 20 20"
+              aria-hidden="true"
+              className="mr-1.5 h-4 w-4 fill-none stroke-current stroke-[1.8]"
+            >
+              <circle cx="9" cy="9" r="4.5" />
+              <path d="m13 13 3 3" strokeLinecap="round" />
+            </svg>
             Kerko
           </button>
         </div>
@@ -102,7 +118,7 @@ export function ProductsFilters({
             const nextCategory = event.target.value;
             setCategory(nextCategory);
             setModel("");
-            updateFilters(query, nextCategory, "");
+            updateFilters(query, nextCategory, "", warehouse);
           }}
           className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:bg-white"
         >
@@ -119,7 +135,7 @@ export function ProductsFilters({
           onChange={(event) => {
             const nextModel = event.target.value;
             setModel(nextModel);
-            updateFilters(query, category, nextModel);
+            updateFilters(query, category, nextModel, warehouse);
           }}
           disabled={filteredModels.length === 0}
           className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:bg-white"
@@ -132,18 +148,45 @@ export function ProductsFilters({
           ))}
         </select>
 
+        <select
+          value={warehouse}
+          onChange={(event) => {
+            const nextWarehouse = event.target.value;
+            setWarehouse(nextWarehouse);
+            updateFilters(query, category, model, nextWarehouse);
+          }}
+          disabled={warehouses.length === 0}
+          className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:bg-white disabled:cursor-not-allowed disabled:bg-slate-100"
+        >
+          <option value="">Te gjitha depot</option>
+          {warehouses.map((warehouseOption) => (
+            <option key={warehouseOption} value={warehouseOption}>
+              {warehouseOption}
+            </option>
+          ))}
+        </select>
+
         <button
           type="button"
           onClick={() => {
             setQuery("");
             setCategory("");
             setModel("");
+            setWarehouse("");
             startTransition(() => {
               router.replace(pathname);
             });
           }}
-          className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-sm font-medium text-slate-600 transition hover:border-slate-300 hover:bg-white"
+          className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-600 transition hover:border-slate-300 hover:bg-white"
         >
+          <svg
+            viewBox="0 0 20 20"
+            aria-hidden="true"
+            className="mr-1.5 h-4 w-4 fill-none stroke-current stroke-[1.8]"
+          >
+            <path d="M4.5 10A5.5 5.5 0 1 0 6 6.1" strokeLinecap="round" />
+            <path d="M4.5 4.75v2.5H7" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
           Reset
         </button>
       </div>

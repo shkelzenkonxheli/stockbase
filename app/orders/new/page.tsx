@@ -219,6 +219,7 @@ export default async function NewOrderPage({
       id: true,
       name: true,
       brand: true,
+      warehouseName: true,
       category: {
         select: {
           name: true,
@@ -267,6 +268,7 @@ export default async function NewOrderPage({
             id: product.id,
             name: product.name,
             brand: product.brand ?? "",
+            warehouseName: product.warehouseName ?? "",
             category: product.category.name,
             imagePath: product.variants[0]?.imagePath ?? null,
           }))}

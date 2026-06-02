@@ -10,6 +10,7 @@ import {
   getCategoryDescription,
   getCatalogAwareCategoryConfig,
   getCatalogTemplate,
+  getWarehouseConfig,
   parseCategoryFieldConfig,
 } from "@/lib/product-taxonomy";
 
@@ -24,6 +25,7 @@ async function createProduct(formData: FormData) {
 
   const name = formData.get("name")?.toString().trim();
   const brand = formData.get("brand")?.toString().trim() || null;
+  const warehouseName = formData.get("warehouseName")?.toString().trim() || null;
   const categoryId = Number(formData.get("categoryId"));
   if (!name || !categoryId) {
     return;
@@ -47,6 +49,7 @@ async function createProduct(formData: FormData) {
       tenantId,
       name: { equals: name, mode: "insensitive" },
       brand: brand ? { equals: brand, mode: "insensitive" } : null,
+      warehouseName: warehouseName ? { equals: warehouseName, mode: "insensitive" } : null,
       categoryId,
     },
     select: { id: true },
@@ -65,6 +68,7 @@ async function createProduct(formData: FormData) {
       tenantId,
       name,
       brand,
+      warehouseName,
       categoryId,
     },
   });
@@ -122,6 +126,7 @@ export default async function NewProductPage({
           parseCategoryFieldConfig(categories[0].config),
         )
       : null;
+  const warehouseConfig = getWarehouseConfig(currentUser.tenant?.catalogConfig);
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,#ffedd5_0%,transparent_20%),linear-gradient(180deg,#f8fafc_0%,#eef2f7_100%)] px-4 py-6 sm:px-6 lg:px-8">
@@ -214,6 +219,29 @@ export default async function NewProductPage({
                 </p>
               ) : null}
             </div>
+
+            {warehouseConfig.enabled ? (
+              <div className="space-y-2">
+                <label htmlFor="warehouseName" className="block text-sm font-medium text-slate-800">
+                  Depoja
+                </label>
+                <select
+                  id="warehouseName"
+                  name="warehouseName"
+                  defaultValue=""
+                  className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-200"
+                >
+                  <option value="" disabled>
+                    Zgjidh depon
+                  </option>
+                  {warehouseConfig.options.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            ) : null}
 
             <div className="flex flex-col gap-3 pt-3 sm:flex-row">
               <button

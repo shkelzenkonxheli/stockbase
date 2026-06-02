@@ -9,6 +9,7 @@ type OrderVariant = {
   id: number;
   productId: number;
   productLabel: string;
+  warehouseName?: string | null;
   category: string;
   size: string;
   color: string;
@@ -23,6 +24,7 @@ type ProductOption = {
   id: number;
   name: string;
   brand: string;
+  warehouseName: string;
   category: string;
   imagePath: string | null;
 };
@@ -1037,6 +1039,11 @@ export function OrderForm({ action, products }: OrderFormProps) {
                         <p className="line-clamp-2 text-[11px] font-semibold text-slate-950 sm:text-xs">
                           {product.name}
                         </p>
+                        {product.warehouseName ? (
+                          <p className="mt-1 text-[10px] text-slate-500 sm:text-[11px]">
+                            {product.warehouseName}
+                          </p>
+                        ) : null}
                       </div>
                     </button>
                   ))}
@@ -1128,6 +1135,11 @@ export function OrderForm({ action, products }: OrderFormProps) {
                         <span className="block line-clamp-2 text-[10px] font-semibold text-slate-950 sm:text-[11px]">
                           {group.color}
                         </span>
+                        {currentProduct.warehouseName ? (
+                          <span className="mt-1 block text-[10px] text-slate-500">
+                            {currentProduct.warehouseName}
+                          </span>
+                        ) : null}
                         <span className="mt-1.5 inline-flex rounded-full bg-emerald-100 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-700 sm:text-[10px]">
                           {group.totalStock} ne stok
                         </span>
@@ -1163,6 +1175,11 @@ export function OrderForm({ action, products }: OrderFormProps) {
                         <span className="block line-clamp-2 text-[10px] font-semibold text-slate-950 sm:text-[11px]">
                           {getOrderVariantSummary(variant)}
                         </span>
+                        {variant.warehouseName ? (
+                          <span className="mt-1 block text-[10px] text-slate-500">
+                            {variant.warehouseName}
+                          </span>
+                        ) : null}
                         <span className="mt-1.5 inline-flex rounded-full bg-emerald-100 px-1.5 py-0.5 text-[9px] font-semibold text-emerald-700 sm:text-[10px]">
                           {variant.availableStock} ne stok
                         </span>

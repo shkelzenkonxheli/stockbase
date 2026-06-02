@@ -41,6 +41,7 @@ export async function GET(_request: Request, context: RouteContext) {
       product: {
         select: {
           name: true,
+          warehouseName: true,
           category: {
             select: {
               name: true,
@@ -57,6 +58,7 @@ export async function GET(_request: Request, context: RouteContext) {
       id: variant.id,
       productId: variant.productId,
       productLabel: `${variant.product.name} | ${variant.product.category.name}`,
+      warehouseName: variant.product.warehouseName,
       category: variant.product.category.name,
       size: variant.size,
       color: variant.color,

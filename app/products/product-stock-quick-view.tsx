@@ -23,6 +23,7 @@ type ProductStockQuickViewProps = {
   productId: number;
   productName: string;
   productBrand: string;
+  warehouseName?: string | null;
   imagePath: string | null;
   variants: ProductQuickVariant[];
   categoryConfig?: CategoryConfig;
@@ -246,6 +247,7 @@ export function ProductStockQuickView({
   productId,
   productName,
   productBrand,
+  warehouseName,
   imagePath,
   variants,
   categoryConfig,
@@ -1167,8 +1169,13 @@ export function ProductStockQuickView({
                     <p className="truncate text-[15px] font-semibold text-slate-950 sm:text-xl">
                       {productName}
                     </p>
+                    {warehouseName ? (
+                      <p className="mt-1 text-xs font-medium text-slate-500 sm:text-sm">
+                        Depo: {warehouseName}
+                      </p>
+                    ) : null}
                     <span
-                      className={`mt-1 inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold ${stockTone.badgeClassName}`}
+                      className={`mt-1.5 inline-flex rounded-full px-2.5 py-1 text-[11px] font-semibold ${stockTone.badgeClassName}`}
                     >
                       {totalStock} cope - {stockTone.label}
                     </span>

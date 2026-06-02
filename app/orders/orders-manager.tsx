@@ -14,6 +14,7 @@ type OrderItem = {
   id: number;
   name: string;
   brand: string;
+  warehouseName?: string | null;
   category: string;
   size: string;
   color: string;
@@ -252,6 +253,18 @@ export function OrdersManager({
   const getOrderTitle = (item: OrderItem | undefined) =>
     item ? [item.brand, item.name].filter(Boolean).join(" ") : "";
 
+  const getOrderLocation = (item: OrderItem | undefined) => {
+    if (!item) {
+      return "-";
+    }
+
+    if (item.warehouseName && item.locationCode) {
+      return `${item.warehouseName} / ${item.locationCode}`;
+    }
+
+    return item.warehouseName ?? item.locationCode ?? "-";
+  };
+
   return (
     <div className="space-y-4">
       {canDeleteOrders && selectedIds.length > 0 ? (
@@ -308,9 +321,9 @@ export function OrdersManager({
                     {viewConfig.visibility.customerName ? (
                       <p className="mt-1 text-sm text-slate-600">{order.customerName}</p>
                     ) : null}
-                    {viewConfig.visibility.location && order.items[0]?.locationCode ? (
+                    {viewConfig.visibility.location && getOrderLocation(order.items[0]) !== "-" ? (
                       <p className="mt-1 text-xs text-slate-500">
-                        Lok: {order.items[0].locationCode}
+                        Lok: {getOrderLocation(order.items[0])}
                       </p>
                     ) : null}
                     {viewConfig.visibility.phone ? (
@@ -454,8 +467,8 @@ export function OrdersManager({
                   if (field === "location") {
                     return (
                       <td key={field} className={`px-5 text-slate-600 ${viewConfig.density === "compact" ? "py-3" : "py-4"}`}>
-                        <span className="block truncate" title={order.items[0]?.locationCode ?? "-"}>
-                          {order.items[0]?.locationCode ?? "-"}
+                        <span className="block truncate" title={getOrderLocation(order.items[0])}>
+                          {getOrderLocation(order.items[0])}
                         </span>
                       </td>
                     );

@@ -50,15 +50,23 @@ type ProductsPageProps = {
     q?: string;
     category?: string;
     model?: string;
+    warehouse?: string;
   }>;
 };
 
-function buildProductsPageHref(page: number, q: string, category: string, model: string) {
+function buildProductsPageHref(
+  page: number,
+  q: string,
+  category: string,
+  model: string,
+  warehouse: string,
+) {
   const params = new URLSearchParams();
   params.set("page", String(page));
   if (q) params.set("q", q);
   if (category) params.set("category", category);
   if (model) params.set("model", model);
+  if (warehouse) params.set("warehouse", warehouse);
   return `/products?${params.toString()}`;
 }
 
@@ -104,6 +112,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   const searchQuery = resolvedSearchParams?.q?.trim() || "";
   const selectedCategory = resolvedSearchParams?.category?.trim() || "";
   const selectedModel = resolvedSearchParams?.model?.trim() || "";
+  const selectedWarehouse = resolvedSearchParams?.warehouse?.trim() || "";
   const currentPage = Math.max(1, Number(resolvedSearchParams?.page) || 1);
   const skip = (currentPage - 1) * PAGE_SIZE;
   const filters: Prisma.ProductWhereInput[] = [];
@@ -115,6 +124,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
         OR: [
           { name: { contains: token, mode: "insensitive" } },
           { brand: { contains: token, mode: "insensitive" } },
+          { warehouseName: { contains: token, mode: "insensitive" } },
           { category: { name: { contains: token, mode: "insensitive" } } },
           { variants: { some: { color: { contains: token, mode: "insensitive" } } } },
           { variants: { some: { size: { contains: token, mode: "insensitive" } } } },
@@ -138,6 +148,12 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     });
   }
 
+  if (selectedWarehouse) {
+    filters.push({
+      warehouseName: { equals: selectedWarehouse, mode: "insensitive" },
+    });
+  }
+
   const where: Prisma.ProductWhereInput = {
     tenantId,
     ...(filters.length > 0 ? { AND: filters } : {}),
@@ -153,6 +169,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
         id: true,
         name: true,
         brand: true,
+        warehouseName: true,
         category: { select: { name: true, config: true } },
         variants: {
           select: {
@@ -173,7 +190,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     prisma.product.count({ where }),
     prisma.product.findMany({
       where: { tenantId },
-      select: { name: true, brand: true, category: { select: { name: true } } },
+      select: { name: true, brand: true, warehouseName: true, category: { select: { name: true } } },
       orderBy: [{ name: "asc" }],
     }),
     prisma.variant.findMany({
@@ -186,6 +203,13 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   const previousPage = currentPage > 1 ? currentPage - 1 : null;
   const nextPage = currentPage < totalPages ? currentPage + 1 : null;
   const categories = [...new Set(filterProducts.map((product) => product.category.name))];
+  const warehouses = [
+    ...new Set(
+      filterProducts
+        .map((product) => product.warehouseName)
+        .filter((value): value is string => Boolean(value)),
+    ),
+  ].sort((a, b) => a.localeCompare(b));
   const models = [
     ...new Set(
       filterProducts.map(
@@ -243,24 +267,26 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
         <section className="overflow-hidden rounded-[30px] border border-slate-200/80 bg-white shadow-[0_14px_40px_rgba(15,23,42,0.07)]">
           <div className="border-b border-slate-200/80 px-4 py-4 sm:px-5">
             <ProductsFilters
-              key={`${searchQuery}|${selectedCategory}|${selectedModel}`}
+              key={`${searchQuery}|${selectedCategory}|${selectedModel}|${selectedWarehouse}`}
               searchQuery={searchQuery}
               selectedCategory={selectedCategory}
               selectedModel={selectedModel}
+              selectedWarehouse={selectedWarehouse}
               categories={categories}
               models={models}
+              warehouses={warehouses}
             />
           </div>
 
           {products.length === 0 ? (
             <div className="px-6 py-16 text-center">
               <p className="text-base font-medium text-slate-900">
-                {searchQuery || selectedCategory || selectedModel
+                {searchQuery || selectedCategory || selectedModel || selectedWarehouse
                   ? "Nuk u gjet asnje produkt me keto filtra"
                   : "Nuk ka ende produkte te regjistruara"}
               </p>
               <p className="mt-2 text-sm text-slate-600">
-                {searchQuery || selectedCategory || selectedModel
+                {searchQuery || selectedCategory || selectedModel || selectedWarehouse
                   ? "Provo nje kerkese tjeter ose bej reset."
                   : "Shto produktin e pare dhe vazhdo me variantet per te filluar inventarin."}
               </p>
@@ -286,6 +312,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                   const fieldValues: Record<ProductListFieldKey, string | null> = {
                     brand: product.brand ?? null,
                     category: product.category.name,
+                    warehouse: product.warehouseName ?? null,
                     stock: totalStock.toLocaleString("sq-AL"),
                     price:
                       minPrice === null
@@ -301,6 +328,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                   const fieldLabels: Record<ProductListFieldKey, string> = {
                     brand: "Brandi",
                     category: "Kategoria",
+                    warehouse: "Depoja",
                     stock: "Stoku",
                     price: "Cmimi",
                     sizes: "Madhesia",
@@ -328,6 +356,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                               productId={product.id}
                               productName={product.brand ? `${product.brand} ${product.name}` : product.name}
                               productBrand={product.category.name}
+                              warehouseName={product.warehouseName}
                               categoryConfig={getCatalogAwareCategoryConfig(
                                 tenant.catalogType,
                                 product.category.name,
@@ -384,6 +413,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                             productId={product.id}
                             productName={product.brand ? `${product.brand} ${product.name}` : product.name}
                             productBrand={product.category.name}
+                            warehouseName={product.warehouseName}
                             categoryConfig={getCatalogAwareCategoryConfig(
                               tenant.catalogType,
                               product.category.name,
@@ -462,6 +492,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                             {{
                               brand: "Brandi",
                               category: "Kategoria",
+                              warehouse: "Depoja",
                               stock: "Stoku",
                               price: "Cmimi",
                               sizes: "Madhesia",
@@ -493,6 +524,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                       const fieldValues: Record<ProductListFieldKey, string | null> = {
                         brand: product.brand ?? null,
                         category: product.category.name,
+                        warehouse: product.warehouseName ?? null,
                         stock: totalStock.toLocaleString("sq-AL"),
                         price:
                           minPrice === null
@@ -515,6 +547,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                                   productId={product.id}
                                   productName={product.brand ? `${product.brand} ${product.name}` : product.name}
                                   productBrand={product.category.name}
+                                  warehouseName={product.warehouseName}
                                   categoryConfig={getCatalogAwareCategoryConfig(
                                     tenant.catalogType,
                                     product.category.name,
@@ -557,6 +590,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                                 productId={product.id}
                                 productName={product.brand ? `${product.brand} ${product.name}` : product.name}
                                 productBrand={product.category.name}
+                                warehouseName={product.warehouseName}
                                 categoryConfig={getCatalogAwareCategoryConfig(
                                   tenant.catalogType,
                                   product.category.name,
@@ -628,7 +662,13 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
             <div className="flex gap-2">
               {previousPage ? (
                 <Link
-                  href={buildProductsPageHref(previousPage, searchQuery, selectedCategory, selectedModel)}
+                  href={buildProductsPageHref(
+                    previousPage,
+                    searchQuery,
+                    selectedCategory,
+                    selectedModel,
+                    selectedWarehouse,
+                  )}
                   className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
                 >
                   Mbrapa
@@ -640,7 +680,13 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
               )}
               {nextPage ? (
                 <Link
-                  href={buildProductsPageHref(nextPage, searchQuery, selectedCategory, selectedModel)}
+                  href={buildProductsPageHref(
+                    nextPage,
+                    searchQuery,
+                    selectedCategory,
+                    selectedModel,
+                    selectedWarehouse,
+                  )}
                   className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
                 >
                   Para

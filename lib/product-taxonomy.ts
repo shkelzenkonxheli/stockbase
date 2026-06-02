@@ -96,6 +96,10 @@ export type CategoryFieldOverride = Partial<
 
 export type TenantCatalogConfig = {
   categoryOverrides?: Partial<Record<ProductCategoryName, CategoryFieldOverride>>;
+  warehouse?: {
+    enabled: boolean;
+    options: string[];
+  };
   productListView?: ProductListViewConfig;
   orderListView?: OrderListViewConfig;
 };
@@ -103,6 +107,7 @@ export type TenantCatalogConfig = {
 export const PRODUCT_LIST_FIELD_KEYS = [
   "brand",
   "category",
+  "warehouse",
   "stock",
   "price",
   "sizes",
@@ -148,6 +153,7 @@ const DEFAULT_PRODUCT_LIST_VIEW: ProductListViewConfig = {
   visibility: {
     brand: true,
     category: true,
+    warehouse: false,
     stock: true,
     price: true,
     sizes: true,
@@ -653,6 +659,17 @@ export function parseTenantCatalogConfig(value: unknown): TenantCatalogConfig | 
     }
   }
 
+  if (isRecord(value.warehouse)) {
+    nextConfig.warehouse = {
+      enabled: Boolean(value.warehouse.enabled),
+      options: Array.isArray(value.warehouse.options)
+        ? value.warehouse.options
+            .map((item) => (typeof item === "string" ? item.trim() : ""))
+            .filter(Boolean)
+        : [],
+    };
+  }
+
   return nextConfig;
 }
 
@@ -824,4 +841,16 @@ export function getProductListViewConfig(tenantConfig?: TenantCatalogConfig | nu
 
 export function getOrderListViewConfig(tenantConfig?: TenantCatalogConfig | null) {
   return tenantConfig?.orderListView ?? DEFAULT_ORDER_LIST_VIEW;
+}
+
+export function getWarehouseConfig(tenantConfig?: TenantCatalogConfig | null) {
+  const options =
+    tenantConfig?.warehouse?.options && tenantConfig.warehouse.options.length > 0
+      ? tenantConfig.warehouse.options
+      : ["Depo 1", "Depo 2"];
+
+  return {
+    enabled: tenantConfig?.warehouse?.enabled ?? false,
+    options,
+  };
 }

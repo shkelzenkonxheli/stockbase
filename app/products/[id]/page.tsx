@@ -208,6 +208,7 @@ export default async function ProductDetailsPage({
         id: true,
         name: true,
         brand: true,
+        warehouseName: true,
         category: { select: { name: true, config: true } },
         variants: {
           select: {
@@ -414,6 +415,14 @@ export default async function ProductDetailsPage({
                 </p>
                 <p className="mt-2 text-sm font-semibold text-slate-900">{product.category.name}</p>
               </div>
+              {product.warehouseName ? (
+                <div className="rounded-2xl bg-slate-50 px-4 py-4">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                    Depoja
+                  </p>
+                  <p className="mt-2 text-sm font-semibold text-slate-900">{product.warehouseName}</p>
+                </div>
+              ) : null}
               <div className="rounded-2xl bg-slate-50 px-4 py-4">
                 <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
                   Struktura
