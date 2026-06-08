@@ -1,15 +1,18 @@
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { notFound, redirect } from "next/navigation";
+import { Prisma } from "@/app/generated/prisma/client";
 import { requireRole } from "@/lib/auth";
 import {
   ProductImageUploadError,
   saveProductImage,
 } from "@/lib/product-images";
 import {
+  buildVariantIdentityKey,
   getCatalogAwareCategoryConfig,
   parseCategoryFieldConfig,
   parseVariantCustomAttributes,
+  type CategoryConfig,
 } from "@/lib/product-taxonomy";
 import { prisma } from "@/lib/prisma";
 import {
@@ -29,6 +32,25 @@ type EditVariantPageProps = {
     error?: string;
   }>;
 };
+
+function formatVariantDuplicateLabel(
+  categoryConfig: CategoryConfig,
+  variant: {
+    color?: string | null;
+    size?: string | null;
+    material?: string | null;
+    powerWatts?: string | null;
+  },
+) {
+  return [
+    variant.color?.trim(),
+    variant.size?.trim(),
+    categoryConfig.showMaterialField ? variant.material?.trim() : null,
+    categoryConfig.showPowerField ? variant.powerWatts?.trim() : null,
+  ]
+    .filter(Boolean)
+    .join(" / ");
+}
 
 async function uploadVariantImage(formData: FormData) {
   "use server";
@@ -137,10 +159,46 @@ async function updateVariant(formData: FormData) {
       NOT: { id: variantId },
     },
     select: {
+      size: true,
+      color: true,
+      material: true,
+      powerWatts: true,
       sku: true,
       barcode: true,
     },
   });
+
+  const candidateIdentityKey = buildVariantIdentityKey(categoryConfig, {
+    size,
+    color,
+    material,
+    powerWatts,
+  });
+  const duplicateVariant = otherVariants.find(
+    (item) =>
+      buildVariantIdentityKey(categoryConfig, {
+        size: item.size,
+        color: item.color,
+        material: item.material,
+        powerWatts: item.powerWatts,
+      }) === candidateIdentityKey,
+  );
+
+  if (duplicateVariant) {
+    const duplicateLabel =
+      formatVariantDuplicateLabel(categoryConfig, {
+        size,
+        color,
+        material,
+        powerWatts,
+      }) || "ky variant";
+
+    redirect(
+      `/products/${productId}/variants/${variantId}/edit?error=${encodeURIComponent(
+        `Varianti ${duplicateLabel} ekziston tashme per kete produkt.`,
+      )}`,
+    );
+  }
 
   const usedSkus = new Set(
     otherVariants.map((item) => item.sku).filter((sku): sku is string => Boolean(sku)),
@@ -162,20 +220,41 @@ async function updateVariant(formData: FormData) {
 
   if (usedBarcodes.has(nextBarcode)) return;
 
-  await prisma.variant.update({
-    where: { id: variantId },
-    data: {
-      size,
-      color,
-      material,
-      powerWatts,
-      customAttributes,
-      sku,
-      barcode: nextBarcode,
-      stock,
-      price,
-    },
-  });
+  try {
+    await prisma.variant.update({
+      where: { id: variantId },
+      data: {
+        size,
+        color,
+        material,
+        powerWatts,
+        variantIdentityKey: candidateIdentityKey,
+        customAttributes,
+        sku,
+        barcode: nextBarcode,
+        stock,
+        price,
+      },
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      const duplicateLabel =
+        formatVariantDuplicateLabel(categoryConfig, {
+          size,
+          color,
+          material,
+          powerWatts,
+        }) || "ky variant";
+
+      redirect(
+        `/products/${productId}/variants/${variantId}/edit?error=${encodeURIComponent(
+          `Varianti ${duplicateLabel} ekziston tashme per kete produkt.`,
+        )}`,
+      );
+    }
+
+    throw error;
+  }
 
   revalidatePath("/");
   revalidatePath("/products");

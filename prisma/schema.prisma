@@ -51,6 +51,7 @@ model Variant {
   productId      Int
   size           String
   color          String
+  variantIdentityKey String?
   stock          Int             @default(0)
   createdAt      DateTime        @default(now())
   price          Decimal         @db.Decimal(10, 2)
@@ -71,6 +72,7 @@ model Variant {
 
   @@index([tenantId])
   @@index([productId])
+  @@unique([productId, variantIdentityKey])
   @@index([productId, size])
   @@index([productId, color])
   @@index([stock])

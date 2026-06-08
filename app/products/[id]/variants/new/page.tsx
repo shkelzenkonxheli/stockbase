@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { notFound, redirect } from "next/navigation";
+import { Prisma } from "@/app/generated/prisma/client";
 import { FlashMessage } from "@/app/components/flash-message";
 import { requireRole } from "@/lib/auth";
 import {
@@ -19,6 +20,7 @@ import {
   getCatalogAwareCategoryConfig,
   parseCategoryFieldConfig,
   parseVariantCustomAttributes,
+  type CategoryConfig,
 } from "@/lib/product-taxonomy";
 import { VariantRowsForm } from "./variant-rows-form";
 
@@ -30,6 +32,25 @@ type NewProductVariantPageProps = {
     error?: string;
   }>;
 };
+
+function formatVariantDuplicateLabel(
+  categoryConfig: CategoryConfig,
+  variant: {
+    color?: string | null;
+    size?: string | null;
+    material?: string | null;
+    powerWatts?: string | null;
+  },
+) {
+  return [
+    variant.color?.trim(),
+    variant.size?.trim(),
+    categoryConfig.showMaterialField ? variant.material?.trim() : null,
+    categoryConfig.showPowerField ? variant.powerWatts?.trim() : null,
+  ]
+    .filter(Boolean)
+    .join(" / ");
+}
 
 async function createVariants(formData: FormData) {
   "use server";
@@ -117,7 +138,7 @@ async function createVariants(formData: FormData) {
 
   const [existingProductVariants, existingVariantCodes] = await Promise.all([
     prisma.variant.findMany({
-      where: { productId, tenantId },
+      where: { productId },
       select: {
         size: true,
         color: true,
@@ -214,9 +235,8 @@ async function createVariants(formData: FormData) {
 
   if (firstDuplicateRow) {
     const firstDuplicate = firstDuplicateRow;
-    const duplicateLabel = firstDuplicate?.size
-      ? `${firstDuplicate.color} / ${firstDuplicate.size}`
-      : firstDuplicate?.color ?? "ky variant";
+    const duplicateLabel =
+      formatVariantDuplicateLabel(categoryConfig, firstDuplicate) || "ky variant";
 
     redirect(
       `/products/${productId}/variants/new?error=${encodeURIComponent(
@@ -238,87 +258,153 @@ async function createVariants(formData: FormData) {
 
   if (alreadyExistingRows.length > 0) {
     const firstExisting = alreadyExistingRows[0];
+    const duplicateLabel =
+      formatVariantDuplicateLabel(categoryConfig, firstExisting) || "ky variant";
 
     redirect(
       `/products/${productId}/variants/new?error=${encodeURIComponent(
-        firstExisting.size
-          ? `Varianti Nr ${firstExisting.size} / ${firstExisting.color} ekziston tashme per kete produkt.`
-          : `Varianti ${firstExisting.color} ekziston tashme per kete produkt.`,
+        `Varianti ${duplicateLabel} ekziston tashme per kete produkt.`,
       )}`,
     );
   }
 
   if (validRowsWithCategory.length > 0) {
     const uploadedImages = new Map<string, string | null>();
+    const currentIdentityKeys = new Set(existingKeys);
 
-    await prisma.$transaction(async (tx) => {
-      for (const row of validRowsWithCategory) {
-        let imagePath = row.imagePath;
-
-        if (row.imageFieldName) {
-          if (uploadedImages.has(row.imageFieldName)) {
-            imagePath = uploadedImages.get(row.imageFieldName) ?? imagePath;
-          } else {
-            const rowFile = formData.get(row.imageFieldName);
-
-            if (rowFile instanceof File && rowFile.size > 0) {
-              try {
-                imagePath = await saveProductImage(productId, rowFile);
-              } catch (error) {
-                const message =
-                  error instanceof ProductImageUploadError
-                    ? error.message
-                    : `Ngarkimi i fotos deshtoi per variantin ${row.color}.`;
-                redirect(
-                  `/products/${productId}/variants/new?error=${encodeURIComponent(message)}`,
-                );
-              }
-            }
-
-            uploadedImages.set(row.imageFieldName, imagePath);
-          }
-        }
-
-        const baseSku =
-          row.sku ??
-          buildVariantSku({
-            productName: product.brand ? `${product.brand} ${product.name}` : product.name,
-            size: row.size || undefined,
-            color: row.color,
-          });
-        const createdVariant = await tx.variant.create({
-          data: {
-            tenantId,
-            productId,
+    try {
+      await prisma.$transaction(async (tx) => {
+        for (const row of validRowsWithCategory) {
+          const candidateKey = buildVariantIdentityKey(categoryConfig, {
             size: row.size,
             color: row.color,
-            locationCode: row.locationCode,
             material: row.material,
             powerWatts: row.powerWatts,
-            sku: ensureUniqueSku(baseSku, usedSkus),
-            imagePath,
-            stock: row.stock,
-            price: row.price,
-            customAttributes: row.customAttributes,
-          },
-        });
-        const barcode =
-          row.barcode ?? buildBarcodeFromVariantId(createdVariant.id);
+          });
 
-        if (usedBarcodes.has(barcode)) {
-          throw new Error("Duplicate barcode detected.");
+          if (currentIdentityKeys.has(candidateKey)) {
+            const duplicateLabel =
+              formatVariantDuplicateLabel(categoryConfig, row) || "ky variant";
+
+            redirect(
+              `/products/${productId}/variants/new?error=${encodeURIComponent(
+                `Varianti ${duplicateLabel} ekziston tashme per kete produkt.`,
+              )}`,
+            );
+          }
+
+          const variantsInDb = await tx.variant.findMany({
+            where: { productId },
+            select: {
+              size: true,
+              color: true,
+              material: true,
+              powerWatts: true,
+            },
+          });
+
+          const duplicateInDb = variantsInDb.some(
+            (variant) =>
+              buildVariantIdentityKey(categoryConfig, {
+                size: variant.size,
+                color: variant.color,
+                material: variant.material,
+                powerWatts: variant.powerWatts,
+              }) === candidateKey,
+          );
+
+          if (duplicateInDb) {
+            const duplicateLabel =
+              formatVariantDuplicateLabel(categoryConfig, row) || "ky variant";
+
+            redirect(
+              `/products/${productId}/variants/new?error=${encodeURIComponent(
+                `Varianti ${duplicateLabel} ekziston tashme per kete produkt.`,
+              )}`,
+            );
+          }
+
+          let imagePath = row.imagePath;
+
+          if (row.imageFieldName) {
+            if (uploadedImages.has(row.imageFieldName)) {
+              imagePath = uploadedImages.get(row.imageFieldName) ?? imagePath;
+            } else {
+              const rowFile = formData.get(row.imageFieldName);
+
+              if (rowFile instanceof File && rowFile.size > 0) {
+                try {
+                  imagePath = await saveProductImage(productId, rowFile);
+                } catch (error) {
+                  const message =
+                    error instanceof ProductImageUploadError
+                      ? error.message
+                      : `Ngarkimi i fotos deshtoi per variantin ${row.color}.`;
+                  redirect(
+                    `/products/${productId}/variants/new?error=${encodeURIComponent(message)}`,
+                  );
+                }
+              }
+
+              uploadedImages.set(row.imageFieldName, imagePath);
+            }
+          }
+
+          const baseSku =
+            row.sku ??
+            buildVariantSku({
+              productName: product.brand ? `${product.brand} ${product.name}` : product.name,
+              size: row.size || undefined,
+              color: row.color,
+            });
+          const nextSku = ensureUniqueSku(baseSku, usedSkus);
+          const createdVariant = await tx.variant.create({
+            data: {
+              tenantId,
+              productId,
+              size: row.size,
+              color: row.color,
+              variantIdentityKey: candidateKey,
+              locationCode: row.locationCode,
+              material: row.material,
+              powerWatts: row.powerWatts,
+              sku: nextSku,
+              imagePath,
+              stock: row.stock,
+              price: row.price,
+              customAttributes: row.customAttributes,
+            },
+          });
+          currentIdentityKeys.add(candidateKey);
+          usedSkus.add(nextSku);
+          const barcode =
+            row.barcode ?? buildBarcodeFromVariantId(createdVariant.id);
+
+          if (usedBarcodes.has(barcode)) {
+            throw new Error("Duplicate barcode detected.");
+          }
+
+          usedBarcodes.add(barcode);
+
+          await tx.variant.update({
+            where: { id: createdVariant.id },
+            data: {
+              barcode,
+            },
+          });
         }
-
-        usedBarcodes.add(barcode);
-
-        await tx.variant.update({
-          where: { id: createdVariant.id },
-          data: {
-            barcode,
-          },
-        });
+      });
+    } catch (error) {
+      if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+        redirect(
+          `/products/${productId}/variants/new?error=${encodeURIComponent(
+            "Ky variant ekziston tashme per kete produkt.",
+          )}`,
+        );
       }
-    });
+
+      throw error;
+    }
   }
 
   revalidatePath("/");

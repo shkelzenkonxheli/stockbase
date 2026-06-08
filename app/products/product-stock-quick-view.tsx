@@ -5,7 +5,10 @@ import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { UploadedImage } from "@/app/components/uploaded-image";
 import { LOW_STOCK_THRESHOLD, getStockTone } from "@/lib/inventory";
-import type { CategoryConfig } from "@/lib/product-taxonomy";
+import {
+  buildVariantIdentityKey,
+  type CategoryConfig,
+} from "@/lib/product-taxonomy";
 
 type ProductQuickVariant = {
   id: number;
@@ -188,8 +191,41 @@ function getStockViewMode(categoryName: string): StockViewMode {
   return "home";
 }
 
-function normalizeIdentityPart(value?: string | null) {
-  return String(value ?? "").trim().toLowerCase();
+function getIdentityConfig(
+  stockViewMode: StockViewMode,
+  categoryConfig?: CategoryConfig,
+): CategoryConfig {
+  if (categoryConfig) {
+    return categoryConfig;
+  }
+
+  return {
+    description: "",
+    productNameLabel: "",
+    productNamePlaceholder: "",
+    showProductBrandField: false,
+    sizeLabel: "",
+    sizePlaceholder: "",
+    sizeInputType: "text",
+    sizeOptions: [],
+    colorLabel: "",
+    colorPlaceholder: "",
+    colorInputType: "text",
+    colorOptions: [],
+    materialLabel: "",
+    materialPlaceholder: "",
+    materialInputType: "text",
+    materialOptions: [],
+    powerLabel: "",
+    powerPlaceholder: "",
+    powerInputType: "text",
+    powerOptions: [],
+    showMaterialField: stockViewMode === "home",
+    showPowerField: stockViewMode === "electronics",
+    sharedVariantImageByColor: false,
+    variantHelper: "",
+    customVariantFields: [],
+  };
 }
 
 function buildQuickVariantIdentityKey(
@@ -202,20 +238,7 @@ function buildQuickVariantIdentityKey(
   },
   categoryConfig?: CategoryConfig,
 ) {
-  const parts = [
-    normalizeIdentityPart(variant.color),
-    normalizeIdentityPart(variant.size),
-  ];
-
-  if (stockViewMode !== "footwear" && (categoryConfig?.showMaterialField ?? stockViewMode === "home")) {
-    parts.push(normalizeIdentityPart(variant.material));
-  }
-
-  if (stockViewMode !== "footwear" && (categoryConfig?.showPowerField ?? stockViewMode === "electronics")) {
-    parts.push(normalizeIdentityPart(variant.powerWatts));
-  }
-
-  return parts.join("::");
+  return buildVariantIdentityKey(getIdentityConfig(stockViewMode, categoryConfig), variant);
 }
 
 function formatQuickVariantLabel(

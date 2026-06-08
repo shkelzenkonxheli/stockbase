@@ -272,7 +272,6 @@ async function updateTenantSettings(formData: FormData) {
   const currentProductListView = getProductListViewConfig(existingTenantConfig);
   const currentOrderListView = getOrderListViewConfig(existingTenantConfig);
 
-  const categoryOverrides: Partial<TenantCatalogConfig["categoryOverrides"]> = {};
   const categoryIds = formData
     .getAll("categoryIds")
     .map((value) => Number(value))
@@ -280,83 +279,7 @@ async function updateTenantSettings(formData: FormData) {
   const submittedCategoryNames = new Set<string>();
   let activeCategoriesCount = 0;
 
-  for (const categoryName of getCatalogAllowedCategories(catalogType)) {
-    const fieldKey = createCategoryFieldKey(categoryName);
-    const customVariantFields = sanitizeCustomVariantFields(
-      parseJsonArrayField(formData.get(`${fieldKey}__customVariantFields`)),
-    );
-    categoryOverrides[categoryName] = {
-      sizeLabel: formData.get(`${fieldKey}__sizeLabel`)?.toString().trim() || undefined,
-      sizePlaceholder:
-        formData.get(`${fieldKey}__sizePlaceholder`)?.toString().trim() || undefined,
-      productNameLabel:
-        formData.get(`${fieldKey}__productNameLabel`)?.toString().trim() || undefined,
-      productNamePlaceholder:
-        formData.get(`${fieldKey}__productNamePlaceholder`)?.toString().trim() || undefined,
-      sizeInputType:
-        (formData.get(`${fieldKey}__sizeInputType`)?.toString().trim() as
-          | "text"
-          | "number"
-          | "select"
-          | undefined) ?? undefined,
-      sizeOptions: (formData.get(`${fieldKey}__sizeOptions`)?.toString() ?? "")
-        .split(/\r?\n|,/)
-        .map((item) => item.trim())
-        .filter(Boolean),
-      colorLabel: formData.get(`${fieldKey}__colorLabel`)?.toString().trim() || undefined,
-      colorPlaceholder:
-        formData.get(`${fieldKey}__colorPlaceholder`)?.toString().trim() || undefined,
-      colorInputType:
-        (formData.get(`${fieldKey}__colorInputType`)?.toString().trim() as
-          | "text"
-          | "number"
-          | "select"
-          | undefined) ?? undefined,
-      colorOptions: (formData.get(`${fieldKey}__colorOptions`)?.toString() ?? "")
-        .split(/\r?\n|,/)
-        .map((item) => item.trim())
-        .filter(Boolean),
-      materialLabel:
-        formData.get(`${fieldKey}__materialLabel`)?.toString().trim() || undefined,
-      materialPlaceholder:
-        formData.get(`${fieldKey}__materialPlaceholder`)?.toString().trim() || undefined,
-      materialInputType:
-        (formData.get(`${fieldKey}__materialInputType`)?.toString().trim() as
-          | "text"
-          | "number"
-          | "select"
-          | undefined) ?? undefined,
-      materialOptions: (formData.get(`${fieldKey}__materialOptions`)?.toString() ?? "")
-        .split(/\r?\n|,/)
-        .map((item) => item.trim())
-        .filter(Boolean),
-      powerLabel: formData.get(`${fieldKey}__powerLabel`)?.toString().trim() || undefined,
-      powerPlaceholder:
-        formData.get(`${fieldKey}__powerPlaceholder`)?.toString().trim() || undefined,
-      powerInputType:
-        (formData.get(`${fieldKey}__powerInputType`)?.toString().trim() as
-          | "text"
-          | "number"
-          | "select"
-          | undefined) ?? undefined,
-      powerOptions: (formData.get(`${fieldKey}__powerOptions`)?.toString() ?? "")
-        .split(/\r?\n|,/)
-        .map((item) => item.trim())
-        .filter(Boolean),
-      variantHelper:
-        formData.get(`${fieldKey}__variantHelper`)?.toString().trim() || undefined,
-      showMaterialField: isTruthyField(formData.get(`${fieldKey}__showMaterialField`)),
-      showPowerField: isTruthyField(formData.get(`${fieldKey}__showPowerField`)),
-      showProductBrandField: isTruthyField(formData.get(`${fieldKey}__showProductBrandField`)),
-      sharedVariantImageByColor: isTruthyField(
-        formData.get(`${fieldKey}__sharedVariantImageByColor`),
-      ),
-      customVariantFields,
-    };
-  }
-
   const catalogConfig: TenantCatalogConfig = {
-    categoryOverrides,
     warehouse: {
       enabled: isTruthyField(formData.get("warehouseEnabled")),
       options: ((formData.get("warehouseOptions")?.toString() ?? "")

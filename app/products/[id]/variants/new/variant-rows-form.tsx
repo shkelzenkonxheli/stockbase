@@ -476,45 +476,47 @@ export function VariantRowsForm({
                     />
 
                     <div className="space-y-4">
-                      <label className="space-y-2">
-                        <FieldLabel>{categoryConfig?.colorLabel ?? "Ngjyra"}</FieldLabel>
-                        {colorFieldType === "select" ? (
-                          <FieldSelect
-                            value={group.color}
-                            onChange={(event) => updateColorGroup(group.id, "color", event.target.value)}
-                          >
-                            <option value="">Zgjidh...</option>
-                            {colorOptions.map((option) => (
-                              <option key={option} value={option}>
-                                {option}
-                              </option>
-                            ))}
-                          </FieldSelect>
-                        ) : (
-                          <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3">
-                            <span className={`h-3 w-3 shrink-0 rounded-full ${getColorDotClass(group.color)}`} />
-                            <input
-                              type="text"
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <label className="space-y-2">
+                          <FieldLabel>{categoryConfig?.colorLabel ?? "Ngjyra"}</FieldLabel>
+                          {colorFieldType === "select" ? (
+                            <FieldSelect
                               value={group.color}
                               onChange={(event) => updateColorGroup(group.id, "color", event.target.value)}
-                              placeholder={categoryConfig?.colorPlaceholder ?? "Black"}
-                              className="w-full border-0 bg-transparent p-0 text-sm text-slate-900 outline-none placeholder:text-slate-400"
-                            />
-                          </div>
-                        )}
-                      </label>
+                            >
+                              <option value="">Zgjidh...</option>
+                              {colorOptions.map((option) => (
+                                <option key={option} value={option}>
+                                  {option}
+                                </option>
+                              ))}
+                            </FieldSelect>
+                          ) : (
+                            <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                              <span className={`h-3 w-3 shrink-0 rounded-full ${getColorDotClass(group.color)}`} />
+                              <input
+                                type="text"
+                                value={group.color}
+                                onChange={(event) => updateColorGroup(group.id, "color", event.target.value)}
+                                placeholder={categoryConfig?.colorPlaceholder ?? "Black"}
+                                className="w-full border-0 bg-transparent p-0 text-sm text-slate-900 outline-none placeholder:text-slate-400"
+                              />
+                            </div>
+                          )}
+                        </label>
 
-                      <label className="space-y-2">
-                        <FieldLabel>Lokacioni (opsional)</FieldLabel>
-                        <FieldInput
-                          type="text"
-                          value={group.locationCode}
-                          onChange={(event) =>
-                            updateColorGroup(group.id, "locationCode", event.target.value)
-                          }
-                          placeholder="p.sh. Sektori 1-10 / 7"
-                        />
-                      </label>
+                        <label className="space-y-2">
+                          <FieldLabel>Lokacioni (opsional)</FieldLabel>
+                          <FieldInput
+                            type="text"
+                            value={group.locationCode}
+                            onChange={(event) =>
+                              updateColorGroup(group.id, "locationCode", event.target.value)
+                            }
+                            placeholder="p.sh. Sektori 1-10 / 7"
+                          />
+                        </label>
+                      </div>
 
                       <div className="space-y-3">
                         {group.sizes.map((sizeRow, sizeIndex) => (
@@ -681,56 +683,38 @@ export function VariantRowsForm({
                       layout="compact"
                     />
 
-                    <div
-                      className={`grid gap-4 md:grid-cols-2 ${
-                        showMaterialField || showPowerField ? "xl:grid-cols-3" : "xl:grid-cols-2"
-                      }`}
-                    >
-                      <label className="space-y-2">
-                        <FieldLabel>{categoryConfig?.colorLabel ?? "Ngjyra"}</FieldLabel>
-                        {colorFieldType === "select" ? (
-                          <FieldSelect value={row.color} onChange={(event) => updateRow(row.id, "color", event.target.value)}>
-                            <option value="">Zgjidh...</option>
-                            {colorOptions.map((option) => (
-                              <option key={option} value={option}>
-                                {option}
-                              </option>
-                            ))}
-                          </FieldSelect>
-                        ) : (
-                          <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3">
-                            <span className={`h-3 w-3 shrink-0 rounded-full ${getColorDotClass(row.color)}`} />
-                            <input
-                              type="text"
-                              value={row.color}
-                              onChange={(event) => updateRow(row.id, "color", event.target.value)}
-                              placeholder={categoryConfig?.colorPlaceholder ?? "E bardhe"}
-                              className="w-full border-0 bg-transparent p-0 text-sm text-slate-900 outline-none placeholder:text-slate-400"
-                            />
-                          </div>
-                        )}
-                      </label>
+                    <div className="space-y-4">
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <label className="space-y-2">
+                          <FieldLabel>{categoryConfig?.colorLabel ?? "Ngjyra"}</FieldLabel>
+                          {colorFieldType === "select" ? (
+                            <FieldSelect value={row.color} onChange={(event) => updateRow(row.id, "color", event.target.value)}>
+                              <option value="">Zgjidh...</option>
+                              {colorOptions.map((option) => (
+                                <option key={option} value={option}>
+                                  {option}
+                                </option>
+                              ))}
+                            </FieldSelect>
+                          ) : (
+                            <div className="flex items-center gap-3 rounded-2xl border border-slate-200 bg-white px-4 py-3">
+                              <span className={`h-3 w-3 shrink-0 rounded-full ${getColorDotClass(row.color)}`} />
+                              <input
+                                type="text"
+                                value={row.color}
+                                onChange={(event) => updateRow(row.id, "color", event.target.value)}
+                                placeholder={categoryConfig?.colorPlaceholder ?? "E bardhe"}
+                                className="w-full border-0 bg-transparent p-0 text-sm text-slate-900 outline-none placeholder:text-slate-400"
+                              />
+                            </div>
+                          )}
+                        </label>
 
-                      <label className="space-y-2">
-                        <FieldLabel>{categoryConfig?.sizeLabel ?? "Madhesia"}</FieldLabel>
-                        {sizeFieldType === "select" ? (
-                          <FieldSelect value={row.size} onChange={(event) => updateRow(row.id, "size", event.target.value)}>
-                            <option value="">Zgjidh...</option>
-                            {sizeOptions.map((option) => (
-                              <option key={option} value={option}>
-                                {option}
-                              </option>
-                            ))}
-                          </FieldSelect>
-                        ) : (
-                          <FieldInput
-                            type={sizeFieldType === "number" ? "number" : "text"}
-                            value={row.size}
-                            onChange={(event) => updateRow(row.id, "size", event.target.value)}
-                            placeholder={categoryConfig?.sizePlaceholder ?? "50x70 cm"}
-                          />
-                        )}
-                      </label>
+                        <label className="space-y-2">
+                          <FieldLabel>Cmimi (EUR)</FieldLabel>
+                          <FieldInput type="number" min="0" step="0.01" value={row.price} onChange={(event) => updateRow(row.id, "price", event.target.value)} placeholder="0.00" />
+                        </label>
+                      </div>
 
                       <label className="space-y-2">
                         <FieldLabel>Lokacioni (opsional)</FieldLabel>
@@ -741,6 +725,34 @@ export function VariantRowsForm({
                           placeholder="p.sh. Sektori 11-20 / 4"
                         />
                       </label>
+
+                      <div className="grid gap-4 md:grid-cols-2">
+                        <label className="space-y-2">
+                          <FieldLabel>{categoryConfig?.sizeLabel ?? "Madhesia"}</FieldLabel>
+                          {sizeFieldType === "select" ? (
+                            <FieldSelect value={row.size} onChange={(event) => updateRow(row.id, "size", event.target.value)}>
+                              <option value="">Zgjidh...</option>
+                              {sizeOptions.map((option) => (
+                                <option key={option} value={option}>
+                                  {option}
+                                </option>
+                              ))}
+                            </FieldSelect>
+                          ) : (
+                            <FieldInput
+                              type={sizeFieldType === "number" ? "number" : "text"}
+                              value={row.size}
+                              onChange={(event) => updateRow(row.id, "size", event.target.value)}
+                              placeholder={categoryConfig?.sizePlaceholder ?? "50x70 cm"}
+                            />
+                          )}
+                        </label>
+
+                        <label className="space-y-2">
+                          <FieldLabel>Stoku</FieldLabel>
+                          <FieldInput type="number" min="0" value={row.stock} onChange={(event) => updateRow(row.id, "stock", event.target.value)} placeholder="0" />
+                        </label>
+                      </div>
 
                       {showMaterialField ? (
                         <label className="space-y-2">
@@ -788,18 +800,8 @@ export function VariantRowsForm({
                         </label>
                       ) : null}
 
-                      <label className="space-y-2">
-                        <FieldLabel>Stoku</FieldLabel>
-                        <FieldInput type="number" min="0" value={row.stock} onChange={(event) => updateRow(row.id, "stock", event.target.value)} placeholder="0" />
-                      </label>
-
-                      <label className="space-y-2">
-                        <FieldLabel>Cmimi (EUR)</FieldLabel>
-                        <FieldInput type="number" min="0" step="0.01" value={row.price} onChange={(event) => updateRow(row.id, "price", event.target.value)} placeholder="0.00" />
-                      </label>
-
                       {customFields.length > 0 ? (
-                        <div className="md:col-span-2 xl:col-span-3">
+                        <div>
                           <div className="grid gap-4 md:grid-cols-2">
                             {customFields.map((field) => (
                               <label key={`${row.id}-${field.id}`} className="space-y-2">

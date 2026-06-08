@@ -1,5 +1,6 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
+import { Prisma } from "@/app/generated/prisma/client";
 import { getCurrentUser, hasRole } from "@/lib/auth";
 import {
   ProductImageUploadError,
@@ -155,23 +156,63 @@ export async function POST(request: Request) {
     );
   }
 
+  const variantsInDb = await prisma.variant.findMany({
+    where: { productId },
+    select: {
+      size: true,
+      color: true,
+      material: true,
+      powerWatts: true,
+      imagePath: true,
+      price: true,
+      sku: true,
+      barcode: true,
+    },
+  });
+
+  const duplicateInDb = variantsInDb.find(
+    (variant) =>
+      buildVariantIdentityKey(categoryConfig, {
+        color: variant.color,
+        size: variant.size,
+        material: variant.material,
+        powerWatts: variant.powerWatts,
+      }) === candidateKey,
+  );
+
+  if (duplicateInDb) {
+    const duplicateLabel = [
+      color,
+      size,
+      categoryConfig.showMaterialField ? material : null,
+      categoryConfig.showPowerField ? powerWatts : null,
+    ]
+      .filter(Boolean)
+      .join(" / ");
+
+    return NextResponse.json(
+      { error: `Varianti ${duplicateLabel} ekziston tashme.` },
+      { status: 409 },
+    );
+  }
+
   const usedSkus = new Set(
-    product.variants
+    variantsInDb
       .map((variant) => variant.sku)
       .filter((sku): sku is string => Boolean(sku)),
   );
   const usedBarcodes = new Set(
-    product.variants
+    variantsInDb
       .map((variant) => variant.barcode)
       .filter((barcode): barcode is string => Boolean(barcode)),
   );
 
   const inheritedImage =
-    product.variants.find(
+    variantsInDb.find(
       (variant) => variant.color.trim().toLowerCase() === color.toLowerCase() && variant.imagePath,
     )?.imagePath ?? null;
   const inheritedPrice =
-    product.variants.find(
+    variantsInDb.find(
       (variant) => variant.color.trim().toLowerCase() === color.toLowerCase(),
     )?.price ?? null;
   const effectivePrice =
@@ -204,33 +245,47 @@ export async function POST(request: Request) {
     color,
   });
 
-  const createdVariant = await prisma.variant.create({
-    data: {
-      tenantId,
-      productId,
-      size,
-      color,
-      stock,
-      price: effectivePrice,
-      imagePath: uploadedImagePath,
-      material,
-      powerWatts,
-      locationCode,
-      sku: ensureUniqueSku(baseSku, usedSkus),
-    },
-  });
+  let createdVariant;
 
-  let barcode = buildBarcodeFromVariantId(createdVariant.id);
-  if (usedBarcodes.has(barcode)) {
-    barcode = `${barcode}${createdVariant.id}`;
+  try {
+    createdVariant = await prisma.variant.create({
+      data: {
+        tenantId,
+        productId,
+        size,
+        color,
+        variantIdentityKey: candidateKey,
+        stock,
+        price: effectivePrice,
+        imagePath: uploadedImagePath,
+        material,
+        powerWatts,
+        locationCode,
+        sku: ensureUniqueSku(baseSku, usedSkus),
+      },
+    });
+
+    let barcode = buildBarcodeFromVariantId(createdVariant.id);
+    if (usedBarcodes.has(barcode)) {
+      barcode = `${barcode}${createdVariant.id}`;
+    }
+
+    await prisma.variant.update({
+      where: { id: createdVariant.id },
+      data: {
+        barcode,
+      },
+    });
+  } catch (error) {
+    if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
+      return NextResponse.json(
+        { error: `Varianti ${[color, size, material, powerWatts].filter(Boolean).join(" / ")} ekziston tashme.` },
+        { status: 409 },
+      );
+    }
+
+    throw error;
   }
-
-  await prisma.variant.update({
-    where: { id: createdVariant.id },
-    data: {
-      barcode,
-    },
-  });
 
   if (stock > 0) {
     await prisma.stockMovement.create({

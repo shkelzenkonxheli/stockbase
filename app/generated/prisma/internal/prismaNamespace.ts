@@ -1375,6 +1375,7 @@ export const VariantScalarFieldEnum = {
   productId: 'productId',
   size: 'size',
   color: 'color',
+  variantIdentityKey: 'variantIdentityKey',
   stock: 'stock',
   createdAt: 'createdAt',
   price: 'price',

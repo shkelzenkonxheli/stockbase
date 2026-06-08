@@ -787,15 +787,12 @@ export function getCatalogAwareCategoryConfig(
     };
   }
 
-  const tenantOverride = getCatalogCategoryOverride(tenantConfig, categoryName);
-
-  if (!tenantOverride && !categoryOverride) {
+  if (!categoryOverride) {
     return resolvedConfig;
   }
 
   return {
     ...resolvedConfig,
-    ...tenantOverride,
     ...categoryOverride,
   };
 }
