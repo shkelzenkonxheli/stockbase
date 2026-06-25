@@ -11,6 +11,20 @@ function addDays(date: Date, days: number) {
   return next;
 }
 
+function parseManualEndDate(value: FormDataEntryValue | null) {
+  const raw = value?.toString().trim();
+  if (!raw) {
+    return null;
+  }
+
+  const parsed = new Date(`${raw}T23:59:59.999`);
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+
+  return parsed;
+}
+
 function formatDate(date: Date | null) {
   if (!date) {
     return "-";
@@ -75,6 +89,59 @@ async function activateTenant(formData: FormData) {
         status: "ACTIVE",
         currentPeriodStart: now,
         currentPeriodEnd: periodEnd,
+        cancelAtPeriodEnd: false,
+      },
+    }),
+  ]);
+
+  revalidatePath("/");
+  revalidatePath("/settings");
+  revalidatePath("/subscription");
+  revalidatePath("/platform/tenants");
+  redirect("/platform/tenants?success=activated");
+}
+
+async function activateTenantUntilDate(formData: FormData) {
+  "use server";
+
+  await requirePlatformAdmin();
+
+  const tenantId = Number(formData.get("tenantId"));
+  const periodEnd = parseManualEndDate(formData.get("activeUntil"));
+
+  if (!tenantId || !periodEnd) {
+    redirect("/platform/tenants?success=invalid-date");
+  }
+
+  const now = new Date();
+  if (periodEnd.getTime() <= now.getTime()) {
+    redirect("/platform/tenants?success=invalid-date");
+  }
+
+  await prisma.$transaction([
+    prisma.tenant.update({
+      where: { id: tenantId },
+      data: { status: "ACTIVE" },
+    }),
+    prisma.subscription.upsert({
+      where: { tenantId },
+      create: {
+        tenantId,
+        planCode: "cash_manual_custom",
+        status: "ACTIVE",
+        currentPeriodStart: now,
+        currentPeriodEnd: periodEnd,
+        trialStart: null,
+        trialEnd: null,
+        cancelAtPeriodEnd: false,
+      },
+      update: {
+        planCode: "cash_manual_custom",
+        status: "ACTIVE",
+        currentPeriodStart: now,
+        currentPeriodEnd: periodEnd,
+        trialStart: null,
+        trialEnd: null,
         cancelAtPeriodEnd: false,
       },
     }),
@@ -219,8 +286,16 @@ export default async function PlatformTenantsPage({
                 pezullon qasjen pa u varur nga Stripe.
               </p>
               {resolvedSearchParams?.success ? (
-                <p className="mt-4 rounded-2xl bg-emerald-50 px-4 py-3 text-sm text-emerald-800">
-                  Veprimi u ruajt me sukses.
+                <p
+                  className={`mt-4 rounded-2xl px-4 py-3 text-sm ${
+                    resolvedSearchParams.success === "invalid-date"
+                      ? "bg-rose-50 text-rose-700"
+                      : "bg-emerald-50 text-emerald-800"
+                  }`}
+                >
+                  {resolvedSearchParams.success === "invalid-date"
+                    ? "Data nuk eshte valide. Zgjidh nje date ne te ardhmen."
+                    : "Veprimi u ruajt me sukses."}
                 </p>
               ) : null}
             </div>
@@ -303,7 +378,7 @@ export default async function PlatformTenantsPage({
                   </div>
                 </div>
 
-                <div className="grid gap-3 sm:grid-cols-3 xl:w-[360px] xl:grid-cols-1">
+                <div className="grid gap-3 sm:grid-cols-2 xl:w-[360px] xl:grid-cols-1">
                   <form action={activateTenant}>
                     <input type="hidden" name="tenantId" value={tenant.id} />
                     <button
@@ -311,6 +386,29 @@ export default async function PlatformTenantsPage({
                       className="inline-flex w-full items-center justify-center rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
                     >
                       Aktivizo 30 dite
+                    </button>
+                  </form>
+                  <form
+                    action={activateTenantUntilDate}
+                    className="rounded-[22px] border border-slate-200 bg-slate-50 p-3"
+                  >
+                    <input type="hidden" name="tenantId" value={tenant.id} />
+                    <label className="block text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                      Aktiv deri me
+                    </label>
+                    <input
+                      type="date"
+                      name="activeUntil"
+                      defaultValue={tenant.subscription?.currentPeriodEnd
+                        ? tenant.subscription.currentPeriodEnd.toISOString().slice(0, 10)
+                        : ""}
+                      className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-100"
+                    />
+                    <button
+                      type="submit"
+                      className="mt-3 inline-flex w-full items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+                    >
+                      Ruaj daten
                     </button>
                   </form>
                   <form action={extendTrial}>
