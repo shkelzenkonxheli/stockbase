@@ -121,6 +121,21 @@ export default async function RootLayout({
                   </svg>
                 ),
               },
+              {
+                href: "/stock/transfer",
+                label: "Transfer",
+                icon: (
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-4 w-4 fill-none stroke-current stroke-[1.8]"
+                  >
+                    <path d="M7 7h10" />
+                    <path d="m13 3 4 4-4 4" />
+                    <path d="M17 17H7" />
+                    <path d="m11 21-4-4 4-4" />
+                  </svg>
+                ),
+              },
             ]
           : []),
         ...(hasRole(currentUser, ["SUPER_ADMIN"])

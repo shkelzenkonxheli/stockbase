@@ -249,6 +249,22 @@ export default async function Home() {
       ),
     },
     {
+      title: "Transfer Stoku",
+      subtitle: "Leviz mallin nga nje depo ne tjetren pa ndryshuar stokun total.",
+      href: "/stock/transfer",
+      accent: "bg-[linear-gradient(135deg,#d97706_0%,#f59e0b_100%)]",
+      pill: "Levizje mes depove",
+      visible: canManageInventory,
+      icon: (
+        <svg viewBox="0 0 24 24" className="h-6 w-6 fill-none stroke-current stroke-[1.8]">
+          <path d="M7 7h10" />
+          <path d="m13 3 4 4-4 4" />
+          <path d="M17 17H7" />
+          <path d="m11 21-4-4 4-4" />
+        </svg>
+      ),
+    },
+    {
       title: "Raportet",
       subtitle: "Shiko shitjet, burimet dhe performancen e muajit aktual.",
       href: "/reports",

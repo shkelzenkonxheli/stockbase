@@ -28,22 +28,24 @@ type InventoryVariant = {
   price: number;
 };
 
-type IncomingStockFormProps = {
+type TransferStockFormProps = {
   action: (formData: FormData) => void | Promise<void>;
   warehouses: WarehouseOption[];
   products: ProductOption[];
 };
 
-export function IncomingStockForm({
+export function TransferStockForm({
   action,
   warehouses,
   products,
-}: IncomingStockFormProps) {
-  const [warehouseId, setWarehouseId] = useState(
+}: TransferStockFormProps) {
+  const [fromWarehouseId, setFromWarehouseId] = useState(
     warehouses[0] ? String(warehouses[0].id) : "",
   );
+  const [toWarehouseId, setToWarehouseId] = useState(
+    warehouses[1] ? String(warehouses[1].id) : warehouses[0] ? String(warehouses[0].id) : "",
+  );
   const [productId, setProductId] = useState("");
-  const [reason, setReason] = useState("INCOMING_STOCK");
   const [selectedBrand, setSelectedBrand] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
   const [variants, setVariants] = useState<InventoryVariant[]>([]);
@@ -52,7 +54,7 @@ export function IncomingStockForm({
 
   useEffect(() => {
     const parsedProductId = Number(productId);
-    const parsedWarehouseId = Number(warehouseId);
+    const parsedWarehouseId = Number(fromWarehouseId);
 
     if (!parsedProductId || !parsedWarehouseId) {
       setSelectedColor("");
@@ -69,9 +71,7 @@ export function IncomingStockForm({
       try {
         const response = await fetch(
           `/api/products/${parsedProductId}/inventory-variants?warehouseId=${parsedWarehouseId}`,
-          {
-            cache: "no-store",
-          },
+          { cache: "no-store" },
         );
 
         if (!response.ok) {
@@ -85,7 +85,7 @@ export function IncomingStockForm({
 
         if (!isCancelled) {
           setSelectedColor("");
-          setVariants(data);
+          setVariants(data.filter((variant) => variant.stock > 0));
           setQuantities({});
         }
       } finally {
@@ -100,7 +100,7 @@ export function IncomingStockForm({
     return () => {
       isCancelled = true;
     };
-  }, [productId, warehouseId]);
+  }, [productId, fromWarehouseId]);
 
   const serializedAdjustments = JSON.stringify(
     Object.entries(quantities)
@@ -111,7 +111,7 @@ export function IncomingStockForm({
       .filter((item) => item.variantId > 0 && item.quantity > 0),
   );
 
-  const totalAdded = useMemo(
+  const totalTransferred = useMemo(
     () =>
       Object.values(quantities).reduce((sum, quantity) => {
         const parsedQuantity = Number(quantity);
@@ -151,55 +151,39 @@ export function IncomingStockForm({
 
   const getColorDotClassName = (color: string) => {
     const normalizedColor = color.trim().toLowerCase();
-
-    if (
-      normalizedColor.includes("bardh") ||
-      normalizedColor.includes("white")
-    ) {
+    if (normalizedColor.includes("bardh") || normalizedColor.includes("white")) {
       return "border border-slate-300 bg-white";
     }
-    if (normalizedColor.includes("zi") || normalizedColor.includes("black")) {
-      return "bg-black";
-    }
-    if (normalizedColor.includes("kuq") || normalizedColor.includes("red")) {
-      return "bg-red-500";
-    }
-    if (
-      normalizedColor.includes("gjelb") ||
-      normalizedColor.includes("green")
-    ) {
-      return "bg-emerald-500";
-    }
-    if (normalizedColor.includes("blu") || normalizedColor.includes("blue")) {
-      return "bg-blue-500";
-    }
-    if (
-      normalizedColor.includes("verdh") ||
-      normalizedColor.includes("yellow")
-    ) {
-      return "bg-amber-400";
-    }
-
+    if (normalizedColor.includes("zi") || normalizedColor.includes("black")) return "bg-black";
+    if (normalizedColor.includes("kuq") || normalizedColor.includes("red")) return "bg-red-500";
+    if (normalizedColor.includes("gjelb") || normalizedColor.includes("green")) return "bg-emerald-500";
+    if (normalizedColor.includes("blu") || normalizedColor.includes("blue")) return "bg-blue-500";
+    if (normalizedColor.includes("verdh") || normalizedColor.includes("yellow")) return "bg-amber-400";
     return "bg-slate-400";
   };
 
   return (
     <form action={action} className="mt-8 space-y-6">
       <input type="hidden" name="productId" value={productId} />
-      <input type="hidden" name="warehouseId" value={warehouseId} />
+      <input type="hidden" name="fromWarehouseId" value={fromWarehouseId} />
+      <input type="hidden" name="toWarehouseId" value={toWarehouseId} />
       <input type="hidden" name="adjustments" value={serializedAdjustments} />
 
       <section className="rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
-        <div className="grid gap-4 lg:grid-cols-4">
+        <div className="grid gap-4 lg:grid-cols-5">
           <label className="space-y-2">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-              Depoja
+              Nga depoja
             </span>
             <select
-              id="warehouseId"
-              value={warehouseId}
+              value={fromWarehouseId}
               onChange={(event) => {
-                setWarehouseId(event.target.value);
+                const nextValue = event.target.value;
+                setFromWarehouseId(nextValue);
+                if (nextValue === toWarehouseId) {
+                  const fallback = warehouses.find((warehouse) => String(warehouse.id) !== nextValue);
+                  setToWarehouseId(fallback ? String(fallback.id) : nextValue);
+                }
                 setProductId("");
               }}
               className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm font-medium text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-100"
@@ -214,17 +198,22 @@ export function IncomingStockForm({
 
           <label className="space-y-2">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-              Arsyeja
+              Te depoja
             </span>
             <select
-              id="reason"
-              name="reason"
-              value={reason}
-              onChange={(event) => setReason(event.target.value)}
+              value={toWarehouseId}
+              onChange={(event) => setToWarehouseId(event.target.value)}
               className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm font-medium text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-100"
             >
-              <option value="INCOMING_STOCK">Hyrje stoku</option>
-              <option value="CUSTOMER_RETURN">Kthim klienti</option>
+              {warehouses.map((warehouse) => (
+                <option
+                  key={warehouse.id}
+                  value={warehouse.id}
+                  disabled={String(warehouse.id) === fromWarehouseId}
+                >
+                  {warehouse.name}
+                </option>
+              ))}
             </select>
           </label>
 
@@ -233,7 +222,6 @@ export function IncomingStockForm({
               Kategoria
             </span>
             <select
-              id="brandFilter"
               value={selectedBrand}
               onChange={(event) => {
                 setSelectedBrand(event.target.value);
@@ -255,7 +243,6 @@ export function IncomingStockForm({
               Produkti
             </span>
             <select
-              id="productId"
               value={productId}
               onChange={(event) => setProductId(event.target.value)}
               className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm font-medium text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-100"
@@ -274,7 +261,6 @@ export function IncomingStockForm({
               Ngjyra
             </span>
             <select
-              id="colorFilter"
               value={selectedColor}
               onChange={(event) => setSelectedColor(event.target.value)}
               disabled={!productId || colors.length === 0}
@@ -290,22 +276,31 @@ export function IncomingStockForm({
           </label>
         </div>
 
-        <div className="mt-5 grid gap-4 md:grid-cols-2">
+        <div className="mt-5 grid gap-4 md:grid-cols-3">
           <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-              Variante aktive
+              Variante ne burim
             </p>
             <p className="mt-2 text-3xl font-semibold tracking-tight text-slate-950">
               {visibleVariants.length}
             </p>
           </div>
-
-          <div className="rounded-2xl border border-emerald-200 bg-white px-4 py-4 shadow-sm">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-600">
-              Pale qe shtohen
+          <div className="rounded-2xl border border-amber-200 bg-white px-4 py-4 shadow-sm">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-amber-600">
+              Pale qe transferohen
             </p>
-            <p className="mt-2 text-3xl font-semibold tracking-tight text-emerald-600">
-              +{totalAdded}
+            <p className="mt-2 text-3xl font-semibold tracking-tight text-amber-600">
+              {totalTransferred}
+            </p>
+          </div>
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+              Drejtimi
+            </p>
+            <p className="mt-2 text-sm font-semibold text-slate-900">
+              {warehouses.find((warehouse) => String(warehouse.id) === fromWarehouseId)?.name ?? "-"}{" "}
+              -&gt;{" "}
+              {warehouses.find((warehouse) => String(warehouse.id) === toWarehouseId)?.name ?? "-"}
             </p>
           </div>
         </div>
@@ -320,7 +315,7 @@ export function IncomingStockForm({
       {!loading && productId && variants.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-slate-300 bg-slate-50/80 px-5 py-10 text-center">
           <p className="text-base font-medium text-slate-900">
-            Ky produkt nuk ka ende variante
+            Ky produkt nuk ka stok ne depon burim
           </p>
         </div>
       ) : null}
@@ -349,7 +344,7 @@ export function IncomingStockForm({
                       </div>
                       <div>
                         <p className="font-medium text-slate-900">
-                          Nr {variant.size} / {variant.color}
+                          {variant.size} / {variant.color}
                         </p>
                         <p className="mt-1 text-sm text-slate-500">
                           stok {variant.stock}
@@ -368,12 +363,13 @@ export function IncomingStockForm({
                       htmlFor={`variant-${variant.id}`}
                       className="block text-sm font-medium text-slate-800"
                     >
-                      Shto ne stok
+                      Transfero
                     </label>
                     <input
                       id={`variant-${variant.id}`}
                       type="number"
                       min="0"
+                      max={variant.stock}
                       value={quantities[variant.id] ?? ""}
                       onChange={(event) =>
                         setQuantities((current) => ({
@@ -382,7 +378,7 @@ export function IncomingStockForm({
                         }))
                       }
                       placeholder="0"
-                      className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100"
+                      className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-amber-400 focus:ring-4 focus:ring-amber-100"
                     />
                   </div>
                 </article>
@@ -398,8 +394,9 @@ export function IncomingStockForm({
                     <th className="px-4 py-3.5">Foto</th>
                     <th className="px-4 py-3.5">Numri</th>
                     <th className="px-4 py-3.5">Ngjyra</th>
-                    <th className="px-4 py-3.5 text-right">Stoku aktual</th>
-                    <th className="px-4 py-3.5 text-right">Shto</th>
+                    <th className="px-4 py-3.5">Lokacioni</th>
+                    <th className="px-4 py-3.5 text-right">Stoku burim</th>
+                    <th className="px-4 py-3.5 text-right">Transfero</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100 bg-white">
@@ -416,9 +413,7 @@ export function IncomingStockForm({
                           ) : null}
                         </div>
                       </td>
-                      <td className="px-4 py-4 font-medium text-slate-900">
-                        {variant.size}
-                      </td>
+                      <td className="px-4 py-4 font-medium text-slate-900">{variant.size}</td>
                       <td className="px-4 py-4 text-slate-700">
                         <div className="flex items-center gap-2">
                           <span
@@ -426,6 +421,9 @@ export function IncomingStockForm({
                           />
                           <span>{variant.color}</span>
                         </div>
+                      </td>
+                      <td className="px-4 py-4 text-slate-600">
+                        {variant.locationCode ?? "-"}
                       </td>
                       <td className="px-4 py-4 text-right">
                         <span className="font-semibold tabular-nums text-slate-900">
@@ -436,6 +434,7 @@ export function IncomingStockForm({
                         <input
                           type="number"
                           min="0"
+                          max={variant.stock}
                           value={quantities[variant.id] ?? ""}
                           onChange={(event) =>
                             setQuantities((current) => ({
@@ -444,7 +443,7 @@ export function IncomingStockForm({
                             }))
                           }
                           placeholder="0"
-                          className="w-28 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-right text-slate-900 outline-none transition focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100"
+                          className="w-28 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-right text-slate-900 outline-none transition focus:border-amber-400 focus:ring-4 focus:ring-amber-100"
                         />
                       </td>
                     </tr>
@@ -464,12 +463,12 @@ export function IncomingStockForm({
         </>
       ) : null}
 
-      <div className="pt-1">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
         <button
           type="submit"
-          className="inline-flex w-full items-center justify-center rounded-2xl bg-slate-950 px-5 py-4 text-sm font-semibold text-white shadow-[0_16px_30px_rgba(15,23,42,0.18)] transition hover:bg-slate-800"
+          className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_25px_rgba(15,23,42,0.18)] transition hover:bg-slate-800"
         >
-          Ruaj hyrjen e stokut
+          Ruaj transferin
         </button>
       </div>
     </form>

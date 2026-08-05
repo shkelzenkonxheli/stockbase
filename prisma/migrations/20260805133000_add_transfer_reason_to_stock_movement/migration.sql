@@ -1,0 +1,1 @@
+ALTER TYPE "StockMovementReason" ADD VALUE IF NOT EXISTS 'TRANSFER';

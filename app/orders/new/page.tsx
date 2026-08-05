@@ -3,7 +3,9 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { FlashMessage } from "@/app/components/flash-message";
 import { requireRole } from "@/lib/auth";
+import { parseTenantCatalogConfig } from "@/lib/product-taxonomy";
 import { prisma } from "@/lib/prisma";
+import { getTenantWarehouses } from "@/lib/warehouses";
 import { OrderForm } from "./order-form";
 
 type NewOrderPageProps = {
@@ -30,13 +32,14 @@ async function createOrder(formData: FormData) {
     | "STORE"
     | "WHOLESALE"
     | undefined;
+  const warehouseId = Number(formData.get("warehouseId"));
   const itemsRaw = formData.get("items")?.toString();
   const customerName = formData.get("customerName")?.toString().trim();
   const phone = formData.get("phone")?.toString().trim();
   const instagram = formData.get("instagram")?.toString().trim();
   const notes = formData.get("notes")?.toString().trim();
 
-  if (!source || !itemsRaw || !customerName || !phone) {
+  if (!source || !warehouseId || !itemsRaw || !customerName || !phone) {
     redirect("/orders/new?error=validation");
   }
 
@@ -98,6 +101,19 @@ async function createOrder(formData: FormData) {
           in: items.map((item) => item.variantId),
         },
       },
+      select: {
+        id: true,
+        stock: true,
+        productId: true,
+        inventories: {
+          where: { warehouseId },
+          select: {
+            id: true,
+            stock: true,
+          },
+          take: 1,
+        },
+      },
     });
 
     if (variants.length !== items.length) {
@@ -115,7 +131,8 @@ async function createOrder(formData: FormData) {
         return { ok: false as const, reason: "variant" };
       }
 
-      if (variant.stock < item.quantity) {
+      const inventory = variant.inventories[0];
+      if (!inventory || inventory.stock < item.quantity) {
         return { ok: false as const, reason: "stock" };
       }
     }
@@ -134,6 +151,7 @@ async function createOrder(formData: FormData) {
         status: "DONE",
         quantity: totalQuantity,
         variantId: primaryVariantId,
+        warehouseId,
       },
     });
 
@@ -141,12 +159,28 @@ async function createOrder(formData: FormData) {
       data: items.map((item) => ({
         orderId: order.id,
         variantId: item.variantId,
+        warehouseId,
         quantity: item.quantity,
         unitPrice: item.unitPrice,
       })),
     });
 
     for (const item of items) {
+      const variant = variantsById.get(item.variantId);
+      const inventory = variant?.inventories[0];
+      if (!variant || !inventory) {
+        return { ok: false as const, reason: "variant" };
+      }
+
+      await tx.variantInventory.update({
+        where: { id: inventory.id },
+        data: {
+          stock: {
+            decrement: item.quantity,
+          },
+        },
+      });
+
       await tx.variant.update({
         where: { id: item.variantId },
         data: {
@@ -204,13 +238,28 @@ export default async function NewOrderPage({
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const errorMessage = getErrorMessage(resolvedSearchParams?.error);
 
+  const tenantSettings = await prisma.tenantSettings.findUnique({
+    where: { tenantId },
+    select: { catalogConfig: true },
+  });
+  const warehouses = await getTenantWarehouses(
+    tenantId,
+    parseTenantCatalogConfig(tenantSettings?.catalogConfig),
+  );
+  const defaultWarehouseId = warehouses[0]?.id;
+
   const products = await prisma.product.findMany({
     where: {
       tenantId,
       variants: {
         some: {
-          stock: {
-            gt: 0,
+          inventories: {
+            some: {
+              ...(defaultWarehouseId ? { warehouseId: defaultWarehouseId } : {}),
+              stock: {
+                gt: 0,
+              },
+            },
           },
         },
       },
@@ -264,6 +313,10 @@ export default async function NewOrderPage({
 
         <OrderForm
           action={createOrder}
+          warehouses={warehouses.map((warehouse) => ({
+            id: warehouse.id,
+            name: warehouse.name,
+          }))}
           products={products.map((product) => ({
             id: product.id,
             name: product.name,

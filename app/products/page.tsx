@@ -9,10 +9,12 @@ import { LOW_STOCK_THRESHOLD } from "@/lib/inventory";
 import {
   getCatalogAwareCategoryConfig,
   getProductListViewConfig,
+  parseTenantCatalogConfig,
   parseCategoryFieldConfig,
   type ProductListFieldKey,
 } from "@/lib/product-taxonomy";
 import { prisma } from "@/lib/prisma";
+import { getTenantWarehouses } from "@/lib/warehouses";
 import { ProductsFilters } from "./products-filters";
 import { ProductStockQuickView } from "./product-stock-quick-view";
 
@@ -115,6 +117,12 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   const selectedWarehouse = resolvedSearchParams?.warehouse?.trim() || "";
   const currentPage = Math.max(1, Number(resolvedSearchParams?.page) || 1);
   const skip = (currentPage - 1) * PAGE_SIZE;
+  const warehouseRecords = await getTenantWarehouses(tenantId, tenant.catalogConfig);
+  const selectedWarehouseRecord =
+    warehouseRecords.find(
+      (warehouse) => warehouse.name.toLowerCase() === selectedWarehouse.toLowerCase(),
+    ) ?? null;
+  const activeWarehouseId = selectedWarehouseRecord?.id ?? null;
   const filters: Prisma.ProductWhereInput[] = [];
   const searchTokens = searchQuery.split(/\s+/).map((token) => token.trim()).filter(Boolean);
 
@@ -150,7 +158,15 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
   if (selectedWarehouse) {
     filters.push({
-      warehouseName: { equals: selectedWarehouse, mode: "insensitive" },
+      variants: {
+        some: {
+          inventories: {
+            some: {
+              warehouseId: selectedWarehouseRecord?.id ?? -1,
+            },
+          },
+        },
+      },
     });
   }
 
@@ -172,6 +188,15 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
         warehouseName: true,
         category: { select: { name: true, config: true } },
         variants: {
+          where: selectedWarehouseRecord && activeWarehouseId
+            ? {
+                inventories: {
+                  some: {
+                    warehouseId: activeWarehouseId,
+                  },
+                },
+              }
+            : undefined,
           select: {
             id: true,
             size: true,
@@ -183,6 +208,16 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
             imagePath: true,
             stock: true,
             price: true,
+            inventories: selectedWarehouseRecord && activeWarehouseId
+              ? {
+                  where: { warehouseId: activeWarehouseId },
+                  select: {
+                    stock: true,
+                    locationCode: true,
+                  },
+                  take: 1,
+                }
+              : undefined,
           },
         },
       },
@@ -194,8 +229,26 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       orderBy: [{ name: "asc" }],
     }),
     prisma.variant.findMany({
-      where: { product: where },
-      select: { stock: true },
+      where: selectedWarehouseRecord
+        ? {
+            product: { tenantId, ...(filters.length > 0 ? { AND: filters.filter((_, index) => index !== filters.length - 1) } : {}) },
+            inventories: {
+              some: {
+                warehouseId: activeWarehouseId ?? -1,
+              },
+            },
+          }
+        : { product: where },
+      select: {
+        stock: true,
+        inventories: selectedWarehouseRecord && activeWarehouseId
+          ? {
+              where: { warehouseId: activeWarehouseId },
+              select: { stock: true },
+              take: 1,
+            }
+          : undefined,
+      },
     }),
   ]);
 
@@ -203,13 +256,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   const previousPage = currentPage > 1 ? currentPage - 1 : null;
   const nextPage = currentPage < totalPages ? currentPage + 1 : null;
   const categories = [...new Set(filterProducts.map((product) => product.category.name))];
-  const warehouses = [
-    ...new Set(
-      filterProducts
-        .map((product) => product.warehouseName)
-        .filter((value): value is string => Boolean(value)),
-    ),
-  ].sort((a, b) => a.localeCompare(b));
+  const warehouses = warehouseRecords.map((warehouse) => warehouse.name);
   const models = [
     ...new Set(
       filterProducts.map(
@@ -218,9 +265,21 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       ),
     ),
   ];
-  const totalUnits = stockTotals.reduce((sum, variant) => sum + variant.stock, 0);
+  const totalUnits = stockTotals.reduce(
+    (sum, variant) =>
+      sum +
+      (selectedWarehouseRecord
+        ? (variant.inventories?.[0]?.stock ?? 0)
+        : variant.stock),
+    0,
+  );
   const lowStockProducts = products.filter((product) =>
-    product.variants.some((variant) => variant.stock > 0 && variant.stock <= LOW_STOCK_THRESHOLD),
+    product.variants.some((variant) => {
+      const displayStock = selectedWarehouseRecord
+        ? (variant.inventories?.[0]?.stock ?? 0)
+        : variant.stock;
+      return displayStock > 0 && displayStock <= LOW_STOCK_THRESHOLD;
+    }),
   ).length;
 
   return (
@@ -303,7 +362,12 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                   const watts = [
                     ...new Set(product.variants.map((variant) => variant.powerWatts).filter(Boolean)),
                   ];
-                  const totalStock = product.variants.reduce((sum, variant) => sum + variant.stock, 0);
+                  const totalStock = product.variants.reduce((sum, variant) => {
+                    const displayStock = selectedWarehouseRecord
+                      ? (variant.inventories?.[0]?.stock ?? 0)
+                      : variant.stock;
+                    return sum + displayStock;
+                  }, 0);
                   const prices = product.variants.map((variant) => Number(variant.price));
                   const minPrice = prices.length > 0 ? Math.min(...prices) : null;
                   const maxPrice = prices.length > 0 ? Math.max(...prices) : null;
@@ -356,7 +420,8 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                               productId={product.id}
                               productName={product.brand ? `${product.brand} ${product.name}` : product.name}
                               productBrand={product.category.name}
-                              warehouseName={product.warehouseName}
+                              warehouseId={activeWarehouseId}
+                              warehouseName={selectedWarehouse || product.warehouseName}
                               categoryConfig={getCatalogAwareCategoryConfig(
                                 tenant.catalogType,
                                 product.category.name,
@@ -369,11 +434,16 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                                 size: variant.size,
                                 color: variant.color,
                                 imagePath: variant.imagePath,
-                                stock: variant.stock,
+                                stock: selectedWarehouseRecord
+                                  ? (variant.inventories?.[0]?.stock ?? 0)
+                                  : variant.stock,
                                 price: Number(variant.price),
                                 material: variant.material,
                                 powerWatts: variant.powerWatts,
-                                locationCode: variant.locationCode,
+                                locationCode:
+                                  selectedWarehouseRecord
+                                    ? (variant.inventories?.[0]?.locationCode ?? null)
+                                    : variant.locationCode,
                               }))}
                               showImageButton={false}
                               canAdjustStock={canQuickAdjustStock}
@@ -413,7 +483,8 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                             productId={product.id}
                             productName={product.brand ? `${product.brand} ${product.name}` : product.name}
                             productBrand={product.category.name}
-                            warehouseName={product.warehouseName}
+                            warehouseId={activeWarehouseId}
+                            warehouseName={selectedWarehouse || product.warehouseName}
                             categoryConfig={getCatalogAwareCategoryConfig(
                               tenant.catalogType,
                               product.category.name,
@@ -426,11 +497,16 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                               size: variant.size,
                               color: variant.color,
                               imagePath: variant.imagePath,
-                              stock: variant.stock,
+                              stock: selectedWarehouseRecord
+                                ? (variant.inventories?.[0]?.stock ?? 0)
+                                : variant.stock,
                               price: Number(variant.price),
                               material: variant.material,
                               powerWatts: variant.powerWatts,
-                              locationCode: variant.locationCode,
+                              locationCode:
+                                selectedWarehouseRecord
+                                  ? (variant.inventories?.[0]?.locationCode ?? null)
+                                  : variant.locationCode,
                             }))}
                             className="h-full w-full"
                             canAdjustStock={canQuickAdjustStock}
@@ -515,7 +591,12 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                       const watts = [
                         ...new Set(product.variants.map((variant) => variant.powerWatts).filter(Boolean)),
                       ];
-                      const totalStock = product.variants.reduce((sum, variant) => sum + variant.stock, 0);
+                      const totalStock = product.variants.reduce((sum, variant) => {
+                        const displayStock = selectedWarehouseRecord
+                          ? (variant.inventories?.[0]?.stock ?? 0)
+                          : variant.stock;
+                        return sum + displayStock;
+                      }, 0);
                       const prices = product.variants.map((variant) => Number(variant.price));
                       const minPrice = prices.length > 0 ? Math.min(...prices) : null;
                       const maxPrice = prices.length > 0 ? Math.max(...prices) : null;
@@ -547,7 +628,8 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                                   productId={product.id}
                                   productName={product.brand ? `${product.brand} ${product.name}` : product.name}
                                   productBrand={product.category.name}
-                                  warehouseName={product.warehouseName}
+                                  warehouseId={activeWarehouseId}
+                                  warehouseName={selectedWarehouse || product.warehouseName}
                                   categoryConfig={getCatalogAwareCategoryConfig(
                                     tenant.catalogType,
                                     product.category.name,
@@ -560,9 +642,14 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                                     size: variant.size,
                                     color: variant.color,
                                     imagePath: variant.imagePath,
-                                    stock: variant.stock,
+                                    stock: selectedWarehouseRecord
+                                      ? (variant.inventories?.[0]?.stock ?? 0)
+                                      : variant.stock,
                                     price: Number(variant.price),
-                                    locationCode: variant.locationCode,
+                                    locationCode:
+                                      selectedWarehouseRecord
+                                        ? (variant.inventories?.[0]?.locationCode ?? null)
+                                        : variant.locationCode,
                                   }))}
                                   className="h-full w-full"
                                   canAdjustStock={canQuickAdjustStock}
@@ -590,7 +677,8 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                                 productId={product.id}
                                 productName={product.brand ? `${product.brand} ${product.name}` : product.name}
                                 productBrand={product.category.name}
-                                warehouseName={product.warehouseName}
+                                warehouseId={activeWarehouseId}
+                                warehouseName={selectedWarehouse || product.warehouseName}
                                 categoryConfig={getCatalogAwareCategoryConfig(
                                   tenant.catalogType,
                                   product.category.name,
@@ -603,11 +691,16 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                                   size: variant.size,
                                   color: variant.color,
                                   imagePath: variant.imagePath,
-                                  stock: variant.stock,
+                                  stock: selectedWarehouseRecord
+                                    ? (variant.inventories?.[0]?.stock ?? 0)
+                                    : variant.stock,
                                   price: Number(variant.price),
                                   material: variant.material,
                                   powerWatts: variant.powerWatts,
-                                  locationCode: variant.locationCode,
+                                  locationCode:
+                                    selectedWarehouseRecord
+                                      ? (variant.inventories?.[0]?.locationCode ?? null)
+                                      : variant.locationCode,
                                 }))}
                                 showImageButton={false}
                                 iconOnly

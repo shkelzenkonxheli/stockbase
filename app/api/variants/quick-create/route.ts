@@ -20,6 +20,7 @@ import {
 
 type QuickCreatePayload = {
   productId?: number;
+  warehouseId?: number;
   color?: string;
   size?: string;
   stock?: number;
@@ -47,6 +48,7 @@ export async function POST(request: Request) {
       const formData = await request.formData();
       payload = {
         productId: Number(formData.get("productId")),
+        warehouseId: Number(formData.get("warehouseId")),
         color: formData.get("color")?.toString(),
         size: formData.get("size")?.toString(),
         stock: Number(formData.get("stock")),
@@ -68,6 +70,7 @@ export async function POST(request: Request) {
   }
 
   const productId = Number(payload.productId);
+  const warehouseId = Number(payload.warehouseId);
   const color = String(payload.color ?? "").trim();
   const size = String(payload.size ?? "").trim();
   const stock = Number(payload.stock);
@@ -79,6 +82,8 @@ export async function POST(request: Request) {
   if (
     !Number.isInteger(productId) ||
     productId <= 0 ||
+    !Number.isInteger(warehouseId) ||
+    warehouseId <= 0 ||
     !color ||
     !size ||
     !Number.isInteger(stock) ||
@@ -262,6 +267,13 @@ export async function POST(request: Request) {
         powerWatts,
         locationCode,
         sku: ensureUniqueSku(baseSku, usedSkus),
+        inventories: {
+          create: {
+            warehouseId,
+            stock,
+            locationCode,
+          },
+        },
       },
     });
 
@@ -292,6 +304,7 @@ export async function POST(request: Request) {
       data: {
         tenantId,
         variantId: createdVariant.id,
+        warehouseId,
         quantity: stock,
         reason: "INCOMING_STOCK",
       },

@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma";
 
 type StockUpdatePayload = {
   productId?: number;
+  warehouseId?: number;
   reason?: string;
   updates?: Array<{
     variantId?: number;
@@ -29,6 +30,7 @@ export async function POST(request: Request) {
   }
 
   const productId = Number(payload.productId);
+  const warehouseId = Number(payload.warehouseId);
   const reason =
     payload.reason === "CUSTOMER_RETURN" ? "CUSTOMER_RETURN" : "INCOMING_STOCK";
   const updates = (payload.updates ?? [])
@@ -44,7 +46,13 @@ export async function POST(request: Request) {
         item.quantity > 0,
     );
 
-  if (!Number.isInteger(productId) || productId <= 0 || updates.length === 0) {
+  if (
+    !Number.isInteger(productId) ||
+    productId <= 0 ||
+    !Number.isInteger(warehouseId) ||
+    warehouseId <= 0 ||
+    updates.length === 0
+  ) {
     return NextResponse.json({ error: "Missing stock updates" }, { status: 400 });
   }
 
@@ -59,6 +67,14 @@ export async function POST(request: Request) {
     select: {
       id: true,
       stock: true,
+      inventories: {
+        where: { warehouseId },
+        select: {
+          id: true,
+          stock: true,
+        },
+        take: 1,
+      },
     },
   });
 
@@ -66,36 +82,55 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Some variants were not found" }, { status: 404 });
   }
 
-  const variantMap = new Map(variants.map((variant) => [variant.id, variant.stock]));
+  const variantMap = new Map(variants.map((variant) => [variant.id, variant]));
 
-  await prisma.$transaction(
-    updates.flatMap((update) => {
-      const currentStock = variantMap.get(update.variantId);
+  await prisma.$transaction(async (tx) => {
+    for (const update of updates) {
+      const variant = variantMap.get(update.variantId);
 
-      if (currentStock === undefined) {
-        return [];
+      if (!variant) {
+        continue;
       }
 
-      return [
-        prisma.variant.update({
-          where: {
-            id: update.variantId,
-          },
+      const inventory = variant.inventories[0];
+
+      if (inventory) {
+        await tx.variantInventory.update({
+          where: { id: inventory.id },
           data: {
-            stock: currentStock + update.quantity,
+            stock: inventory.stock + update.quantity,
           },
-        }),
-        prisma.stockMovement.create({
+        });
+      } else {
+        await tx.variantInventory.create({
           data: {
-            tenantId,
             variantId: update.variantId,
-            quantity: update.quantity,
-            reason,
+            warehouseId,
+            stock: update.quantity,
           },
-        }),
-      ];
-    }),
-  );
+        });
+      }
+
+      await tx.variant.update({
+        where: {
+          id: update.variantId,
+        },
+        data: {
+          stock: variant.stock + update.quantity,
+        },
+      });
+
+      await tx.stockMovement.create({
+        data: {
+          tenantId,
+          variantId: update.variantId,
+          warehouseId,
+          quantity: update.quantity,
+          reason,
+        },
+      });
+    }
+  });
 
   revalidatePath("/products");
   revalidatePath(`/products/${productId}`);

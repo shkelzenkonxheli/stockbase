@@ -54,6 +54,8 @@ export const ModelName = {
   Product: 'Product',
   Category: 'Category',
   Variant: 'Variant',
+  Warehouse: 'Warehouse',
+  VariantInventory: 'VariantInventory',
   StockMovement: 'StockMovement',
   Order: 'Order',
   OrderItem: 'OrderItem',
@@ -132,9 +134,36 @@ export const VariantScalarFieldEnum = {
 export type VariantScalarFieldEnum = (typeof VariantScalarFieldEnum)[keyof typeof VariantScalarFieldEnum]
 
 
+export const WarehouseScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  name: 'name',
+  slug: 'slug',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type WarehouseScalarFieldEnum = (typeof WarehouseScalarFieldEnum)[keyof typeof WarehouseScalarFieldEnum]
+
+
+export const VariantInventoryScalarFieldEnum = {
+  id: 'id',
+  variantId: 'variantId',
+  warehouseId: 'warehouseId',
+  stock: 'stock',
+  locationCode: 'locationCode',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type VariantInventoryScalarFieldEnum = (typeof VariantInventoryScalarFieldEnum)[keyof typeof VariantInventoryScalarFieldEnum]
+
+
 export const StockMovementScalarFieldEnum = {
   id: 'id',
   variantId: 'variantId',
+  warehouseId: 'warehouseId',
   quantity: 'quantity',
   reason: 'reason',
   createdAt: 'createdAt',
@@ -149,6 +178,7 @@ export const OrderScalarFieldEnum = {
   phone: 'phone',
   quantity: 'quantity',
   variantId: 'variantId',
+  warehouseId: 'warehouseId',
   createdAt: 'createdAt',
   customerName: 'customerName',
   instagram: 'instagram',
@@ -166,6 +196,7 @@ export const OrderItemScalarFieldEnum = {
   id: 'id',
   orderId: 'orderId',
   variantId: 'variantId',
+  warehouseId: 'warehouseId',
   quantity: 'quantity',
   unitPrice: 'unitPrice',
   createdAt: 'createdAt'

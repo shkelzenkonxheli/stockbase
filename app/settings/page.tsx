@@ -9,6 +9,7 @@ import { SettingsTabs } from "@/app/components/settings-tabs";
 import { requireRole } from "@/lib/auth";
 import { createTenantCategory, ensureTenantCategories } from "@/lib/categories";
 import { prisma } from "@/lib/prisma";
+import { syncTenantWarehouses } from "@/lib/warehouses";
 import {
   CATALOG_TYPES,
   createCategoryFieldKey,
@@ -356,6 +357,8 @@ async function updateTenantSettings(formData: FormData) {
       },
     }),
   ]);
+
+  await syncTenantWarehouses(tenantId, catalogConfig);
 
   await ensureTenantCategories(tenantId, catalogType);
 

@@ -70,7 +70,8 @@ export type SubscriptionStatus = (typeof SubscriptionStatus)[keyof typeof Subscr
 
 export const StockMovementReason = {
   INCOMING_STOCK: 'INCOMING_STOCK',
-  CUSTOMER_RETURN: 'CUSTOMER_RETURN'
+  CUSTOMER_RETURN: 'CUSTOMER_RETURN',
+  TRANSFER: 'TRANSFER'
 } as const
 
 export type StockMovementReason = (typeof StockMovementReason)[keyof typeof StockMovementReason]

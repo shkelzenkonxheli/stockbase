@@ -9,6 +9,8 @@ type RouteContext = {
 };
 
 export async function GET(_request: Request, context: RouteContext) {
+  const url = new URL(_request.url);
+  const warehouseId = Number(url.searchParams.get("warehouseId"));
   const currentUser = await getCurrentUser();
   const tenantId = currentUser?.tenant?.id;
 
@@ -27,6 +29,15 @@ export async function GET(_request: Request, context: RouteContext) {
     where: {
       tenantId,
       productId,
+      ...(warehouseId > 0
+        ? {
+            inventories: {
+              some: {
+                warehouseId,
+              },
+            },
+          }
+        : {}),
     },
     select: {
       id: true,
@@ -38,6 +49,20 @@ export async function GET(_request: Request, context: RouteContext) {
       price: true,
       material: true,
       powerWatts: true,
+      inventories: {
+        where: warehouseId > 0 ? { warehouseId } : undefined,
+        select: {
+          stock: true,
+          locationCode: true,
+          warehouse: {
+            select: {
+              id: true,
+              name: true,
+            },
+          },
+        },
+        take: warehouseId > 0 ? 1 : undefined,
+      },
       product: {
         select: {
           name: true,
@@ -55,15 +80,24 @@ export async function GET(_request: Request, context: RouteContext) {
 
   return NextResponse.json(
     variants.map((variant) => ({
+      inventory: variant.inventories[0] ?? null,
       id: variant.id,
       productId: variant.productId,
       productLabel: `${variant.product.name} | ${variant.product.category.name}`,
-      warehouseName: variant.product.warehouseName,
+      warehouseName:
+        variant.inventories[0]?.warehouse?.name
+          ? variant.inventories[0].warehouse.name
+          : variant.product.warehouseName,
       category: variant.product.category.name,
       size: variant.size,
       color: variant.color,
       imagePath: variant.imagePath,
-      stock: variant.stock,
+      stock:
+        typeof variant.inventories[0]?.stock === "number"
+          ? variant.inventories[0].stock
+          : variant.stock,
+      locationCode:
+        variant.inventories[0]?.locationCode ?? null,
       price: Number(variant.price),
       material: variant.material,
       powerWatts: variant.powerWatts,

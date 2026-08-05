@@ -4,7 +4,9 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { FlashMessage } from "@/app/components/flash-message";
 import { requireRole } from "@/lib/auth";
+import { parseTenantCatalogConfig } from "@/lib/product-taxonomy";
 import { prisma } from "@/lib/prisma";
+import { getTenantWarehouses } from "@/lib/warehouses";
 import { QuickOrdersForm } from "./quick-orders-form";
 
 export const metadata: Metadata = {
@@ -31,9 +33,10 @@ async function createQuickOrders(formData: FormData) {
     | "STORE"
     | "WHOLESALE"
     | undefined;
+  const warehouseId = Number(formData.get("warehouseId"));
   const rowsRaw = formData.get("rows")?.toString();
 
-  if (!source || !rowsRaw) {
+  if (!source || !warehouseId || !rowsRaw) {
     redirect("/orders/quick?error=validation");
   }
 
@@ -116,6 +119,14 @@ async function createQuickOrders(formData: FormData) {
         id: true,
         stock: true,
         productId: true,
+        inventories: {
+          where: { warehouseId },
+          select: {
+            id: true,
+            stock: true,
+          },
+          take: 1,
+        },
       },
     });
 
@@ -128,7 +139,8 @@ async function createQuickOrders(formData: FormData) {
     for (const [variantId, quantity] of requestedByVariant.entries()) {
       const variant = variantsById.get(variantId);
 
-      if (!variant || variant.stock < quantity) {
+      const inventory = variant?.inventories[0];
+      if (!variant || !inventory || inventory.stock < quantity) {
         return { ok: false as const, reason: "stock" };
       }
     }
@@ -144,9 +156,11 @@ async function createQuickOrders(formData: FormData) {
           status: "DONE",
           quantity: row.quantity,
           variantId: row.variantId,
+          warehouseId,
           items: {
             create: {
               variantId: row.variantId,
+              warehouseId,
               quantity: row.quantity,
               unitPrice: row.unitPrice,
             },
@@ -156,6 +170,21 @@ async function createQuickOrders(formData: FormData) {
     }
 
     for (const [variantId, quantity] of requestedByVariant.entries()) {
+      const variant = variantsById.get(variantId);
+      const inventory = variant?.inventories[0];
+      if (!variant || !inventory) {
+        return { ok: false as const, reason: "variant" };
+      }
+
+      await tx.variantInventory.update({
+        where: { id: inventory.id },
+        data: {
+          stock: {
+            decrement: quantity,
+          },
+        },
+      });
+
       await tx.variant.update({
         where: { id: variantId },
         data: {
@@ -213,13 +242,28 @@ export default async function QuickOrdersPage({
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const errorMessage = getErrorMessage(resolvedSearchParams?.error);
 
+  const tenantSettings = await prisma.tenantSettings.findUnique({
+    where: { tenantId },
+    select: { catalogConfig: true },
+  });
+  const warehouses = await getTenantWarehouses(
+    tenantId,
+    parseTenantCatalogConfig(tenantSettings?.catalogConfig),
+  );
+  const defaultWarehouseId = warehouses[0]?.id;
+
   const products = await prisma.product.findMany({
     where: {
       tenantId,
       variants: {
         some: {
-          stock: {
-            gt: 0,
+          inventories: {
+            some: {
+              ...(defaultWarehouseId ? { warehouseId: defaultWarehouseId } : {}),
+              stock: {
+                gt: 0,
+              },
+            },
           },
         },
       },
@@ -288,6 +332,10 @@ export default async function QuickOrdersPage({
 
         <QuickOrdersForm
           action={createQuickOrders}
+          warehouses={warehouses.map((warehouse) => ({
+            id: warehouse.id,
+            name: warehouse.name,
+          }))}
           products={products.map((product) => ({
             id: product.id,
             name: product.name,

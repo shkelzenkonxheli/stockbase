@@ -6,6 +6,7 @@ import { prisma } from "@/lib/prisma";
 type SetStockPayload = {
   productId?: number;
   variantId?: number;
+  warehouseId?: number;
   stock?: number;
   locationCode?: string | null;
 };
@@ -28,6 +29,7 @@ export async function POST(request: Request) {
 
   const productId = Number(payload.productId);
   const variantId = Number(payload.variantId);
+  const warehouseId = Number(payload.warehouseId);
   const stock = Number(payload.stock);
   const locationCode =
     typeof payload.locationCode === "string"
@@ -39,6 +41,8 @@ export async function POST(request: Request) {
     productId <= 0 ||
     !Number.isInteger(variantId) ||
     variantId <= 0 ||
+    !Number.isInteger(warehouseId) ||
+    warehouseId <= 0 ||
     !Number.isInteger(stock) ||
     stock < 0
   ) {
@@ -53,6 +57,15 @@ export async function POST(request: Request) {
     },
     select: {
       id: true,
+      stock: true,
+      inventories: {
+        where: { warehouseId },
+        select: {
+          id: true,
+          stock: true,
+        },
+        take: 1,
+      },
     },
   });
 
@@ -60,9 +73,34 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Varianti nuk u gjet." }, { status: 404 });
   }
 
-  await prisma.variant.update({
-    where: { id: variantId },
-    data: { stock, locationCode },
+  const inventory = variant.inventories[0];
+  const previousWarehouseStock = inventory?.stock ?? 0;
+
+  await prisma.$transaction(async (tx) => {
+    if (inventory) {
+      await tx.variantInventory.update({
+        where: { id: inventory.id },
+        data: { stock, locationCode },
+      });
+    } else {
+      await tx.variantInventory.create({
+        data: {
+          variantId,
+          warehouseId,
+          stock,
+          locationCode,
+        },
+      });
+    }
+
+    await tx.variant.update({
+      where: { id: variantId },
+      data: {
+        stock: {
+          increment: stock - previousWarehouseStock,
+        },
+      },
+    });
   });
 
   revalidatePath("/products");

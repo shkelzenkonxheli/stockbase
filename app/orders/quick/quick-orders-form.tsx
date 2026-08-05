@@ -14,6 +14,11 @@ type ProductOption = {
   imagePath: string | null;
 };
 
+type WarehouseOption = {
+  id: number;
+  name: string;
+};
+
 type OrderVariant = {
   id: number;
   productId: number;
@@ -31,6 +36,7 @@ type OrderVariant = {
 
 type QuickOrdersFormProps = {
   action: (formData: FormData) => void | Promise<void>;
+  warehouses: WarehouseOption[];
   products: ProductOption[];
 };
 
@@ -60,8 +66,11 @@ function createRow(productId: number, variantId: number, unitPrice: number): Qui
   };
 }
 
-export function QuickOrdersForm({ action, products }: QuickOrdersFormProps) {
+export function QuickOrdersForm({ action, warehouses, products }: QuickOrdersFormProps) {
   const [source, setSource] = useState<OrderSource>("INSTAGRAM");
+  const [warehouseId, setWarehouseId] = useState(
+    warehouses[0] ? String(warehouses[0].id) : "",
+  );
   const [rows, setRows] = useState<QuickOrderRow[]>([]);
   const [rowErrors, setRowErrors] = useState<Record<string, string>>({});
   const [variantsByProduct, setVariantsByProduct] = useState<
@@ -96,9 +105,12 @@ export function QuickOrdersForm({ action, products }: QuickOrdersFormProps) {
       setLoadingProducts((current) => ({ ...current, [productId]: true }));
 
       try {
-        const response = await fetch(`/api/products/${productId}/variants`, {
-          cache: "no-store",
-        });
+        const response = await fetch(
+          `/api/products/${productId}/variants?warehouseId=${Number(warehouseId) || ""}`,
+          {
+            cache: "no-store",
+          },
+        );
 
         if (!response.ok) {
           return;
@@ -124,7 +136,7 @@ export function QuickOrdersForm({ action, products }: QuickOrdersFormProps) {
     return () => {
       isCancelled = true;
     };
-  }, [selectedProductId, variantsByProduct]);
+  }, [selectedProductId, variantsByProduct, warehouseId]);
 
   useEffect(() => {
     if (Object.keys(rowErrors).length === 0) {
@@ -145,6 +157,20 @@ export function QuickOrdersForm({ action, products }: QuickOrdersFormProps) {
       setSelectedColorKey("");
     }
   }, [selectedProductId]);
+
+  useEffect(() => {
+    setRows([]);
+    setVariantsByProduct({});
+    setRowErrors({});
+    setSelectedCategory("");
+    setSelectedBrand("");
+    setProductSearch("");
+    setSelectedProductId("");
+    setProductModalOpen(false);
+    setVariantModalOpen(false);
+    setSizeModalOpen(false);
+    setSelectedColorKey("");
+  }, [warehouseId]);
 
   useEffect(() => {
     if (!selectedCategory) {
@@ -483,9 +509,29 @@ export function QuickOrdersForm({ action, products }: QuickOrdersFormProps) {
   return (
     <form action={action} className="mt-8 space-y-5">
       <input type="hidden" name="source" value={source} />
+      <input type="hidden" name="warehouseId" value={warehouseId} />
       <input type="hidden" name="rows" value={serializedRows} />
 
       <div className="rounded-[28px] bg-white p-5">
+        <div className="mb-4">
+          <label className="space-y-2">
+            <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+              Depoja
+            </span>
+            <select
+              value={warehouseId}
+              onChange={(event) => setWarehouseId(event.target.value)}
+              className="mt-2 w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-900 outline-none transition focus:border-emerald-400 focus:ring-4 focus:ring-emerald-100"
+            >
+              {warehouses.map((warehouse) => (
+                <option key={warehouse.id} value={warehouse.id}>
+                  {warehouse.name}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
           Burimi i porosise
         </p>

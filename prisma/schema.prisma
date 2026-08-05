@@ -66,6 +66,7 @@ model Variant {
   tenantId       Int?
   orders         Order[]
   items          OrderItem[]
+  inventories    VariantInventory[]
   stockMovements StockMovement[]
   product        Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
   tenant         Tenant?         @relation(fields: [tenantId], references: [id])
@@ -79,59 +80,104 @@ model Variant {
   @@index([createdAt])
 }
 
-model StockMovement {
-  id        Int                 @id @default(autoincrement())
-  variantId Int
-  quantity  Int
-  reason    StockMovementReason
-  createdAt DateTime            @default(now())
-  tenantId  Int?
-  tenant    Tenant?             @relation(fields: [tenantId], references: [id])
-  variant   Variant             @relation(fields: [variantId], references: [id], onDelete: Cascade)
+model Warehouse {
+  id          Int                @id @default(autoincrement())
+  tenantId    Int
+  name        String
+  slug        String
+  isActive    Boolean            @default(true)
+  createdAt   DateTime           @default(now())
+  updatedAt   DateTime           @updatedAt
+  inventories VariantInventory[]
+  orders      Order[]
+  orderItems  OrderItem[]
+  stockMovements StockMovement[]
+  tenant      Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
+  @@unique([tenantId, slug])
+  @@unique([tenantId, name])
   @@index([tenantId])
-  @@index([variantId])
-  @@index([createdAt])
-  @@index([reason])
+  @@index([isActive])
 }
 
+model VariantInventory {
+  id           Int       @id @default(autoincrement())
+  variantId     Int
+  warehouseId   Int
+  stock         Int       @default(0)
+  locationCode  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  variant       Variant   @relation(fields: [variantId], references: [id], onDelete: Cascade)
+  warehouse     Warehouse @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+
+  @@unique([variantId, warehouseId])
+  @@index([warehouseId])
+  @@index([stock])
+}
+
+model StockMovement {
+    id        Int                 @id @default(autoincrement())
+    variantId Int
+    warehouseId Int?
+    quantity  Int
+    reason    StockMovementReason
+    createdAt DateTime            @default(now())
+    tenantId  Int?
+    tenant    Tenant?             @relation(fields: [tenantId], references: [id])
+    variant   Variant             @relation(fields: [variantId], references: [id], onDelete: Cascade)
+    warehouse Warehouse?          @relation(fields: [warehouseId], references: [id], onDelete: SetNull)
+
+    @@index([tenantId])
+    @@index([variantId])
+    @@index([warehouseId])
+    @@index([createdAt])
+    @@index([reason])
+  }
+
 model Order {
-  id           Int         @id @default(autoincrement())
-  phone        String
-  quantity     Int?
-  variantId    Int?
-  createdAt    DateTime    @default(now())
-  customerName String
+    id           Int         @id @default(autoincrement())
+    phone        String
+    quantity     Int?
+    variantId    Int?
+    warehouseId  Int?
+    createdAt    DateTime    @default(now())
+    customerName String
   instagram    String?
   notes        String?
   status       OrderStatus @default(NEW)
   updatedAt    DateTime    @updatedAt
-  source       OrderSource @default(INSTAGRAM)
-  tenantId     Int?
-  tenant       Tenant?     @relation(fields: [tenantId], references: [id])
-  variant      Variant?    @relation(fields: [variantId], references: [id])
-  items        OrderItem[]
+    source       OrderSource @default(INSTAGRAM)
+    tenantId     Int?
+    tenant       Tenant?     @relation(fields: [tenantId], references: [id])
+    variant      Variant?    @relation(fields: [variantId], references: [id])
+    warehouse    Warehouse?  @relation(fields: [warehouseId], references: [id], onDelete: SetNull)
+    items        OrderItem[]
 
   @@index([tenantId])
   @@index([createdAt])
-  @@index([status])
-  @@index([source])
-  @@index([variantId])
-}
+    @@index([status])
+    @@index([source])
+    @@index([variantId])
+    @@index([warehouseId])
+  }
 
 model OrderItem {
-  id        Int      @id @default(autoincrement())
-  orderId   Int
-  variantId Int
-  quantity  Int
-  unitPrice Decimal  @db.Decimal(10, 2)
-  createdAt DateTime @default(now())
-  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  variant   Variant  @relation(fields: [variantId], references: [id])
+    id        Int      @id @default(autoincrement())
+    orderId   Int
+    variantId Int
+    warehouseId Int?
+    quantity  Int
+    unitPrice Decimal  @db.Decimal(10, 2)
+    createdAt DateTime @default(now())
+    order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+    variant   Variant  @relation(fields: [variantId], references: [id])
+    warehouse Warehouse? @relation(fields: [warehouseId], references: [id], onDelete: SetNull)
 
-  @@index([orderId])
-  @@index([variantId])
-}
+    @@index([orderId])
+    @@index([variantId])
+    @@index([warehouseId])
+  }
 
 model User {
   id           Int                @id @default(autoincrement())
@@ -170,17 +216,18 @@ model Tenant {
   updatedAt      DateTime           @updatedAt
   orders         Order[]
   products       Product[]
-  sessions       Session[]
-  stockMovements StockMovement[]
-  subscription   Subscription?
-  memberships    TenantMembership[]
-  settings       TenantSettings?
-  categories     Category[]
-  variants       Variant[]
+    sessions       Session[]
+    stockMovements StockMovement[]
+    subscription   Subscription?
+    memberships    TenantMembership[]
+    settings       TenantSettings?
+    categories     Category[]
+    variants       Variant[]
+    warehouses     Warehouse[]
 
-  @@index([status])
-  @@index([catalogType])
-}
+    @@index([status])
+    @@index([catalogType])
+  }
 
 model TenantMembership {
   id        Int      @id @default(autoincrement())
@@ -271,6 +318,7 @@ enum SubscriptionStatus {
 }
 
 enum StockMovementReason {
-  INCOMING_STOCK
-  CUSTOMER_RETURN
-}
+    INCOMING_STOCK
+    CUSTOMER_RETURN
+    TRANSFER
+  }

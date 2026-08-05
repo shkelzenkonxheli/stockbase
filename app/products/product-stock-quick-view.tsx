@@ -26,6 +26,7 @@ type ProductStockQuickViewProps = {
   productId: number;
   productName: string;
   productBrand: string;
+  warehouseId?: number | null;
   warehouseName?: string | null;
   imagePath: string | null;
   variants: ProductQuickVariant[];
@@ -270,6 +271,7 @@ export function ProductStockQuickView({
   productId,
   productName,
   productBrand,
+  warehouseId,
   warehouseName,
   imagePath,
   variants,
@@ -689,6 +691,7 @@ export function ProductStockQuickView({
         },
         body: JSON.stringify({
           productId,
+          warehouseId,
           reason: stockReason,
           updates,
         }),
@@ -760,6 +763,7 @@ export function ProductStockQuickView({
             body: JSON.stringify({
               productId,
               variantId: item.variantId,
+              warehouseId,
               stock: item.nextStock,
               locationCode: item.nextLocation,
             }),
@@ -824,6 +828,7 @@ export function ProductStockQuickView({
         },
         body: JSON.stringify({
           productId,
+          warehouseId,
           color: numberEditorColor,
           size,
           stock,
@@ -956,6 +961,7 @@ export function ProductStockQuickView({
       for (const [index, row] of cleanedRows.entries()) {
         const formData = new FormData();
         formData.append("productId", String(productId));
+        formData.append("warehouseId", String(warehouseId ?? ""));
         formData.append("color", color);
         formData.append("size", row.size);
         formData.append("stock", String(row.stock));

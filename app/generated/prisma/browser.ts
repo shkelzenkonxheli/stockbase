@@ -33,6 +33,16 @@ export type Category = Prisma.CategoryModel
  */
 export type Variant = Prisma.VariantModel
 /**
+ * Model Warehouse
+ * 
+ */
+export type Warehouse = Prisma.WarehouseModel
+/**
+ * Model VariantInventory
+ * 
+ */
+export type VariantInventory = Prisma.VariantInventoryModel
+/**
  * Model StockMovement
  * 
  */

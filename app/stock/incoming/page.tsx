@@ -4,7 +4,9 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { FlashMessage } from "@/app/components/flash-message";
 import { requireRole } from "@/lib/auth";
+import { parseTenantCatalogConfig } from "@/lib/product-taxonomy";
 import { prisma } from "@/lib/prisma";
+import { getTenantWarehouses } from "@/lib/warehouses";
 import { IncomingStockForm } from "./incoming-stock-form";
 
 export const metadata: Metadata = {
@@ -25,13 +27,14 @@ async function createIncomingStock(formData: FormData) {
   const tenantId = currentUser.tenant?.id;
 
   const productId = Number(formData.get("productId"));
+  const warehouseId = Number(formData.get("warehouseId"));
   const reason =
     formData.get("reason")?.toString() === "CUSTOMER_RETURN"
       ? "CUSTOMER_RETURN"
       : "INCOMING_STOCK";
   const adjustmentsRaw = formData.get("adjustments")?.toString();
 
-  if (!productId || !adjustmentsRaw || !tenantId) {
+  if (!productId || !warehouseId || !adjustmentsRaw || !tenantId) {
     redirect("/stock/incoming?error=validation");
   }
 
@@ -85,6 +88,15 @@ async function createIncomingStock(formData: FormData) {
       },
       select: {
         id: true,
+        stock: true,
+        inventories: {
+          where: { warehouseId },
+          select: {
+            id: true,
+            stock: true,
+          },
+          take: 1,
+        },
       },
     });
 
@@ -92,7 +104,35 @@ async function createIncomingStock(formData: FormData) {
       return { ok: false as const };
     }
 
+    const variantMap = new Map(variants.map((variant) => [variant.id, variant]));
+
     for (const adjustment of adjustments) {
+      const variant = variantMap.get(adjustment.variantId);
+      if (!variant) {
+        return { ok: false as const };
+      }
+
+      const existingInventory = variant.inventories[0];
+
+      if (existingInventory) {
+        await tx.variantInventory.update({
+          where: { id: existingInventory.id },
+          data: {
+            stock: {
+              increment: adjustment.quantity,
+            },
+          },
+        });
+      } else {
+        await tx.variantInventory.create({
+          data: {
+            variantId: adjustment.variantId,
+            warehouseId,
+            stock: adjustment.quantity,
+          },
+        });
+      }
+
       await tx.variant.update({
         where: { id: adjustment.variantId },
         data: {
@@ -107,6 +147,7 @@ async function createIncomingStock(formData: FormData) {
       data: adjustments.map((adjustment) => ({
         tenantId,
         variantId: adjustment.variantId,
+        warehouseId,
         quantity: adjustment.quantity,
         reason,
       })),
@@ -133,7 +174,7 @@ function getMessage(error?: string, success?: string) {
   if (error === "validation") {
     return {
       type: "error" as const,
-      text: "Zgjedh produktin dhe vendos sasi per te pakten nje variant.",
+      text: "Zgjedh depon, produktin dhe vendos sasi per te pakten nje variant.",
     };
   }
 
@@ -154,14 +195,16 @@ function getMessage(error?: string, success?: string) {
   return null;
 }
 
-const reasonLabels: Record<"INCOMING_STOCK" | "CUSTOMER_RETURN", string> = {
+const reasonLabels: Record<"INCOMING_STOCK" | "CUSTOMER_RETURN" | "TRANSFER", string> = {
   INCOMING_STOCK: "Hyrje stoku",
   CUSTOMER_RETURN: "Kthim klienti",
+  TRANSFER: "Transfer",
 };
 
-const reasonStyles: Record<"INCOMING_STOCK" | "CUSTOMER_RETURN", string> = {
+const reasonStyles: Record<"INCOMING_STOCK" | "CUSTOMER_RETURN" | "TRANSFER", string> = {
   INCOMING_STOCK: "border-emerald-200 bg-emerald-50 text-emerald-700",
   CUSTOMER_RETURN: "border-sky-200 bg-sky-50 text-sky-700",
+  TRANSFER: "border-amber-200 bg-amber-50 text-amber-700",
 };
 
 export default async function IncomingStockPage({
@@ -179,7 +222,16 @@ export default async function IncomingStockPage({
     resolvedSearchParams?.success,
   );
 
-  const [products, recentMovements] = await Promise.all([
+  const tenantSettings = await prisma.tenantSettings.findUnique({
+    where: { tenantId },
+    select: { catalogConfig: true },
+  });
+
+  const [warehouses, products, recentMovements] = await Promise.all([
+    getTenantWarehouses(
+      tenantId,
+      parseTenantCatalogConfig(tenantSettings?.catalogConfig),
+    ),
     prisma.product.findMany({
       where: {
         tenantId,
@@ -205,11 +257,16 @@ export default async function IncomingStockPage({
       },
       take: 20,
       select: {
-        id: true,
-        quantity: true,
-        reason: true,
-        createdAt: true,
-        variant: {
+          id: true,
+          quantity: true,
+          reason: true,
+          warehouse: {
+            select: {
+              name: true,
+            },
+          },
+          createdAt: true,
+          variant: {
           select: {
             size: true,
             color: true,
@@ -280,6 +337,10 @@ export default async function IncomingStockPage({
 
         <IncomingStockForm
           action={createIncomingStock}
+          warehouses={warehouses.map((warehouse) => ({
+            id: warehouse.id,
+            name: warehouse.name,
+          }))}
           products={products.map((product) => ({
             id: product.id,
             name: product.name,

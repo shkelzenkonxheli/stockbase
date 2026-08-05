@@ -18,11 +18,13 @@ import {
 import {
   buildVariantIdentityKey,
   getCatalogAwareCategoryConfig,
+  parseTenantCatalogConfig,
   parseCategoryFieldConfig,
   parseVariantCustomAttributes,
   type CategoryConfig,
 } from "@/lib/product-taxonomy";
 import { VariantRowsForm } from "./variant-rows-form";
+import { getTenantWarehouses } from "@/lib/warehouses";
 
 type NewProductVariantPageProps = {
   params: Promise<{
@@ -62,7 +64,7 @@ async function createVariants(formData: FormData) {
   const rowsRaw = formData.get("rows")?.toString();
 
   if (!productId || !rowsRaw || !tenantId) {
-    return;
+    redirect(`/products/${productId || ""}/variants/new?error=${encodeURIComponent("Te dhenat kryesore mungojne. Rifresko faqen dhe provo perseri.")}`);
   }
 
   let parsedRows: unknown;
@@ -70,11 +72,11 @@ async function createVariants(formData: FormData) {
   try {
     parsedRows = JSON.parse(rowsRaw);
   } catch {
-    return;
+    redirect(`/products/${productId}/variants/new?error=${encodeURIComponent("Forma e varianteve nuk u lexua sakte. Provo perseri.")}`);
   }
 
   if (!Array.isArray(parsedRows)) {
-    return;
+    redirect(`/products/${productId}/variants/new?error=${encodeURIComponent("Te dhenat e varianteve nuk jane valide.")}`);
   }
 
   const normalizedRows = parsedRows
@@ -133,7 +135,7 @@ async function createVariants(formData: FormData) {
     .filter((row): row is NonNullable<typeof row> => row !== null);
 
   if (normalizedRows.length === 0) {
-    return;
+    redirect(`/products/${productId}/variants/new?error=${encodeURIComponent("Ploteso te pakten nje variant me ngjyre, stok dhe cmim.")}`);
   }
 
   const [existingProductVariants, existingVariantCodes] = await Promise.all([
@@ -161,6 +163,7 @@ async function createVariants(formData: FormData) {
     select: {
       name: true,
       brand: true,
+      warehouseName: true,
       category: {
         select: {
           name: true,
@@ -171,7 +174,26 @@ async function createVariants(formData: FormData) {
   });
 
   if (!product) {
-    return;
+    redirect(`/products/${productId}/variants/new?error=${encodeURIComponent("Produkti nuk u gjet.")}`);
+  }
+
+  const warehouses = await getTenantWarehouses(
+    tenantId,
+    currentUser.tenant?.catalogConfig ?? parseTenantCatalogConfig(null),
+  );
+  const targetWarehouse =
+    warehouses.find(
+      (warehouse) =>
+        product.warehouseName &&
+        warehouse.name.toLowerCase() === product.warehouseName.toLowerCase(),
+    ) ?? warehouses[0];
+
+  if (!targetWarehouse || targetWarehouse.id <= 0) {
+    redirect(
+      `/products/${productId}/variants/new?error=${encodeURIComponent(
+        "Nuk u gjet depoja per kete produkt. Kontrollo settings dhe provo perseri.",
+      )}`,
+    );
   }
   const categoryConfig = getCatalogAwareCategoryConfig(
     currentUser.tenant?.catalogType,
@@ -211,7 +233,7 @@ async function createVariants(formData: FormData) {
   });
 
   if (validRowsWithCategory.length === 0) {
-    return;
+    redirect(`/products/${productId}/variants/new?error=${encodeURIComponent("Ploteso te gjitha fushat e detyrueshme para ruajtjes.")}`);
   }
 
   const seenRowKeys = new Set<string>();
@@ -373,6 +395,13 @@ async function createVariants(formData: FormData) {
               stock: row.stock,
               price: row.price,
               customAttributes: row.customAttributes,
+              inventories: {
+                create: {
+                  warehouseId: targetWarehouse.id,
+                  stock: row.stock,
+                  locationCode: row.locationCode,
+                },
+              },
             },
           });
           currentIdentityKeys.add(candidateKey);
@@ -399,6 +428,14 @@ async function createVariants(formData: FormData) {
         redirect(
           `/products/${productId}/variants/new?error=${encodeURIComponent(
             "Ky variant ekziston tashme per kete produkt.",
+          )}`,
+        );
+      }
+
+      if (error instanceof Error && error.message === "Duplicate barcode detected.") {
+        redirect(
+          `/products/${productId}/variants/new?error=${encodeURIComponent(
+            "Kodi barcode doli i dyfishte. Provo perseri.",
           )}`,
         );
       }
