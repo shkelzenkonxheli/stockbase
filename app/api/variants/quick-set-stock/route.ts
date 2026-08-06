@@ -1,6 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { getCurrentUser, hasRole } from "@/lib/auth";
+import { writeAuditLog } from "@/lib/audit-log";
 import { prisma } from "@/lib/prisma";
 
 type SetStockPayload = {
@@ -58,6 +59,9 @@ export async function POST(request: Request) {
     select: {
       id: true,
       stock: true,
+      size: true,
+      color: true,
+      locationCode: true,
       inventories: {
         where: { warehouseId },
         select: {
@@ -98,6 +102,26 @@ export async function POST(request: Request) {
       data: {
         stock: {
           increment: stock - previousWarehouseStock,
+        },
+      },
+    });
+
+    await writeAuditLog(tx, {
+      tenantId,
+      userId: currentUser.id,
+      action: "QUICK_STOCK_SET",
+      entityType: "VARIANT",
+      entityId: variantId,
+      entityLabel: `${variant.color} / ${variant.size}`,
+      warehouseId,
+      metadata: {
+        before: {
+          stock: previousWarehouseStock,
+          locationCode: variant.locationCode ?? null,
+        },
+        after: {
+          stock,
+          locationCode,
         },
       },
     });

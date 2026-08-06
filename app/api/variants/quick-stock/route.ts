@@ -1,6 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { getCurrentUser, hasRole } from "@/lib/auth";
+import { writeAuditLog } from "@/lib/audit-log";
 import { prisma } from "@/lib/prisma";
 
 type StockUpdatePayload = {
@@ -67,6 +68,8 @@ export async function POST(request: Request) {
     select: {
       id: true,
       stock: true,
+      size: true,
+      color: true,
       inventories: {
         where: { warehouseId },
         select: {
@@ -130,6 +133,28 @@ export async function POST(request: Request) {
         },
       });
     }
+
+    await writeAuditLog(tx, {
+      tenantId,
+      userId: currentUser.id,
+      action: "QUICK_STOCK_ADDED",
+      entityType: "STOCK",
+      entityId: productId,
+      entityLabel: `Produkti #${productId}`,
+      warehouseId,
+      metadata: {
+        reason,
+        updates: updates.map((update) => {
+          const variant = variantMap.get(update.variantId);
+          return {
+            variantId: update.variantId,
+            quantity: update.quantity,
+            size: variant?.size ?? null,
+            color: variant?.color ?? null,
+          };
+        }),
+      },
+    });
   });
 
   revalidatePath("/products");

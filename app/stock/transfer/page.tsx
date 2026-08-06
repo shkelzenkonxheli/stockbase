@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { FlashMessage } from "@/app/components/flash-message";
 import { requireRole } from "@/lib/auth";
+import { writeAuditLog } from "@/lib/audit-log";
 import { parseTenantCatalogConfig } from "@/lib/product-taxonomy";
 import { prisma } from "@/lib/prisma";
 import { getTenantWarehouses } from "@/lib/warehouses";
@@ -82,6 +83,8 @@ async function createTransfer(formData: FormData) {
       },
       select: {
         id: true,
+        size: true,
+        color: true,
         inventories: {
           where: {
             warehouseId: {
@@ -172,6 +175,29 @@ async function createTransfer(formData: FormData) {
         ],
       });
     }
+
+    await writeAuditLog(tx, {
+      tenantId,
+      userId: currentUser.id,
+      action: "STOCK_TRANSFER_CREATED",
+      entityType: "TRANSFER",
+      entityId: productId,
+      entityLabel: `Produkti #${productId}`,
+      warehouseId: toWarehouseId,
+      metadata: {
+        fromWarehouseId,
+        toWarehouseId,
+        adjustments: adjustments.map((adjustment) => {
+          const variant = variantsById.get(adjustment.variantId);
+          return {
+            variantId: adjustment.variantId,
+            quantity: adjustment.quantity,
+            size: variant?.size ?? null,
+            color: variant?.color ?? null,
+          };
+        }),
+      },
+    });
 
     return { ok: true as const };
   });

@@ -68,10 +68,19 @@ export const SubscriptionStatus = {
 export type SubscriptionStatus = (typeof SubscriptionStatus)[keyof typeof SubscriptionStatus]
 
 
+export const InventoryCountStatus = {
+  OPEN: 'OPEN',
+  COMPLETED: 'COMPLETED'
+} as const
+
+export type InventoryCountStatus = (typeof InventoryCountStatus)[keyof typeof InventoryCountStatus]
+
+
 export const StockMovementReason = {
   INCOMING_STOCK: 'INCOMING_STOCK',
   CUSTOMER_RETURN: 'CUSTOMER_RETURN',
-  TRANSFER: 'TRANSFER'
+  TRANSFER: 'TRANSFER',
+  INVENTORY_COUNT: 'INVENTORY_COUNT'
 } as const
 
 export type StockMovementReason = (typeof StockMovementReason)[keyof typeof StockMovementReason]

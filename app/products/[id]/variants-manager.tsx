@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useMemo, useState } from "react";
 import { ConfirmActionForm } from "@/app/components/confirm-action-form";
 import { UploadedImage } from "@/app/components/uploaded-image";
-import { getStockTone } from "@/lib/inventory";
+import { getEffectiveReorderLevel, getStockTone } from "@/lib/inventory";
 import type { CustomVariantField } from "@/lib/product-taxonomy";
 
 type VariantItem = {
@@ -17,6 +17,7 @@ type VariantItem = {
   barcode: string | null;
   imagePath: string | null;
   stock: number;
+  reorderLevel: number | null;
   price: number;
   customAttributes: Record<string, string>;
 };
@@ -28,6 +29,7 @@ type VariantsManagerProps = {
   selectedSize: string;
   selectedColor: string;
   selectedStock: string;
+  selectedWarehouse: string;
   variants: VariantItem[];
   customFields: CustomVariantField[];
   deleteVariantAction: (formData: FormData) => void | Promise<void>;
@@ -41,6 +43,7 @@ export function VariantsManager({
   selectedSize,
   selectedColor,
   selectedStock,
+  selectedWarehouse,
   variants,
   customFields,
   deleteVariantAction,
@@ -144,7 +147,11 @@ export function VariantsManager({
   const renderActionIcons = (variantId: number) => (
     <div className="flex items-center justify-end gap-2">
       <Link
-        href={`/products/${productId}/variants/${variantId}/edit`}
+        href={
+          selectedWarehouse
+            ? `/products/${productId}/variants/${variantId}/edit?warehouse=${encodeURIComponent(selectedWarehouse)}`
+            : `/products/${productId}/variants/${variantId}/edit`
+        }
         className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900"
         title="Edito variantin"
       >
@@ -171,6 +178,7 @@ export function VariantsManager({
           { name: "size", value: selectedSize },
           { name: "color", value: selectedColor },
           { name: "stock", value: selectedStock },
+          { name: "warehouse", value: selectedWarehouse },
         ]}
         confirmMessage="A je i sigurt qe don ta fshish kete variant?"
         buttonLabel="Fshi"
@@ -243,6 +251,7 @@ export function VariantsManager({
               { name: "size", value: selectedSize },
               { name: "color", value: selectedColor },
               { name: "stock", value: selectedStock },
+              { name: "warehouse", value: selectedWarehouse },
             ]}
             confirmMessage="A je i sigurt qe don t'i fshish variantet e zgjedhura?"
             buttonLabel="Fshi te zgjedhurat"
@@ -254,7 +263,7 @@ export function VariantsManager({
       <div className="grid gap-4 lg:hidden">
         {variants.map((variant) => (
           (() => {
-            const stockTone = getStockTone(variant.stock);
+            const stockTone = getStockTone(variant.stock, variant.reorderLevel);
 
             return (
           <article
@@ -310,6 +319,9 @@ export function VariantsManager({
                 </span>
                 <p className="mt-1 text-xs font-medium text-slate-500">
                   {stockTone.label}
+                </p>
+                <p className="mt-1 text-[11px] text-slate-400">
+                  Reorder {getEffectiveReorderLevel(variant.reorderLevel)}
                 </p>
               </div>
             </div>
@@ -466,7 +478,7 @@ export function VariantsManager({
             </thead>
             <tbody className="divide-y divide-slate-100 bg-white">
               {variants.map((variant) => {
-                const stockTone = getStockTone(variant.stock);
+                const stockTone = getStockTone(variant.stock, variant.reorderLevel);
 
                 return (
                 <tr
@@ -546,11 +558,16 @@ export function VariantsManager({
                     </p>
                   </td>
                   <td className="px-5 py-4 text-center">
-                    <span
-                      className={`inline-flex min-w-16 items-center justify-center rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.08em] ${stockTone.badgeClassName}`}
-                    >
-                      {variant.stock} {stockTone.label}
-                    </span>
+                    <div className="flex flex-col items-center gap-1">
+                      <span
+                        className={`inline-flex min-w-16 items-center justify-center rounded-full px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.08em] ${stockTone.badgeClassName}`}
+                      >
+                        {variant.stock} {stockTone.label}
+                      </span>
+                      <span className="text-[11px] text-slate-400">
+                        Reorder {getEffectiveReorderLevel(variant.reorderLevel)}
+                      </span>
+                    </div>
                   </td>
                   <td className="px-5 py-4 text-right">
                     <span className="font-semibold tabular-nums text-slate-900">

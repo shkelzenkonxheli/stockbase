@@ -1,6 +1,7 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { getCurrentUser, hasRole } from "@/lib/auth";
+import { writeAuditLog } from "@/lib/audit-log";
 import { prisma } from "@/lib/prisma";
 
 export async function POST(request: Request) {
@@ -34,6 +35,8 @@ export async function POST(request: Request) {
     },
     select: {
       id: true,
+      size: true,
+      color: true,
       orders: { select: { id: true }, take: 1 },
       items: { select: { id: true }, take: 1 },
     },
@@ -50,8 +53,22 @@ export async function POST(request: Request) {
     );
   }
 
-  await prisma.variant.delete({
-    where: { id: variantId },
+  await prisma.$transaction(async (tx) => {
+    await tx.variant.delete({
+      where: { id: variantId },
+    });
+
+    await writeAuditLog(tx, {
+      tenantId,
+      userId: currentUser.id,
+      action: "VARIANT_DELETED",
+      entityType: "VARIANT",
+      entityId: variantId,
+      entityLabel: `${variant.color} / ${variant.size}`,
+      metadata: {
+        productId,
+      },
+    });
   });
 
   revalidatePath("/products");

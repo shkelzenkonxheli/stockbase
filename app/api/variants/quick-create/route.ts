@@ -2,6 +2,7 @@ import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { Prisma } from "@/app/generated/prisma/client";
 import { getCurrentUser, hasRole } from "@/lib/auth";
+import { writeAuditLog } from "@/lib/audit-log";
 import {
   ProductImageUploadError,
   saveProductImage,
@@ -24,6 +25,7 @@ type QuickCreatePayload = {
   color?: string;
   size?: string;
   stock?: number;
+  reorderLevel?: number;
   price?: number;
   material?: string;
   powerWatts?: string;
@@ -52,6 +54,10 @@ export async function POST(request: Request) {
         color: formData.get("color")?.toString(),
         size: formData.get("size")?.toString(),
         stock: Number(formData.get("stock")),
+        reorderLevel:
+          formData.get("reorderLevel") !== null && formData.get("reorderLevel") !== ""
+            ? Number(formData.get("reorderLevel"))
+            : undefined,
         price:
           formData.get("price") !== null && formData.get("price") !== ""
             ? Number(formData.get("price"))
@@ -74,6 +80,10 @@ export async function POST(request: Request) {
   const color = String(payload.color ?? "").trim();
   const size = String(payload.size ?? "").trim();
   const stock = Number(payload.stock);
+  const reorderLevel =
+    payload.reorderLevel === undefined || payload.reorderLevel === null
+      ? null
+      : Number(payload.reorderLevel);
   const price = Number(payload.price);
   const material = String(payload.material ?? "").trim() || null;
   const powerWatts = String(payload.powerWatts ?? "").trim() || null;
@@ -87,7 +97,8 @@ export async function POST(request: Request) {
     !color ||
     !size ||
     !Number.isInteger(stock) ||
-    stock < 0
+    stock < 0 ||
+    (reorderLevel !== null && (!Number.isInteger(reorderLevel) || reorderLevel < 0))
   ) {
     return NextResponse.json({ error: "Te dhenat nuk jane valide." }, { status: 400 });
   }
@@ -261,6 +272,7 @@ export async function POST(request: Request) {
         color,
         variantIdentityKey: candidateKey,
         stock,
+        reorderLevel,
         price: effectivePrice,
         imagePath: uploadedImagePath,
         material,
@@ -311,6 +323,25 @@ export async function POST(request: Request) {
     });
   }
 
+  await writeAuditLog(prisma, {
+    tenantId,
+    userId: currentUser.id,
+    action: "VARIANT_CREATED",
+    entityType: "VARIANT",
+    entityId: createdVariant.id,
+    entityLabel: `${color} / ${size}`,
+    warehouseId,
+    metadata: {
+      productId,
+      stock,
+      reorderLevel,
+      price: effectivePrice,
+      material,
+      powerWatts,
+      locationCode,
+    },
+  });
+
   revalidatePath("/products");
   revalidatePath(`/products/${productId}`);
 
@@ -321,6 +352,7 @@ export async function POST(request: Request) {
       size,
       color,
       stock,
+      reorderLevel,
       price: effectivePrice,
       imagePath: uploadedImagePath,
       material,

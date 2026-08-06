@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { FlashMessage } from "@/app/components/flash-message";
 import { requireRole } from "@/lib/auth";
+import { writeAuditLog } from "@/lib/audit-log";
 import { parseTenantCatalogConfig } from "@/lib/product-taxonomy";
 import { prisma } from "@/lib/prisma";
 import { getTenantWarehouses } from "@/lib/warehouses";
@@ -89,6 +90,8 @@ async function createIncomingStock(formData: FormData) {
       select: {
         id: true,
         stock: true,
+        size: true,
+        color: true,
         inventories: {
           where: { warehouseId },
           select: {
@@ -153,6 +156,28 @@ async function createIncomingStock(formData: FormData) {
       })),
     });
 
+    await writeAuditLog(tx, {
+      tenantId,
+      userId: currentUser.id,
+      action: "STOCK_INCOMING_CREATED",
+      entityType: "STOCK",
+      entityId: productId,
+      entityLabel: `Produkti #${productId}`,
+      warehouseId,
+      metadata: {
+        reason,
+        adjustments: adjustments.map((adjustment) => {
+          const variant = variantMap.get(adjustment.variantId);
+          return {
+            variantId: adjustment.variantId,
+            quantity: adjustment.quantity,
+            size: variant?.size ?? null,
+            color: variant?.color ?? null,
+          };
+        }),
+      },
+    });
+
     return { ok: true as const };
   });
 
@@ -195,16 +220,24 @@ function getMessage(error?: string, success?: string) {
   return null;
 }
 
-const reasonLabels: Record<"INCOMING_STOCK" | "CUSTOMER_RETURN" | "TRANSFER", string> = {
+const reasonLabels: Record<
+  "INCOMING_STOCK" | "CUSTOMER_RETURN" | "TRANSFER" | "INVENTORY_COUNT",
+  string
+> = {
   INCOMING_STOCK: "Hyrje stoku",
   CUSTOMER_RETURN: "Kthim klienti",
   TRANSFER: "Transfer",
+  INVENTORY_COUNT: "Inventory count",
 };
 
-const reasonStyles: Record<"INCOMING_STOCK" | "CUSTOMER_RETURN" | "TRANSFER", string> = {
+const reasonStyles: Record<
+  "INCOMING_STOCK" | "CUSTOMER_RETURN" | "TRANSFER" | "INVENTORY_COUNT",
+  string
+> = {
   INCOMING_STOCK: "border-emerald-200 bg-emerald-50 text-emerald-700",
   CUSTOMER_RETURN: "border-sky-200 bg-sky-50 text-sky-700",
   TRANSFER: "border-amber-200 bg-amber-50 text-amber-700",
+  INVENTORY_COUNT: "border-violet-200 bg-violet-50 text-violet-700",
 };
 
 export default async function IncomingStockPage({

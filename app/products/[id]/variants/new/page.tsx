@@ -85,13 +85,14 @@ async function createVariants(formData: FormData) {
         return null;
       }
 
-      const candidate = row as {
-        imageFieldName?: unknown;
-        size?: unknown;
-        color?: unknown;
-        locationCode?: unknown;
-        material?: unknown;
-        powerWatts?: unknown;
+        const candidate = row as {
+          imageFieldName?: unknown;
+          size?: unknown;
+          color?: unknown;
+          locationCode?: unknown;
+          reorderLevel?: unknown;
+          material?: unknown;
+          powerWatts?: unknown;
         sku?: unknown;
         barcode?: unknown;
         imagePath?: unknown;
@@ -104,6 +105,9 @@ async function createVariants(formData: FormData) {
       const size = String(candidate.size ?? "").trim();
       const color = String(candidate.color ?? "").trim();
       const locationCode = String(candidate.locationCode ?? "").trim() || null;
+      const reorderLevelValue = String(candidate.reorderLevel ?? "").trim();
+      const reorderLevel =
+        reorderLevelValue === "" ? null : Number(candidate.reorderLevel);
       const material = String(candidate.material ?? "").trim() || null;
       const powerWatts = String(candidate.powerWatts ?? "").trim() || null;
       const sku = normalizeVariantCode(String(candidate.sku ?? ""));
@@ -113,7 +117,13 @@ async function createVariants(formData: FormData) {
       const price = String(candidate.price ?? "").trim();
       const customAttributes = parseVariantCustomAttributes(candidate.customAttributes);
 
-      if (!color || Number.isNaN(stock) || stock < 0 || !price) {
+      if (
+        !color ||
+        Number.isNaN(stock) ||
+        stock < 0 ||
+        !price ||
+        (reorderLevel !== null && (!Number.isInteger(reorderLevel) || reorderLevel < 0))
+      ) {
         return null;
       }
 
@@ -122,6 +132,7 @@ async function createVariants(formData: FormData) {
         size,
         color,
         locationCode,
+        reorderLevel,
         material,
         powerWatts,
         sku,
@@ -388,6 +399,7 @@ async function createVariants(formData: FormData) {
               color: row.color,
               variantIdentityKey: candidateKey,
               locationCode: row.locationCode,
+              reorderLevel: row.reorderLevel,
               material: row.material,
               powerWatts: row.powerWatts,
               sku: nextSku,

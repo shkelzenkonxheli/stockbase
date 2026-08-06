@@ -49,7 +49,6 @@ async function createProduct(formData: FormData) {
       tenantId,
       name: { equals: name, mode: "insensitive" },
       brand: brand ? { equals: brand, mode: "insensitive" } : null,
-      warehouseName: warehouseName ? { equals: warehouseName, mode: "insensitive" } : null,
       categoryId,
     },
     select: { id: true },

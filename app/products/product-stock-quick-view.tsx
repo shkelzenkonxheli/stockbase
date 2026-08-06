@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { UploadedImage } from "@/app/components/uploaded-image";
-import { LOW_STOCK_THRESHOLD, getStockTone } from "@/lib/inventory";
+import { LOW_STOCK_THRESHOLD, getStockTone, isLowStock } from "@/lib/inventory";
 import {
   buildVariantIdentityKey,
   type CategoryConfig,
@@ -16,6 +16,7 @@ type ProductQuickVariant = {
   color: string;
   imagePath: string | null;
   stock: number;
+  reorderLevel?: number | null;
   price?: number;
   material?: string | null;
   powerWatts?: string | null;
@@ -267,6 +268,25 @@ function formatQuickVariantLabel(
   return parts.join(" / ");
 }
 
+function getAggregateStockTone(
+  variants: Array<{ stock: number; reorderLevel?: number | null }>,
+) {
+  const totalStock = variants.reduce((sum, variant) => sum + variant.stock, 0);
+
+  if (totalStock <= 0) {
+    return getStockTone(0);
+  }
+
+  if (variants.some((variant) => isLowStock(variant.stock, variant.reorderLevel))) {
+    return {
+      label: "Stok i ulet",
+      badgeClassName: "bg-amber-50 text-amber-700",
+    };
+  }
+
+  return getStockTone(totalStock);
+}
+
 export function ProductStockQuickView({
   productId,
   productName,
@@ -460,7 +480,7 @@ export function ProductStockQuickView({
   }, [stockViewMode, variantsState]);
 
   const totalStock = variantsState.reduce((sum, variant) => sum + variant.stock, 0);
-  const stockTone = getStockTone(totalStock);
+  const stockTone = getAggregateStockTone(variantsState);
 
   const colorEditorVariants = stockEditorColor
     ? groupedVariants.get(stockEditorColor) ?? []
@@ -501,6 +521,10 @@ export function ProductStockQuickView({
   useEffect(() => {
     setHasMounted(true);
   }, []);
+
+  useEffect(() => {
+    setVariantsState(variants);
+  }, [variants]);
 
   useEffect(() => {
     if (!successToast) {
@@ -1250,7 +1274,7 @@ export function ProductStockQuickView({
             <div className="flex-1 space-y-3 overflow-y-auto overflow-x-hidden px-3.5 py-2.5 sm:px-5 sm:py-4">
               {stockViewMode === "electronics" ? (
                 groupedByModel.map((group) => {
-                  const groupStockTone = getStockTone(group.totalStock);
+                  const groupStockTone = getAggregateStockTone(group.variants);
 
                   return (
                     <section
@@ -1273,7 +1297,7 @@ export function ProductStockQuickView({
 
                       <div className="mt-3 space-y-2.5 md:grid md:grid-cols-2 md:gap-3 md:space-y-0 xl:grid-cols-3">
                         {group.variants.map((variant) => {
-                          const variantStockTone = getStockTone(variant.stock);
+                          const variantStockTone = getStockTone(variant.stock, variant.reorderLevel);
 
                           return (
                             <div
@@ -1353,7 +1377,7 @@ export function ProductStockQuickView({
                 })
               ) : stockViewMode === "home" ? (
                 groupedBySpecification.map((group) => {
-                  const groupStockTone = getStockTone(group.totalStock);
+                  const groupStockTone = getAggregateStockTone(group.variants);
 
                   return (
                     <section
@@ -1379,7 +1403,7 @@ export function ProductStockQuickView({
 
                       <div className="mt-3 space-y-2.5 md:grid md:grid-cols-2 md:gap-3 md:space-y-0 xl:grid-cols-3">
                         {group.variants.map((variant) => {
-                          const variantStockTone = getStockTone(variant.stock);
+                          const variantStockTone = getStockTone(variant.stock, variant.reorderLevel);
 
                           return (
                             <div
@@ -1692,7 +1716,7 @@ export function ProductStockQuickView({
                     <div className="mt-4 grid grid-cols-1 gap-2.5 sm:flex sm:flex-wrap">
                       {colorVariants.map((variant) => {
                         const tone =
-                          variant.stock > 0 && variant.stock <= LOW_STOCK_THRESHOLD
+                          isLowStock(variant.stock, variant.reorderLevel)
                             ? "border-rose-200 bg-rose-50 text-rose-700"
                             : variant.stock > 0
                               ? "border-emerald-200 bg-emerald-50 text-emerald-700"

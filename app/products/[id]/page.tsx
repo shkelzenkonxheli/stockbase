@@ -3,12 +3,14 @@ import { revalidatePath } from "next/cache";
 import { notFound, redirect } from "next/navigation";
 import type { Prisma } from "@/app/generated/prisma/client";
 import { hasRole, requireRole, requireUser } from "@/lib/auth";
+import { isLowStock } from "@/lib/inventory";
 import {
   getCatalogAwareCategoryConfig,
   parseCategoryFieldConfig,
   parseVariantCustomAttributes,
 } from "@/lib/product-taxonomy";
 import { prisma } from "@/lib/prisma";
+import { getTenantWarehouses } from "@/lib/warehouses";
 import { ProductVariantsFilters } from "./product-variants-filters";
 import { VariantsManager } from "./variants-manager";
 
@@ -18,6 +20,7 @@ type ProductDetailsPageProps = {
     size?: string;
     color?: string;
     stock?: string;
+    warehouse?: string;
     feedback?: string;
     feedbackType?: string;
   }>;
@@ -29,6 +32,7 @@ function buildProductDetailsHref(
     size?: string;
     color?: string;
     stock?: string;
+    warehouse?: string;
     feedback?: string;
     feedbackType?: string;
   } = {},
@@ -37,6 +41,7 @@ function buildProductDetailsHref(
   if (options.size) params.set("size", options.size);
   if (options.color) params.set("color", options.color);
   if (options.stock) params.set("stock", options.stock);
+  if (options.warehouse) params.set("warehouse", options.warehouse);
   if (options.feedback) params.set("feedback", options.feedback);
   if (options.feedbackType) params.set("feedbackType", options.feedbackType);
   const query = params.toString();
@@ -54,6 +59,7 @@ async function deleteVariant(formData: FormData) {
   const selectedSize = formData.get("size")?.toString() || "";
   const selectedColor = formData.get("color")?.toString() || "";
   const selectedStock = formData.get("stock")?.toString() || "";
+  const selectedWarehouse = formData.get("warehouse")?.toString() || "";
 
   if (!variantId || !productId || !tenantId) return;
 
@@ -71,6 +77,7 @@ async function deleteVariant(formData: FormData) {
         size: selectedSize,
         color: selectedColor,
         stock: selectedStock,
+        warehouse: selectedWarehouse,
         feedback: "Ky variant nuk u fshi sepse ka histori porosish.",
         feedbackType: "error",
       }),
@@ -88,6 +95,7 @@ async function deleteVariant(formData: FormData) {
       size: selectedSize,
       color: selectedColor,
       stock: selectedStock,
+      warehouse: selectedWarehouse,
       feedback: "Varianti u fshi me sukses.",
       feedbackType: "success",
     }),
@@ -105,6 +113,7 @@ async function bulkDeleteVariants(formData: FormData) {
   const selectedSize = formData.get("size")?.toString() || "";
   const selectedColor = formData.get("color")?.toString() || "";
   const selectedStock = formData.get("stock")?.toString() || "";
+  const selectedWarehouse = formData.get("warehouse")?.toString() || "";
 
   if (!productId || !variantIdsRaw || !tenantId) return;
 
@@ -142,6 +151,7 @@ async function bulkDeleteVariants(formData: FormData) {
         size: selectedSize,
         color: selectedColor,
         stock: selectedStock,
+        warehouse: selectedWarehouse,
         feedback: "Asnje variant nuk u fshi sepse te gjitha kane histori porosish.",
         feedbackType: "error",
       }),
@@ -164,6 +174,7 @@ async function bulkDeleteVariants(formData: FormData) {
       size: selectedSize,
       color: selectedColor,
       stock: selectedStock,
+      warehouse: selectedWarehouse,
       feedback:
         blockedCount > 0
           ? `${deletableIds.length} variante u fshine. ${blockedCount} nuk u fshine sepse kane histori porosish.`
@@ -188,20 +199,35 @@ export default async function ProductDetailsPage({
   const selectedSize = resolvedSearchParams?.size?.trim() || "";
   const selectedColor = resolvedSearchParams?.color?.trim() || "";
   const selectedStock = resolvedSearchParams?.stock?.trim() || "";
+  const selectedWarehouse = resolvedSearchParams?.warehouse?.trim() || "";
   const feedbackMessage = resolvedSearchParams?.feedback?.trim() || "";
   const feedbackType = resolvedSearchParams?.feedbackType?.trim() || "";
+  const warehouseRecords = await getTenantWarehouses(tenantId, currentUser.tenant?.catalogConfig);
+  const selectedWarehouseRecord =
+    warehouseRecords.find(
+      (warehouse) => warehouse.name.toLowerCase() === selectedWarehouse.toLowerCase(),
+    ) ?? null;
+  const activeWarehouseId = selectedWarehouseRecord?.id ?? null;
 
   const variantsWhere: Prisma.VariantWhereInput = {
     tenantId,
     productId,
     ...(selectedSize ? { size: selectedSize } : {}),
     ...(selectedColor ? { color: selectedColor } : {}),
+    ...(activeWarehouseId
+      ? {
+          inventories: {
+            some: {
+              warehouseId: activeWarehouseId,
+            },
+          },
+        }
+      : {}),
     ...(selectedStock === "in" ? { stock: { gt: 0 } } : {}),
-    ...(selectedStock === "low" ? { stock: { gt: 0, lte: 5 } } : {}),
     ...(selectedStock === "out" ? { stock: 0 } : {}),
   };
 
-  const [product, allVariants, filteredVariants] = await Promise.all([
+  const [product, allVariants] = await Promise.all([
     prisma.product.findFirst({
       where: { id: productId, tenantId },
       select: {
@@ -239,25 +265,25 @@ export default async function ProductDetailsPage({
         barcode: true,
         imagePath: true,
         stock: true,
+        reorderLevel: true,
+        locationCode: true,
         price: true,
         customAttributes: true,
-      },
-      orderBy: [{ color: "asc" }, { size: "asc" }],
-    }),
-    prisma.variant.findMany({
-      where: variantsWhere,
-      select: {
-        id: true,
-        size: true,
-        color: true,
-        material: true,
-        powerWatts: true,
-        sku: true,
-        barcode: true,
-        imagePath: true,
-        stock: true,
-        price: true,
-        customAttributes: true,
+        inventories: activeWarehouseId
+          ? {
+              where: { warehouseId: activeWarehouseId },
+              select: {
+                stock: true,
+                locationCode: true,
+              },
+              take: 1,
+            }
+          : {
+              select: {
+                stock: true,
+                locationCode: true,
+              },
+            },
       },
       orderBy: [{ color: "asc" }, { size: "asc" }],
     }),
@@ -265,7 +291,28 @@ export default async function ProductDetailsPage({
 
   if (!product) notFound();
 
-  const totalStock = allVariants.reduce((sum, variant) => sum + variant.stock, 0);
+  const getVariantDisplayStock = (
+    variant: {
+      stock: number;
+      inventories?: Array<{ stock: number; locationCode?: string | null }>;
+    },
+  ) =>
+    activeWarehouseId
+      ? (variant.inventories?.[0]?.stock ?? 0)
+      : variant.inventories && variant.inventories.length > 0
+        ? variant.inventories.reduce((sum, inventory) => sum + inventory.stock, 0)
+        : variant.stock;
+
+  const totalStock = allVariants.reduce((sum, variant) => sum + getVariantDisplayStock(variant), 0);
+  const filteredVariants = allVariants.filter((variant) => {
+    if (selectedSize && variant.size !== selectedSize) return false;
+    if (selectedColor && variant.color !== selectedColor) return false;
+    const displayStock = getVariantDisplayStock(variant);
+    if (selectedStock === "in" && displayStock <= 0) return false;
+    if (selectedStock === "low" && !isLowStock(displayStock, variant.reorderLevel)) return false;
+    if (selectedStock === "out" && displayStock !== 0) return false;
+    return true;
+  });
   const colors = [...new Set(allVariants.map((variant) => variant.color))];
   const sizes = [...new Set(allVariants.map((variant) => variant.size))];
   const materials = [...new Set(allVariants.map((variant) => variant.material).filter(Boolean))];
@@ -308,7 +355,7 @@ export default async function ProductDetailsPage({
 
             <div className="flex shrink-0 flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Link
-                href="/products"
+                href={selectedWarehouse ? `/products?warehouse=${encodeURIComponent(selectedWarehouse)}` : "/products"}
                 className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-white"
               >
                 Kthehu te produktet
@@ -323,7 +370,11 @@ export default async function ProductDetailsPage({
               ) : null}
               {canManageInventory ? (
                 <Link
-                  href={`/products/${product.id}/variants/new`}
+                  href={
+                    selectedWarehouse
+                      ? `/products/${product.id}/variants/new?warehouse=${encodeURIComponent(selectedWarehouse)}`
+                      : `/products/${product.id}/variants/new`
+                  }
                   className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_25px_rgba(15,23,42,0.18)] transition hover:bg-slate-800"
                 >
                   + Shto Variant
@@ -365,6 +416,12 @@ export default async function ProductDetailsPage({
                 colors={colors}
               />
 
+              {selectedWarehouseRecord ? (
+                <p className="px-1 text-sm font-medium text-slate-500">
+                  Depo aktive: <span className="text-slate-900">{selectedWarehouseRecord.name}</span>
+                </p>
+              ) : null}
+
               <p className="px-1 text-sm text-slate-600">
                 Po shfaqen <span className="font-semibold text-slate-950">{filteredVariants.length}</span> nga{" "}
                 <span className="font-semibold text-slate-950">{allVariants.length}</span> variante
@@ -377,6 +434,7 @@ export default async function ProductDetailsPage({
                 selectedSize={selectedSize}
                 selectedColor={selectedColor}
                 selectedStock={selectedStock}
+                selectedWarehouse={selectedWarehouse}
                 variants={filteredVariants.map((variant) => ({
                   id: variant.id,
                   size: variant.size,
@@ -386,7 +444,8 @@ export default async function ProductDetailsPage({
                   sku: variant.sku,
                   barcode: variant.barcode,
                   imagePath: variant.imagePath,
-                  stock: variant.stock,
+                  stock: getVariantDisplayStock(variant),
+                  reorderLevel: variant.reorderLevel,
                   price: Number(variant.price),
                   customAttributes: parseVariantCustomAttributes(variant.customAttributes),
                 }))}
@@ -415,12 +474,14 @@ export default async function ProductDetailsPage({
                 </p>
                 <p className="mt-2 text-sm font-semibold text-slate-900">{product.category.name}</p>
               </div>
-              {product.warehouseName ? (
+              {(selectedWarehouseRecord?.name || product.warehouseName) ? (
                 <div className="rounded-2xl bg-slate-50 px-4 py-4">
                   <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
                     Depoja
                   </p>
-                  <p className="mt-2 text-sm font-semibold text-slate-900">{product.warehouseName}</p>
+                  <p className="mt-2 text-sm font-semibold text-slate-900">
+                    {selectedWarehouseRecord?.name ?? product.warehouseName}
+                  </p>
                 </div>
               ) : null}
               <div className="rounded-2xl bg-slate-50 px-4 py-4">

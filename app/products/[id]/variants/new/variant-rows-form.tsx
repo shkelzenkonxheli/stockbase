@@ -11,6 +11,7 @@ type VariantRow = {
   size: string;
   color: string;
   locationCode: string;
+  reorderLevel: string;
   material: string;
   powerWatts: string;
   sku: string;
@@ -26,6 +27,7 @@ type FootwearSizeRow = {
   size: string;
   stock: string;
   price: string;
+  reorderLevel: string;
   customAttributes: Record<string, string>;
 };
 
@@ -57,6 +59,7 @@ const createEmptyRow = (): VariantRow => {
     size: "",
     color: "",
     locationCode: "",
+    reorderLevel: "",
     material: "",
     powerWatts: "",
     sku: "",
@@ -73,6 +76,7 @@ const createFootwearSizeRow = (): FootwearSizeRow => ({
   size: "",
   stock: "",
   price: "",
+  reorderLevel: "",
   customAttributes: {},
 });
 
@@ -299,6 +303,7 @@ export function VariantRowsForm({
           nextSizeRow.size = incrementNumericValue(lastSizeRow.size);
           nextSizeRow.stock = lastSizeRow.stock;
           nextSizeRow.price = lastSizeRow.price;
+          nextSizeRow.reorderLevel = lastSizeRow.reorderLevel;
           nextSizeRow.customAttributes = { ...lastSizeRow.customAttributes };
         }
         return {
@@ -329,6 +334,7 @@ export function VariantRowsForm({
             size: sizeRow.size,
             color: group.color,
             locationCode: group.locationCode,
+            reorderLevel: sizeRow.reorderLevel,
             material: "",
             powerWatts: "",
             sku: "",
@@ -345,6 +351,7 @@ export function VariantRowsForm({
             size,
             color,
             locationCode,
+            reorderLevel,
             material,
             powerWatts,
             sku,
@@ -358,6 +365,7 @@ export function VariantRowsForm({
             size,
             color,
             locationCode,
+            reorderLevel,
             material,
             powerWatts,
             sku,
@@ -524,7 +532,7 @@ export function VariantRowsForm({
                             key={sizeRow.id}
                             className="space-y-3 rounded-2xl border border-slate-200 bg-white p-4"
                           >
-                            <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_140px_140px_44px]">
+                            <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_110px_110px_110px_44px]">
                             <label className="space-y-2">
                               <FieldLabel>{categoryConfig?.sizeLabel ?? "Numri"}</FieldLabel>
                               {sizeFieldType === "select" ? (
@@ -577,6 +585,19 @@ export function VariantRowsForm({
                                   updateGroupSizeRow(group.id, sizeRow.id, "price", event.target.value)
                                 }
                                 placeholder="0.00"
+                              />
+                            </label>
+
+                            <label className="space-y-2">
+                              <FieldLabel>Reorder</FieldLabel>
+                              <FieldInput
+                                type="number"
+                                min="0"
+                                value={sizeRow.reorderLevel}
+                                onChange={(event) =>
+                                  updateGroupSizeRow(group.id, sizeRow.id, "reorderLevel", event.target.value)
+                                }
+                                placeholder="5"
                               />
                             </label>
 
@@ -753,6 +774,17 @@ export function VariantRowsForm({
                           <FieldInput type="number" min="0" value={row.stock} onChange={(event) => updateRow(row.id, "stock", event.target.value)} placeholder="0" />
                         </label>
                       </div>
+
+                      <label className="space-y-2">
+                        <FieldLabel>Reorder level</FieldLabel>
+                        <FieldInput
+                          type="number"
+                          min="0"
+                          value={row.reorderLevel}
+                          onChange={(event) => updateRow(row.id, "reorderLevel", event.target.value)}
+                          placeholder="5"
+                        />
+                      </label>
 
                       {showMaterialField ? (
                         <label className="space-y-2">

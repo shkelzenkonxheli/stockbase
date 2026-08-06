@@ -136,6 +136,19 @@ export default async function RootLayout({
                   </svg>
                 ),
               },
+              {
+                href: "/stock/count",
+                label: "Inventory Count",
+                icon: (
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-4 w-4 fill-none stroke-current stroke-[1.8]"
+                  >
+                    <path d="M9 6h11M9 12h11M9 18h11" />
+                    <path d="M4 7.5h.01M4 12h.01M4 16.5h.01" strokeLinecap="round" />
+                  </svg>
+                ),
+              },
             ]
           : []),
         ...(hasRole(currentUser, ["SUPER_ADMIN"])
@@ -152,6 +165,18 @@ export default async function RootLayout({
                     <path d="M7 16V9" />
                     <path d="M12 16V5" />
                     <path d="M17 16v-3" />
+                  </svg>
+                ),
+              },
+              {
+                href: "/audit",
+                label: "Aktiviteti",
+                icon: (
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-4 w-4 fill-none stroke-current stroke-[1.8]"
+                  >
+                    <path d="M4 12h4l2-6 4 12 2-6h4" />
                   </svg>
                 ),
               },

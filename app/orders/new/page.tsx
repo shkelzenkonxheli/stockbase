@@ -3,6 +3,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { FlashMessage } from "@/app/components/flash-message";
 import { requireRole } from "@/lib/auth";
+import { writeAuditLog } from "@/lib/audit-log";
 import { parseTenantCatalogConfig } from "@/lib/product-taxonomy";
 import { prisma } from "@/lib/prisma";
 import { getTenantWarehouses } from "@/lib/warehouses";
@@ -105,6 +106,8 @@ async function createOrder(formData: FormData) {
         id: true,
         stock: true,
         productId: true,
+        size: true,
+        color: true,
         inventories: {
           where: { warehouseId },
           select: {
@@ -190,6 +193,32 @@ async function createOrder(formData: FormData) {
         },
       });
     }
+
+    await writeAuditLog(tx, {
+      tenantId,
+      userId: currentUser.id,
+      action: "ORDER_CREATED",
+      entityType: "ORDER",
+      entityId: order.id,
+      entityLabel: customerName,
+      warehouseId,
+      metadata: {
+        source,
+        customerName,
+        phone,
+        totalQuantity,
+        items: items.map((item) => {
+          const variant = variantsById.get(item.variantId);
+          return {
+            variantId: item.variantId,
+            quantity: item.quantity,
+            unitPrice: item.unitPrice,
+            size: variant?.size ?? null,
+            color: variant?.color ?? null,
+          };
+        }),
+      },
+    });
 
     return {
       ok: true as const,

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import type { Prisma } from "@/app/generated/prisma/client";
 import { hasRole, requireRole, requireUser } from "@/lib/auth";
+import { writeAuditLog } from "@/lib/audit-log";
 import { getOrderListViewConfig } from "@/lib/product-taxonomy";
 import { prisma } from "@/lib/prisma";
 import { OrdersFilters } from "./orders-filters";
@@ -141,13 +142,17 @@ async function deleteOrder(formData: FormData) {
       where: { id: orderId, tenantId },
       select: {
         id: true,
+        customerName: true,
+        source: true,
         status: true,
         quantity: true,
         variantId: true,
+        warehouseId: true,
         items: {
           select: {
             variantId: true,
             quantity: true,
+            warehouseId: true,
           },
         },
       },
@@ -160,6 +165,27 @@ async function deleteOrder(formData: FormData) {
     if (order.status !== "CANCELED") {
       if (order.items.length > 0) {
         for (const item of order.items) {
+          if (item.warehouseId) {
+            await tx.variantInventory.upsert({
+              where: {
+                variantId_warehouseId: {
+                  variantId: item.variantId,
+                  warehouseId: item.warehouseId,
+                },
+              },
+              update: {
+                stock: {
+                  increment: item.quantity,
+                },
+              },
+              create: {
+                variantId: item.variantId,
+                warehouseId: item.warehouseId,
+                stock: item.quantity,
+              },
+            });
+          }
+
           await tx.variant.update({
             where: { id: item.variantId },
             data: {
@@ -170,6 +196,27 @@ async function deleteOrder(formData: FormData) {
           });
         }
       } else if (order.variantId && order.quantity) {
+        if (order.warehouseId) {
+          await tx.variantInventory.upsert({
+            where: {
+              variantId_warehouseId: {
+                variantId: order.variantId,
+                warehouseId: order.warehouseId,
+              },
+            },
+            update: {
+              stock: {
+                increment: order.quantity,
+              },
+            },
+            create: {
+              variantId: order.variantId,
+              warehouseId: order.warehouseId,
+              stock: order.quantity,
+            },
+          });
+        }
+
         await tx.variant.update({
           where: { id: order.variantId },
           data: {
@@ -184,12 +231,29 @@ async function deleteOrder(formData: FormData) {
     await tx.order.delete({
       where: { id: orderId },
     });
+
+    await writeAuditLog(tx, {
+      tenantId,
+      userId: currentUser.id,
+      action: "ORDER_DELETED",
+      entityType: "ORDER",
+      entityId: order.id,
+      entityLabel: order.customerName,
+      warehouseId: order.warehouseId ?? null,
+      metadata: {
+        source: order.source,
+        status: order.status,
+        quantity: order.quantity,
+        itemCount: order.items.length,
+      },
+    });
   });
 
   revalidatePath("/");
   revalidatePath("/products");
   revalidatePath("/orders");
   revalidatePath("/orders/new");
+  revalidatePath("/orders/quick");
 }
 
 async function bulkDeleteOrders(formData: FormData) {
@@ -234,13 +298,17 @@ async function bulkDeleteOrders(formData: FormData) {
       },
       select: {
         id: true,
+        customerName: true,
+        source: true,
         status: true,
         quantity: true,
         variantId: true,
+        warehouseId: true,
         items: {
           select: {
             variantId: true,
             quantity: true,
+            warehouseId: true,
           },
         },
       },
@@ -257,6 +325,27 @@ async function bulkDeleteOrders(formData: FormData) {
 
       if (order.items.length > 0) {
         for (const item of order.items) {
+          if (item.warehouseId) {
+            await tx.variantInventory.upsert({
+              where: {
+                variantId_warehouseId: {
+                  variantId: item.variantId,
+                  warehouseId: item.warehouseId,
+                },
+              },
+              update: {
+                stock: {
+                  increment: item.quantity,
+                },
+              },
+              create: {
+                variantId: item.variantId,
+                warehouseId: item.warehouseId,
+                stock: item.quantity,
+              },
+            });
+          }
+
           await tx.variant.update({
             where: { id: item.variantId },
             data: {
@@ -267,6 +356,27 @@ async function bulkDeleteOrders(formData: FormData) {
           });
         }
       } else if (order.variantId && order.quantity) {
+        if (order.warehouseId) {
+          await tx.variantInventory.upsert({
+            where: {
+              variantId_warehouseId: {
+                variantId: order.variantId,
+                warehouseId: order.warehouseId,
+              },
+            },
+            update: {
+              stock: {
+                increment: order.quantity,
+              },
+            },
+            create: {
+              variantId: order.variantId,
+              warehouseId: order.warehouseId,
+              stock: order.quantity,
+            },
+          });
+        }
+
         await tx.variant.update({
           where: { id: order.variantId },
           data: {
@@ -285,12 +395,26 @@ async function bulkDeleteOrders(formData: FormData) {
         },
       },
     });
+
+    await writeAuditLog(tx, {
+      tenantId,
+      userId: currentUser.id,
+      action: "ORDER_BULK_DELETED",
+      entityType: "ORDER",
+      entityLabel: `${orders.length} porosi`,
+      metadata: {
+        orderIds: orders.map((order) => order.id),
+        customers: orders.map((order) => order.customerName),
+        sources: orders.map((order) => order.source),
+      },
+    });
   });
 
   revalidatePath("/");
   revalidatePath("/products");
   revalidatePath("/orders");
   revalidatePath("/orders/new");
+  revalidatePath("/orders/quick");
 }
 
 export default async function OrdersPage({

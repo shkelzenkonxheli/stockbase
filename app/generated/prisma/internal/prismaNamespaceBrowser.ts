@@ -62,6 +62,9 @@ export const ModelName = {
   User: 'User',
   Session: 'Session',
   Tenant: 'Tenant',
+  AuditLog: 'AuditLog',
+  InventoryCountSession: 'InventoryCountSession',
+  InventoryCountLine: 'InventoryCountLine',
   TenantMembership: 'TenantMembership',
   Subscription: 'Subscription',
   TenantSettings: 'TenantSettings'
@@ -118,6 +121,7 @@ export const VariantScalarFieldEnum = {
   color: 'color',
   variantIdentityKey: 'variantIdentityKey',
   stock: 'stock',
+  reorderLevel: 'reorderLevel',
   createdAt: 'createdAt',
   price: 'price',
   updatedAt: 'updatedAt',
@@ -241,6 +245,55 @@ export const TenantScalarFieldEnum = {
 } as const
 
 export type TenantScalarFieldEnum = (typeof TenantScalarFieldEnum)[keyof typeof TenantScalarFieldEnum]
+
+
+export const AuditLogScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  userId: 'userId',
+  action: 'action',
+  entityType: 'entityType',
+  entityId: 'entityId',
+  entityLabel: 'entityLabel',
+  warehouseId: 'warehouseId',
+  metadata: 'metadata',
+  createdAt: 'createdAt'
+} as const
+
+export type AuditLogScalarFieldEnum = (typeof AuditLogScalarFieldEnum)[keyof typeof AuditLogScalarFieldEnum]
+
+
+export const InventoryCountSessionScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  warehouseId: 'warehouseId',
+  status: 'status',
+  note: 'note',
+  createdById: 'createdById',
+  completedById: 'completedById',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  completedAt: 'completedAt'
+} as const
+
+export type InventoryCountSessionScalarFieldEnum = (typeof InventoryCountSessionScalarFieldEnum)[keyof typeof InventoryCountSessionScalarFieldEnum]
+
+
+export const InventoryCountLineScalarFieldEnum = {
+  id: 'id',
+  sessionId: 'sessionId',
+  variantId: 'variantId',
+  expectedStock: 'expectedStock',
+  countedStock: 'countedStock',
+  difference: 'difference',
+  locationCode: 'locationCode',
+  note: 'note',
+  countedAt: 'countedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type InventoryCountLineScalarFieldEnum = (typeof InventoryCountLineScalarFieldEnum)[keyof typeof InventoryCountLineScalarFieldEnum]
 
 
 export const TenantMembershipScalarFieldEnum = {

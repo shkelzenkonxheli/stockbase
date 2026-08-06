@@ -114,6 +114,8 @@ async function updateVariant(formData: FormData) {
   const skuInput = normalizeVariantCode(formData.get("sku")?.toString());
   const barcode = normalizeVariantCode(formData.get("barcode")?.toString());
   const stock = Number(formData.get("stock"));
+  const reorderLevelValue = formData.get("reorderLevel")?.toString().trim() ?? "";
+  const reorderLevel = reorderLevelValue === "" ? null : Number(reorderLevelValue);
   const price = formData.get("price")?.toString().trim();
 
   const variant = await prisma.variant.findFirst({
@@ -147,6 +149,7 @@ async function updateVariant(formData: FormData) {
     !color ||
     Number.isNaN(stock) ||
     stock < 0 ||
+    (reorderLevel !== null && (!Number.isInteger(reorderLevel) || reorderLevel < 0)) ||
     !price
   ) {
     return;
@@ -233,6 +236,7 @@ async function updateVariant(formData: FormData) {
         sku,
         barcode: nextBarcode,
         stock,
+        reorderLevel,
         price,
       },
     });
@@ -517,6 +521,23 @@ export default async function EditVariantPage({ params, searchParams }: EditVari
                 min="0"
                 step="0.01"
                 defaultValue={Number(variant.price).toFixed(2)}
+                className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-200"
+              />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div className="space-y-2">
+              <label htmlFor="reorderLevel" className="block text-sm font-medium text-slate-800">
+                Reorder level
+              </label>
+              <input
+                id="reorderLevel"
+                name="reorderLevel"
+                type="number"
+                min="0"
+                defaultValue={variant.reorderLevel ?? ""}
+                placeholder="5"
                 className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-200"
               />
             </div>

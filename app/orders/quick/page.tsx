@@ -4,6 +4,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { FlashMessage } from "@/app/components/flash-message";
 import { requireRole } from "@/lib/auth";
+import { writeAuditLog } from "@/lib/audit-log";
 import { parseTenantCatalogConfig } from "@/lib/product-taxonomy";
 import { prisma } from "@/lib/prisma";
 import { getTenantWarehouses } from "@/lib/warehouses";
@@ -119,6 +120,8 @@ async function createQuickOrders(formData: FormData) {
         id: true,
         stock: true,
         productId: true,
+        size: true,
+        color: true,
         inventories: {
           where: { warehouseId },
           select: {
@@ -145,8 +148,10 @@ async function createQuickOrders(formData: FormData) {
       }
     }
 
+    const createdOrders = [];
+
     for (const row of rows) {
-      await tx.order.create({
+      const order = await tx.order.create({
         data: {
           tenantId,
           customerName: "Quick Order",
@@ -167,6 +172,7 @@ async function createQuickOrders(formData: FormData) {
           },
         },
       });
+      createdOrders.push(order);
     }
 
     for (const [variantId, quantity] of requestedByVariant.entries()) {
@@ -194,6 +200,29 @@ async function createQuickOrders(formData: FormData) {
         },
       });
     }
+
+    await writeAuditLog(tx, {
+      tenantId,
+      userId: currentUser.id,
+      action: "ORDER_CREATED",
+      entityType: "ORDER",
+      entityLabel: "Quick Order",
+      warehouseId,
+      metadata: {
+        source,
+        orderIds: createdOrders.map((order) => order.id),
+        rows: rows.map((row) => {
+          const variant = variantsById.get(row.variantId);
+          return {
+            variantId: row.variantId,
+            quantity: row.quantity,
+            unitPrice: row.unitPrice,
+            size: variant?.size ?? null,
+            color: variant?.color ?? null,
+          };
+        }),
+      },
+    });
 
     return {
       ok: true as const,

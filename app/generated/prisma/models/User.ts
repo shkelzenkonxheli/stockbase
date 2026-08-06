@@ -234,6 +234,9 @@ export type UserWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   sessions?: Prisma.SessionListRelationFilter
   memberships?: Prisma.TenantMembershipListRelationFilter
+  auditLogs?: Prisma.AuditLogListRelationFilter
+  createdInventoryCounts?: Prisma.InventoryCountSessionListRelationFilter
+  completedInventoryCounts?: Prisma.InventoryCountSessionListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -246,6 +249,9 @@ export type UserOrderByWithRelationInput = {
   updatedAt?: Prisma.SortOrder
   sessions?: Prisma.SessionOrderByRelationAggregateInput
   memberships?: Prisma.TenantMembershipOrderByRelationAggregateInput
+  auditLogs?: Prisma.AuditLogOrderByRelationAggregateInput
+  createdInventoryCounts?: Prisma.InventoryCountSessionOrderByRelationAggregateInput
+  completedInventoryCounts?: Prisma.InventoryCountSessionOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -261,6 +267,9 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   updatedAt?: Prisma.DateTimeFilter<"User"> | Date | string
   sessions?: Prisma.SessionListRelationFilter
   memberships?: Prisma.TenantMembershipListRelationFilter
+  auditLogs?: Prisma.AuditLogListRelationFilter
+  createdInventoryCounts?: Prisma.InventoryCountSessionListRelationFilter
+  completedInventoryCounts?: Prisma.InventoryCountSessionListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -300,6 +309,9 @@ export type UserCreateInput = {
   updatedAt?: Date | string
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
   memberships?: Prisma.TenantMembershipCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  createdInventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutCreatedByInput
+  completedInventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutCompletedByInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -312,6 +324,9 @@ export type UserUncheckedCreateInput = {
   updatedAt?: Date | string
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
   memberships?: Prisma.TenantMembershipUncheckedCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  createdInventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutCreatedByInput
+  completedInventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutCompletedByInput
 }
 
 export type UserUpdateInput = {
@@ -323,6 +338,9 @@ export type UserUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
   memberships?: Prisma.TenantMembershipUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  createdInventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutCreatedByNestedInput
+  completedInventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutCompletedByNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -335,6 +353,9 @@ export type UserUncheckedUpdateInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
   memberships?: Prisma.TenantMembershipUncheckedUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  createdInventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutCreatedByNestedInput
+  completedInventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutCompletedByNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -409,6 +430,11 @@ export type UserScalarRelationFilter = {
   isNot?: Prisma.UserWhereInput
 }
 
+export type UserNullableScalarRelationFilter = {
+  is?: Prisma.UserWhereInput | null
+  isNot?: Prisma.UserWhereInput | null
+}
+
 export type EnumUserRoleFieldUpdateOperationsInput = {
   set?: $Enums.UserRole
 }
@@ -425,6 +451,54 @@ export type UserUpdateOneRequiredWithoutSessionsNestedInput = {
   upsert?: Prisma.UserUpsertWithoutSessionsInput
   connect?: Prisma.UserWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutSessionsInput, Prisma.UserUpdateWithoutSessionsInput>, Prisma.UserUncheckedUpdateWithoutSessionsInput>
+}
+
+export type UserCreateNestedOneWithoutAuditLogsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutAuditLogsInput, Prisma.UserUncheckedCreateWithoutAuditLogsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutAuditLogsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutAuditLogsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutAuditLogsInput, Prisma.UserUncheckedCreateWithoutAuditLogsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutAuditLogsInput
+  upsert?: Prisma.UserUpsertWithoutAuditLogsInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutAuditLogsInput, Prisma.UserUpdateWithoutAuditLogsInput>, Prisma.UserUncheckedUpdateWithoutAuditLogsInput>
+}
+
+export type UserCreateNestedOneWithoutCreatedInventoryCountsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCreatedInventoryCountsInput, Prisma.UserUncheckedCreateWithoutCreatedInventoryCountsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCreatedInventoryCountsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserCreateNestedOneWithoutCompletedInventoryCountsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCompletedInventoryCountsInput, Prisma.UserUncheckedCreateWithoutCompletedInventoryCountsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCompletedInventoryCountsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutCreatedInventoryCountsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCreatedInventoryCountsInput, Prisma.UserUncheckedCreateWithoutCreatedInventoryCountsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCreatedInventoryCountsInput
+  upsert?: Prisma.UserUpsertWithoutCreatedInventoryCountsInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutCreatedInventoryCountsInput, Prisma.UserUpdateWithoutCreatedInventoryCountsInput>, Prisma.UserUncheckedUpdateWithoutCreatedInventoryCountsInput>
+}
+
+export type UserUpdateOneWithoutCompletedInventoryCountsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCompletedInventoryCountsInput, Prisma.UserUncheckedCreateWithoutCompletedInventoryCountsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCompletedInventoryCountsInput
+  upsert?: Prisma.UserUpsertWithoutCompletedInventoryCountsInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutCompletedInventoryCountsInput, Prisma.UserUpdateWithoutCompletedInventoryCountsInput>, Prisma.UserUncheckedUpdateWithoutCompletedInventoryCountsInput>
 }
 
 export type UserCreateNestedOneWithoutMembershipsInput = {
@@ -449,6 +523,9 @@ export type UserCreateWithoutSessionsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   memberships?: Prisma.TenantMembershipCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  createdInventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutCreatedByInput
+  completedInventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutCompletedByInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -460,6 +537,9 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   memberships?: Prisma.TenantMembershipUncheckedCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  createdInventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutCreatedByInput
+  completedInventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutCompletedByInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -486,6 +566,9 @@ export type UserUpdateWithoutSessionsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   memberships?: Prisma.TenantMembershipUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  createdInventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutCreatedByNestedInput
+  completedInventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutCompletedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -497,6 +580,219 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   memberships?: Prisma.TenantMembershipUncheckedUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  createdInventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutCreatedByNestedInput
+  completedInventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutCompletedByNestedInput
+}
+
+export type UserCreateWithoutAuditLogsInput = {
+  name: string
+  email: string
+  passwordHash: string
+  role: $Enums.UserRole
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  memberships?: Prisma.TenantMembershipCreateNestedManyWithoutUserInput
+  createdInventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutCreatedByInput
+  completedInventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutCompletedByInput
+}
+
+export type UserUncheckedCreateWithoutAuditLogsInput = {
+  id?: number
+  name: string
+  email: string
+  passwordHash: string
+  role: $Enums.UserRole
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  memberships?: Prisma.TenantMembershipUncheckedCreateNestedManyWithoutUserInput
+  createdInventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutCreatedByInput
+  completedInventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutCompletedByInput
+}
+
+export type UserCreateOrConnectWithoutAuditLogsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutAuditLogsInput, Prisma.UserUncheckedCreateWithoutAuditLogsInput>
+}
+
+export type UserUpsertWithoutAuditLogsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutAuditLogsInput, Prisma.UserUncheckedUpdateWithoutAuditLogsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutAuditLogsInput, Prisma.UserUncheckedCreateWithoutAuditLogsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutAuditLogsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutAuditLogsInput, Prisma.UserUncheckedUpdateWithoutAuditLogsInput>
+}
+
+export type UserUpdateWithoutAuditLogsInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  memberships?: Prisma.TenantMembershipUpdateManyWithoutUserNestedInput
+  createdInventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutCreatedByNestedInput
+  completedInventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutCompletedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutAuditLogsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  memberships?: Prisma.TenantMembershipUncheckedUpdateManyWithoutUserNestedInput
+  createdInventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutCreatedByNestedInput
+  completedInventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutCompletedByNestedInput
+}
+
+export type UserCreateWithoutCreatedInventoryCountsInput = {
+  name: string
+  email: string
+  passwordHash: string
+  role: $Enums.UserRole
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  memberships?: Prisma.TenantMembershipCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  completedInventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutCompletedByInput
+}
+
+export type UserUncheckedCreateWithoutCreatedInventoryCountsInput = {
+  id?: number
+  name: string
+  email: string
+  passwordHash: string
+  role: $Enums.UserRole
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  memberships?: Prisma.TenantMembershipUncheckedCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  completedInventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutCompletedByInput
+}
+
+export type UserCreateOrConnectWithoutCreatedInventoryCountsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutCreatedInventoryCountsInput, Prisma.UserUncheckedCreateWithoutCreatedInventoryCountsInput>
+}
+
+export type UserCreateWithoutCompletedInventoryCountsInput = {
+  name: string
+  email: string
+  passwordHash: string
+  role: $Enums.UserRole
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  memberships?: Prisma.TenantMembershipCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  createdInventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutCreatedByInput
+}
+
+export type UserUncheckedCreateWithoutCompletedInventoryCountsInput = {
+  id?: number
+  name: string
+  email: string
+  passwordHash: string
+  role: $Enums.UserRole
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  memberships?: Prisma.TenantMembershipUncheckedCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  createdInventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutCreatedByInput
+}
+
+export type UserCreateOrConnectWithoutCompletedInventoryCountsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutCompletedInventoryCountsInput, Prisma.UserUncheckedCreateWithoutCompletedInventoryCountsInput>
+}
+
+export type UserUpsertWithoutCreatedInventoryCountsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutCreatedInventoryCountsInput, Prisma.UserUncheckedUpdateWithoutCreatedInventoryCountsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutCreatedInventoryCountsInput, Prisma.UserUncheckedCreateWithoutCreatedInventoryCountsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutCreatedInventoryCountsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutCreatedInventoryCountsInput, Prisma.UserUncheckedUpdateWithoutCreatedInventoryCountsInput>
+}
+
+export type UserUpdateWithoutCreatedInventoryCountsInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  memberships?: Prisma.TenantMembershipUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  completedInventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutCompletedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutCreatedInventoryCountsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  memberships?: Prisma.TenantMembershipUncheckedUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  completedInventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutCompletedByNestedInput
+}
+
+export type UserUpsertWithoutCompletedInventoryCountsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutCompletedInventoryCountsInput, Prisma.UserUncheckedUpdateWithoutCompletedInventoryCountsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutCompletedInventoryCountsInput, Prisma.UserUncheckedCreateWithoutCompletedInventoryCountsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutCompletedInventoryCountsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutCompletedInventoryCountsInput, Prisma.UserUncheckedUpdateWithoutCompletedInventoryCountsInput>
+}
+
+export type UserUpdateWithoutCompletedInventoryCountsInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  memberships?: Prisma.TenantMembershipUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  createdInventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutCreatedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutCompletedInventoryCountsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  memberships?: Prisma.TenantMembershipUncheckedUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  createdInventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutMembershipsInput = {
@@ -507,6 +803,9 @@ export type UserCreateWithoutMembershipsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  createdInventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutCreatedByInput
+  completedInventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutCompletedByInput
 }
 
 export type UserUncheckedCreateWithoutMembershipsInput = {
@@ -518,6 +817,9 @@ export type UserUncheckedCreateWithoutMembershipsInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  createdInventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutCreatedByInput
+  completedInventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutCompletedByInput
 }
 
 export type UserCreateOrConnectWithoutMembershipsInput = {
@@ -544,6 +846,9 @@ export type UserUpdateWithoutMembershipsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  createdInventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutCreatedByNestedInput
+  completedInventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutCompletedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutMembershipsInput = {
@@ -555,6 +860,9 @@ export type UserUncheckedUpdateWithoutMembershipsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  createdInventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutCreatedByNestedInput
+  completedInventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutCompletedByNestedInput
 }
 
 
@@ -565,11 +873,17 @@ export type UserUncheckedUpdateWithoutMembershipsInput = {
 export type UserCountOutputType = {
   sessions: number
   memberships: number
+  auditLogs: number
+  createdInventoryCounts: number
+  completedInventoryCounts: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   sessions?: boolean | UserCountOutputTypeCountSessionsArgs
   memberships?: boolean | UserCountOutputTypeCountMembershipsArgs
+  auditLogs?: boolean | UserCountOutputTypeCountAuditLogsArgs
+  createdInventoryCounts?: boolean | UserCountOutputTypeCountCreatedInventoryCountsArgs
+  completedInventoryCounts?: boolean | UserCountOutputTypeCountCompletedInventoryCountsArgs
 }
 
 /**
@@ -596,6 +910,27 @@ export type UserCountOutputTypeCountMembershipsArgs<ExtArgs extends runtime.Type
   where?: Prisma.TenantMembershipWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountAuditLogsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AuditLogWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountCreatedInventoryCountsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.InventoryCountSessionWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountCompletedInventoryCountsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.InventoryCountSessionWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -607,6 +942,9 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   updatedAt?: boolean
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   memberships?: boolean | Prisma.User$membershipsArgs<ExtArgs>
+  auditLogs?: boolean | Prisma.User$auditLogsArgs<ExtArgs>
+  createdInventoryCounts?: boolean | Prisma.User$createdInventoryCountsArgs<ExtArgs>
+  completedInventoryCounts?: boolean | Prisma.User$completedInventoryCountsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -644,6 +982,9 @@ export type UserOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = run
 export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   sessions?: boolean | Prisma.User$sessionsArgs<ExtArgs>
   memberships?: boolean | Prisma.User$membershipsArgs<ExtArgs>
+  auditLogs?: boolean | Prisma.User$auditLogsArgs<ExtArgs>
+  createdInventoryCounts?: boolean | Prisma.User$createdInventoryCountsArgs<ExtArgs>
+  completedInventoryCounts?: boolean | Prisma.User$completedInventoryCountsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -654,6 +995,9 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   objects: {
     sessions: Prisma.$SessionPayload<ExtArgs>[]
     memberships: Prisma.$TenantMembershipPayload<ExtArgs>[]
+    auditLogs: Prisma.$AuditLogPayload<ExtArgs>[]
+    createdInventoryCounts: Prisma.$InventoryCountSessionPayload<ExtArgs>[]
+    completedInventoryCounts: Prisma.$InventoryCountSessionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1059,6 +1403,9 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   readonly [Symbol.toStringTag]: "PrismaPromise"
   sessions<T extends Prisma.User$sessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   memberships<T extends Prisma.User$membershipsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$membershipsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$TenantMembershipPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  auditLogs<T extends Prisma.User$auditLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$auditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  createdInventoryCounts<T extends Prisma.User$createdInventoryCountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$createdInventoryCountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InventoryCountSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  completedInventoryCounts<T extends Prisma.User$completedInventoryCountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$completedInventoryCountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InventoryCountSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1533,6 +1880,78 @@ export type User$membershipsArgs<ExtArgs extends runtime.Types.Extensions.Intern
   take?: number
   skip?: number
   distinct?: Prisma.TenantMembershipScalarFieldEnum | Prisma.TenantMembershipScalarFieldEnum[]
+}
+
+/**
+ * User.auditLogs
+ */
+export type User$auditLogsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AuditLog
+   */
+  select?: Prisma.AuditLogSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AuditLog
+   */
+  omit?: Prisma.AuditLogOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AuditLogInclude<ExtArgs> | null
+  where?: Prisma.AuditLogWhereInput
+  orderBy?: Prisma.AuditLogOrderByWithRelationInput | Prisma.AuditLogOrderByWithRelationInput[]
+  cursor?: Prisma.AuditLogWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AuditLogScalarFieldEnum | Prisma.AuditLogScalarFieldEnum[]
+}
+
+/**
+ * User.createdInventoryCounts
+ */
+export type User$createdInventoryCountsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the InventoryCountSession
+   */
+  select?: Prisma.InventoryCountSessionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the InventoryCountSession
+   */
+  omit?: Prisma.InventoryCountSessionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InventoryCountSessionInclude<ExtArgs> | null
+  where?: Prisma.InventoryCountSessionWhereInput
+  orderBy?: Prisma.InventoryCountSessionOrderByWithRelationInput | Prisma.InventoryCountSessionOrderByWithRelationInput[]
+  cursor?: Prisma.InventoryCountSessionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.InventoryCountSessionScalarFieldEnum | Prisma.InventoryCountSessionScalarFieldEnum[]
+}
+
+/**
+ * User.completedInventoryCounts
+ */
+export type User$completedInventoryCountsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the InventoryCountSession
+   */
+  select?: Prisma.InventoryCountSessionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the InventoryCountSession
+   */
+  omit?: Prisma.InventoryCountSessionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InventoryCountSessionInclude<ExtArgs> | null
+  where?: Prisma.InventoryCountSessionWhereInput
+  orderBy?: Prisma.InventoryCountSessionOrderByWithRelationInput | Prisma.InventoryCountSessionOrderByWithRelationInput[]
+  cursor?: Prisma.InventoryCountSessionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.InventoryCountSessionScalarFieldEnum | Prisma.InventoryCountSessionScalarFieldEnum[]
 }
 
 /**

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { hasRole, requireUser } from "@/lib/auth";
-import { LOW_STOCK_THRESHOLD } from "@/lib/inventory";
+import { isLowStock } from "@/lib/inventory";
 import { prisma } from "@/lib/prisma";
 import { getCatalogTemplate } from "@/lib/product-taxonomy";
 
@@ -126,21 +126,12 @@ export default async function Home() {
   const today = getDateStringInTimeZone(new Date(), BUSINESS_TIME_ZONE);
   const { start: dateFrom, end: dateTo } = getTimeZoneDayBounds(today, BUSINESS_TIME_ZONE);
 
-  const [totalProducts, totalStockValueData, lowStockCount, ordersToday, recentMovements] =
+  const [totalProducts, totalStockValueData, ordersToday, recentMovements] =
     await Promise.all([
       prisma.product.count({ where: { tenantId } }),
       prisma.variant.findMany({
         where: { tenantId },
-        select: { stock: true, price: true },
-      }),
-      prisma.variant.count({
-        where: {
-          tenantId,
-          stock: {
-            gt: 0,
-            lte: LOW_STOCK_THRESHOLD,
-          },
-        },
+        select: { stock: true, reorderLevel: true, price: true },
       }),
       prisma.order.count({
         where: {
@@ -175,6 +166,10 @@ export default async function Home() {
         },
       }),
     ]);
+
+  const lowStockCount = totalStockValueData.filter((variant) =>
+    isLowStock(variant.stock, variant.reorderLevel),
+  ).length;
 
   const totalStockValue = totalStockValueData.reduce(
     (sum, variant) => sum + Number(variant.price) * variant.stock,

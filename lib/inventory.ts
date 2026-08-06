@@ -1,6 +1,20 @@
 export const LOW_STOCK_THRESHOLD = 5;
 
-export function getStockTone(stock: number) {
+export function getEffectiveReorderLevel(reorderLevel?: number | null) {
+  return typeof reorderLevel === "number" && reorderLevel >= 0
+    ? reorderLevel
+    : LOW_STOCK_THRESHOLD;
+}
+
+export function isLowStock(stock: number, reorderLevel?: number | null) {
+  if (stock <= 0) {
+    return false;
+  }
+
+  return stock <= getEffectiveReorderLevel(reorderLevel);
+}
+
+export function getStockTone(stock: number, reorderLevel?: number | null) {
   if (stock <= 0) {
     return {
       label: "Pa stok",
@@ -8,7 +22,7 @@ export function getStockTone(stock: number) {
     };
   }
 
-  if (stock <= LOW_STOCK_THRESHOLD) {
+  if (isLowStock(stock, reorderLevel)) {
     return {
       label: "Stok i ulet",
       badgeClassName: "bg-amber-50 text-amber-700",

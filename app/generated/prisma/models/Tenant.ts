@@ -242,6 +242,8 @@ export type TenantWhereInput = {
   categories?: Prisma.CategoryListRelationFilter
   variants?: Prisma.VariantListRelationFilter
   warehouses?: Prisma.WarehouseListRelationFilter
+  auditLogs?: Prisma.AuditLogListRelationFilter
+  inventoryCounts?: Prisma.InventoryCountSessionListRelationFilter
 }
 
 export type TenantOrderByWithRelationInput = {
@@ -262,6 +264,8 @@ export type TenantOrderByWithRelationInput = {
   categories?: Prisma.CategoryOrderByRelationAggregateInput
   variants?: Prisma.VariantOrderByRelationAggregateInput
   warehouses?: Prisma.WarehouseOrderByRelationAggregateInput
+  auditLogs?: Prisma.AuditLogOrderByRelationAggregateInput
+  inventoryCounts?: Prisma.InventoryCountSessionOrderByRelationAggregateInput
 }
 
 export type TenantWhereUniqueInput = Prisma.AtLeast<{
@@ -285,6 +289,8 @@ export type TenantWhereUniqueInput = Prisma.AtLeast<{
   categories?: Prisma.CategoryListRelationFilter
   variants?: Prisma.VariantListRelationFilter
   warehouses?: Prisma.WarehouseListRelationFilter
+  auditLogs?: Prisma.AuditLogListRelationFilter
+  inventoryCounts?: Prisma.InventoryCountSessionListRelationFilter
 }, "id" | "slug">
 
 export type TenantOrderByWithAggregationInput = {
@@ -332,6 +338,8 @@ export type TenantCreateInput = {
   categories?: Prisma.CategoryCreateNestedManyWithoutTenantInput
   variants?: Prisma.VariantCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutTenantInput
+  inventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateInput = {
@@ -352,6 +360,8 @@ export type TenantUncheckedCreateInput = {
   categories?: Prisma.CategoryUncheckedCreateNestedManyWithoutTenantInput
   variants?: Prisma.VariantUncheckedCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutTenantInput
+  inventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUpdateInput = {
@@ -371,6 +381,8 @@ export type TenantUpdateInput = {
   categories?: Prisma.CategoryUpdateManyWithoutTenantNestedInput
   variants?: Prisma.VariantUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutTenantNestedInput
+  inventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateInput = {
@@ -391,6 +403,8 @@ export type TenantUncheckedUpdateInput = {
   categories?: Prisma.CategoryUncheckedUpdateManyWithoutTenantNestedInput
   variants?: Prisma.VariantUncheckedUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutTenantNestedInput
+  inventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateManyInput = {
@@ -584,6 +598,34 @@ export type EnumTenantStatusFieldUpdateOperationsInput = {
   set?: $Enums.TenantStatus
 }
 
+export type TenantCreateNestedOneWithoutAuditLogsInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutAuditLogsInput, Prisma.TenantUncheckedCreateWithoutAuditLogsInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutAuditLogsInput
+  connect?: Prisma.TenantWhereUniqueInput
+}
+
+export type TenantUpdateOneRequiredWithoutAuditLogsNestedInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutAuditLogsInput, Prisma.TenantUncheckedCreateWithoutAuditLogsInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutAuditLogsInput
+  upsert?: Prisma.TenantUpsertWithoutAuditLogsInput
+  connect?: Prisma.TenantWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutAuditLogsInput, Prisma.TenantUpdateWithoutAuditLogsInput>, Prisma.TenantUncheckedUpdateWithoutAuditLogsInput>
+}
+
+export type TenantCreateNestedOneWithoutInventoryCountsInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutInventoryCountsInput, Prisma.TenantUncheckedCreateWithoutInventoryCountsInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutInventoryCountsInput
+  connect?: Prisma.TenantWhereUniqueInput
+}
+
+export type TenantUpdateOneRequiredWithoutInventoryCountsNestedInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutInventoryCountsInput, Prisma.TenantUncheckedCreateWithoutInventoryCountsInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutInventoryCountsInput
+  upsert?: Prisma.TenantUpsertWithoutInventoryCountsInput
+  connect?: Prisma.TenantWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutInventoryCountsInput, Prisma.TenantUpdateWithoutInventoryCountsInput>, Prisma.TenantUncheckedUpdateWithoutInventoryCountsInput>
+}
+
 export type TenantCreateNestedOneWithoutMembershipsInput = {
   create?: Prisma.XOR<Prisma.TenantCreateWithoutMembershipsInput, Prisma.TenantUncheckedCreateWithoutMembershipsInput>
   connectOrCreate?: Prisma.TenantCreateOrConnectWithoutMembershipsInput
@@ -642,6 +684,8 @@ export type TenantCreateWithoutProductsInput = {
   categories?: Prisma.CategoryCreateNestedManyWithoutTenantInput
   variants?: Prisma.VariantCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutTenantInput
+  inventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutProductsInput = {
@@ -661,6 +705,8 @@ export type TenantUncheckedCreateWithoutProductsInput = {
   categories?: Prisma.CategoryUncheckedCreateNestedManyWithoutTenantInput
   variants?: Prisma.VariantUncheckedCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutTenantInput
+  inventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutProductsInput = {
@@ -695,6 +741,8 @@ export type TenantUpdateWithoutProductsInput = {
   categories?: Prisma.CategoryUpdateManyWithoutTenantNestedInput
   variants?: Prisma.VariantUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutTenantNestedInput
+  inventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutProductsInput = {
@@ -714,6 +762,8 @@ export type TenantUncheckedUpdateWithoutProductsInput = {
   categories?: Prisma.CategoryUncheckedUpdateManyWithoutTenantNestedInput
   variants?: Prisma.VariantUncheckedUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutTenantNestedInput
+  inventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutCategoriesInput = {
@@ -732,6 +782,8 @@ export type TenantCreateWithoutCategoriesInput = {
   settings?: Prisma.TenantSettingsCreateNestedOneWithoutTenantInput
   variants?: Prisma.VariantCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutTenantInput
+  inventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutCategoriesInput = {
@@ -751,6 +803,8 @@ export type TenantUncheckedCreateWithoutCategoriesInput = {
   settings?: Prisma.TenantSettingsUncheckedCreateNestedOneWithoutTenantInput
   variants?: Prisma.VariantUncheckedCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutTenantInput
+  inventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutCategoriesInput = {
@@ -785,6 +839,8 @@ export type TenantUpdateWithoutCategoriesInput = {
   settings?: Prisma.TenantSettingsUpdateOneWithoutTenantNestedInput
   variants?: Prisma.VariantUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutTenantNestedInput
+  inventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutCategoriesInput = {
@@ -804,6 +860,8 @@ export type TenantUncheckedUpdateWithoutCategoriesInput = {
   settings?: Prisma.TenantSettingsUncheckedUpdateOneWithoutTenantNestedInput
   variants?: Prisma.VariantUncheckedUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutTenantNestedInput
+  inventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutVariantsInput = {
@@ -822,6 +880,8 @@ export type TenantCreateWithoutVariantsInput = {
   settings?: Prisma.TenantSettingsCreateNestedOneWithoutTenantInput
   categories?: Prisma.CategoryCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutTenantInput
+  inventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutVariantsInput = {
@@ -841,6 +901,8 @@ export type TenantUncheckedCreateWithoutVariantsInput = {
   settings?: Prisma.TenantSettingsUncheckedCreateNestedOneWithoutTenantInput
   categories?: Prisma.CategoryUncheckedCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutTenantInput
+  inventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutVariantsInput = {
@@ -875,6 +937,8 @@ export type TenantUpdateWithoutVariantsInput = {
   settings?: Prisma.TenantSettingsUpdateOneWithoutTenantNestedInput
   categories?: Prisma.CategoryUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutTenantNestedInput
+  inventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutVariantsInput = {
@@ -894,6 +958,8 @@ export type TenantUncheckedUpdateWithoutVariantsInput = {
   settings?: Prisma.TenantSettingsUncheckedUpdateOneWithoutTenantNestedInput
   categories?: Prisma.CategoryUncheckedUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutTenantNestedInput
+  inventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutWarehousesInput = {
@@ -912,6 +978,8 @@ export type TenantCreateWithoutWarehousesInput = {
   settings?: Prisma.TenantSettingsCreateNestedOneWithoutTenantInput
   categories?: Prisma.CategoryCreateNestedManyWithoutTenantInput
   variants?: Prisma.VariantCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutTenantInput
+  inventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutWarehousesInput = {
@@ -931,6 +999,8 @@ export type TenantUncheckedCreateWithoutWarehousesInput = {
   settings?: Prisma.TenantSettingsUncheckedCreateNestedOneWithoutTenantInput
   categories?: Prisma.CategoryUncheckedCreateNestedManyWithoutTenantInput
   variants?: Prisma.VariantUncheckedCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutTenantInput
+  inventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutWarehousesInput = {
@@ -965,6 +1035,8 @@ export type TenantUpdateWithoutWarehousesInput = {
   settings?: Prisma.TenantSettingsUpdateOneWithoutTenantNestedInput
   categories?: Prisma.CategoryUpdateManyWithoutTenantNestedInput
   variants?: Prisma.VariantUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutTenantNestedInput
+  inventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutWarehousesInput = {
@@ -984,6 +1056,8 @@ export type TenantUncheckedUpdateWithoutWarehousesInput = {
   settings?: Prisma.TenantSettingsUncheckedUpdateOneWithoutTenantNestedInput
   categories?: Prisma.CategoryUncheckedUpdateManyWithoutTenantNestedInput
   variants?: Prisma.VariantUncheckedUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutTenantNestedInput
+  inventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutStockMovementsInput = {
@@ -1002,6 +1076,8 @@ export type TenantCreateWithoutStockMovementsInput = {
   categories?: Prisma.CategoryCreateNestedManyWithoutTenantInput
   variants?: Prisma.VariantCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutTenantInput
+  inventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutStockMovementsInput = {
@@ -1021,6 +1097,8 @@ export type TenantUncheckedCreateWithoutStockMovementsInput = {
   categories?: Prisma.CategoryUncheckedCreateNestedManyWithoutTenantInput
   variants?: Prisma.VariantUncheckedCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutTenantInput
+  inventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutStockMovementsInput = {
@@ -1055,6 +1133,8 @@ export type TenantUpdateWithoutStockMovementsInput = {
   categories?: Prisma.CategoryUpdateManyWithoutTenantNestedInput
   variants?: Prisma.VariantUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutTenantNestedInput
+  inventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutStockMovementsInput = {
@@ -1074,6 +1154,8 @@ export type TenantUncheckedUpdateWithoutStockMovementsInput = {
   categories?: Prisma.CategoryUncheckedUpdateManyWithoutTenantNestedInput
   variants?: Prisma.VariantUncheckedUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutTenantNestedInput
+  inventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutOrdersInput = {
@@ -1092,6 +1174,8 @@ export type TenantCreateWithoutOrdersInput = {
   categories?: Prisma.CategoryCreateNestedManyWithoutTenantInput
   variants?: Prisma.VariantCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutTenantInput
+  inventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutOrdersInput = {
@@ -1111,6 +1195,8 @@ export type TenantUncheckedCreateWithoutOrdersInput = {
   categories?: Prisma.CategoryUncheckedCreateNestedManyWithoutTenantInput
   variants?: Prisma.VariantUncheckedCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutTenantInput
+  inventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutOrdersInput = {
@@ -1145,6 +1231,8 @@ export type TenantUpdateWithoutOrdersInput = {
   categories?: Prisma.CategoryUpdateManyWithoutTenantNestedInput
   variants?: Prisma.VariantUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutTenantNestedInput
+  inventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutOrdersInput = {
@@ -1164,6 +1252,8 @@ export type TenantUncheckedUpdateWithoutOrdersInput = {
   categories?: Prisma.CategoryUncheckedUpdateManyWithoutTenantNestedInput
   variants?: Prisma.VariantUncheckedUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutTenantNestedInput
+  inventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutSessionsInput = {
@@ -1182,6 +1272,8 @@ export type TenantCreateWithoutSessionsInput = {
   categories?: Prisma.CategoryCreateNestedManyWithoutTenantInput
   variants?: Prisma.VariantCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutTenantInput
+  inventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutSessionsInput = {
@@ -1201,6 +1293,8 @@ export type TenantUncheckedCreateWithoutSessionsInput = {
   categories?: Prisma.CategoryUncheckedCreateNestedManyWithoutTenantInput
   variants?: Prisma.VariantUncheckedCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutTenantInput
+  inventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutSessionsInput = {
@@ -1235,6 +1329,8 @@ export type TenantUpdateWithoutSessionsInput = {
   categories?: Prisma.CategoryUpdateManyWithoutTenantNestedInput
   variants?: Prisma.VariantUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutTenantNestedInput
+  inventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutSessionsInput = {
@@ -1254,6 +1350,204 @@ export type TenantUncheckedUpdateWithoutSessionsInput = {
   categories?: Prisma.CategoryUncheckedUpdateManyWithoutTenantNestedInput
   variants?: Prisma.VariantUncheckedUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutTenantNestedInput
+  inventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantCreateWithoutAuditLogsInput = {
+  name: string
+  slug: string
+  status?: $Enums.TenantStatus
+  catalogType: $Enums.CatalogType
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  orders?: Prisma.OrderCreateNestedManyWithoutTenantInput
+  products?: Prisma.ProductCreateNestedManyWithoutTenantInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutActiveTenantInput
+  stockMovements?: Prisma.StockMovementCreateNestedManyWithoutTenantInput
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutTenantInput
+  memberships?: Prisma.TenantMembershipCreateNestedManyWithoutTenantInput
+  settings?: Prisma.TenantSettingsCreateNestedOneWithoutTenantInput
+  categories?: Prisma.CategoryCreateNestedManyWithoutTenantInput
+  variants?: Prisma.VariantCreateNestedManyWithoutTenantInput
+  warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
+  inventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutTenantInput
+}
+
+export type TenantUncheckedCreateWithoutAuditLogsInput = {
+  id?: number
+  name: string
+  slug: string
+  status?: $Enums.TenantStatus
+  catalogType: $Enums.CatalogType
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutTenantInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutTenantInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutActiveTenantInput
+  stockMovements?: Prisma.StockMovementUncheckedCreateNestedManyWithoutTenantInput
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutTenantInput
+  memberships?: Prisma.TenantMembershipUncheckedCreateNestedManyWithoutTenantInput
+  settings?: Prisma.TenantSettingsUncheckedCreateNestedOneWithoutTenantInput
+  categories?: Prisma.CategoryUncheckedCreateNestedManyWithoutTenantInput
+  variants?: Prisma.VariantUncheckedCreateNestedManyWithoutTenantInput
+  warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
+  inventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutTenantInput
+}
+
+export type TenantCreateOrConnectWithoutAuditLogsInput = {
+  where: Prisma.TenantWhereUniqueInput
+  create: Prisma.XOR<Prisma.TenantCreateWithoutAuditLogsInput, Prisma.TenantUncheckedCreateWithoutAuditLogsInput>
+}
+
+export type TenantUpsertWithoutAuditLogsInput = {
+  update: Prisma.XOR<Prisma.TenantUpdateWithoutAuditLogsInput, Prisma.TenantUncheckedUpdateWithoutAuditLogsInput>
+  create: Prisma.XOR<Prisma.TenantCreateWithoutAuditLogsInput, Prisma.TenantUncheckedCreateWithoutAuditLogsInput>
+  where?: Prisma.TenantWhereInput
+}
+
+export type TenantUpdateToOneWithWhereWithoutAuditLogsInput = {
+  where?: Prisma.TenantWhereInput
+  data: Prisma.XOR<Prisma.TenantUpdateWithoutAuditLogsInput, Prisma.TenantUncheckedUpdateWithoutAuditLogsInput>
+}
+
+export type TenantUpdateWithoutAuditLogsInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
+  catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  orders?: Prisma.OrderUpdateManyWithoutTenantNestedInput
+  products?: Prisma.ProductUpdateManyWithoutTenantNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutActiveTenantNestedInput
+  stockMovements?: Prisma.StockMovementUpdateManyWithoutTenantNestedInput
+  subscription?: Prisma.SubscriptionUpdateOneWithoutTenantNestedInput
+  memberships?: Prisma.TenantMembershipUpdateManyWithoutTenantNestedInput
+  settings?: Prisma.TenantSettingsUpdateOneWithoutTenantNestedInput
+  categories?: Prisma.CategoryUpdateManyWithoutTenantNestedInput
+  variants?: Prisma.VariantUpdateManyWithoutTenantNestedInput
+  warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
+  inventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantUncheckedUpdateWithoutAuditLogsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
+  catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutTenantNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutTenantNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutActiveTenantNestedInput
+  stockMovements?: Prisma.StockMovementUncheckedUpdateManyWithoutTenantNestedInput
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutTenantNestedInput
+  memberships?: Prisma.TenantMembershipUncheckedUpdateManyWithoutTenantNestedInput
+  settings?: Prisma.TenantSettingsUncheckedUpdateOneWithoutTenantNestedInput
+  categories?: Prisma.CategoryUncheckedUpdateManyWithoutTenantNestedInput
+  variants?: Prisma.VariantUncheckedUpdateManyWithoutTenantNestedInput
+  warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
+  inventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantCreateWithoutInventoryCountsInput = {
+  name: string
+  slug: string
+  status?: $Enums.TenantStatus
+  catalogType: $Enums.CatalogType
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  orders?: Prisma.OrderCreateNestedManyWithoutTenantInput
+  products?: Prisma.ProductCreateNestedManyWithoutTenantInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutActiveTenantInput
+  stockMovements?: Prisma.StockMovementCreateNestedManyWithoutTenantInput
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutTenantInput
+  memberships?: Prisma.TenantMembershipCreateNestedManyWithoutTenantInput
+  settings?: Prisma.TenantSettingsCreateNestedOneWithoutTenantInput
+  categories?: Prisma.CategoryCreateNestedManyWithoutTenantInput
+  variants?: Prisma.VariantCreateNestedManyWithoutTenantInput
+  warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutTenantInput
+}
+
+export type TenantUncheckedCreateWithoutInventoryCountsInput = {
+  id?: number
+  name: string
+  slug: string
+  status?: $Enums.TenantStatus
+  catalogType: $Enums.CatalogType
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutTenantInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutTenantInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutActiveTenantInput
+  stockMovements?: Prisma.StockMovementUncheckedCreateNestedManyWithoutTenantInput
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutTenantInput
+  memberships?: Prisma.TenantMembershipUncheckedCreateNestedManyWithoutTenantInput
+  settings?: Prisma.TenantSettingsUncheckedCreateNestedOneWithoutTenantInput
+  categories?: Prisma.CategoryUncheckedCreateNestedManyWithoutTenantInput
+  variants?: Prisma.VariantUncheckedCreateNestedManyWithoutTenantInput
+  warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutTenantInput
+}
+
+export type TenantCreateOrConnectWithoutInventoryCountsInput = {
+  where: Prisma.TenantWhereUniqueInput
+  create: Prisma.XOR<Prisma.TenantCreateWithoutInventoryCountsInput, Prisma.TenantUncheckedCreateWithoutInventoryCountsInput>
+}
+
+export type TenantUpsertWithoutInventoryCountsInput = {
+  update: Prisma.XOR<Prisma.TenantUpdateWithoutInventoryCountsInput, Prisma.TenantUncheckedUpdateWithoutInventoryCountsInput>
+  create: Prisma.XOR<Prisma.TenantCreateWithoutInventoryCountsInput, Prisma.TenantUncheckedCreateWithoutInventoryCountsInput>
+  where?: Prisma.TenantWhereInput
+}
+
+export type TenantUpdateToOneWithWhereWithoutInventoryCountsInput = {
+  where?: Prisma.TenantWhereInput
+  data: Prisma.XOR<Prisma.TenantUpdateWithoutInventoryCountsInput, Prisma.TenantUncheckedUpdateWithoutInventoryCountsInput>
+}
+
+export type TenantUpdateWithoutInventoryCountsInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
+  catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  orders?: Prisma.OrderUpdateManyWithoutTenantNestedInput
+  products?: Prisma.ProductUpdateManyWithoutTenantNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutActiveTenantNestedInput
+  stockMovements?: Prisma.StockMovementUpdateManyWithoutTenantNestedInput
+  subscription?: Prisma.SubscriptionUpdateOneWithoutTenantNestedInput
+  memberships?: Prisma.TenantMembershipUpdateManyWithoutTenantNestedInput
+  settings?: Prisma.TenantSettingsUpdateOneWithoutTenantNestedInput
+  categories?: Prisma.CategoryUpdateManyWithoutTenantNestedInput
+  variants?: Prisma.VariantUpdateManyWithoutTenantNestedInput
+  warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantUncheckedUpdateWithoutInventoryCountsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
+  catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutTenantNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutTenantNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutActiveTenantNestedInput
+  stockMovements?: Prisma.StockMovementUncheckedUpdateManyWithoutTenantNestedInput
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutTenantNestedInput
+  memberships?: Prisma.TenantMembershipUncheckedUpdateManyWithoutTenantNestedInput
+  settings?: Prisma.TenantSettingsUncheckedUpdateOneWithoutTenantNestedInput
+  categories?: Prisma.CategoryUncheckedUpdateManyWithoutTenantNestedInput
+  variants?: Prisma.VariantUncheckedUpdateManyWithoutTenantNestedInput
+  warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutMembershipsInput = {
@@ -1272,6 +1566,8 @@ export type TenantCreateWithoutMembershipsInput = {
   categories?: Prisma.CategoryCreateNestedManyWithoutTenantInput
   variants?: Prisma.VariantCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutTenantInput
+  inventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutMembershipsInput = {
@@ -1291,6 +1587,8 @@ export type TenantUncheckedCreateWithoutMembershipsInput = {
   categories?: Prisma.CategoryUncheckedCreateNestedManyWithoutTenantInput
   variants?: Prisma.VariantUncheckedCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutTenantInput
+  inventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutMembershipsInput = {
@@ -1325,6 +1623,8 @@ export type TenantUpdateWithoutMembershipsInput = {
   categories?: Prisma.CategoryUpdateManyWithoutTenantNestedInput
   variants?: Prisma.VariantUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutTenantNestedInput
+  inventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutMembershipsInput = {
@@ -1344,6 +1644,8 @@ export type TenantUncheckedUpdateWithoutMembershipsInput = {
   categories?: Prisma.CategoryUncheckedUpdateManyWithoutTenantNestedInput
   variants?: Prisma.VariantUncheckedUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutTenantNestedInput
+  inventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutSubscriptionInput = {
@@ -1362,6 +1664,8 @@ export type TenantCreateWithoutSubscriptionInput = {
   categories?: Prisma.CategoryCreateNestedManyWithoutTenantInput
   variants?: Prisma.VariantCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutTenantInput
+  inventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutSubscriptionInput = {
@@ -1381,6 +1685,8 @@ export type TenantUncheckedCreateWithoutSubscriptionInput = {
   categories?: Prisma.CategoryUncheckedCreateNestedManyWithoutTenantInput
   variants?: Prisma.VariantUncheckedCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutTenantInput
+  inventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutSubscriptionInput = {
@@ -1415,6 +1721,8 @@ export type TenantUpdateWithoutSubscriptionInput = {
   categories?: Prisma.CategoryUpdateManyWithoutTenantNestedInput
   variants?: Prisma.VariantUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutTenantNestedInput
+  inventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutSubscriptionInput = {
@@ -1434,6 +1742,8 @@ export type TenantUncheckedUpdateWithoutSubscriptionInput = {
   categories?: Prisma.CategoryUncheckedUpdateManyWithoutTenantNestedInput
   variants?: Prisma.VariantUncheckedUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutTenantNestedInput
+  inventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutSettingsInput = {
@@ -1452,6 +1762,8 @@ export type TenantCreateWithoutSettingsInput = {
   categories?: Prisma.CategoryCreateNestedManyWithoutTenantInput
   variants?: Prisma.VariantCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutTenantInput
+  inventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutSettingsInput = {
@@ -1471,6 +1783,8 @@ export type TenantUncheckedCreateWithoutSettingsInput = {
   categories?: Prisma.CategoryUncheckedCreateNestedManyWithoutTenantInput
   variants?: Prisma.VariantUncheckedCreateNestedManyWithoutTenantInput
   warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutTenantInput
+  inventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutSettingsInput = {
@@ -1505,6 +1819,8 @@ export type TenantUpdateWithoutSettingsInput = {
   categories?: Prisma.CategoryUpdateManyWithoutTenantNestedInput
   variants?: Prisma.VariantUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutTenantNestedInput
+  inventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutSettingsInput = {
@@ -1524,6 +1840,8 @@ export type TenantUncheckedUpdateWithoutSettingsInput = {
   categories?: Prisma.CategoryUncheckedUpdateManyWithoutTenantNestedInput
   variants?: Prisma.VariantUncheckedUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutTenantNestedInput
+  inventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 
@@ -1540,6 +1858,8 @@ export type TenantCountOutputType = {
   categories: number
   variants: number
   warehouses: number
+  auditLogs: number
+  inventoryCounts: number
 }
 
 export type TenantCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1551,6 +1871,8 @@ export type TenantCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions
   categories?: boolean | TenantCountOutputTypeCountCategoriesArgs
   variants?: boolean | TenantCountOutputTypeCountVariantsArgs
   warehouses?: boolean | TenantCountOutputTypeCountWarehousesArgs
+  auditLogs?: boolean | TenantCountOutputTypeCountAuditLogsArgs
+  inventoryCounts?: boolean | TenantCountOutputTypeCountInventoryCountsArgs
 }
 
 /**
@@ -1619,6 +1941,20 @@ export type TenantCountOutputTypeCountWarehousesArgs<ExtArgs extends runtime.Typ
   where?: Prisma.WarehouseWhereInput
 }
 
+/**
+ * TenantCountOutputType without action
+ */
+export type TenantCountOutputTypeCountAuditLogsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AuditLogWhereInput
+}
+
+/**
+ * TenantCountOutputType without action
+ */
+export type TenantCountOutputTypeCountInventoryCountsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.InventoryCountSessionWhereInput
+}
+
 
 export type TenantSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1638,6 +1974,8 @@ export type TenantSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   categories?: boolean | Prisma.Tenant$categoriesArgs<ExtArgs>
   variants?: boolean | Prisma.Tenant$variantsArgs<ExtArgs>
   warehouses?: boolean | Prisma.Tenant$warehousesArgs<ExtArgs>
+  auditLogs?: boolean | Prisma.Tenant$auditLogsArgs<ExtArgs>
+  inventoryCounts?: boolean | Prisma.Tenant$inventoryCountsArgs<ExtArgs>
   _count?: boolean | Prisma.TenantCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["tenant"]>
 
@@ -1683,6 +2021,8 @@ export type TenantInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   categories?: boolean | Prisma.Tenant$categoriesArgs<ExtArgs>
   variants?: boolean | Prisma.Tenant$variantsArgs<ExtArgs>
   warehouses?: boolean | Prisma.Tenant$warehousesArgs<ExtArgs>
+  auditLogs?: boolean | Prisma.Tenant$auditLogsArgs<ExtArgs>
+  inventoryCounts?: boolean | Prisma.Tenant$inventoryCountsArgs<ExtArgs>
   _count?: boolean | Prisma.TenantCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type TenantIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -1701,6 +2041,8 @@ export type $TenantPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     categories: Prisma.$CategoryPayload<ExtArgs>[]
     variants: Prisma.$VariantPayload<ExtArgs>[]
     warehouses: Prisma.$WarehousePayload<ExtArgs>[]
+    auditLogs: Prisma.$AuditLogPayload<ExtArgs>[]
+    inventoryCounts: Prisma.$InventoryCountSessionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -2114,6 +2456,8 @@ export interface Prisma__TenantClient<T, Null = never, ExtArgs extends runtime.T
   categories<T extends Prisma.Tenant$categoriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$categoriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CategoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   variants<T extends Prisma.Tenant$variantsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$variantsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VariantPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   warehouses<T extends Prisma.Tenant$warehousesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$warehousesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WarehousePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  auditLogs<T extends Prisma.Tenant$auditLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$auditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  inventoryCounts<T extends Prisma.Tenant$inventoryCountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$inventoryCountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InventoryCountSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2770,6 +3114,54 @@ export type Tenant$warehousesArgs<ExtArgs extends runtime.Types.Extensions.Inter
   take?: number
   skip?: number
   distinct?: Prisma.WarehouseScalarFieldEnum | Prisma.WarehouseScalarFieldEnum[]
+}
+
+/**
+ * Tenant.auditLogs
+ */
+export type Tenant$auditLogsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AuditLog
+   */
+  select?: Prisma.AuditLogSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AuditLog
+   */
+  omit?: Prisma.AuditLogOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AuditLogInclude<ExtArgs> | null
+  where?: Prisma.AuditLogWhereInput
+  orderBy?: Prisma.AuditLogOrderByWithRelationInput | Prisma.AuditLogOrderByWithRelationInput[]
+  cursor?: Prisma.AuditLogWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AuditLogScalarFieldEnum | Prisma.AuditLogScalarFieldEnum[]
+}
+
+/**
+ * Tenant.inventoryCounts
+ */
+export type Tenant$inventoryCountsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the InventoryCountSession
+   */
+  select?: Prisma.InventoryCountSessionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the InventoryCountSession
+   */
+  omit?: Prisma.InventoryCountSessionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.InventoryCountSessionInclude<ExtArgs> | null
+  where?: Prisma.InventoryCountSessionWhereInput
+  orderBy?: Prisma.InventoryCountSessionOrderByWithRelationInput | Prisma.InventoryCountSessionOrderByWithRelationInput[]
+  cursor?: Prisma.InventoryCountSessionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.InventoryCountSessionScalarFieldEnum | Prisma.InventoryCountSessionScalarFieldEnum[]
 }
 
 /**

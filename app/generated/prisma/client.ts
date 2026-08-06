@@ -97,6 +97,21 @@ export type Session = Prisma.SessionModel
  */
 export type Tenant = Prisma.TenantModel
 /**
+ * Model AuditLog
+ * 
+ */
+export type AuditLog = Prisma.AuditLogModel
+/**
+ * Model InventoryCountSession
+ * 
+ */
+export type InventoryCountSession = Prisma.InventoryCountSessionModel
+/**
+ * Model InventoryCountLine
+ * 
+ */
+export type InventoryCountLine = Prisma.InventoryCountLineModel
+/**
  * Model TenantMembership
  * 
  */

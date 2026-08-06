@@ -53,6 +53,7 @@ model Variant {
   color          String
   variantIdentityKey String?
   stock          Int             @default(0)
+  reorderLevel   Int?
   createdAt      DateTime        @default(now())
   price          Decimal         @db.Decimal(10, 2)
   updatedAt      DateTime        @updatedAt
@@ -67,6 +68,7 @@ model Variant {
   orders         Order[]
   items          OrderItem[]
   inventories    VariantInventory[]
+  inventoryCountLines InventoryCountLine[]
   stockMovements StockMovement[]
   product        Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
   tenant         Tenant?         @relation(fields: [tenantId], references: [id])
@@ -91,7 +93,9 @@ model Warehouse {
   inventories VariantInventory[]
   orders      Order[]
   orderItems  OrderItem[]
+  inventoryCounts InventoryCountSession[]
   stockMovements StockMovement[]
+  auditLogs   AuditLog[]
   tenant      Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@unique([tenantId, slug])
@@ -189,6 +193,9 @@ model User {
   updatedAt    DateTime           @updatedAt
   sessions     Session[]
   memberships  TenantMembership[]
+  auditLogs    AuditLog[]
+  createdInventoryCounts InventoryCountSession[] @relation("InventoryCountCreatedBy")
+  completedInventoryCounts InventoryCountSession[] @relation("InventoryCountCompletedBy")
 }
 
 model Session {
@@ -224,10 +231,78 @@ model Tenant {
     categories     Category[]
     variants       Variant[]
     warehouses     Warehouse[]
+    auditLogs      AuditLog[]
+    inventoryCounts InventoryCountSession[]
 
     @@index([status])
     @@index([catalogType])
   }
+
+model AuditLog {
+  id          Int       @id @default(autoincrement())
+  tenantId    Int
+  userId      Int?
+  action      String
+  entityType  String
+  entityId    Int?
+  entityLabel String?
+  warehouseId Int?
+  metadata    Json?
+  createdAt   DateTime  @default(now())
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  user        User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  warehouse   Warehouse? @relation(fields: [warehouseId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId])
+  @@index([userId])
+  @@index([warehouseId])
+  @@index([action])
+  @@index([entityType])
+  @@index([createdAt])
+}
+
+model InventoryCountSession {
+  id            Int                  @id @default(autoincrement())
+  tenantId      Int
+  warehouseId   Int
+  status        InventoryCountStatus @default(OPEN)
+  note          String?
+  createdById   Int?
+  completedById Int?
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  completedAt   DateTime?
+  tenant        Tenant               @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  warehouse     Warehouse            @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  createdBy     User?                @relation("InventoryCountCreatedBy", fields: [createdById], references: [id], onDelete: SetNull)
+  completedBy   User?                @relation("InventoryCountCompletedBy", fields: [completedById], references: [id], onDelete: SetNull)
+  lines         InventoryCountLine[]
+
+  @@index([tenantId])
+  @@index([warehouseId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model InventoryCountLine {
+  id            Int                   @id @default(autoincrement())
+  sessionId     Int
+  variantId     Int
+  expectedStock Int
+  countedStock  Int?
+  difference    Int?
+  locationCode  String?
+  note          String?
+  countedAt     DateTime?
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+  session       InventoryCountSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  variant       Variant               @relation(fields: [variantId], references: [id], onDelete: Cascade)
+
+  @@unique([sessionId, variantId])
+  @@index([sessionId])
+  @@index([variantId])
+}
 
 model TenantMembership {
   id        Int      @id @default(autoincrement())
@@ -317,8 +392,14 @@ enum SubscriptionStatus {
   EXPIRED
 }
 
+enum InventoryCountStatus {
+  OPEN
+  COMPLETED
+}
+
 enum StockMovementReason {
-    INCOMING_STOCK
-    CUSTOMER_RETURN
-    TRANSFER
-  }
+  INCOMING_STOCK
+  CUSTOMER_RETURN
+  TRANSFER
+  INVENTORY_COUNT
+}

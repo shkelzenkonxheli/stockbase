@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import type { Prisma } from "@/app/generated/prisma/client";
 import { ConfirmActionForm } from "@/app/components/confirm-action-form";
 import { hasRole, requireUser } from "@/lib/auth";
-import { LOW_STOCK_THRESHOLD } from "@/lib/inventory";
+import { isLowStock } from "@/lib/inventory";
 import {
   getCatalogAwareCategoryConfig,
   getProductListViewConfig,
@@ -72,6 +72,16 @@ function buildProductsPageHref(
   return `/products?${params.toString()}`;
 }
 
+function buildProductDetailsHref(productId: number, warehouse: string) {
+  if (!warehouse) {
+    return `/products/${productId}`;
+  }
+
+  const params = new URLSearchParams();
+  params.set("warehouse", warehouse);
+  return `/products/${productId}?${params.toString()}`;
+}
+
 async function deleteProduct(formData: FormData) {
   "use server";
 
@@ -126,6 +136,34 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   const filters: Prisma.ProductWhereInput[] = [];
   const searchTokens = searchQuery.split(/\s+/).map((token) => token.trim()).filter(Boolean);
 
+  const getVariantDisplayStock = (
+    variant: {
+      stock: number;
+      reorderLevel?: number | null;
+      inventories?: Array<{
+        stock: number;
+        locationCode?: string | null;
+      }>;
+    },
+  ) =>
+    selectedWarehouseRecord
+      ? (variant.inventories?.[0]?.stock ?? 0)
+      : variant.inventories && variant.inventories.length > 0
+        ? variant.inventories.reduce((inventorySum, inventory) => inventorySum + inventory.stock, 0)
+        : variant.stock;
+
+  const getVariantDisplayLocation = (
+    variant: {
+      locationCode?: string | null;
+      inventories?: Array<{
+        locationCode?: string | null;
+      }>;
+    },
+  ) =>
+    selectedWarehouseRecord
+      ? (variant.inventories?.[0]?.locationCode ?? null)
+      : variant.locationCode ?? null;
+
   if (searchTokens.length > 0) {
     filters.push({
       AND: searchTokens.map((token) => ({
@@ -172,6 +210,9 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
   const where: Prisma.ProductWhereInput = {
     tenantId,
+    variants: {
+      some: {},
+    },
     ...(filters.length > 0 ? { AND: filters } : {}),
   };
 
@@ -207,6 +248,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
             sku: true,
             imagePath: true,
             stock: true,
+            reorderLevel: true,
             price: true,
             inventories: selectedWarehouseRecord && activeWarehouseId
               ? {
@@ -217,7 +259,12 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                   },
                   take: 1,
                 }
-              : undefined,
+              : {
+                  select: {
+                    stock: true,
+                    locationCode: true,
+                  },
+                },
           },
         },
       },
@@ -241,13 +288,16 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
         : { product: where },
       select: {
         stock: true,
+        reorderLevel: true,
         inventories: selectedWarehouseRecord && activeWarehouseId
           ? {
               where: { warehouseId: activeWarehouseId },
               select: { stock: true },
               take: 1,
             }
-          : undefined,
+          : {
+              select: { stock: true },
+            },
       },
     }),
   ]);
@@ -266,19 +316,13 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     ),
   ];
   const totalUnits = stockTotals.reduce(
-    (sum, variant) =>
-      sum +
-      (selectedWarehouseRecord
-        ? (variant.inventories?.[0]?.stock ?? 0)
-        : variant.stock),
+    (sum, variant) => sum + getVariantDisplayStock(variant),
     0,
   );
   const lowStockProducts = products.filter((product) =>
     product.variants.some((variant) => {
-      const displayStock = selectedWarehouseRecord
-        ? (variant.inventories?.[0]?.stock ?? 0)
-        : variant.stock;
-      return displayStock > 0 && displayStock <= LOW_STOCK_THRESHOLD;
+      const displayStock = getVariantDisplayStock(variant);
+      return isLowStock(displayStock, variant.reorderLevel);
     }),
   ).length;
 
@@ -362,12 +406,10 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                   const watts = [
                     ...new Set(product.variants.map((variant) => variant.powerWatts).filter(Boolean)),
                   ];
-                  const totalStock = product.variants.reduce((sum, variant) => {
-                    const displayStock = selectedWarehouseRecord
-                      ? (variant.inventories?.[0]?.stock ?? 0)
-                      : variant.stock;
-                    return sum + displayStock;
-                  }, 0);
+                  const totalStock = product.variants.reduce(
+                    (sum, variant) => sum + getVariantDisplayStock(variant),
+                    0,
+                  );
                   const prices = product.variants.map((variant) => Number(variant.price));
                   const minPrice = prices.length > 0 ? Math.min(...prices) : null;
                   const maxPrice = prices.length > 0 ? Math.max(...prices) : null;
@@ -434,16 +476,12 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                                 size: variant.size,
                                 color: variant.color,
                                 imagePath: variant.imagePath,
-                                stock: selectedWarehouseRecord
-                                  ? (variant.inventories?.[0]?.stock ?? 0)
-                                  : variant.stock,
+                                stock: getVariantDisplayStock(variant),
+                                reorderLevel: variant.reorderLevel,
                                 price: Number(variant.price),
                                 material: variant.material,
                                 powerWatts: variant.powerWatts,
-                                locationCode:
-                                  selectedWarehouseRecord
-                                    ? (variant.inventories?.[0]?.locationCode ?? null)
-                                    : variant.locationCode,
+                                locationCode: getVariantDisplayLocation(variant),
                               }))}
                               showImageButton={false}
                               canAdjustStock={canQuickAdjustStock}
@@ -451,7 +489,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                               className="w-full"
                             />
                             <Link
-                              href={`/products/${product.id}`}
+                              href={buildProductDetailsHref(product.id, selectedWarehouse)}
                               className="inline-flex w-full items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
                             >
                               Menaxho
@@ -497,16 +535,12 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                               size: variant.size,
                               color: variant.color,
                               imagePath: variant.imagePath,
-                              stock: selectedWarehouseRecord
-                                ? (variant.inventories?.[0]?.stock ?? 0)
-                                : variant.stock,
+                              stock: getVariantDisplayStock(variant),
+                              reorderLevel: variant.reorderLevel,
                               price: Number(variant.price),
                               material: variant.material,
                               powerWatts: variant.powerWatts,
-                              locationCode:
-                                selectedWarehouseRecord
-                                  ? (variant.inventories?.[0]?.locationCode ?? null)
-                                  : variant.locationCode,
+                              locationCode: getVariantDisplayLocation(variant),
                             }))}
                             className="h-full w-full"
                             canAdjustStock={canQuickAdjustStock}
@@ -591,12 +625,10 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                       const watts = [
                         ...new Set(product.variants.map((variant) => variant.powerWatts).filter(Boolean)),
                       ];
-                      const totalStock = product.variants.reduce((sum, variant) => {
-                        const displayStock = selectedWarehouseRecord
-                          ? (variant.inventories?.[0]?.stock ?? 0)
-                          : variant.stock;
-                        return sum + displayStock;
-                      }, 0);
+                      const totalStock = product.variants.reduce(
+                        (sum, variant) => sum + getVariantDisplayStock(variant),
+                        0,
+                      );
                       const prices = product.variants.map((variant) => Number(variant.price));
                       const minPrice = prices.length > 0 ? Math.min(...prices) : null;
                       const maxPrice = prices.length > 0 ? Math.max(...prices) : null;
@@ -642,14 +674,10 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                                     size: variant.size,
                                     color: variant.color,
                                     imagePath: variant.imagePath,
-                                    stock: selectedWarehouseRecord
-                                      ? (variant.inventories?.[0]?.stock ?? 0)
-                                      : variant.stock,
+                                    stock: getVariantDisplayStock(variant),
+                                    reorderLevel: variant.reorderLevel,
                                     price: Number(variant.price),
-                                    locationCode:
-                                      selectedWarehouseRecord
-                                        ? (variant.inventories?.[0]?.locationCode ?? null)
-                                        : variant.locationCode,
+                                    locationCode: getVariantDisplayLocation(variant),
                                   }))}
                                   className="h-full w-full"
                                   canAdjustStock={canQuickAdjustStock}
@@ -691,16 +719,12 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                                   size: variant.size,
                                   color: variant.color,
                                   imagePath: variant.imagePath,
-                                  stock: selectedWarehouseRecord
-                                    ? (variant.inventories?.[0]?.stock ?? 0)
-                                    : variant.stock,
+                                  stock: getVariantDisplayStock(variant),
+                                  reorderLevel: variant.reorderLevel,
                                   price: Number(variant.price),
                                   material: variant.material,
                                   powerWatts: variant.powerWatts,
-                                  locationCode:
-                                    selectedWarehouseRecord
-                                      ? (variant.inventories?.[0]?.locationCode ?? null)
-                                      : variant.locationCode,
+                                  locationCode: getVariantDisplayLocation(variant),
                                 }))}
                                 showImageButton={false}
                                 iconOnly
@@ -708,7 +732,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                                 canDeleteColor={canManageInventory}
                               />
                               <Link
-                                href={`/products/${product.id}`}
+                                href={buildProductDetailsHref(product.id, selectedWarehouse)}
                                 className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
                                 aria-label="Menaxho"
                                 title="Menaxho"
