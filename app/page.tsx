@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { hasRole, requireUser } from "@/lib/auth";
-import { isLowStock } from "@/lib/inventory";
+import { getEffectiveReorderLevel, isLowStock } from "@/lib/inventory";
 import { prisma } from "@/lib/prisma";
 import { getCatalogTemplate } from "@/lib/product-taxonomy";
 
@@ -126,7 +126,7 @@ export default async function Home() {
   const today = getDateStringInTimeZone(new Date(), BUSINESS_TIME_ZONE);
   const { start: dateFrom, end: dateTo } = getTimeZoneDayBounds(today, BUSINESS_TIME_ZONE);
 
-  const [totalProducts, totalStockValueData, ordersToday, recentMovements] =
+  const [totalProducts, totalStockValueData, ordersToday, recentMovements, lowStockVariants] =
     await Promise.all([
       prisma.product.count({ where: { tenantId } }),
       prisma.variant.findMany({
@@ -165,6 +165,30 @@ export default async function Home() {
           },
         },
       }),
+      prisma.variant.findMany({
+        where: { tenantId },
+        select: {
+          id: true,
+          stock: true,
+          reorderLevel: true,
+          sku: true,
+          color: true,
+          size: true,
+          product: {
+            select: {
+              id: true,
+              name: true,
+              brand: true,
+              category: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+        orderBy: [{ stock: "asc" }, { updatedAt: "asc" }],
+      }),
     ]);
 
   const lowStockCount = totalStockValueData.filter((variant) =>
@@ -176,6 +200,9 @@ export default async function Home() {
     0,
   );
   const totalStockUnits = totalStockValueData.reduce((sum, variant) => sum + variant.stock, 0);
+  const lowStockItems = lowStockVariants
+    .filter((variant) => isLowStock(variant.stock, variant.reorderLevel))
+    .slice(0, 6);
 
   const tiles: ActionTile[] = [
     {
@@ -256,6 +283,25 @@ export default async function Home() {
           <path d="m13 3 4 4-4 4" />
           <path d="M17 17H7" />
           <path d="m11 21-4-4 4-4" />
+        </svg>
+      ),
+    },
+    {
+      title: "Scan Barcode",
+      subtitle: "Gjej direkt variantin nga barcode ose SKU dhe hap etiketat ose menaxhimin.",
+      href: "/stock/scan",
+      accent: "bg-[linear-gradient(135deg,#0f172a_0%,#1e293b_100%)]",
+      pill: "Scan & gjej variantin",
+      visible: canManageOrders,
+      icon: (
+        <svg viewBox="0 0 24 24" className="h-6 w-6 fill-none stroke-current stroke-[1.8]">
+          <path d="M5 7V5h2" />
+          <path d="M17 5h2v2" />
+          <path d="M19 17v2h-2" />
+          <path d="M7 19H5v-2" />
+          <path d="M9 5v14" />
+          <path d="M12 5v14" />
+          <path d="M15 5v14" />
         </svg>
       ),
     },
@@ -341,6 +387,127 @@ export default async function Home() {
             </p>
           </div>
         </section>
+
+        {canManageInventory ? (
+          <section className="overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
+            <div className="flex flex-col gap-4 border-b border-slate-100 px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
+              <div>
+                <h2 className="text-xl font-semibold tracking-tight text-slate-950">
+                  Low Stock / Reorder
+                </h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  Variantet qe jane ne ose nen pragun e furnizimit.
+                </p>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <Link
+                  href="/products?stock=low"
+                  className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+                >
+                  Shiko te gjitha
+                </Link>
+                <Link
+                  href="/stock/incoming"
+                  className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
+                >
+                  Shto hyrje stoku
+                </Link>
+              </div>
+            </div>
+
+            {lowStockItems.length === 0 ? (
+              <div className="px-6 py-14 text-center text-sm text-slate-500">
+                Nuk ka variante me stok te ulet per momentin.
+              </div>
+            ) : (
+              <>
+                <div className="hidden overflow-x-auto lg:block">
+                  <table className="min-w-full text-sm">
+                    <thead className="bg-slate-50/80 text-left">
+                      <tr className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                        <th className="px-6 py-4">Produkti</th>
+                        <th className="px-6 py-4">Varianti</th>
+                        <th className="px-6 py-4">SKU</th>
+                        <th className="px-6 py-4 text-right">Stoku</th>
+                        <th className="px-6 py-4 text-right">Reorder</th>
+                        <th className="px-6 py-4 text-right">Mungojne</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100 bg-white">
+                      {lowStockItems.map((variant) => {
+                        const reorderLevel = getEffectiveReorderLevel(variant.reorderLevel);
+                        const missingUnits = Math.max(0, reorderLevel - variant.stock);
+
+                        return (
+                          <tr key={variant.id} className="hover:bg-slate-50/60">
+                            <td className="px-6 py-4">
+                              <Link
+                                href={`/products/${variant.product.id}`}
+                                className="font-medium text-slate-900 transition hover:text-slate-700"
+                              >
+                                {variant.product.brand
+                                  ? `${variant.product.brand} ${variant.product.name}`
+                                  : variant.product.name}
+                              </Link>
+                              <p className="mt-1 text-xs text-slate-500">{variant.product.category.name}</p>
+                            </td>
+                            <td className="px-6 py-4 text-slate-600">
+                              {variant.color} / {variant.size}
+                            </td>
+                            <td className="px-6 py-4 text-slate-600">{variant.sku ?? "-"}</td>
+                            <td className="px-6 py-4 text-right font-semibold text-amber-700">
+                              {variant.stock}
+                            </td>
+                            <td className="px-6 py-4 text-right text-slate-700">{reorderLevel}</td>
+                            <td className="px-6 py-4 text-right font-semibold text-rose-700">
+                              {missingUnits}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+
+                <div className="grid gap-3 p-4 lg:hidden">
+                  {lowStockItems.map((variant) => {
+                    const reorderLevel = getEffectiveReorderLevel(variant.reorderLevel);
+                    const missingUnits = Math.max(0, reorderLevel - variant.stock);
+
+                    return (
+                      <Link
+                        key={variant.id}
+                        href={`/products/${variant.product.id}`}
+                        className="rounded-[24px] border border-slate-200 bg-slate-50/70 p-4 transition hover:border-slate-300 hover:bg-white"
+                      >
+                        <p className="font-semibold text-slate-950">
+                          {variant.product.brand
+                            ? `${variant.product.brand} ${variant.product.name}`
+                            : variant.product.name}
+                        </p>
+                        <p className="mt-1 text-xs text-slate-500">{variant.product.category.name}</p>
+                        <p className="mt-3 text-sm text-slate-700">
+                          {variant.color} / {variant.size}
+                        </p>
+                        <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold">
+                          <span className="rounded-full bg-amber-50 px-3 py-1 text-amber-700">
+                            Stoku {variant.stock}
+                          </span>
+                          <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
+                            Reorder {reorderLevel}
+                          </span>
+                          <span className="rounded-full bg-rose-50 px-3 py-1 text-rose-700">
+                            Mungojne {missingUnits}
+                          </span>
+                        </div>
+                      </Link>
+                    );
+                  })}
+                </div>
+              </>
+            )}
+          </section>
+        ) : null}
 
         <section>
           <div className="mb-4 flex items-center justify-between">

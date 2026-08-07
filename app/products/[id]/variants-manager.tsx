@@ -144,14 +144,40 @@ export function VariantsManager({
     return "bg-slate-400";
   };
 
-  const renderActionIcons = (variantId: number) => (
+  const getVariantEditHref = (variantId: number) =>
+    selectedWarehouse
+      ? `/products/${productId}/variants/${variantId}/edit?warehouse=${encodeURIComponent(selectedWarehouse)}`
+      : `/products/${productId}/variants/${variantId}/edit`;
+
+  const getVariantLabelsHref = (variantId: number, stock: number) => {
+    const quantity = Math.max(stock, 1);
+    return `/products/${productId}/variants/${variantId}/labels?qty=${quantity}`;
+  };
+
+  const renderActionIcons = (variantId: number, stock: number) => (
     <div className="flex items-center justify-end gap-2">
       <Link
-        href={
-          selectedWarehouse
-            ? `/products/${productId}/variants/${variantId}/edit?warehouse=${encodeURIComponent(selectedWarehouse)}`
-            : `/products/${productId}/variants/${variantId}/edit`
-        }
+        href={getVariantLabelsHref(variantId, stock)}
+        className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900"
+        title="Printo etiketat"
+      >
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.8"
+          className="h-4 w-4"
+          aria-hidden="true"
+        >
+          <path
+            d="M7 8V4h10v4M7 14H6a2 2 0 0 1-2-2v-2a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2a2 2 0 0 1-2 2h-1m-9 0h8v6H8v-6Z"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      </Link>
+      <Link
+        href={getVariantEditHref(variantId)}
         className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-200 bg-white text-slate-500 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900"
         title="Edito variantin"
       >
@@ -374,9 +400,15 @@ export function VariantsManager({
             </div>
 
             {canManageInventory ? (
-              <div className="mt-4 grid grid-cols-2 gap-2">
+              <div className="mt-4 grid grid-cols-3 gap-2">
                 <Link
-                  href={`/products/${productId}/variants/${variant.id}/edit`}
+                  href={getVariantLabelsHref(variant.id, variant.stock)}
+                  className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+                >
+                  Etiketa
+                </Link>
+                <Link
+                  href={getVariantEditHref(variant.id)}
                   className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
                 >
                   Edito
@@ -575,8 +607,8 @@ export function VariantsManager({
                     </span>
                   </td>
                   {canManageInventory ? (
-                    <td className="px-5 py-4 text-right">
-                      {renderActionIcons(variant.id)}
+                  <td className="px-5 py-4 text-right">
+                      {renderActionIcons(variant.id, variant.stock)}
                     </td>
                   ) : null}
                 </tr>

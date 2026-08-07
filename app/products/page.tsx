@@ -53,6 +53,7 @@ type ProductsPageProps = {
     category?: string;
     model?: string;
     warehouse?: string;
+    stock?: string;
   }>;
 };
 
@@ -62,6 +63,7 @@ function buildProductsPageHref(
   category: string,
   model: string,
   warehouse: string,
+  stock: string,
 ) {
   const params = new URLSearchParams();
   params.set("page", String(page));
@@ -69,6 +71,7 @@ function buildProductsPageHref(
   if (category) params.set("category", category);
   if (model) params.set("model", model);
   if (warehouse) params.set("warehouse", warehouse);
+  if (stock) params.set("stock", stock);
   return `/products?${params.toString()}`;
 }
 
@@ -125,6 +128,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   const selectedCategory = resolvedSearchParams?.category?.trim() || "";
   const selectedModel = resolvedSearchParams?.model?.trim() || "";
   const selectedWarehouse = resolvedSearchParams?.warehouse?.trim() || "";
+  const selectedStock = resolvedSearchParams?.stock?.trim() || "";
   const currentPage = Math.max(1, Number(resolvedSearchParams?.page) || 1);
   const skip = (currentPage - 1) * PAGE_SIZE;
   const warehouseRecords = await getTenantWarehouses(tenantId, tenant.catalogConfig);
@@ -319,7 +323,33 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     (sum, variant) => sum + getVariantDisplayStock(variant),
     0,
   );
-  const lowStockProducts = products.filter((product) =>
+  const stockMatchesFilter = (variant: {
+    stock: number;
+    reorderLevel?: number | null;
+    inventories?: Array<{ stock: number }>;
+  }) => {
+    const displayStock = getVariantDisplayStock(variant);
+
+    if (selectedStock === "low") {
+      return isLowStock(displayStock, variant.reorderLevel);
+    }
+
+    if (selectedStock === "out") {
+      return displayStock <= 0;
+    }
+
+    if (selectedStock === "in") {
+      return displayStock > 0;
+    }
+
+    return true;
+  };
+
+  const visibleProducts = products.filter((product) =>
+    product.variants.some((variant) => stockMatchesFilter(variant)),
+  );
+
+  const lowStockProducts = visibleProducts.filter((product) =>
     product.variants.some((variant) => {
       const displayStock = getVariantDisplayStock(variant);
       return isLowStock(displayStock, variant.reorderLevel);
@@ -370,26 +400,27 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
         <section className="overflow-hidden rounded-[30px] border border-slate-200/80 bg-white shadow-[0_14px_40px_rgba(15,23,42,0.07)]">
           <div className="border-b border-slate-200/80 px-4 py-4 sm:px-5">
             <ProductsFilters
-              key={`${searchQuery}|${selectedCategory}|${selectedModel}|${selectedWarehouse}`}
+              key={`${searchQuery}|${selectedCategory}|${selectedModel}|${selectedWarehouse}|${selectedStock}`}
               searchQuery={searchQuery}
               selectedCategory={selectedCategory}
               selectedModel={selectedModel}
               selectedWarehouse={selectedWarehouse}
+              selectedStock={selectedStock}
               categories={categories}
               models={models}
               warehouses={warehouses}
             />
           </div>
 
-          {products.length === 0 ? (
+          {visibleProducts.length === 0 ? (
             <div className="px-6 py-16 text-center">
               <p className="text-base font-medium text-slate-900">
-                {searchQuery || selectedCategory || selectedModel || selectedWarehouse
+                {searchQuery || selectedCategory || selectedModel || selectedWarehouse || selectedStock
                   ? "Nuk u gjet asnje produkt me keto filtra"
                   : "Nuk ka ende produkte te regjistruara"}
               </p>
               <p className="mt-2 text-sm text-slate-600">
-                {searchQuery || selectedCategory || selectedModel || selectedWarehouse
+                {searchQuery || selectedCategory || selectedModel || selectedWarehouse || selectedStock
                   ? "Provo nje kerkese tjeter ose bej reset."
                   : "Shto produktin e pare dhe vazhdo me variantet per te filluar inventarin."}
               </p>
@@ -397,7 +428,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           ) : (
             <div className="p-4 sm:p-5">
               <div className="space-y-3 lg:hidden">
-                {products.map((product) => {
+                {visibleProducts.map((product) => {
                   const dimensions = [...new Set(product.variants.map((variant) => variant.size))];
                   const colors = [...new Set(product.variants.map((variant) => variant.color))];
                   const materials = [
@@ -616,7 +647,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 bg-white">
-                    {products.map((product) => {
+                    {visibleProducts.map((product) => {
                       const dimensions = [...new Set(product.variants.map((variant) => variant.size))];
                       const colors = [...new Set(product.variants.map((variant) => variant.color))];
                       const materials = [
@@ -785,6 +816,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                     selectedCategory,
                     selectedModel,
                     selectedWarehouse,
+                    selectedStock,
                   )}
                   className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
                 >
@@ -803,6 +835,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                     selectedCategory,
                     selectedModel,
                     selectedWarehouse,
+                    selectedStock,
                   )}
                   className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
                 >

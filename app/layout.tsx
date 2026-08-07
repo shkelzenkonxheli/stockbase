@@ -149,6 +149,24 @@ export default async function RootLayout({
                   </svg>
                 ),
               },
+              {
+                href: "/stock/scan",
+                label: "Scan Barcode",
+                icon: (
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-4 w-4 fill-none stroke-current stroke-[1.8]"
+                  >
+                    <path d="M5 7V5h2" />
+                    <path d="M17 5h2v2" />
+                    <path d="M19 17v2h-2" />
+                    <path d="M7 19H5v-2" />
+                    <path d="M9 5v14" />
+                    <path d="M12 5v14" />
+                    <path d="M15 5v14" />
+                  </svg>
+                ),
+              },
             ]
           : []),
         ...(hasRole(currentUser, ["SUPER_ADMIN"])

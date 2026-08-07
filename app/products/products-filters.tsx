@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useCallback, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
@@ -8,6 +8,7 @@ type ProductsFiltersProps = {
   selectedCategory: string;
   selectedModel: string;
   selectedWarehouse: string;
+  selectedStock: string;
   categories: string[];
   models: string[];
   warehouses: string[];
@@ -18,6 +19,7 @@ export function ProductsFilters({
   selectedCategory,
   selectedModel,
   selectedWarehouse,
+  selectedStock,
   categories,
   models,
   warehouses,
@@ -30,6 +32,7 @@ export function ProductsFilters({
   const [category, setCategory] = useState(selectedCategory);
   const [model, setModel] = useState(selectedModel);
   const [warehouse, setWarehouse] = useState(selectedWarehouse);
+  const [stock, setStock] = useState(selectedStock);
 
   const filteredModels = category
     ? [
@@ -44,7 +47,13 @@ export function ProductsFilters({
     : [...new Set(models.map((modelOption) => modelOption.split("::")[1] ?? modelOption))];
 
   const updateFilters = useCallback(
-    (nextQuery: string, nextCategory: string, nextModel: string, nextWarehouse: string) => {
+    (
+      nextQuery: string,
+      nextCategory: string,
+      nextModel: string,
+      nextWarehouse: string,
+      nextStock: string,
+    ) => {
       const params = new URLSearchParams(searchParams.toString());
 
       params.delete("page");
@@ -61,6 +70,9 @@ export function ProductsFilters({
       if (nextWarehouse.trim()) params.set("warehouse", nextWarehouse.trim());
       else params.delete("warehouse");
 
+      if (nextStock.trim()) params.set("stock", nextStock.trim());
+      else params.delete("stock");
+
       const nextUrl = params.toString() ? `${pathname}?${params.toString()}` : pathname;
 
       startTransition(() => {
@@ -75,10 +87,10 @@ export function ProductsFilters({
       className="space-y-3"
       onSubmit={(event) => {
         event.preventDefault();
-        updateFilters(query, category, model, warehouse);
+        updateFilters(query, category, model, warehouse, stock);
       }}
     >
-      <div className="grid gap-3 lg:grid-cols-[minmax(0,1.5fr)_220px_220px_220px_140px]">
+      <div className="grid gap-3 lg:grid-cols-[minmax(0,1.5fr)_220px_220px_220px_180px_140px]">
         <div className="flex flex-col gap-2 sm:flex-row">
           <div className="relative min-w-0 flex-1">
             <svg
@@ -118,7 +130,7 @@ export function ProductsFilters({
             const nextCategory = event.target.value;
             setCategory(nextCategory);
             setModel("");
-            updateFilters(query, nextCategory, "", warehouse);
+            updateFilters(query, nextCategory, "", warehouse, stock);
           }}
           className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:bg-white"
         >
@@ -135,7 +147,7 @@ export function ProductsFilters({
           onChange={(event) => {
             const nextModel = event.target.value;
             setModel(nextModel);
-            updateFilters(query, category, nextModel, warehouse);
+            updateFilters(query, category, nextModel, warehouse, stock);
           }}
           disabled={filteredModels.length === 0}
           className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:bg-white"
@@ -153,7 +165,7 @@ export function ProductsFilters({
           onChange={(event) => {
             const nextWarehouse = event.target.value;
             setWarehouse(nextWarehouse);
-            updateFilters(query, category, model, nextWarehouse);
+            updateFilters(query, category, model, nextWarehouse, stock);
           }}
           disabled={warehouses.length === 0}
           className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:bg-white disabled:cursor-not-allowed disabled:bg-slate-100"
@@ -166,6 +178,21 @@ export function ProductsFilters({
           ))}
         </select>
 
+        <select
+          value={stock}
+          onChange={(event) => {
+            const nextStock = event.target.value;
+            setStock(nextStock);
+            updateFilters(query, category, model, warehouse, nextStock);
+          }}
+          className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:bg-white"
+        >
+          <option value="">Gjithe stoku</option>
+          <option value="low">Vetem stok i ulet</option>
+          <option value="in">Vetem ne stok</option>
+          <option value="out">Vetem pa stok</option>
+        </select>
+
         <button
           type="button"
           onClick={() => {
@@ -173,6 +200,7 @@ export function ProductsFilters({
             setCategory("");
             setModel("");
             setWarehouse("");
+            setStock("");
             startTransition(() => {
               router.replace(pathname);
             });
@@ -191,7 +219,7 @@ export function ProductsFilters({
         </button>
       </div>
       <p className="text-xs text-slate-500">
-        {isPending ? "Duke filtruar..." : "Filtrat punojne sipas kategorise dhe produktit."}
+        {isPending ? "Duke filtruar..." : "Filtrat punojne sipas kategorise, produktit dhe gjendjes se stokut."}
       </p>
     </form>
   );
