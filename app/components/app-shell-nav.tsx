@@ -33,8 +33,8 @@ export function AppShellNav({
     <nav
       className={
         isHorizontal
-          ? "flex gap-2"
-          : "space-y-1.5"
+          ? "flex gap-1.5"
+          : "space-y-0.5"
       }
     >
       {items.map((item) => {
@@ -44,27 +44,28 @@ export function AppShellNav({
           <Link
             key={item.href}
             href={item.href}
+            aria-current={isActive ? "page" : undefined}
             onClick={(event) => {
               const details = event.currentTarget.closest("details");
               if (details) {
                 details.removeAttribute("open");
               }
             }}
-            className={`flex items-center gap-3 rounded-2xl text-sm font-medium transition ${
-              isHorizontal ? "shrink-0 px-3 py-2" : "px-3 py-2.5"
+            className={`group flex items-center gap-2.5 rounded-lg text-sm font-medium transition-colors ${
+              isHorizontal ? "shrink-0 px-2.5 py-2" : "px-2.5 py-2"
             } ${
               isActive
-                ? "bg-white text-slate-950 shadow-sm ring-1 ring-slate-200"
-                : "text-slate-600 hover:bg-white/70 hover:text-slate-900"
+                ? "bg-secondary text-foreground"
+                : "text-muted-foreground hover:bg-secondary/60 hover:text-foreground"
             }`}
           >
             <span
-              className={`flex items-center justify-center rounded-xl ${
-                isHorizontal ? "h-7 w-7" : "h-8 w-8"
+              className={`flex items-center justify-center rounded-md transition-colors ${
+                isHorizontal ? "h-6 w-6" : "h-7 w-7"
               } ${
                 isActive
-                  ? "bg-slate-950 text-white"
-                  : "bg-slate-100 text-slate-500"
+                  ? "bg-primary text-primary-foreground"
+                  : "bg-secondary text-muted-foreground group-hover:bg-card group-hover:text-foreground"
               }`}
             >
               {item.icon}
