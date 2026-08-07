@@ -217,74 +217,63 @@ export default async function RootLayout({
     : [];
 
   return (
-    <html lang="sq" className="light bg-background" style={{ colorScheme: "light" }}>
+    <html lang="sq" className="light" style={{ colorScheme: "light" }}>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} bg-background text-foreground antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} bg-[#f3f6fb] text-slate-950 antialiased`}
       >
         <div className="min-h-screen">
           {currentUser && hasAccess && !isPlatformRoute ? (
             <div className="flex min-h-screen print:block">
-              <aside className="hidden w-[264px] shrink-0 flex-col border-r border-border bg-card px-4 py-5 xl:flex print:hidden">
-                <Link
-                  href="/"
-                  className="flex items-center gap-3 rounded-xl px-2 py-2 transition hover:bg-secondary"
-                >
-                  <span className="relative h-10 w-10 shrink-0 overflow-hidden rounded-xl border border-border bg-card shadow-xs">
+              <aside className="hidden w-[248px] shrink-0 border-r border-slate-200 bg-[#edf2f8] px-5 py-6 xl:flex xl:flex-col print:hidden">
+                <Link href="/" className="flex items-center gap-3">
+                  <span className="relative h-11 w-11 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
                     <Image
                       src="/stock-app-logo.svg"
                       alt="Logo"
                       fill
-                      className="object-contain p-1.5"
-                      sizes="40px"
+                      className="object-contain p-2"
+                      sizes="44px"
                       priority
                     />
                   </span>
                   <div className="min-w-0">
-                    <p className="truncate text-sm font-semibold tracking-tight text-foreground">
+                    <p className="truncate text-base font-semibold tracking-tight text-slate-950">
                       {tenantLabel}
                     </p>
-                    <p className="truncate text-xs text-muted-foreground">
+                    <p className="text-xs text-slate-500">
                       {tenantTemplate?.label ?? "Menaxhimi i stokut"}
                     </p>
                   </div>
                 </Link>
 
-                <div className="mt-6 flex-1">
-                  <p className="px-3 pb-2 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground/70">
-                    Menu
-                  </p>
+                <div className="mt-8">
                   <AppShellNav items={navItems} />
                 </div>
 
-                <div className="mt-4 border-t border-border pt-4">
-                  <div className="flex items-center gap-3 rounded-xl border border-border bg-secondary/60 px-3 py-2.5">
-                    <span
-                      className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white"
-                      style={{ backgroundColor: primaryColor }}
-                    >
-                      {userInitials(currentUser.name)}
-                    </span>
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-foreground">
-                        {currentUser.name}
-                      </p>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {roleLabel(currentUser.role)}
-                      </p>
-                    </div>
+                <div className="mt-auto space-y-3 border-t border-slate-200 pt-5">
+                  <div className="rounded-2xl bg-white px-3 py-3 shadow-sm ring-1 ring-slate-200">
+                    <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                      Aktive
+                    </p>
+                    <p className="mt-1 text-sm font-medium text-slate-900">
+                      {currentUser.name}
+                    </p>
+                    <p className="mt-1 text-xs text-slate-500">
+                      {roleLabel(currentUser.role)}
+                    </p>
                   </div>
                 </div>
               </aside>
 
               <div className="flex min-w-0 flex-1 flex-col">
-                <header className="sticky top-0 z-40 border-b border-border bg-card/85 backdrop-blur-md print:hidden">
-                  <div className="flex h-16 items-center justify-between gap-4 px-4 sm:px-6 lg:px-8">
+                <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/92 backdrop-blur print:hidden">
+                  <div className="flex items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
                     <div className="flex min-w-0 items-center gap-3 xl:hidden">
                       <Link
                         href="/"
-                        className="flex min-w-0 items-center gap-2 text-base font-semibold tracking-tight text-foreground sm:gap-3"
+                        className="flex min-w-0 items-center gap-2 text-base font-semibold tracking-tight text-slate-950 sm:gap-3 sm:text-lg"
                       >
-                        <span className="relative h-9 w-9 shrink-0 overflow-hidden rounded-xl border border-border bg-card shadow-xs sm:h-10 sm:w-10">
+                        <span className="relative h-9 w-9 shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm sm:h-10 sm:w-10 sm:rounded-2xl">
                           <Image
                             src="/stock-app-logo.svg"
                             alt="Logo"
@@ -301,31 +290,15 @@ export default async function RootLayout({
                     </div>
 
                     <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
-                      <span className="hidden items-center rounded-full border border-border bg-secondary px-2.5 py-1 text-[11px] font-semibold uppercase tracking-[0.14em] text-muted-foreground sm:inline-flex">
+                      <span className="hidden rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600 sm:inline-flex">
                         {roleLabel(currentUser.role)}
                       </span>
-                      <div className="hidden items-center gap-2.5 rounded-full border border-border bg-card py-1 pl-1 pr-3 shadow-xs sm:flex">
-                        <span
-                          className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-semibold text-white"
-                          style={{ backgroundColor: primaryColor }}
-                        >
-                          {userInitials(currentUser.name)}
-                        </span>
-                        <div className="min-w-0">
-                          <p className="max-w-[140px] truncate text-sm font-medium text-foreground">
-                            {currentUser.name}
-                          </p>
-                          <p className="max-w-[140px] truncate text-xs text-muted-foreground">
-                            {tenantLabel}
-                          </p>
-                        </div>
-                      </div>
                       <form action={logout} className="print:hidden">
                         <button
                           type="submit"
                           aria-label="Dil"
                           title="Dil"
-                          className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-card text-muted-foreground transition hover:bg-secondary hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 sm:h-9 sm:w-auto sm:gap-2 sm:px-3.5"
+                          className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 sm:h-auto sm:w-auto sm:gap-2 sm:rounded-2xl sm:px-4 sm:py-2.5"
                         >
                           <svg
                             viewBox="0 0 24 24"
@@ -335,32 +308,48 @@ export default async function RootLayout({
                             <path d="M20 12H9" />
                             <path d="M12 19H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h6" />
                           </svg>
-                          <span className="hidden text-sm font-medium sm:inline">Dil</span>
+                          <span className="hidden sm:inline">Dil</span>
                         </button>
                       </form>
+                      <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-2.5 py-2 shadow-sm sm:gap-3 sm:rounded-2xl sm:px-3">
+                        <span
+                          className="flex h-9 w-9 items-center justify-center rounded-full text-xs font-semibold text-white"
+                          style={{ backgroundColor: primaryColor }}
+                        >
+                          {userInitials(currentUser.name)}
+                        </span>
+                        <div className="min-w-0 max-sm:hidden">
+                          <p className="max-w-[140px] truncate text-sm font-medium text-slate-900">
+                            {currentUser.name}
+                          </p>
+                          <p className="max-w-[140px] truncate text-xs text-slate-500">
+                            {tenantLabel}
+                          </p>
+                        </div>
+                      </div>
                     </div>
                   </div>
-                  <div className="border-t border-border px-4 py-3 xl:hidden">
+                  <div className="border-t border-slate-100 px-4 py-3 xl:hidden">
                     <details className="relative sm:hidden">
-                      <summary className="flex h-11 w-full cursor-pointer list-none items-center justify-between rounded-xl border border-border bg-secondary px-4 text-sm font-semibold text-foreground transition hover:bg-card">
+                      <summary className="flex h-11 w-full cursor-pointer list-none items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-white">
                         <span>Menu</span>
                         <svg
                           viewBox="0 0 20 20"
                           fill="currentColor"
                           aria-hidden="true"
-                          className="h-4 w-4 text-muted-foreground"
+                          className="h-4 w-4"
                         >
                           <circle cx="4.5" cy="10" r="1.4" />
                           <circle cx="10" cy="10" r="1.4" />
                           <circle cx="15.5" cy="10" r="1.4" />
                         </svg>
                       </summary>
-                      <div className="absolute left-0 right-0 z-30 mt-2 overflow-hidden rounded-xl border border-border bg-card p-2 shadow-lg">
+                      <div className="absolute left-0 right-0 z-30 mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 shadow-[0_18px_40px_rgba(15,23,42,0.14)]">
                         <AppShellNav items={navItems} />
                       </div>
                     </details>
                     <div className="hidden sm:block">
-                      <div className="-mx-1 overflow-x-auto pb-1 scrollbar-thin">
+                      <div className="-mx-1 overflow-x-auto pb-1">
                         <AppShellNav items={navItems} orientation="horizontal" />
                       </div>
                     </div>

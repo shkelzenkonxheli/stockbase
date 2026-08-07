@@ -329,38 +329,47 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   return (
     <main className="px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-6">
-        <section className="space-y-5 rounded-[30px] border border-slate-200 bg-white px-5 py-6 shadow-[0_18px_45px_rgba(15,23,42,0.06)] sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-            <div>
-              <h1 className="text-4xl font-semibold tracking-tight text-slate-950">
+        <section className="rounded-[30px] border border-slate-200 bg-white px-5 py-5 shadow-[0_18px_45px_rgba(15,23,42,0.06)] sm:px-6 sm:py-6 lg:px-8">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+            <div className="min-w-0">
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">
+                Inventari
+              </p>
+              <h1 className="mt-1.5 text-2xl font-semibold tracking-tight text-slate-950 sm:text-3xl text-balance">
                 Inventari i produkteve
               </h1>
-              <div className="mt-3 flex flex-wrap gap-3 text-sm">
-                <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-slate-600">
-                  {totalProducts.toLocaleString("sq-AL")} produkte
+              <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-slate-100 px-2.5 py-1 font-medium text-slate-600 ring-1 ring-inset ring-slate-200/70">
+                  <span className="h-1.5 w-1.5 rounded-full bg-slate-400" aria-hidden="true" />
+                  <span className="tabular-nums">{totalProducts.toLocaleString("sq-AL")}</span> produkte
                 </span>
-                <span className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 font-medium text-emerald-700">
-                  {totalUnits.toLocaleString("sq-AL")} njesi ne total
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-emerald-50 px-2.5 py-1 font-medium text-emerald-700 ring-1 ring-inset ring-emerald-200/70">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" aria-hidden="true" />
+                  <span className="tabular-nums">{totalUnits.toLocaleString("sq-AL")}</span> njesi ne total
                 </span>
-                <span className="inline-flex items-center rounded-full bg-rose-50 px-3 py-1 font-medium text-rose-600">
-                  {lowStockProducts} me stok te ulet
+                <span className="inline-flex items-center gap-1.5 rounded-full bg-rose-50 px-2.5 py-1 font-medium text-rose-600 ring-1 ring-inset ring-rose-200/70">
+                  <span className="h-1.5 w-1.5 rounded-full bg-rose-500" aria-hidden="true" />
+                  <span className="tabular-nums">{lowStockProducts}</span> me stok te ulet
                 </span>
               </div>
             </div>
 
-            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+            <div className="flex shrink-0 flex-col gap-2.5 sm:flex-row sm:flex-wrap">
               <Link
                 href="/"
-                className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-white"
+                className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-slate-50 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-2"
               >
                 Ballina
               </Link>
               {canManageInventory ? (
                 <Link
                   href="/products/new"
-                  className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_25px_rgba(15,23,42,0.18)] transition hover:bg-slate-800"
+                  className="inline-flex items-center justify-center gap-1.5 rounded-2xl bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_10px_25px_rgba(15,23,42,0.18)] transition hover:bg-slate-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950/40 focus-visible:ring-offset-2"
                 >
-                  + Shto Produkt
+                  <svg viewBox="0 0 20 20" aria-hidden="true" className="h-4 w-4 fill-none stroke-current stroke-[1.9]">
+                    <path d="M10 4.5v11M4.5 10h11" strokeLinecap="round" />
+                  </svg>
+                  Shto Produkt
                 </Link>
               ) : null}
             </div>
@@ -382,13 +391,19 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           </div>
 
           {products.length === 0 ? (
-            <div className="px-6 py-16 text-center">
-              <p className="text-base font-medium text-slate-900">
+            <div className="flex flex-col items-center px-6 py-16 text-center">
+              <span className="flex h-14 w-14 items-center justify-center rounded-2xl bg-slate-100 text-slate-400">
+                <svg viewBox="0 0 24 24" className="h-7 w-7 fill-none stroke-current stroke-[1.6]" aria-hidden="true">
+                  <path d="M4.5 7 12 3l7.5 4v10L12 21l-7.5-4V7Z" strokeLinejoin="round" />
+                  <path d="M4.5 7 12 11m0 0 7.5-4M12 11v10" strokeLinejoin="round" />
+                </svg>
+              </span>
+              <p className="mt-4 text-base font-semibold text-slate-900 text-balance">
                 {searchQuery || selectedCategory || selectedModel || selectedWarehouse
                   ? "Nuk u gjet asnje produkt me keto filtra"
                   : "Nuk ka ende produkte te regjistruara"}
               </p>
-              <p className="mt-2 text-sm text-slate-600">
+              <p className="mt-1.5 max-w-sm text-sm text-slate-600 text-pretty">
                 {searchQuery || selectedCategory || selectedModel || selectedWarehouse
                   ? "Provo nje kerkese tjeter ose bej reset."
                   : "Shto produktin e pare dhe vazhdo me variantet per te filluar inventarin."}
@@ -593,12 +608,12 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                     <col className="w-[340px]" />
                   </colgroup>
                   <thead className="sticky top-0 z-10 bg-slate-50/95 text-left backdrop-blur">
-                    <tr className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
-                      <th className="px-4 py-4">Produkti</th>
+                    <tr className="border-b border-slate-200/80 text-[10.5px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+                      <th className="px-4 py-3.5">Produkti</th>
                       {productListView.order
                         .filter((key) => productListView.visibility[key])
                         .map((key) => (
-                          <th key={key} className="px-4 py-4">
+                          <th key={key} className={`px-4 py-3.5 ${key === "stock" || key === "price" ? "text-right" : ""}`}>
                             {{
                               brand: "Brandi",
                               category: "Kategoria",
@@ -612,7 +627,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                             }[key]}
                           </th>
                         ))}
-                      <th className="px-4 py-4 text-right">Veprime</th>
+                      <th className="px-4 py-3.5 text-right">Veprime</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 bg-white">
@@ -652,10 +667,10 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                       };
 
                       return (
-                        <tr key={product.id} className="align-top transition hover:bg-slate-50/75">
-                          <td className="px-4 py-4">
+                        <tr key={product.id} className="align-top transition-colors hover:bg-slate-50/75">
+                          <td className="px-4 py-3">
                             <div className="flex items-start gap-3">
-                              <div className="h-12 w-12 shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
+                              <div className="h-11 w-11 shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
                                 <ProductStockQuickView
                                   productId={product.id}
                                   productName={product.brand ? `${product.brand} ${product.name}` : product.name}
@@ -686,20 +701,34 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                               </div>
                               <div className="min-w-0">
                                 <p className="truncate font-semibold text-slate-950">{product.name}</p>
-                                <p className="mt-1 text-xs text-slate-500">{product.variants.length} variante</p>
+                                <p className="mt-0.5 text-xs text-slate-500">{product.variants.length} variante</p>
                               </div>
                             </div>
                           </td>
                           {productListView.order
                             .filter((key) => productListView.visibility[key])
-                            .map((key) => (
-                              <td key={key} className="px-4 py-4 text-slate-600">
-                                <span className="block max-w-[220px] truncate" title={fieldValues[key] ?? "-"}>
-                                  {fieldValues[key] ?? "-"}
-                                </span>
-                              </td>
-                            ))}
-                          <td className="px-4 py-4">
+                            .map((key) =>
+                              key === "stock" ? (
+                                <td key={key} className="px-4 py-3 text-right">
+                                  <span className="inline-flex items-center rounded-lg bg-slate-100 px-2 py-0.5 text-sm font-semibold tabular-nums text-slate-800">
+                                    {fieldValues[key] ?? "-"}
+                                  </span>
+                                </td>
+                              ) : key === "price" ? (
+                                <td key={key} className="px-4 py-3 text-right font-medium tabular-nums text-slate-700">
+                                  <span className="block truncate" title={fieldValues[key] ?? "-"}>
+                                    {fieldValues[key] ?? "-"}
+                                  </span>
+                                </td>
+                              ) : (
+                                <td key={key} className="px-4 py-3 text-slate-600">
+                                  <span className="block max-w-[220px] truncate" title={fieldValues[key] ?? "-"}>
+                                    {fieldValues[key] ?? "-"}
+                                  </span>
+                                </td>
+                              ),
+                            )}
+                          <td className="px-4 py-3">
                             <div className="flex items-center justify-end gap-2 whitespace-nowrap">
                               <ProductStockQuickView
                                 productId={product.id}
@@ -733,7 +762,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                               />
                               <Link
                                 href={buildProductDetailsHref(product.id, selectedWarehouse)}
-                                className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+                                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-1"
                                 aria-label="Menaxho"
                                 title="Menaxho"
                               >
@@ -742,7 +771,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                               {canManageInventory ? (
                                 <Link
                                   href={`/products/${product.id}/edit`}
-                                  className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+                                  className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-1"
                                   aria-label="Edito"
                                   title="Edito"
                                 >
@@ -773,8 +802,8 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
         {totalProducts > PAGE_SIZE ? (
           <div className="flex flex-col gap-3 rounded-[28px] border border-slate-200/80 bg-white px-5 py-4 shadow-[0_10px_30px_rgba(15,23,42,0.05)] sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-slate-600">
-              Faqja <span className="font-semibold text-slate-950">{currentPage}</span> nga{" "}
-              <span className="font-semibold text-slate-950">{totalPages}</span>
+              Faqja <span className="font-semibold tabular-nums text-slate-950">{currentPage}</span> nga{" "}
+              <span className="font-semibold tabular-nums text-slate-950">{totalPages}</span>
             </p>
             <div className="flex gap-2">
               {previousPage ? (
@@ -786,12 +815,18 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                     selectedModel,
                     selectedWarehouse,
                   )}
-                  className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+                  className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-1"
                 >
+                  <svg viewBox="0 0 20 20" aria-hidden="true" className="h-4 w-4 fill-none stroke-current stroke-[1.8]">
+                    <path d="M12 5 7 10l5 5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
                   Mbrapa
                 </Link>
               ) : (
-                <span className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-400">
+                <span className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-400">
+                  <svg viewBox="0 0 20 20" aria-hidden="true" className="h-4 w-4 fill-none stroke-current stroke-[1.8]">
+                    <path d="M12 5 7 10l5 5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
                   Mbrapa
                 </span>
               )}
@@ -804,13 +839,19 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                     selectedModel,
                     selectedWarehouse,
                   )}
-                  className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+                  className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-950/15 focus-visible:ring-offset-1"
                 >
                   Para
+                  <svg viewBox="0 0 20 20" aria-hidden="true" className="h-4 w-4 fill-none stroke-current stroke-[1.8]">
+                    <path d="M8 5l5 5-5 5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
                 </Link>
               ) : (
-                <span className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-400">
+                <span className="inline-flex items-center justify-center gap-1.5 rounded-xl border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-400">
                   Para
+                  <svg viewBox="0 0 20 20" aria-hidden="true" className="h-4 w-4 fill-none stroke-current stroke-[1.8]">
+                    <path d="M8 5l5 5-5 5" strokeLinecap="round" strokeLinejoin="round" />
+                  </svg>
                 </span>
               )}
             </div>
