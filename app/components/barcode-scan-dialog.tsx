@@ -1,0 +1,380 @@
+"use client";
+
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { IScannerControls } from "@zxing/browser";
+
+type DetectorResult = {
+  rawValue?: string;
+};
+
+type BarcodeDetectorLike = {
+  detect: (source: ImageBitmapSource) => Promise<DetectorResult[]>;
+};
+
+type BarcodeDetectorCtor = new (options?: {
+  formats?: string[];
+}) => BarcodeDetectorLike;
+
+type ScannerEngine = "native" | "zxing";
+
+type BarcodeScanDialogProps = {
+  open: boolean;
+  title?: string;
+  description?: string;
+  onClose: () => void;
+  onDetected: (code: string) => void;
+};
+
+function getBarcodeDetectorCtor(): BarcodeDetectorCtor | null {
+  if (typeof window === "undefined") {
+    return null;
+  }
+
+  const candidate = (window as Window & { BarcodeDetector?: BarcodeDetectorCtor })
+    .BarcodeDetector;
+
+  return typeof candidate === "function" ? candidate : null;
+}
+
+export function BarcodeScanDialog({
+  open,
+  title = "Skano barcode",
+  description = "Drejtoje kameran te barcode-i dhe sistemi e lexon automatikisht.",
+  onClose,
+  onDetected,
+}: BarcodeScanDialogProps) {
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const detectIntervalRef = useRef<number | null>(null);
+  const zxingControlsRef = useRef<IScannerControls | null>(null);
+  const [isStarting, setIsStarting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [lastCode, setLastCode] = useState("");
+
+  const supportState = useMemo(() => {
+    if (typeof window === "undefined") {
+      return {
+        isSupported: false,
+        reason: "Po ngarkohet kontrolli i kameres.",
+      };
+    }
+
+    const hasCameraApi =
+      Boolean(navigator.mediaDevices) &&
+      typeof navigator.mediaDevices.getUserMedia === "function";
+    const isSecure =
+      window.isSecureContext ||
+      window.location.hostname === "localhost" ||
+      window.location.hostname === "127.0.0.1";
+
+    if (!isSecure) {
+      return {
+        isSupported: false,
+        reason:
+          "Kamera kerkon HTTPS ose localhost real. Nga telefoni me adrese lokale browser-i e bllokon kameran.",
+      };
+    }
+
+    if (!hasCameraApi) {
+      return {
+        isSupported: false,
+        reason: "Ky browser nuk e mbeshtet hapjen e kameres nga web app-i.",
+      };
+    }
+
+    return {
+      isSupported: true,
+      reason: null,
+    };
+  }, []);
+
+  const engine: ScannerEngine = getBarcodeDetectorCtor() ? "native" : "zxing";
+
+  const stopScanner = useCallback(() => {
+    if (detectIntervalRef.current) {
+      window.clearInterval(detectIntervalRef.current);
+      detectIntervalRef.current = null;
+    }
+
+    if (zxingControlsRef.current) {
+      zxingControlsRef.current.stop();
+      zxingControlsRef.current = null;
+    }
+
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+
+    if (videoRef.current) {
+      videoRef.current.pause();
+      videoRef.current.srcObject = null;
+    }
+
+    setIsStarting(false);
+  }, []);
+
+  const waitForVideoElement = useCallback(async () => {
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      if (videoRef.current) {
+        return videoRef.current;
+      }
+
+      await new Promise<void>((resolve) => {
+        window.requestAnimationFrame(() => resolve());
+      });
+    }
+
+    return null;
+  }, []);
+
+  const handleDetectedCode = useCallback(
+    (value: string) => {
+      const normalized = value.trim().toUpperCase();
+
+      if (!normalized || normalized === lastCode) {
+        return;
+      }
+
+      setLastCode(normalized);
+      setSuccessMessage(`Kodi u lexua: ${normalized}`);
+
+      if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+        navigator.vibrate?.(120);
+      }
+
+      stopScanner();
+      window.setTimeout(() => {
+        onDetected(normalized);
+        onClose();
+      }, 250);
+    },
+    [lastCode, onClose, onDetected, stopScanner],
+  );
+
+  const startNativeScanner = useCallback(async () => {
+    const video = await waitForVideoElement();
+
+    if (!video) {
+      setErrorMessage("Nuk u inicializua preview i kameres.");
+      return;
+    }
+
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: { ideal: "environment" },
+      },
+      audio: false,
+    });
+
+    streamRef.current = stream;
+    video.srcObject = stream;
+    video.setAttribute("playsinline", "true");
+    await video.play();
+
+    const Detector = getBarcodeDetectorCtor();
+
+    if (!Detector) {
+      throw new Error("BarcodeDetector mungon.");
+    }
+
+    const detector = new Detector({
+      formats: ["code_128", "ean_13", "ean_8", "upc_a", "upc_e", "code_39"],
+    });
+
+    detectIntervalRef.current = window.setInterval(async () => {
+      const currentVideo = videoRef.current;
+
+      if (!currentVideo || currentVideo.readyState < 2) {
+        return;
+      }
+
+      try {
+        const results = await detector.detect(currentVideo);
+        const detectedValue = results.find((item) => item.rawValue?.trim())?.rawValue;
+
+        if (detectedValue) {
+          handleDetectedCode(detectedValue);
+        }
+      } catch {
+        setErrorMessage("Skanimi deshtoi. Provo perseri.");
+        stopScanner();
+      }
+    }, 500);
+  }, [handleDetectedCode, stopScanner, waitForVideoElement]);
+
+  const startZxingScanner = useCallback(async () => {
+    const video = await waitForVideoElement();
+
+    if (!video) {
+      setErrorMessage("Nuk u inicializua preview i kameres.");
+      return;
+    }
+
+    video.setAttribute("playsinline", "true");
+
+    const { BrowserMultiFormatReader } = await import("@zxing/browser");
+    const { BarcodeFormat, DecodeHintType, NotFoundException } = await import(
+      "@zxing/library"
+    );
+
+    const hints = new Map();
+    hints.set(DecodeHintType.POSSIBLE_FORMATS, [
+      BarcodeFormat.CODE_128,
+      BarcodeFormat.CODE_39,
+      BarcodeFormat.EAN_13,
+      BarcodeFormat.EAN_8,
+      BarcodeFormat.UPC_A,
+      BarcodeFormat.UPC_E,
+      BarcodeFormat.CODABAR,
+      BarcodeFormat.ITF,
+    ]);
+
+    const reader = new BrowserMultiFormatReader(hints);
+
+    zxingControlsRef.current = await reader.decodeFromVideoDevice(
+      undefined,
+      video,
+      (result, error, controls) => {
+        zxingControlsRef.current = controls;
+
+        if (result?.getText()) {
+          handleDetectedCode(result.getText());
+          return;
+        }
+
+        if (error && !(error instanceof NotFoundException)) {
+          setErrorMessage("Skanimi deshtoi. Provo perseri.");
+          stopScanner();
+        }
+      },
+    );
+  }, [handleDetectedCode, stopScanner, waitForVideoElement]);
+
+  useEffect(() => {
+    if (!open) {
+      stopScanner();
+      setErrorMessage(null);
+      setSuccessMessage(null);
+      setLastCode("");
+      return;
+    }
+
+    if (!supportState.isSupported) {
+      return;
+    }
+
+    let cancelled = false;
+
+    const start = async () => {
+      setIsStarting(true);
+      setErrorMessage(null);
+      setSuccessMessage(null);
+
+      try {
+        if (engine === "native") {
+          await startNativeScanner();
+        } else {
+          await startZxingScanner();
+        }
+
+        if (!cancelled) {
+          setIsStarting(false);
+        }
+      } catch {
+        if (!cancelled) {
+          setErrorMessage("Nuk u hap kamera. Lejo qasjen te kamera dhe provo perseri.");
+          setIsStarting(false);
+          stopScanner();
+        }
+      }
+    };
+
+    void start();
+
+    return () => {
+      cancelled = true;
+      stopScanner();
+    };
+  }, [engine, open, startNativeScanner, startZxingScanner, stopScanner, supportState.isSupported]);
+
+  if (!open) {
+    return null;
+  }
+
+  return (
+    <div className="fixed inset-0 z-[120] flex items-center justify-center bg-slate-950/60 p-4">
+      <button
+        type="button"
+        onClick={onClose}
+        className="absolute inset-0 cursor-default"
+        aria-label="Mbyll scanner-in"
+      />
+
+      <div className="relative z-[121] flex w-full max-w-2xl flex-col overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-[0_24px_64px_rgba(15,23,42,0.2)]">
+        <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-5 sm:px-6">
+          <div className="min-w-0">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+              Scanner
+            </p>
+            <h3 className="mt-2 truncate text-2xl font-semibold tracking-tight text-slate-950">
+              {title}
+            </h3>
+            <p className="mt-1 text-sm text-slate-500">{description}</p>
+          </div>
+          <button
+            type="button"
+            onClick={onClose}
+            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-xl font-semibold text-slate-500 transition hover:border-slate-300 hover:text-slate-900"
+            aria-label="Mbyll"
+          >
+            ×
+          </button>
+        </div>
+
+        <div className="space-y-4 px-5 py-5 sm:px-6">
+          {!supportState.isSupported ? (
+            <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+              {supportState.reason}
+            </div>
+          ) : null}
+
+          {errorMessage ? (
+            <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+              {errorMessage}
+            </div>
+          ) : null}
+
+          {successMessage ? (
+            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+              {successMessage}
+            </div>
+          ) : null}
+
+          <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-slate-950">
+            <div className="relative aspect-[4/3] w-full bg-black">
+              <video
+                ref={videoRef}
+                className="h-full w-full object-cover"
+                muted
+                autoPlay
+                playsInline
+              />
+              <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
+                <div className="h-32 w-full max-w-xs rounded-[28px] border-2 border-emerald-400/90 shadow-[0_0_0_9999px_rgba(2,6,23,0.42)]" />
+              </div>
+            </div>
+            <div className="border-t border-slate-800 px-4 py-3 text-sm text-slate-300">
+              {isStarting
+                ? "Po hapet kamera..."
+                : engine === "native"
+                  ? "Drejtoje kameran te barcode-i dhe mbaje te qete 1-2 sekonda."
+                  : "Po perdoret scanner fallback per iPhone/Safari. Drejtoje kameran te barcode-i dhe mbaje te qete 1-2 sekonda."}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

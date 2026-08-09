@@ -50,6 +50,7 @@ type ProductsPageProps = {
   searchParams?: Promise<{
     page?: string;
     q?: string;
+    code?: string;
     category?: string;
     model?: string;
     warehouse?: string;
@@ -60,6 +61,7 @@ type ProductsPageProps = {
 function buildProductsPageHref(
   page: number,
   q: string,
+  code: string,
   category: string,
   model: string,
   warehouse: string,
@@ -68,6 +70,7 @@ function buildProductsPageHref(
   const params = new URLSearchParams();
   params.set("page", String(page));
   if (q) params.set("q", q);
+  if (code) params.set("code", code);
   if (category) params.set("category", category);
   if (model) params.set("model", model);
   if (warehouse) params.set("warehouse", warehouse);
@@ -125,6 +128,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   };
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const searchQuery = resolvedSearchParams?.q?.trim() || "";
+  const selectedCode = resolvedSearchParams?.code?.trim().toUpperCase() || "";
   const selectedCategory = resolvedSearchParams?.category?.trim() || "";
   const selectedModel = resolvedSearchParams?.model?.trim() || "";
   const selectedWarehouse = resolvedSearchParams?.warehouse?.trim() || "";
@@ -138,7 +142,39 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     ) ?? null;
   const activeWarehouseId = selectedWarehouseRecord?.id ?? null;
   const filters: Prisma.ProductWhereInput[] = [];
+  const scannedVariant = selectedCode
+    ? await prisma.variant.findFirst({
+        where: {
+          tenantId,
+          OR: [{ barcode: selectedCode }, { sku: selectedCode }],
+          ...(activeWarehouseId
+            ? {
+                inventories: {
+                  some: {
+                    warehouseId: activeWarehouseId,
+                  },
+                },
+              }
+            : {}),
+        },
+        select: {
+          productId: true,
+        },
+      })
+    : null;
   const searchTokens = searchQuery.split(/\s+/).map((token) => token.trim()).filter(Boolean);
+
+  if (selectedCode) {
+    if (scannedVariant) {
+      filters.push({
+        id: scannedVariant.productId,
+      });
+    } else {
+      filters.push({
+        id: -1,
+      });
+    }
+  }
 
   const getVariantDisplayStock = (
     variant: {
@@ -400,8 +436,9 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
         <section className="overflow-hidden rounded-[30px] border border-slate-200/80 bg-white shadow-[0_14px_40px_rgba(15,23,42,0.07)]">
           <div className="border-b border-slate-200/80 px-4 py-4 sm:px-5">
             <ProductsFilters
-              key={`${searchQuery}|${selectedCategory}|${selectedModel}|${selectedWarehouse}|${selectedStock}`}
+              key={`${searchQuery}|${selectedCode}|${selectedCategory}|${selectedModel}|${selectedWarehouse}|${selectedStock}`}
               searchQuery={searchQuery}
+              selectedCode={selectedCode}
               selectedCategory={selectedCategory}
               selectedModel={selectedModel}
               selectedWarehouse={selectedWarehouse}
@@ -813,6 +850,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                   href={buildProductsPageHref(
                     previousPage,
                     searchQuery,
+                    selectedCode,
                     selectedCategory,
                     selectedModel,
                     selectedWarehouse,
@@ -832,6 +870,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                   href={buildProductsPageHref(
                     nextPage,
                     searchQuery,
+                    selectedCode,
                     selectedCategory,
                     selectedModel,
                     selectedWarehouse,

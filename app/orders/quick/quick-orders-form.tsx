@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { BarcodeScanDialog } from "@/app/components/barcode-scan-dialog";
 import { UploadedImage } from "@/app/components/uploaded-image";
 import { getOrderVariantMode, getOrderVariantSummary } from "@/lib/order-variant-display";
 
@@ -87,6 +88,8 @@ export function QuickOrdersForm({ action, warehouses, products }: QuickOrdersFor
   const [variantModalOpen, setVariantModalOpen] = useState(false);
   const [sizeModalOpen, setSizeModalOpen] = useState(false);
   const [selectedColorKey, setSelectedColorKey] = useState("");
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [scannerMessage, setScannerMessage] = useState<string | null>(null);
   const [lightboxImage, setLightboxImage] = useState<{
     src: string;
     alt: string;
@@ -149,6 +152,18 @@ export function QuickOrdersForm({ action, warehouses, products }: QuickOrdersFor
 
     return () => window.clearTimeout(timeoutId);
   }, [rowErrors]);
+
+  useEffect(() => {
+    if (!scannerMessage) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setScannerMessage(null);
+    }, 3500);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [scannerMessage]);
 
   useEffect(() => {
     if (!selectedProductId) {
@@ -434,6 +449,79 @@ export function QuickOrdersForm({ action, warehouses, products }: QuickOrdersFor
     setSelectedColorKey("");
   };
 
+  const addVariantToRows = (variant: OrderVariant) => {
+    setVariantsByProduct((current) => {
+      const existingVariants = current[variant.productId] ?? [];
+      const hasVariant = existingVariants.some((item) => item.id === variant.id);
+
+      if (hasVariant) {
+        return current;
+      }
+
+      return {
+        ...current,
+        [variant.productId]: [...existingVariants, variant],
+      };
+    });
+
+    setRows((currentRows) => {
+      const existingRow = currentRows.find(
+        (row) => Number(row.variantId) === variant.id,
+      );
+
+      if (existingRow) {
+        const currentQuantity = Number(existingRow.quantity) || 0;
+
+        if (currentQuantity >= variant.stock) {
+          setRowErrors((current) => ({
+            ...current,
+            [existingRow.id]: "Nuk ka stok te mjaftueshem per kete sasi.",
+          }));
+          return currentRows;
+        }
+
+        return currentRows.map((row) =>
+          row.id === existingRow.id
+            ? {
+                ...row,
+                quantity: String(currentQuantity + 1),
+              }
+            : row,
+        );
+      }
+
+      return [...currentRows, createRow(variant.productId, variant.id, variant.price)];
+    });
+  };
+
+  const handleScanDetected = async (code: string) => {
+    try {
+      const response = await fetch(
+        `/api/variants/lookup?code=${encodeURIComponent(code)}&warehouseId=${Number(warehouseId) || ""}`,
+        { cache: "no-store" },
+      );
+
+      if (!response.ok) {
+        setScannerMessage("Nuk u gjet variant me kete barcode ne depon aktive.");
+        return;
+      }
+
+      const data = (await response.json()) as {
+        variant: OrderVariant;
+      };
+
+      if (!data.variant || data.variant.stock <= 0) {
+        setScannerMessage("Varianti ekziston, por nuk ka stok ne kete depo.");
+        return;
+      }
+
+      addVariantToRows(data.variant);
+      setScannerMessage(`U shtua: ${getOrderVariantSummary(data.variant)}`);
+    } catch {
+      setScannerMessage("Skanimi u lexua, por lookup deshtoi. Provo perseri.");
+    }
+  };
+
   const updateUnitPrice = (rowId: string, value: string) => {
     setRows((currentRows) =>
       currentRows.map((row) =>
@@ -604,6 +692,21 @@ export function QuickOrdersForm({ action, warehouses, products }: QuickOrdersFor
                 </option>
               ))}
             </select>
+          ) : null}
+        </div>
+
+        <div className="mt-4 flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={() => setScannerOpen(true)}
+            className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+          >
+            Scan barcode
+          </button>
+          {scannerMessage ? (
+            <span className="inline-flex items-center rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+              {scannerMessage}
+            </span>
           ) : null}
         </div>
 
@@ -1191,6 +1294,16 @@ export function QuickOrdersForm({ action, warehouses, products }: QuickOrdersFor
           </div>
         </div>
       ) : null}
+
+      <BarcodeScanDialog
+        open={scannerOpen}
+        title="Skano per porosi te shpejte"
+        description="Zgjidh depon burim dhe skano barcode-in. Varianti shtohet direkt ne porosi."
+        onClose={() => setScannerOpen(false)}
+        onDetected={(code) => {
+          void handleScanDetected(code);
+        }}
+      />
     </form>
   );
 }
