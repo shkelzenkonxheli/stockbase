@@ -30,6 +30,7 @@ type VariantsManagerProps = {
   selectedColor: string;
   selectedStock: string;
   selectedWarehouse: string;
+  returnTo: string;
   variants: VariantItem[];
   customFields: CustomVariantField[];
   deleteVariantAction: (formData: FormData) => void | Promise<void>;
@@ -44,6 +45,7 @@ export function VariantsManager({
   selectedColor,
   selectedStock,
   selectedWarehouse,
+  returnTo,
   variants,
   customFields,
   deleteVariantAction,
@@ -145,13 +147,28 @@ export function VariantsManager({
   };
 
   const getVariantEditHref = (variantId: number) =>
-    selectedWarehouse
-      ? `/products/${productId}/variants/${variantId}/edit?warehouse=${encodeURIComponent(selectedWarehouse)}`
-      : `/products/${productId}/variants/${variantId}/edit`;
+    (() => {
+      const params = new URLSearchParams();
+      if (selectedWarehouse) {
+        params.set("warehouse", selectedWarehouse);
+      }
+      if (returnTo) {
+        params.set("returnTo", returnTo);
+      }
+      const query = params.toString();
+      return query
+        ? `/products/${productId}/variants/${variantId}/edit?${query}`
+        : `/products/${productId}/variants/${variantId}/edit`;
+    })();
 
   const getVariantLabelsHref = (variantId: number, stock: number) => {
     const quantity = Math.max(stock, 1);
-    return `/products/${productId}/variants/${variantId}/labels?qty=${quantity}`;
+    const params = new URLSearchParams();
+    params.set("qty", String(quantity));
+    if (returnTo) {
+      params.set("returnTo", returnTo);
+    }
+    return `/products/${productId}/variants/${variantId}/labels?${params.toString()}`;
   };
 
   const renderActionIcons = (variantId: number, stock: number) => (
@@ -205,6 +222,7 @@ export function VariantsManager({
           { name: "color", value: selectedColor },
           { name: "stock", value: selectedStock },
           { name: "warehouse", value: selectedWarehouse },
+          { name: "returnTo", value: returnTo },
         ]}
         confirmMessage="A je i sigurt qe don ta fshish kete variant?"
         buttonLabel="Fshi"
@@ -278,6 +296,7 @@ export function VariantsManager({
               { name: "color", value: selectedColor },
               { name: "stock", value: selectedStock },
               { name: "warehouse", value: selectedWarehouse },
+              { name: "returnTo", value: returnTo },
             ]}
             confirmMessage="A je i sigurt qe don t'i fshish variantet e zgjedhura?"
             buttonLabel="Fshi te zgjedhurat"
@@ -421,6 +440,8 @@ export function VariantsManager({
                     { name: "size", value: selectedSize },
                     { name: "color", value: selectedColor },
                     { name: "stock", value: selectedStock },
+                    { name: "warehouse", value: selectedWarehouse },
+                    { name: "returnTo", value: returnTo },
                   ]}
                   confirmMessage="A je i sigurt qe don ta fshish kete variant?"
                   buttonLabel="Fshi"

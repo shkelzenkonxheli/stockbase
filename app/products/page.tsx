@@ -78,13 +78,20 @@ function buildProductsPageHref(
   return `/products?${params.toString()}`;
 }
 
-function buildProductDetailsHref(productId: number, warehouse: string) {
-  if (!warehouse) {
-    return `/products/${productId}`;
-  }
-
+function buildProductDetailsHref(
+  productId: number,
+  options: {
+    warehouse?: string;
+    returnTo?: string;
+  },
+) {
   const params = new URLSearchParams();
-  params.set("warehouse", warehouse);
+  if (options.warehouse) {
+    params.set("warehouse", options.warehouse);
+  }
+  if (options.returnTo) {
+    params.set("returnTo", options.returnTo);
+  }
   return `/products/${productId}?${params.toString()}`;
 }
 
@@ -135,6 +142,15 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   const selectedStock = resolvedSearchParams?.stock?.trim() || "";
   const currentPage = Math.max(1, Number(resolvedSearchParams?.page) || 1);
   const skip = (currentPage - 1) * PAGE_SIZE;
+  const currentListHref = buildProductsPageHref(
+    currentPage,
+    searchQuery,
+    selectedCode,
+    selectedCategory,
+    selectedModel,
+    selectedWarehouse,
+    selectedStock,
+  );
   const warehouseRecords = await getTenantWarehouses(tenantId, tenant.catalogConfig);
   const selectedWarehouseRecord =
     warehouseRecords.find(
@@ -581,7 +597,10 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                               className="w-full"
                             />
                             <Link
-                              href={buildProductDetailsHref(product.id, selectedWarehouse)}
+                              href={buildProductDetailsHref(product.id, {
+                                warehouse: selectedWarehouse,
+                                returnTo: currentListHref,
+                              })}
                               className="inline-flex w-full items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
                             >
                               Menaxho
@@ -824,7 +843,10 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                                 canDeleteColor={canManageInventory}
                               />
                               <Link
-                                href={buildProductDetailsHref(product.id, selectedWarehouse)}
+                                href={buildProductDetailsHref(product.id, {
+                                  warehouse: selectedWarehouse,
+                                  returnTo: currentListHref,
+                                })}
                                 className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
                                 aria-label="Menaxho"
                                 title="Menaxho"

@@ -21,6 +21,7 @@ import {
   ensureUniqueSku,
   normalizeVariantCode,
 } from "@/lib/variant-codes";
+import { getTenantWarehouses } from "@/lib/warehouses";
 import { VariantImageUploadForm } from "./variant-image-upload-form";
 
 type EditVariantPageProps = {
@@ -30,8 +31,53 @@ type EditVariantPageProps = {
   }>;
   searchParams?: Promise<{
     error?: string;
+    warehouse?: string;
+    returnTo?: string;
   }>;
 };
+
+function buildEditVariantHref(
+  productId: number,
+  variantId: number,
+  options?: {
+    error?: string | null;
+    warehouse?: string | null;
+    returnTo?: string | null;
+  },
+) {
+  const params = new URLSearchParams();
+  if (options?.error) {
+    params.set("error", options.error);
+  }
+  if (options?.warehouse) {
+    params.set("warehouse", options.warehouse);
+  }
+  if (options?.returnTo) {
+    params.set("returnTo", options.returnTo);
+  }
+
+  const suffix = params.toString();
+  return `/products/${productId}/variants/${variantId}/edit${suffix ? `?${suffix}` : ""}`;
+}
+
+function buildProductDetailsHref(
+  productId: number,
+  options?: {
+    warehouse?: string | null;
+    returnTo?: string | null;
+  },
+) {
+  const params = new URLSearchParams();
+  if (options?.warehouse) {
+    params.set("warehouse", options.warehouse);
+  }
+  if (options?.returnTo) {
+    params.set("returnTo", options.returnTo);
+  }
+
+  const suffix = params.toString();
+  return `/products/${productId}${suffix ? `?${suffix}` : ""}`;
+}
 
 function formatVariantDuplicateLabel(
   categoryConfig: CategoryConfig,
@@ -114,9 +160,13 @@ async function updateVariant(formData: FormData) {
   const skuInput = normalizeVariantCode(formData.get("sku")?.toString());
   const barcode = normalizeVariantCode(formData.get("barcode")?.toString());
   const stock = Number(formData.get("stock"));
+  const selectedWarehouse = formData.get("warehouse")?.toString().trim() || "";
+  const returnTo = formData.get("returnTo")?.toString().trim() || "";
   const reorderLevelValue = formData.get("reorderLevel")?.toString().trim() ?? "";
   const reorderLevel = reorderLevelValue === "" ? null : Number(reorderLevelValue);
   const price = formData.get("price")?.toString().trim();
+  const locationCodeValue = formData.get("locationCode")?.toString().trim() ?? "";
+  const locationCode = locationCodeValue ? locationCodeValue : null;
 
   const variant = await prisma.variant.findFirst({
     where: { id: variantId, productId, tenantId: tenantId ?? undefined },
@@ -197,9 +247,11 @@ async function updateVariant(formData: FormData) {
       }) || "ky variant";
 
     redirect(
-      `/products/${productId}/variants/${variantId}/edit?error=${encodeURIComponent(
-        `Varianti ${duplicateLabel} ekziston tashme per kete produkt.`,
-      )}`,
+      buildEditVariantHref(productId, variantId, {
+        error: `Varianti ${duplicateLabel} ekziston tashme per kete produkt.`,
+        warehouse: selectedWarehouse,
+        returnTo,
+      }),
     );
   }
 
@@ -223,22 +275,89 @@ async function updateVariant(formData: FormData) {
 
   if (usedBarcodes.has(nextBarcode)) return;
 
+  const warehouseRecords = selectedWarehouse
+    ? await getTenantWarehouses(tenantId, currentUser.tenant?.catalogConfig)
+    : [];
+  const selectedWarehouseRecord =
+    selectedWarehouse
+      ? warehouseRecords.find(
+          (warehouse) => warehouse.name.toLowerCase() === selectedWarehouse.toLowerCase(),
+        ) ?? null
+      : null;
+  const activeWarehouseId = selectedWarehouseRecord?.id ?? null;
+
   try {
-    await prisma.variant.update({
-      where: { id: variantId },
-      data: {
-        size,
-        color,
-        material,
-        powerWatts,
-        variantIdentityKey: candidateIdentityKey,
-        customAttributes,
-        sku,
-        barcode: nextBarcode,
-        stock,
-        reorderLevel,
-        price,
-      },
+    await prisma.$transaction(async (tx) => {
+      if (activeWarehouseId) {
+        const existingInventory = await tx.variantInventory.findUnique({
+          where: {
+            variantId_warehouseId: {
+              variantId,
+              warehouseId: activeWarehouseId,
+            },
+          },
+          select: {
+            stock: true,
+          },
+        });
+        const previousWarehouseStock = existingInventory?.stock ?? 0;
+
+        await tx.variantInventory.upsert({
+          where: {
+            variantId_warehouseId: {
+              variantId,
+              warehouseId: activeWarehouseId,
+            },
+          },
+          create: {
+            variantId,
+            warehouseId: activeWarehouseId,
+            stock,
+            locationCode,
+          },
+          update: {
+            stock,
+            locationCode,
+          },
+        });
+
+        await tx.variant.update({
+          where: { id: variantId },
+          data: {
+            size,
+            color,
+            material,
+            powerWatts,
+            variantIdentityKey: candidateIdentityKey,
+            customAttributes,
+            sku,
+            barcode: nextBarcode,
+            stock: {
+              increment: stock - previousWarehouseStock,
+            },
+            reorderLevel,
+            price,
+          },
+        });
+      } else {
+        await tx.variant.update({
+          where: { id: variantId },
+          data: {
+            size,
+            color,
+            material,
+            powerWatts,
+            variantIdentityKey: candidateIdentityKey,
+            customAttributes,
+            sku,
+            barcode: nextBarcode,
+            stock,
+            reorderLevel,
+            price,
+            locationCode,
+          },
+        });
+      }
     });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
@@ -251,9 +370,11 @@ async function updateVariant(formData: FormData) {
         }) || "ky variant";
 
       redirect(
-        `/products/${productId}/variants/${variantId}/edit?error=${encodeURIComponent(
-          `Varianti ${duplicateLabel} ekziston tashme per kete produkt.`,
-        )}`,
+        buildEditVariantHref(productId, variantId, {
+          error: `Varianti ${duplicateLabel} ekziston tashme per kete produkt.`,
+          warehouse: selectedWarehouse,
+          returnTo,
+        }),
       );
     }
 
@@ -265,7 +386,12 @@ async function updateVariant(formData: FormData) {
   revalidatePath(`/products/${productId}`);
   revalidatePath("/orders/new");
 
-  redirect(`/products/${productId}`);
+  redirect(
+    buildProductDetailsHref(productId, {
+      warehouse: selectedWarehouse,
+      returnTo,
+    }),
+  );
 }
 
 export default async function EditVariantPage({ params, searchParams }: EditVariantPageProps) {
@@ -281,6 +407,7 @@ export default async function EditVariantPage({ params, searchParams }: EditVari
   const variant = await prisma.variant.findFirst({
     where: { id: parsedVariantId, productId, tenantId },
     include: {
+      inventories: true,
       product: {
         include: {
           category: true,
@@ -293,6 +420,25 @@ export default async function EditVariantPage({ params, searchParams }: EditVari
 
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const errorMessage = resolvedSearchParams?.error?.trim() || null;
+  const selectedWarehouse = resolvedSearchParams?.warehouse?.trim() || "";
+  const returnTo = resolvedSearchParams?.returnTo?.trim() || "";
+  const warehouseRecords = selectedWarehouse
+    ? await getTenantWarehouses(tenantId, currentUser.tenant?.catalogConfig)
+    : [];
+  const selectedWarehouseRecord =
+    selectedWarehouse
+      ? warehouseRecords.find(
+          (warehouse) => warehouse.name.toLowerCase() === selectedWarehouse.toLowerCase(),
+        ) ?? null
+      : null;
+  const activeWarehouseId = selectedWarehouseRecord?.id ?? null;
+  const activeInventory = activeWarehouseId
+    ? variant.inventories.find((inventory) => inventory.warehouseId === activeWarehouseId) ?? null
+    : null;
+  const displayStock = activeWarehouseId ? (activeInventory?.stock ?? 0) : variant.stock;
+  const displayLocationCode = activeWarehouseId
+    ? (activeInventory?.locationCode ?? "")
+    : (variant.locationCode ?? "");
   const categoryConfig = getCatalogAwareCategoryConfig(
     currentUser.tenant?.catalogType,
     variant.product.category?.name,
@@ -330,7 +476,10 @@ export default async function EditVariantPage({ params, searchParams }: EditVari
               Ballina
             </Link>
             <Link
-              href={`/products/${productId}`}
+              href={buildProductDetailsHref(productId, {
+                warehouse: selectedWarehouse,
+                returnTo,
+              })}
               className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
             >
               Kthehu
@@ -351,6 +500,8 @@ export default async function EditVariantPage({ params, searchParams }: EditVari
         <form action={updateVariant} className="mt-5 space-y-5">
           <input type="hidden" name="productId" value={productId} />
           <input type="hidden" name="variantId" value={variant.id} />
+          <input type="hidden" name="warehouse" value={selectedWarehouse} />
+          <input type="hidden" name="returnTo" value={returnTo} />
 
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <div className="space-y-2">
@@ -505,7 +656,7 @@ export default async function EditVariantPage({ params, searchParams }: EditVari
                 name="stock"
                 type="number"
                 min="0"
-                defaultValue={variant.stock}
+                defaultValue={displayStock}
                 className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-200"
               />
             </div>
@@ -540,6 +691,27 @@ export default async function EditVariantPage({ params, searchParams }: EditVari
                 placeholder="5"
                 className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-200"
               />
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+            <div className="space-y-2">
+              <label htmlFor="locationCode" className="block text-sm font-medium text-slate-800">
+                Lokacioni
+              </label>
+              <input
+                id="locationCode"
+                name="locationCode"
+                type="text"
+                defaultValue={displayLocationCode}
+                placeholder="Opsionale"
+                className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-200"
+              />
+              {selectedWarehouseRecord ? (
+                <p className="text-xs text-slate-500">
+                  Po editohet lokacioni per depon {selectedWarehouseRecord.name}.
+                </p>
+              ) : null}
             </div>
           </div>
 
@@ -581,7 +753,10 @@ export default async function EditVariantPage({ params, searchParams }: EditVari
               Ruaj ndryshimet
             </button>
             <Link
-              href={`/products/${productId}`}
+              href={buildProductDetailsHref(productId, {
+                warehouse: selectedWarehouse,
+                returnTo,
+              })}
               className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
             >
               Anulo

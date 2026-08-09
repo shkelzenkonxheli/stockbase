@@ -21,6 +21,7 @@ type ProductDetailsPageProps = {
     color?: string;
     stock?: string;
     warehouse?: string;
+    returnTo?: string;
     feedback?: string;
     feedbackType?: string;
   }>;
@@ -33,6 +34,7 @@ function buildProductDetailsHref(
     color?: string;
     stock?: string;
     warehouse?: string;
+    returnTo?: string;
     feedback?: string;
     feedbackType?: string;
   } = {},
@@ -42,6 +44,7 @@ function buildProductDetailsHref(
   if (options.color) params.set("color", options.color);
   if (options.stock) params.set("stock", options.stock);
   if (options.warehouse) params.set("warehouse", options.warehouse);
+  if (options.returnTo) params.set("returnTo", options.returnTo);
   if (options.feedback) params.set("feedback", options.feedback);
   if (options.feedbackType) params.set("feedbackType", options.feedbackType);
   const query = params.toString();
@@ -60,6 +63,7 @@ async function deleteVariant(formData: FormData) {
   const selectedColor = formData.get("color")?.toString() || "";
   const selectedStock = formData.get("stock")?.toString() || "";
   const selectedWarehouse = formData.get("warehouse")?.toString() || "";
+  const returnTo = formData.get("returnTo")?.toString() || "";
 
   if (!variantId || !productId || !tenantId) return;
 
@@ -78,6 +82,7 @@ async function deleteVariant(formData: FormData) {
         color: selectedColor,
         stock: selectedStock,
         warehouse: selectedWarehouse,
+        returnTo,
         feedback: "Ky variant nuk u fshi sepse ka histori porosish.",
         feedbackType: "error",
       }),
@@ -96,6 +101,7 @@ async function deleteVariant(formData: FormData) {
       color: selectedColor,
       stock: selectedStock,
       warehouse: selectedWarehouse,
+      returnTo,
       feedback: "Varianti u fshi me sukses.",
       feedbackType: "success",
     }),
@@ -114,6 +120,7 @@ async function bulkDeleteVariants(formData: FormData) {
   const selectedColor = formData.get("color")?.toString() || "";
   const selectedStock = formData.get("stock")?.toString() || "";
   const selectedWarehouse = formData.get("warehouse")?.toString() || "";
+  const returnTo = formData.get("returnTo")?.toString() || "";
 
   if (!productId || !variantIdsRaw || !tenantId) return;
 
@@ -152,6 +159,7 @@ async function bulkDeleteVariants(formData: FormData) {
         color: selectedColor,
         stock: selectedStock,
         warehouse: selectedWarehouse,
+        returnTo,
         feedback: "Asnje variant nuk u fshi sepse te gjitha kane histori porosish.",
         feedbackType: "error",
       }),
@@ -175,6 +183,7 @@ async function bulkDeleteVariants(formData: FormData) {
       color: selectedColor,
       stock: selectedStock,
       warehouse: selectedWarehouse,
+      returnTo,
       feedback:
         blockedCount > 0
           ? `${deletableIds.length} variante u fshine. ${blockedCount} nuk u fshine sepse kane histori porosish.`
@@ -200,6 +209,7 @@ export default async function ProductDetailsPage({
   const selectedColor = resolvedSearchParams?.color?.trim() || "";
   const selectedStock = resolvedSearchParams?.stock?.trim() || "";
   const selectedWarehouse = resolvedSearchParams?.warehouse?.trim() || "";
+  const returnTo = resolvedSearchParams?.returnTo?.trim() || "";
   const feedbackMessage = resolvedSearchParams?.feedback?.trim() || "";
   const feedbackType = resolvedSearchParams?.feedbackType?.trim() || "";
   const warehouseRecords = await getTenantWarehouses(tenantId, currentUser.tenant?.catalogConfig);
@@ -254,7 +264,19 @@ export default async function ProductDetailsPage({
       },
     }),
     prisma.variant.findMany({
-      where: { productId, tenantId },
+      where: {
+        productId,
+        tenantId,
+        ...(activeWarehouseId
+          ? {
+              inventories: {
+                some: {
+                  warehouseId: activeWarehouseId,
+                },
+              },
+            }
+          : {}),
+      },
       select: {
         id: true,
         size: true,
@@ -355,7 +377,7 @@ export default async function ProductDetailsPage({
 
             <div className="flex shrink-0 flex-col gap-3 sm:flex-row sm:flex-wrap">
               <Link
-                href={selectedWarehouse ? `/products?warehouse=${encodeURIComponent(selectedWarehouse)}` : "/products"}
+                href={returnTo || (selectedWarehouse ? `/products?warehouse=${encodeURIComponent(selectedWarehouse)}` : "/products")}
                 className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-white"
               >
                 Kthehu te produktet
@@ -449,6 +471,7 @@ export default async function ProductDetailsPage({
                   price: Number(variant.price),
                   customAttributes: parseVariantCustomAttributes(variant.customAttributes),
                 }))}
+                returnTo={returnTo}
                 customFields={categoryConfig.customVariantFields.filter((field) => field.enabled)}
                 deleteVariantAction={deleteVariant}
                 bulkDeleteAction={bulkDeleteVariants}

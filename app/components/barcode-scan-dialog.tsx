@@ -44,6 +44,7 @@ export function BarcodeScanDialog({
   onDetected,
 }: BarcodeScanDialogProps) {
   const videoRef = useRef<HTMLVideoElement | null>(null);
+  const manualInputRef = useRef<HTMLInputElement | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const detectIntervalRef = useRef<number | null>(null);
   const zxingControlsRef = useRef<IScannerControls | null>(null);
@@ -51,6 +52,7 @@ export function BarcodeScanDialog({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
   const [lastCode, setLastCode] = useState("");
+  const [manualCode, setManualCode] = useState("");
 
   const supportState = useMemo(() => {
     if (typeof window === "undefined") {
@@ -258,6 +260,7 @@ export function BarcodeScanDialog({
       setErrorMessage(null);
       setSuccessMessage(null);
       setLastCode("");
+      setManualCode("");
       return;
     }
 
@@ -299,6 +302,19 @@ export function BarcodeScanDialog({
     };
   }, [engine, open, startNativeScanner, startZxingScanner, stopScanner, supportState.isSupported]);
 
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      manualInputRef.current?.focus();
+      manualInputRef.current?.select();
+    }, 120);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [open]);
+
   if (!open) {
     return null;
   }
@@ -334,6 +350,39 @@ export function BarcodeScanDialog({
         </div>
 
         <div className="space-y-4 px-5 py-5 sm:px-6">
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
+            <label className="space-y-2">
+              <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                Kodi manual / scanner fizik
+              </span>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <input
+                  ref={manualInputRef}
+                  type="text"
+                  value={manualCode}
+                  onChange={(event) => setManualCode(event.target.value.toUpperCase())}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      handleDetectedCode(manualCode);
+                    }
+                  }}
+                  placeholder="Shkruaj ose skano kodin ketu"
+                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-300"
+                  autoFocus
+                />
+                <button
+                  type="button"
+                  onClick={() => handleDetectedCode(manualCode)}
+                  disabled={!manualCode.trim()}
+                  className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Përdor kodin
+                </button>
+              </div>
+            </label>
+          </div>
+
           {!supportState.isSupported ? (
             <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
               {supportState.reason}
