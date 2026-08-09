@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import type { IScannerControls } from "@zxing/browser";
 
 type CameraBarcodeScannerProps = {
   initialCode: string;
@@ -18,6 +19,8 @@ type BarcodeDetectorLike = {
 type BarcodeDetectorCtor = new (options?: {
   formats?: string[];
 }) => BarcodeDetectorLike;
+
+type ScannerEngine = "native" | "zxing";
 
 function getBarcodeDetectorCtor(): BarcodeDetectorCtor | null {
   if (typeof window === "undefined") {
@@ -38,6 +41,7 @@ export function CameraBarcodeScanner({
   const streamRef = useRef<MediaStream | null>(null);
   const detectIntervalRef = useRef<number | null>(null);
   const redirectTimeoutRef = useRef<number | null>(null);
+  const zxingControlsRef = useRef<IScannerControls | null>(null);
   const [isOpen, setIsOpen] = useState(false);
   const [isStarting, setIsStarting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
@@ -48,14 +52,13 @@ export function CameraBarcodeScanner({
     if (typeof window === "undefined") {
       return {
         isSupported: false,
-        reason: "Po ngarkohet kontrolli i kamerës.",
+        reason: "Po ngarkohet kontrolli i kameres.",
       };
     }
 
     const hasCameraApi =
       Boolean(navigator.mediaDevices) &&
       typeof navigator.mediaDevices.getUserMedia === "function";
-    const hasDetector = Boolean(getBarcodeDetectorCtor());
     const isSecure =
       window.isSecureContext ||
       window.location.hostname === "localhost" ||
@@ -65,21 +68,14 @@ export function CameraBarcodeScanner({
       return {
         isSupported: false,
         reason:
-          "Kamera kërkon HTTPS ose localhost real. Nga telefoni me adresë si http://192.168.x.x browser-i e bllokon kamerën.",
+          "Kamera kerkon HTTPS ose localhost real. Nga telefoni me adrese si http://192.168.x.x browser-i e bllokon kameran.",
       };
     }
 
     if (!hasCameraApi) {
       return {
         isSupported: false,
-        reason: "Ky browser nuk e mbështet hapjen e kamerës nga web app-i.",
-      };
-    }
-
-    if (!hasDetector) {
-      return {
-        isSupported: false,
-        reason: "Ky browser nuk e mbështet leximin automatik të barcode-it.",
+        reason: "Ky browser nuk e mbeshtet hapjen e kameres nga web app-i.",
       };
     }
 
@@ -91,11 +87,17 @@ export function CameraBarcodeScanner({
 
   const isSupported = supportState.isSupported;
   const supportReason = supportState.reason;
+  const engine: ScannerEngine = getBarcodeDetectorCtor() ? "native" : "zxing";
 
   const stopScanner = useCallback(() => {
     if (detectIntervalRef.current) {
       window.clearInterval(detectIntervalRef.current);
       detectIntervalRef.current = null;
+    }
+
+    if (zxingControlsRef.current) {
+      zxingControlsRef.current.stop();
+      zxingControlsRef.current = null;
     }
 
     if (streamRef.current) {
@@ -145,6 +147,105 @@ export function CameraBarcodeScanner({
     [lastCode, router, stopScanner],
   );
 
+  const startNativeScanner = useCallback(async () => {
+    const video = videoRef.current;
+
+    if (!video) {
+      setErrorMessage("Nuk u inicializua preview i kameres.");
+      return;
+    }
+
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: { ideal: "environment" },
+      },
+      audio: false,
+    });
+
+    streamRef.current = stream;
+    video.srcObject = stream;
+    video.setAttribute("playsinline", "true");
+    await video.play();
+
+    const Detector = getBarcodeDetectorCtor();
+
+    if (!Detector) {
+      throw new Error("BarcodeDetector mungon.");
+    }
+
+    const detector = new Detector({
+      formats: ["code_128", "ean_13", "ean_8", "upc_a", "upc_e", "code_39"],
+    });
+
+    detectIntervalRef.current = window.setInterval(async () => {
+      const currentVideo = videoRef.current;
+
+      if (!currentVideo || currentVideo.readyState < 2) {
+        return;
+      }
+
+      try {
+        const results = await detector.detect(currentVideo);
+        const detectedValue = results.find((item) => item.rawValue?.trim())?.rawValue;
+
+        if (detectedValue) {
+          handleDetectedCode(detectedValue);
+        }
+      } catch {
+        setErrorMessage("Skanimi deshtoi. Provo perseri.");
+        stopScanner();
+      }
+    }, 500);
+  }, [handleDetectedCode, stopScanner]);
+
+  const startZxingScanner = useCallback(async () => {
+    const video = videoRef.current;
+
+    if (!video) {
+      setErrorMessage("Nuk u inicializua preview i kameres.");
+      return;
+    }
+
+    video.setAttribute("playsinline", "true");
+
+    const { BrowserMultiFormatReader } = await import("@zxing/browser");
+    const { BarcodeFormat, DecodeHintType, NotFoundException } = await import(
+      "@zxing/library"
+    );
+
+    const hints = new Map();
+    hints.set(DecodeHintType.POSSIBLE_FORMATS, [
+      BarcodeFormat.CODE_128,
+      BarcodeFormat.CODE_39,
+      BarcodeFormat.EAN_13,
+      BarcodeFormat.EAN_8,
+      BarcodeFormat.UPC_A,
+      BarcodeFormat.UPC_E,
+      BarcodeFormat.CODABAR,
+      BarcodeFormat.ITF,
+    ]);
+
+    const reader = new BrowserMultiFormatReader(hints);
+
+    zxingControlsRef.current = await reader.decodeFromVideoDevice(
+      undefined,
+      video,
+      (result, error, controls) => {
+        zxingControlsRef.current = controls;
+
+        if (result?.getText()) {
+          handleDetectedCode(result.getText());
+          return;
+        }
+
+        if (error && !(error instanceof NotFoundException)) {
+          setErrorMessage("Skanimi deshtoi. Provo perseri.");
+          stopScanner();
+        }
+      },
+    );
+  }, [handleDetectedCode, stopScanner]);
+
   const startScanner = useCallback(async () => {
     if (!isSupported || isStarting || isOpen) {
       return;
@@ -155,58 +256,11 @@ export function CameraBarcodeScanner({
     setIsStarting(true);
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: { ideal: "environment" },
-        },
-        audio: false,
-      });
-
-      const video = videoRef.current;
-
-      if (!video) {
-        stream.getTracks().forEach((track) => track.stop());
-        setErrorMessage("Nuk u inicializua preview i kameres.");
-        setIsStarting(false);
-        return;
+      if (engine === "native") {
+        await startNativeScanner();
+      } else {
+        await startZxingScanner();
       }
-
-      streamRef.current = stream;
-      video.srcObject = stream;
-      video.setAttribute("playsinline", "true");
-      await video.play();
-
-      const Detector = getBarcodeDetectorCtor();
-
-      if (!Detector) {
-        stopScanner();
-        setErrorMessage("Ky browser nuk e mbeshtet skanimin direkt me kamer.");
-        return;
-      }
-
-      const detector = new Detector({
-        formats: ["code_128", "ean_13", "ean_8", "upc_a", "upc_e", "code_39"],
-      });
-
-      detectIntervalRef.current = window.setInterval(async () => {
-        const currentVideo = videoRef.current;
-
-        if (!currentVideo || currentVideo.readyState < 2) {
-          return;
-        }
-
-        try {
-          const results = await detector.detect(currentVideo);
-          const detectedValue = results.find((item) => item.rawValue?.trim())?.rawValue;
-
-          if (detectedValue) {
-            handleDetectedCode(detectedValue);
-          }
-        } catch {
-          setErrorMessage("Skanimi deshtoi. Provo perseri.");
-          stopScanner();
-        }
-      }, 500);
 
       setIsOpen(true);
       setIsStarting(false);
@@ -215,8 +269,9 @@ export function CameraBarcodeScanner({
         "Nuk u hap kamera. Lejo qasjen te kamera dhe provo perseri.",
       );
       setIsStarting(false);
+      stopScanner();
     }
-  }, [handleDetectedCode, isOpen, isStarting, isSupported, stopScanner]);
+  }, [engine, isOpen, isStarting, isSupported, startNativeScanner, startZxingScanner, stopScanner]);
 
   useEffect(() => {
     return () => {
@@ -235,10 +290,10 @@ export function CameraBarcodeScanner({
             Kamera
           </p>
           <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
-            Skano me kamerë
+            Skano me kamere
           </h2>
           <p className="mt-2 text-sm leading-7 text-slate-600">
-            Ne telefon mund ta hapesh kamerën dhe ta drejtosh te barcode-i. Sapo
+            Ne telefon mund ta hapesh kameran dhe ta drejtosh te barcode-i. Sapo
             kodi lexohet, faqja hap direkt variantin.
           </p>
         </div>
@@ -251,7 +306,7 @@ export function CameraBarcodeScanner({
               disabled={!isSupported || isStarting}
               className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:bg-slate-300"
             >
-              {isStarting ? "Po hapet..." : "Hape kamerën"}
+              {isStarting ? "Po hapet..." : "Hape kameran"}
             </button>
           ) : (
             <button
@@ -259,7 +314,7 @@ export function CameraBarcodeScanner({
               onClick={stopScanner}
               className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
             >
-              Mbylle kamerën
+              Mbylle kameran
             </button>
           )}
         </div>
@@ -268,7 +323,7 @@ export function CameraBarcodeScanner({
       {!isSupported ? (
         <div className="mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
           {supportReason ??
-            "Ky browser nuk e mbështet skanimin direkt me kamerë. Në këtë rast përdore scanner fizik ose shkruaje kodin manualisht."}
+            "Ky browser nuk e mbeshtet skanimin direkt me kamere. Ne kete rast perdore scanner fizik ose shkruaje kodin manualisht."}
         </div>
       ) : null}
 
@@ -299,7 +354,9 @@ export function CameraBarcodeScanner({
             </div>
           </div>
           <div className="border-t border-slate-800 px-4 py-3 text-sm text-slate-300">
-            Drejtoje kamerën te barcode-i dhe mbaje të qetë 1-2 sekonda.
+            {engine === "native"
+              ? "Drejtoje kameran te barcode-i dhe mbaje te qete 1-2 sekonda."
+              : "Po perdoret scanner fallback per iPhone/Safari. Drejtoje kameran te barcode-i dhe mbaje te qete 1-2 sekonda."}
           </div>
         </div>
       ) : null}
