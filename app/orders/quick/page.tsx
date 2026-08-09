@@ -148,32 +148,32 @@ async function createQuickOrders(formData: FormData) {
       }
     }
 
-    const createdOrders = [];
+    const totalQuantity = rows.reduce((sum, row) => sum + row.quantity, 0);
+    const primaryVariantId = rows[0]?.variantId;
 
-    for (const row of rows) {
-      const order = await tx.order.create({
-        data: {
-          tenantId,
-          customerName: "Quick Order",
-          phone: "-",
-          instagram: null,
-          source,
-          status: "DONE",
-          quantity: row.quantity,
-          variantId: row.variantId,
-          warehouseId,
-          items: {
-            create: {
-              variantId: row.variantId,
-              warehouseId,
-              quantity: row.quantity,
-              unitPrice: row.unitPrice,
-            },
-          },
-        },
-      });
-      createdOrders.push(order);
-    }
+    const order = await tx.order.create({
+      data: {
+        tenantId,
+        customerName: "Quick Order",
+        phone: "-",
+        instagram: null,
+        source,
+        status: "DONE",
+        quantity: totalQuantity,
+        variantId: primaryVariantId,
+        warehouseId,
+      },
+    });
+
+    await tx.orderItem.createMany({
+      data: rows.map((row) => ({
+        orderId: order.id,
+        variantId: row.variantId,
+        warehouseId,
+        quantity: row.quantity,
+        unitPrice: row.unitPrice,
+      })),
+    });
 
     for (const [variantId, quantity] of requestedByVariant.entries()) {
       const variant = variantsById.get(variantId);
@@ -206,11 +206,13 @@ async function createQuickOrders(formData: FormData) {
       userId: currentUser.id,
       action: "ORDER_CREATED",
       entityType: "ORDER",
+      entityId: order.id,
       entityLabel: "Quick Order",
       warehouseId,
       metadata: {
         source,
-        orderIds: createdOrders.map((order) => order.id),
+        orderId: order.id,
+        totalQuantity,
         rows: rows.map((row) => {
           const variant = variantsById.get(row.variantId);
           return {
@@ -226,6 +228,7 @@ async function createQuickOrders(formData: FormData) {
 
     return {
       ok: true as const,
+      orderId: order.id,
       productIds: [...new Set(variants.map((variant) => variant.productId))],
     };
   });
@@ -279,8 +282,6 @@ export default async function QuickOrdersPage({
     tenantId,
     parseTenantCatalogConfig(tenantSettings?.catalogConfig),
   );
-  const defaultWarehouseId = warehouses[0]?.id;
-
   const products = await prisma.product.findMany({
     where: {
       tenantId,
@@ -288,7 +289,6 @@ export default async function QuickOrdersPage({
         some: {
           inventories: {
             some: {
-              ...(defaultWarehouseId ? { warehouseId: defaultWarehouseId } : {}),
               stock: {
                 gt: 0,
               },
@@ -308,15 +308,19 @@ export default async function QuickOrdersPage({
         },
       },
       variants: {
-        where: {
-          imagePath: {
-            not: null,
-          },
-        },
         select: {
           imagePath: true,
+          inventories: {
+            where: {
+              stock: {
+                gt: 0,
+              },
+            },
+            select: {
+              warehouseId: true,
+            },
+          },
         },
-        take: 1,
       },
     },
     orderBy: [{ name: "asc" }],
@@ -371,7 +375,15 @@ export default async function QuickOrdersPage({
             brand: product.brand ?? "",
             warehouseName: product.warehouseName ?? "",
             category: product.category.name,
-            imagePath: product.variants[0]?.imagePath ?? null,
+            imagePath:
+              product.variants.find((variant) => variant.imagePath)?.imagePath ?? null,
+            warehouseIds: [
+              ...new Set(
+                product.variants.flatMap((variant) =>
+                  variant.inventories.map((inventory) => inventory.warehouseId),
+                ),
+              ),
+            ],
           }))}
         />
       </section>

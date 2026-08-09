@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
+import { BarcodeScanDialog } from "@/app/components/barcode-scan-dialog";
 import { UploadedImage } from "@/app/components/uploaded-image";
 import { getOrderVariantMode, getOrderVariantSummary } from "@/lib/order-variant-display";
 
@@ -27,6 +28,7 @@ type ProductOption = {
   warehouseName: string;
   category: string;
   imagePath: string | null;
+  warehouseIds: number[];
 };
 
 type WarehouseOption = {
@@ -139,6 +141,8 @@ export function OrderForm({ action, warehouses, products }: OrderFormProps) {
   const [variantModalOpen, setVariantModalOpen] = useState(false);
   const [sizeModalOpen, setSizeModalOpen] = useState(false);
   const [selectedColorKey, setSelectedColorKey] = useState("");
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [scannerMessage, setScannerMessage] = useState<string | null>(null);
   const [previewImage, setPreviewImage] = useState<{ src: string; alt: string } | null>(null);
 
   useEffect(() => {
@@ -200,6 +204,18 @@ export function OrderForm({ action, warehouses, products }: OrderFormProps) {
   }, [rowErrors]);
 
   useEffect(() => {
+    if (!scannerMessage) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setScannerMessage(null);
+    }, 3500);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [scannerMessage]);
+
+  useEffect(() => {
     if (!selectedProductId) {
       setVariantModalOpen(false);
       setSizeModalOpen(false);
@@ -211,6 +227,7 @@ export function OrderForm({ action, warehouses, products }: OrderFormProps) {
     setRows([]);
     setVariantsByProduct({});
     setRowErrors({});
+    setScannerMessage(null);
     setSelectedCategory("");
     setSelectedBrand("");
     setProductSearch("");
@@ -227,12 +244,31 @@ export function OrderForm({ action, warehouses, products }: OrderFormProps) {
     }
   }, [selectedCategory]);
 
+  const warehouseProducts = useMemo(() => {
+    const currentWarehouseId = Number(warehouseId);
+
+    if (!currentWarehouseId) {
+      return products;
+    }
+
+    return products.filter((product) => product.warehouseIds.includes(currentWarehouseId));
+  }, [products, warehouseId]);
+
+  useEffect(() => {
+    if (selectedCategory && !warehouseProducts.some((product) => product.category === selectedCategory)) {
+      setSelectedCategory("");
+      setSelectedBrand("");
+      setSelectedProductId("");
+      setProductSearch("");
+    }
+  }, [selectedCategory, warehouseProducts]);
+
   const categories = useMemo(
     () =>
-      [...new Set(products.map((product) => product.category))].sort((a, b) =>
+      [...new Set(warehouseProducts.map((product) => product.category))].sort((a, b) =>
         a.localeCompare(b),
       ),
-    [products],
+    [warehouseProducts],
   );
 
   const selectedCategoryMode = getOrderVariantMode(selectedCategory);
@@ -241,9 +277,9 @@ export function OrderForm({ action, warehouses, products }: OrderFormProps) {
   const categoryProducts = useMemo(
     () =>
       selectedCategory
-        ? products.filter((product) => product.category === selectedCategory)
+        ? warehouseProducts.filter((product) => product.category === selectedCategory)
         : [],
-    [products, selectedCategory],
+    [warehouseProducts, selectedCategory],
   );
 
   const categoryBrands = useMemo(
@@ -253,6 +289,18 @@ export function OrderForm({ action, warehouses, products }: OrderFormProps) {
       ),
     [categoryProducts],
   );
+
+  useEffect(() => {
+    if (selectedBrand && !categoryBrands.includes(selectedBrand)) {
+      setSelectedBrand("");
+      setSelectedProductId("");
+      setProductSearch("");
+      setProductModalOpen(false);
+      setVariantModalOpen(false);
+      setSizeModalOpen(false);
+      setSelectedColorKey("");
+    }
+  }, [categoryBrands, selectedBrand]);
 
   const filteredProducts = useMemo(() => {
     if (!selectedCategory) {
@@ -466,6 +514,79 @@ export function OrderForm({ action, warehouses, products }: OrderFormProps) {
     setSelectedColorKey("");
   };
 
+  const addVariantToRows = (variant: OrderVariant) => {
+    setVariantsByProduct((current) => {
+      const existingVariants = current[variant.productId] ?? [];
+      const hasVariant = existingVariants.some((item) => item.id === variant.id);
+
+      if (hasVariant) {
+        return current;
+      }
+
+      return {
+        ...current,
+        [variant.productId]: [...existingVariants, variant],
+      };
+    });
+
+    setRows((currentRows) => {
+      const existingRow = currentRows.find(
+        (row) => Number(row.variantId) === variant.id,
+      );
+
+      if (existingRow) {
+        const currentQuantity = Number(existingRow.quantity) || 0;
+
+        if (currentQuantity >= variant.stock) {
+          setRowErrors((current) => ({
+            ...current,
+            [existingRow.id]: "Nuk ka stok te mjaftueshem per kete sasi.",
+          }));
+          return currentRows;
+        }
+
+        return currentRows.map((row) =>
+          row.id === existingRow.id
+            ? {
+                ...row,
+                quantity: String(currentQuantity + 1),
+              }
+            : row,
+        );
+      }
+
+      return [...currentRows, createRow(variant.productId, variant.id, variant.price)];
+    });
+  };
+
+  const handleScanDetected = async (code: string) => {
+    try {
+      const response = await fetch(
+        `/api/variants/lookup?code=${encodeURIComponent(code)}&warehouseId=${Number(warehouseId) || ""}`,
+        { cache: "no-store" },
+      );
+
+      if (!response.ok) {
+        setScannerMessage("Nuk u gjet variant me kete barcode ne depon aktive.");
+        return;
+      }
+
+      const data = (await response.json()) as {
+        variant: OrderVariant;
+      };
+
+      if (!data.variant || data.variant.stock <= 0) {
+        setScannerMessage("Varianti ekziston, por nuk ka stok ne kete depo.");
+        return;
+      }
+
+      addVariantToRows(data.variant);
+      setScannerMessage(`U shtua: ${getOrderVariantSummary(data.variant)}`);
+    } catch {
+      setScannerMessage("Skanimi u lexua, por lookup deshtoi. Provo perseri.");
+    }
+  };
+
   const updateUnitPrice = (rowId: string, value: string) => {
     setRows((currentRows) =>
       currentRows.map((row) =>
@@ -668,6 +789,21 @@ export function OrderForm({ action, warehouses, products }: OrderFormProps) {
                     </option>
                   ))}
                 </select>
+              ) : null}
+            </div>
+
+            <div className="flex flex-wrap gap-3">
+              <button
+                type="button"
+                onClick={() => setScannerOpen(true)}
+                className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+              >
+                Scan barcode
+              </button>
+              {scannerMessage ? (
+                <span className="inline-flex items-center rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+                  {scannerMessage}
+                </span>
               ) : null}
             </div>
 
@@ -1310,6 +1446,16 @@ export function OrderForm({ action, warehouses, products }: OrderFormProps) {
           </div>
         </div>
       ) : null}
+
+      <BarcodeScanDialog
+        open={scannerOpen}
+        title="Skano produktin per porosi"
+        description="Barcode-i kerkohet vetem ne depon aktive. Sapo lexohet dhe ka stok, varianti shtohet direkt ne porosi."
+        onClose={() => setScannerOpen(false)}
+        onDetected={(detectedCode) => {
+          void handleScanDetected(detectedCode);
+        }}
+      />
 
       {previewImage ? (
         <div

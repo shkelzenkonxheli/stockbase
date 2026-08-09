@@ -275,8 +275,6 @@ export default async function NewOrderPage({
     tenantId,
     parseTenantCatalogConfig(tenantSettings?.catalogConfig),
   );
-  const defaultWarehouseId = warehouses[0]?.id;
-
   const products = await prisma.product.findMany({
     where: {
       tenantId,
@@ -284,7 +282,6 @@ export default async function NewOrderPage({
         some: {
           inventories: {
             some: {
-              ...(defaultWarehouseId ? { warehouseId: defaultWarehouseId } : {}),
               stock: {
                 gt: 0,
               },
@@ -304,15 +301,19 @@ export default async function NewOrderPage({
         },
       },
       variants: {
-        where: {
-          imagePath: {
-            not: null,
-          },
-        },
         select: {
           imagePath: true,
+          inventories: {
+            where: {
+              stock: {
+                gt: 0,
+              },
+            },
+            select: {
+              warehouseId: true,
+            },
+          },
         },
-        take: 1,
       },
     },
     orderBy: [{ name: "asc" }],
@@ -352,7 +353,15 @@ export default async function NewOrderPage({
             brand: product.brand ?? "",
             warehouseName: product.warehouseName ?? "",
             category: product.category.name,
-            imagePath: product.variants[0]?.imagePath ?? null,
+            imagePath:
+              product.variants.find((variant) => variant.imagePath)?.imagePath ?? null,
+            warehouseIds: [
+              ...new Set(
+                product.variants.flatMap((variant) =>
+                  variant.inventories.map((inventory) => inventory.warehouseId),
+                ),
+              ),
+            ],
           }))}
         />
       </div>

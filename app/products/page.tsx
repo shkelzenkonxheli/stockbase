@@ -256,6 +256,30 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     ...(filters.length > 0 ? { AND: filters } : {}),
   };
 
+  const filterOptionsWhere: Prisma.ProductWhereInput = {
+    tenantId,
+    variants: {
+      some: selectedWarehouseRecord && activeWarehouseId
+        ? {
+            inventories: {
+              some: {
+                warehouseId: activeWarehouseId,
+              },
+            },
+          }
+        : {},
+    },
+    ...(searchTokens.length > 0 || selectedCode
+      ? {
+          AND: filters.filter(
+            (filter) =>
+              !("category" in filter) &&
+              !("name" in filter && typeof filter.name === "object" && "equals" in filter.name),
+          ),
+        }
+      : {}),
+  };
+
   const [products, totalProducts, filterProducts, stockTotals] = await Promise.all([
     prisma.product.findMany({
       where,
@@ -311,7 +335,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     }),
     prisma.product.count({ where }),
     prisma.product.findMany({
-      where: { tenantId },
+      where: filterOptionsWhere,
       select: { name: true, brand: true, warehouseName: true, category: { select: { name: true } } },
       orderBy: [{ name: "asc" }],
     }),

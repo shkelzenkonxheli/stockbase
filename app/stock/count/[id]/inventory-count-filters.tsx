@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { BarcodeScanDialog } from "@/app/components/barcode-scan-dialog";
 import type { InventoryCountFilterValue } from "@/lib/inventory-counts";
 
 type InventoryCountFiltersProps = {
@@ -11,6 +12,7 @@ type InventoryCountFiltersProps = {
   selectedFilter: InventoryCountFilterValue;
   categoryOptions: string[];
   modelOptionsByCategory: Record<string, string[]>;
+  warehouseId: number;
 };
 
 export function InventoryCountFilters({
@@ -20,6 +22,7 @@ export function InventoryCountFilters({
   selectedFilter,
   categoryOptions,
   modelOptionsByCategory,
+  warehouseId,
 }: InventoryCountFiltersProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -29,6 +32,8 @@ export function InventoryCountFilters({
   const [category, setCategory] = useState(selectedCategory);
   const [model, setModel] = useState(selectedModel);
   const [filter, setFilter] = useState<InventoryCountFilterValue>(selectedFilter);
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [scannerMessage, setScannerMessage] = useState<string | null>(null);
   const firstRenderRef = useRef(true);
 
   const modelOptions = useMemo(() => {
@@ -84,8 +89,56 @@ export function InventoryCountFilters({
     return () => clearTimeout(timeout);
   }, [query]);
 
+  useEffect(() => {
+    if (!scannerMessage) {
+      return;
+    }
+
+    const timeout = window.setTimeout(() => {
+      setScannerMessage(null);
+    }, 3500);
+
+    return () => window.clearTimeout(timeout);
+  }, [scannerMessage]);
+
+  async function handleScanDetected(code: string) {
+    try {
+      const response = await fetch(
+        `/api/variants/lookup?code=${encodeURIComponent(code)}&warehouseId=${warehouseId}`,
+        { cache: "no-store" },
+      );
+
+      if (!response.ok) {
+        setScannerMessage("Nuk u gjet variant me kete barcode ne kete depo.");
+        return;
+      }
+
+      const data = (await response.json()) as {
+        variant: {
+          sku?: string | null;
+          color: string;
+          size: string;
+        };
+        product: {
+          name: string;
+        };
+      };
+
+      const nextQuery =
+        data.variant.sku?.trim() ||
+        `${data.product.name} ${data.variant.color} ${data.variant.size}`;
+
+      setQuery(nextQuery);
+      updateUrl({ query: nextQuery });
+      setScannerMessage(`U gjet: ${data.product.name} / ${data.variant.color} / ${data.variant.size}`);
+    } catch {
+      setScannerMessage("Skanimi u lexua, por lookup deshtoi. Provo perseri.");
+    }
+  }
+
   return (
-    <div className="grid gap-3 px-5 py-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_220px_220px_220px_auto]">
+    <>
+    <div className="grid gap-3 px-5 py-4 sm:px-6 lg:grid-cols-[minmax(0,1fr)_220px_220px_220px_auto_auto]">
       <input
         type="text"
         value={query}
@@ -147,6 +200,13 @@ export function InventoryCountFilters({
       <div className="flex gap-2">
         <button
           type="button"
+          onClick={() => setScannerOpen(true)}
+          className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+        >
+          Scan
+        </button>
+        <button
+          type="button"
           onClick={() => {
             setQuery("");
             setCategory("");
@@ -165,8 +225,18 @@ export function InventoryCountFilters({
       <p className="text-xs text-slate-500 lg:col-span-full">
         {isPending
           ? "Duke rifreskuar listen..."
-          : "Search, kategoria dhe modeli rifreskohen menjehere."}
+          : scannerMessage || "Search, kategoria dhe modeli rifreskohen menjehere."}
       </p>
     </div>
+    <BarcodeScanDialog
+      open={scannerOpen}
+      title="Skano variantin per numerim"
+      description="Barcode-i kerkohet ne depon e ketij sesioni dhe lista filtrohet direkt te varianti i gjetur."
+      onClose={() => setScannerOpen(false)}
+      onDetected={(detectedCode) => {
+        void handleScanDetected(detectedCode);
+      }}
+    />
+    </>
   );
 }

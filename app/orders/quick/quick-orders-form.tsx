@@ -13,6 +13,7 @@ type ProductOption = {
   warehouseName: string;
   category: string;
   imagePath: string | null;
+  warehouseIds: number[];
 };
 
 type WarehouseOption = {
@@ -177,6 +178,7 @@ export function QuickOrdersForm({ action, warehouses, products }: QuickOrdersFor
     setRows([]);
     setVariantsByProduct({});
     setRowErrors({});
+    setScannerMessage(null);
     setSelectedCategory("");
     setSelectedBrand("");
     setProductSearch("");
@@ -193,12 +195,31 @@ export function QuickOrdersForm({ action, warehouses, products }: QuickOrdersFor
     }
   }, [selectedCategory]);
 
+  const warehouseProducts = useMemo(() => {
+    const currentWarehouseId = Number(warehouseId);
+
+    if (!currentWarehouseId) {
+      return products;
+    }
+
+    return products.filter((product) => product.warehouseIds.includes(currentWarehouseId));
+  }, [products, warehouseId]);
+
+  useEffect(() => {
+    if (selectedCategory && !warehouseProducts.some((product) => product.category === selectedCategory)) {
+      setSelectedCategory("");
+      setSelectedBrand("");
+      setSelectedProductId("");
+      setProductSearch("");
+    }
+  }, [selectedCategory, warehouseProducts]);
+
   const categories = useMemo(
     () =>
-      [...new Set(products.map((product) => product.category))].sort((a, b) =>
+      [...new Set(warehouseProducts.map((product) => product.category))].sort((a, b) =>
         a.localeCompare(b),
       ),
-    [products],
+    [warehouseProducts],
   );
 
   const selectedCategoryMode = getOrderVariantMode(selectedCategory);
@@ -207,9 +228,9 @@ export function QuickOrdersForm({ action, warehouses, products }: QuickOrdersFor
   const categoryProducts = useMemo(
     () =>
       selectedCategory
-        ? products.filter((product) => product.category === selectedCategory)
+        ? warehouseProducts.filter((product) => product.category === selectedCategory)
         : [],
-    [products, selectedCategory],
+    [warehouseProducts, selectedCategory],
   );
 
   const categoryBrands = useMemo(
@@ -219,6 +240,18 @@ export function QuickOrdersForm({ action, warehouses, products }: QuickOrdersFor
       ),
     [categoryProducts],
   );
+
+  useEffect(() => {
+    if (selectedBrand && !categoryBrands.includes(selectedBrand)) {
+      setSelectedBrand("");
+      setSelectedProductId("");
+      setProductSearch("");
+      setProductModalOpen(false);
+      setVariantModalOpen(false);
+      setSizeModalOpen(false);
+      setSelectedColorKey("");
+    }
+  }, [categoryBrands, selectedBrand]);
 
   const filteredProducts = useMemo(() => {
     if (!selectedCategory) {

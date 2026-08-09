@@ -660,6 +660,7 @@ export default async function InventoryCountDetailPage({
             selectedFilter={filter}
             categoryOptions={categoryOptions}
             modelOptionsByCategory={modelOptionsByCategory}
+            warehouseId={session.warehouseId}
           />
         </section>
 

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { BarcodeScanDialog } from "@/app/components/barcode-scan-dialog";
 import { UploadedImage } from "@/app/components/uploaded-image";
 import { getStockTone } from "@/lib/inventory";
 
@@ -51,6 +52,9 @@ export function TransferStockForm({
   const [variants, setVariants] = useState<InventoryVariant[]>([]);
   const [loading, setLoading] = useState(false);
   const [quantities, setQuantities] = useState<Record<number, string>>({});
+  const [scannerOpen, setScannerOpen] = useState(false);
+  const [scannerMessage, setScannerMessage] = useState<string | null>(null);
+  const [pendingScannedVariantId, setPendingScannedVariantId] = useState<number | null>(null);
 
   useEffect(() => {
     const parsedProductId = Number(productId);
@@ -102,6 +106,39 @@ export function TransferStockForm({
     };
   }, [productId, fromWarehouseId]);
 
+  useEffect(() => {
+    if (!scannerMessage) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setScannerMessage(null);
+    }, 3500);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [scannerMessage]);
+
+  useEffect(() => {
+    if (!pendingScannedVariantId || variants.length === 0) {
+      return;
+    }
+
+    const matchedVariant = variants.find((variant) => variant.id === pendingScannedVariantId);
+
+    if (!matchedVariant) {
+      return;
+    }
+
+    setSelectedColor(matchedVariant.color);
+    setQuantities((current) => ({
+      ...current,
+      [matchedVariant.id]: current[matchedVariant.id] && Number(current[matchedVariant.id]) > 0
+        ? current[matchedVariant.id]
+        : "1",
+    }));
+    setPendingScannedVariantId(null);
+  }, [pendingScannedVariantId, variants]);
+
   const serializedAdjustments = JSON.stringify(
     Object.entries(quantities)
       .map(([variantId, quantity]) => ({
@@ -140,6 +177,42 @@ export function TransferStockForm({
         : products,
     [products, selectedBrand],
   );
+
+  const handleScanDetected = async (code: string) => {
+    try {
+      const response = await fetch(
+        `/api/variants/lookup?code=${encodeURIComponent(code)}&warehouseId=${Number(fromWarehouseId) || ""}`,
+        { cache: "no-store" },
+      );
+
+      if (!response.ok) {
+        setScannerMessage("Nuk u gjet variant me kete barcode ne depon burim.");
+        return;
+      }
+
+      const data = (await response.json()) as {
+        variant: InventoryVariant;
+        product: ProductOption;
+      };
+
+      if (!data.variant || !data.product) {
+        setScannerMessage("Lookup-u nuk ktheu variant valid.");
+        return;
+      }
+
+      if (data.variant.stock <= 0) {
+        setScannerMessage("Varianti ekziston, por nuk ka stok ne depon burim.");
+        return;
+      }
+
+      setSelectedBrand(data.product.brand ?? "");
+      setProductId(String(data.product.id));
+      setPendingScannedVariantId(data.variant.id);
+      setScannerMessage(`U lexua: ${data.product.name} / ${data.variant.color} / ${data.variant.size}`);
+    } catch {
+      setScannerMessage("Skanimi u lexua, por lookup deshtoi. Provo perseri.");
+    }
+  };
 
   const visibleVariants = useMemo(
     () =>
@@ -303,6 +376,21 @@ export function TransferStockForm({
               {warehouses.find((warehouse) => String(warehouse.id) === toWarehouseId)?.name ?? "-"}
             </p>
           </div>
+        </div>
+
+        <div className="mt-5 flex flex-wrap gap-3">
+          <button
+            type="button"
+            onClick={() => setScannerOpen(true)}
+            className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+          >
+            Scan barcode
+          </button>
+          {scannerMessage ? (
+            <span className="inline-flex items-center rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+              {scannerMessage}
+            </span>
+          ) : null}
         </div>
       </section>
 
@@ -471,6 +559,16 @@ export function TransferStockForm({
           Ruaj transferin
         </button>
       </div>
+
+      <BarcodeScanDialog
+        open={scannerOpen}
+        title="Skano per transfer stoku"
+        description="Barcode-i kerkohet ne depon burim. Varianti i lexuar zgjedhet automatikisht dhe vendoset me sasi 1."
+        onClose={() => setScannerOpen(false)}
+        onDetected={(detectedCode) => {
+          void handleScanDetected(detectedCode);
+        }}
+      />
     </form>
   );
 }
