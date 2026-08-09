@@ -89,6 +89,20 @@ export function CameraBarcodeScanner({
   const supportReason = supportState.reason;
   const engine: ScannerEngine = getBarcodeDetectorCtor() ? "native" : "zxing";
 
+  const waitForVideoElement = useCallback(async () => {
+    for (let attempt = 0; attempt < 10; attempt += 1) {
+      if (videoRef.current) {
+        return videoRef.current;
+      }
+
+      await new Promise<void>((resolve) => {
+        window.requestAnimationFrame(() => resolve());
+      });
+    }
+
+    return null;
+  }, []);
+
   const stopScanner = useCallback(() => {
     if (detectIntervalRef.current) {
       window.clearInterval(detectIntervalRef.current);
@@ -148,7 +162,7 @@ export function CameraBarcodeScanner({
   );
 
   const startNativeScanner = useCallback(async () => {
-    const video = videoRef.current;
+    const video = await waitForVideoElement();
 
     if (!video) {
       setErrorMessage("Nuk u inicializua preview i kameres.");
@@ -196,10 +210,10 @@ export function CameraBarcodeScanner({
         stopScanner();
       }
     }, 500);
-  }, [handleDetectedCode, stopScanner]);
+  }, [handleDetectedCode, stopScanner, waitForVideoElement]);
 
   const startZxingScanner = useCallback(async () => {
-    const video = videoRef.current;
+    const video = await waitForVideoElement();
 
     if (!video) {
       setErrorMessage("Nuk u inicializua preview i kameres.");
@@ -244,7 +258,7 @@ export function CameraBarcodeScanner({
         }
       },
     );
-  }, [handleDetectedCode, stopScanner]);
+  }, [handleDetectedCode, stopScanner, waitForVideoElement]);
 
   const startScanner = useCallback(async () => {
     if (!isSupported || isStarting || isOpen) {
@@ -254,6 +268,7 @@ export function CameraBarcodeScanner({
     setErrorMessage(null);
     setSuccessMessage(null);
     setIsStarting(true);
+    setIsOpen(true);
 
     try {
       if (engine === "native") {
@@ -262,7 +277,6 @@ export function CameraBarcodeScanner({
         await startZxingScanner();
       }
 
-      setIsOpen(true);
       setIsStarting(false);
     } catch {
       setErrorMessage(
