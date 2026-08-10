@@ -10,6 +10,7 @@ import {
   parseCategoryFieldConfig,
 } from "@/lib/product-taxonomy";
 import { prisma } from "@/lib/prisma";
+import { getTenantWarehouses } from "@/lib/warehouses";
 
 type EditProductPageProps = {
   params: Promise<{
@@ -138,6 +139,10 @@ export default async function EditProductPage({
     parseCategoryFieldConfig(product.category?.config),
   );
   const warehouseConfig = getWarehouseConfig(currentUser.tenant?.catalogConfig);
+  const warehouses =
+    warehouseConfig.enabled
+      ? await getTenantWarehouses(tenantId, currentUser.tenant?.catalogConfig)
+      : [];
 
   return (
     <main className="min-h-screen bg-[linear-gradient(180deg,#f8fafc_0%,#eef2f7_100%)] px-4 py-6 sm:px-6 lg:px-8">
@@ -243,9 +248,9 @@ export default async function EditProductPage({
                 className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-200"
               >
                 <option value="">Pa depo</option>
-                {warehouseConfig.options.map((option) => (
-                  <option key={option} value={option}>
-                    {option}
+                {warehouses.map((warehouse) => (
+                  <option key={warehouse.id} value={warehouse.name}>
+                    {warehouse.name}
                   </option>
                 ))}
               </select>

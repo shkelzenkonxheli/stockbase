@@ -6,6 +6,7 @@ import { FlashMessage } from "@/app/components/flash-message";
 import { requireRole } from "@/lib/auth";
 import { ensureTenantCategories } from "@/lib/categories";
 import { prisma } from "@/lib/prisma";
+import { getTenantWarehouses } from "@/lib/warehouses";
 import {
   getCategoryDescription,
   getCatalogAwareCategoryConfig,
@@ -126,6 +127,10 @@ export default async function NewProductPage({
         )
       : null;
   const warehouseConfig = getWarehouseConfig(currentUser.tenant?.catalogConfig);
+  const warehouses =
+    currentUser.tenant?.id && warehouseConfig.enabled
+      ? await getTenantWarehouses(currentUser.tenant.id, currentUser.tenant.catalogConfig)
+      : [];
 
   return (
     <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,#ffedd5_0%,transparent_20%),linear-gradient(180deg,#f8fafc_0%,#eef2f7_100%)] px-4 py-6 sm:px-6 lg:px-8">
@@ -233,9 +238,9 @@ export default async function NewProductPage({
                   <option value="" disabled>
                     Zgjidh depon
                   </option>
-                  {warehouseConfig.options.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
+                  {warehouses.map((warehouse) => (
+                    <option key={warehouse.id} value={warehouse.name}>
+                      {warehouse.name}
                     </option>
                   ))}
                 </select>

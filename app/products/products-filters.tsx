@@ -94,18 +94,18 @@ export function ProductsFilters({
   return (
     <>
       <form
-        className="space-y-3"
+        className="space-y-2.5"
         onSubmit={(event) => {
           event.preventDefault();
           updateFilters(query, code, category, model, warehouse, stock);
         }}
       >
-        <div className="grid gap-3 lg:grid-cols-[minmax(0,1.5fr)_120px_220px_220px_220px_180px_140px]">
+        <div className="grid gap-2.5 lg:grid-cols-[minmax(0,1.45fr)_96px_180px_180px_180px_150px_108px]">
           <div className="flex flex-col gap-2 sm:flex-row">
             <div className="relative min-w-0 flex-1">
               <svg
                 viewBox="0 0 24 24"
-                className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 fill-none stroke-slate-400 stroke-[1.8]"
+                className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 fill-none stroke-slate-400 stroke-[1.8]"
               >
                 <circle cx="11" cy="11" r="6" />
                 <path d="m20 20-3.5-3.5" />
@@ -115,12 +115,12 @@ export function ProductsFilters({
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Kerko produkt, kategori, ngjyre, dimension ose SKU..."
-                className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:bg-white"
+                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:bg-white"
               />
             </div>
             <button
               type="submit"
-              className="inline-flex shrink-0 items-center justify-center rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 sm:min-w-[84px]"
+              className="inline-flex shrink-0 items-center justify-center rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 sm:min-w-[78px]"
             >
               <svg
                 viewBox="0 0 20 20"
@@ -137,7 +137,7 @@ export function ProductsFilters({
           <button
             type="button"
             onClick={() => setScannerOpen(true)}
-            className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+            className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
           >
             Scan
           </button>
@@ -150,7 +150,7 @@ export function ProductsFilters({
               setModel("");
               updateFilters(query, code, nextCategory, "", warehouse, stock);
             }}
-            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:bg-white"
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:bg-white"
           >
             <option value="">Te gjitha kategorite</option>
             {categories.map((categoryOption) => (
@@ -168,7 +168,7 @@ export function ProductsFilters({
               updateFilters(query, code, category, nextModel, warehouse, stock);
             }}
             disabled={filteredModels.length === 0}
-            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:bg-white"
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:bg-white"
           >
             <option value="">Te gjitha produktet</option>
             {filteredModels.map((modelOption) => (
@@ -186,7 +186,7 @@ export function ProductsFilters({
               updateFilters(query, code, category, model, nextWarehouse, stock);
             }}
             disabled={warehouses.length === 0}
-            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:bg-white disabled:cursor-not-allowed disabled:bg-slate-100"
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:bg-white disabled:cursor-not-allowed disabled:bg-slate-100"
           >
             <option value="">Te gjitha depot</option>
             {warehouses.map((warehouseOption) => (
@@ -203,7 +203,7 @@ export function ProductsFilters({
               setStock(nextStock);
               updateFilters(query, code, category, model, warehouse, nextStock);
             }}
-            className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:bg-white"
+            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:bg-white"
           >
             <option value="">Gjithe stoku</option>
             <option value="low">Vetem stok i ulet</option>
@@ -224,7 +224,7 @@ export function ProductsFilters({
                 router.replace(pathname);
               });
             }}
-            className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-medium text-slate-600 transition hover:border-slate-300 hover:bg-white"
+            className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-2.5 py-2.5 text-sm font-medium text-slate-600 transition hover:border-slate-300 hover:bg-white"
           >
             <svg
               viewBox="0 0 20 20"
@@ -237,7 +237,7 @@ export function ProductsFilters({
             Reset
           </button>
         </div>
-        <p className="text-xs text-slate-500">
+        <p className="text-[11px] text-slate-500">
           {isPending ? "Duke filtruar..." : code ? `Filtri aktiv nga barcode: ${code}` : "Filtrat punojne sipas kategorise, produktit dhe gjendjes se stokut."}
         </p>
       </form>

@@ -328,29 +328,29 @@ export function BarcodeScanDialog({
         aria-label="Mbyll scanner-in"
       />
 
-      <div className="relative z-[121] flex w-full max-w-2xl flex-col overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-[0_24px_64px_rgba(15,23,42,0.2)]">
-        <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-5 sm:px-6">
+      <div className="relative z-[121] flex w-full max-w-xl flex-col overflow-hidden rounded-[26px] border border-slate-200 bg-white shadow-[0_24px_64px_rgba(15,23,42,0.2)]">
+        <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4 sm:px-5">
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
               Scanner
             </p>
-            <h3 className="mt-2 truncate text-2xl font-semibold tracking-tight text-slate-950">
+            <h3 className="mt-1.5 truncate text-xl font-semibold tracking-tight text-slate-950">
               {title}
             </h3>
-            <p className="mt-1 text-sm text-slate-500">{description}</p>
+            <p className="mt-1 text-sm leading-5 text-slate-500">{description}</p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-xl font-semibold text-slate-500 transition hover:border-slate-300 hover:text-slate-900"
+            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-xl font-semibold text-slate-500 transition hover:border-slate-300 hover:text-slate-900"
             aria-label="Mbyll"
           >
             ×
           </button>
         </div>
 
-        <div className="space-y-4 px-5 py-5 sm:px-6">
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
+        <div className="space-y-4 px-5 py-4 sm:px-5">
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3.5 py-3.5">
             <label className="space-y-2">
               <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
                 Kodi manual / scanner fizik
@@ -368,14 +368,14 @@ export function BarcodeScanDialog({
                     }
                   }}
                   placeholder="Shkruaj ose skano kodin ketu"
-                  className="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-300"
+                  className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-300"
                   autoFocus
                 />
                 <button
                   type="button"
                   onClick={() => handleDetectedCode(manualCode)}
                   disabled={!manualCode.trim()}
-                  className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+                  className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50 sm:min-w-[112px]"
                 >
                   Përdor kodin
                 </button>
@@ -384,25 +384,25 @@ export function BarcodeScanDialog({
           </div>
 
           {!supportState.isSupported ? (
-            <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+            <div className="rounded-xl border border-amber-200 bg-amber-50 px-3.5 py-2.5 text-sm text-amber-800">
               {supportState.reason}
             </div>
           ) : null}
 
           {errorMessage ? (
-            <div className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            <div className="rounded-xl border border-rose-200 bg-rose-50 px-3.5 py-2.5 text-sm text-rose-700">
               {errorMessage}
             </div>
           ) : null}
 
           {successMessage ? (
-            <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm font-medium text-emerald-700">
+            <div className="rounded-xl border border-emerald-200 bg-emerald-50 px-3.5 py-2.5 text-sm font-medium text-emerald-700">
               {successMessage}
             </div>
           ) : null}
 
-          <div className="overflow-hidden rounded-[28px] border border-slate-200 bg-slate-950">
-            <div className="relative aspect-[4/3] w-full bg-black">
+          <div className="overflow-hidden rounded-[24px] border border-slate-200 bg-slate-950">
+            <div className="relative aspect-[16/10] w-full bg-black">
               <video
                 ref={videoRef}
                 className="h-full w-full object-cover"
@@ -410,11 +410,11 @@ export function BarcodeScanDialog({
                 autoPlay
                 playsInline
               />
-              <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-6">
-                <div className="h-32 w-full max-w-xs rounded-[28px] border-2 border-emerald-400/90 shadow-[0_0_0_9999px_rgba(2,6,23,0.42)]" />
+              <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-4">
+                <div className="h-24 w-full max-w-[240px] rounded-[24px] border-2 border-emerald-400/90 shadow-[0_0_0_9999px_rgba(2,6,23,0.42)]" />
               </div>
             </div>
-            <div className="border-t border-slate-800 px-4 py-3 text-sm text-slate-300">
+            <div className="border-t border-slate-800 px-3.5 py-2.5 text-sm text-slate-300">
               {isStarting
                 ? "Po hapet kamera..."
                 : engine === "native"
@@ -427,3 +427,4 @@ export function BarcodeScanDialog({
     </div>
   );
 }
+

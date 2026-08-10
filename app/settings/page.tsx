@@ -6,10 +6,11 @@ import { ConfirmActionButton } from "@/app/components/confirm-action-button";
 import { SettingsListViewEditor } from "@/app/components/settings-list-view-editor";
 import { SettingsCategoryCard } from "@/app/components/settings-category-card";
 import { SettingsTabs } from "@/app/components/settings-tabs";
+import { WarehouseManager } from "./warehouse-manager";
 import { requireRole } from "@/lib/auth";
 import { createTenantCategory, ensureTenantCategories } from "@/lib/categories";
 import { prisma } from "@/lib/prisma";
-import { syncTenantWarehouses } from "@/lib/warehouses";
+import { getTenantWarehouseSummaries, syncTenantWarehouses } from "@/lib/warehouses";
 import {
   CATALOG_TYPES,
   createCategoryFieldKey,
@@ -283,11 +284,7 @@ async function updateTenantSettings(formData: FormData) {
   const catalogConfig: TenantCatalogConfig = {
     warehouse: {
       enabled: isTruthyField(formData.get("warehouseEnabled")),
-      options: ((formData.get("warehouseOptions")?.toString() ?? "")
-        .split(/\r?\n|,/)
-        .map((item) => item.trim())
-        .filter(Boolean)
-        .filter((value, index, array) => array.indexOf(value) === index)),
+      options: existingTenantConfig?.warehouse?.options ?? [],
     },
     productListView: parseProductListViewConfig(
       formData.get("productListViewConfig"),
@@ -602,6 +599,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
       parseCategoryFieldConfig(category.config),
     ),
   }));
+  const warehouseSummaries = await getTenantWarehouseSummaries(tenantId, tenantCatalogConfig);
   return (
     <main className="px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-6xl space-y-6">
@@ -686,43 +684,27 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
                     </section>
 
                     <section className="rounded-[24px] border border-slate-200 bg-white p-4 sm:p-5">
-                      <div className="space-y-4">
-                        <div className="flex flex-wrap items-center justify-between gap-3">
-                          <div>
-                            <p className="text-sm font-semibold text-slate-950">Depoja</p>
-                            <p className="mt-1 text-sm text-slate-600">
-                              Aktivizo zgjedhjen e depos te produktet dhe shfaqe ne stok e porosi.
-                            </p>
-                          </div>
-                          <label className="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
-                            <input
-                              type="checkbox"
-                              name="warehouseEnabled"
-                              value="true"
-                              defaultChecked={warehouseConfig.enabled}
-                              className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-300"
-                            />
-                            Shfaq depo
-                          </label>
-                        </div>
-
-                        <div className="space-y-2">
-                          <label htmlFor="warehouseOptions" className="block text-sm font-medium text-slate-800">
-                            Emrat e depove
-                          </label>
-                          <textarea
-                            id="warehouseOptions"
-                            name="warehouseOptions"
-                            defaultValue={warehouseConfig.options.join("\n")}
-                            rows={3}
-                            className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-200"
-                            placeholder={"Depo 1\nDepo 2"}
-                          />
-                          <p className="text-xs text-slate-500">
-                            Shkruaj nje depo per rresht. Nese aktivizohet, produkti mund te lidhet me nje depo.
+                      <div className="flex flex-wrap items-center justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold text-slate-950">Depoja</p>
+                          <p className="mt-1 text-sm text-slate-600">
+                            Aktivizo zgjedhjen e depos te produktet dhe shfaqe ne stok e porosi.
                           </p>
                         </div>
+                        <label className="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
+                          <input
+                            type="checkbox"
+                            name="warehouseEnabled"
+                            value="true"
+                            defaultChecked={warehouseConfig.enabled}
+                            className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-300"
+                          />
+                          Shfaq depo
+                        </label>
                       </div>
+                      <p className="mt-4 text-xs text-slate-500">
+                        Emrat dhe statuset e depove menaxhohen te tab-i Depot.
+                      </p>
                     </section>
 
                     <section className="rounded-[24px] border border-slate-200 bg-white p-4 sm:p-5">
@@ -852,6 +834,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
                     </section>
                   </div>
                 }
+                warehouses={<WarehouseManager warehouses={warehouseSummaries} />}
                 variables={
                   <div className="mx-auto max-w-3xl space-y-5">
                     <div>
