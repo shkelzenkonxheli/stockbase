@@ -102,6 +102,21 @@ export type TenantCatalogConfig = {
   };
   productListView?: ProductListViewConfig;
   orderListView?: OrderListViewConfig;
+  labelPresets?: LabelPresetConfig[];
+};
+
+export type LabelPresetConfig = {
+  id: string;
+  name: string;
+  template: string;
+  widthMm: number;
+  heightMm: number;
+  showName: boolean;
+  showVariant: boolean;
+  showLabelCount: boolean;
+  showImage: boolean;
+  showSku: boolean;
+  showCategory: boolean;
 };
 
 export const PRODUCT_LIST_FIELD_KEYS = [
@@ -626,6 +641,36 @@ export function sanitizeCategoryFieldOverride(value: unknown): CategoryFieldOver
   return Object.keys(nextOverride).length > 0 ? nextOverride : null;
 }
 
+function sanitizeLabelPresetConfig(value: unknown): LabelPresetConfig | null {
+  if (!isRecord(value)) {
+    return null;
+  }
+
+  const id = typeof value.id === "string" ? value.id.trim() : "";
+  const name = typeof value.name === "string" ? value.name.trim() : "";
+  const template = typeof value.template === "string" ? value.template.trim() : "";
+  const widthMm = Number(value.widthMm);
+  const heightMm = Number(value.heightMm);
+
+  if (!id || !name || !template || !Number.isFinite(widthMm) || !Number.isFinite(heightMm)) {
+    return null;
+  }
+
+  return {
+    id,
+    name,
+    template,
+    widthMm,
+    heightMm,
+    showName: Boolean(value.showName),
+    showVariant: Boolean(value.showVariant),
+    showLabelCount: Boolean(value.showLabelCount),
+    showImage: Boolean(value.showImage),
+    showSku: Boolean(value.showSku),
+    showCategory: Boolean(value.showCategory),
+  };
+}
+
 export function parseTenantCatalogConfig(value: unknown): TenantCatalogConfig | null {
   if (!isRecord(value)) {
     return null;
@@ -668,6 +713,12 @@ export function parseTenantCatalogConfig(value: unknown): TenantCatalogConfig | 
             .filter(Boolean)
         : [],
     };
+  }
+
+  if (Array.isArray(value.labelPresets)) {
+    nextConfig.labelPresets = value.labelPresets
+      .map((item) => sanitizeLabelPresetConfig(item))
+      .filter((item): item is LabelPresetConfig => Boolean(item));
   }
 
   return nextConfig;

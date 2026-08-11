@@ -87,6 +87,9 @@ export async function GET(_request: Request, context: RouteContext) {
 
   return NextResponse.json(
     variants.map((variant) => ({
+      inventoryWarehouses: variant.inventories
+        .map((inventory) => inventory.warehouse?.name)
+        .filter((value): value is string => Boolean(value)),
       inventory: variant.inventories[0] ?? null,
       id: variant.id,
       productId: variant.productId,
@@ -94,7 +97,13 @@ export async function GET(_request: Request, context: RouteContext) {
       warehouseName:
         variant.inventories[0]?.warehouse?.name
           ? variant.inventories[0].warehouse.name
-          : variant.product.warehouseName,
+          : [
+              ...new Set(
+                variant.inventories
+                  .map((inventory) => inventory.warehouse?.name)
+                  .filter((value): value is string => Boolean(value)),
+              ),
+            ].join(", ") || variant.product.warehouseName,
       category: variant.product.category.name,
       size: variant.size,
       color: variant.color,

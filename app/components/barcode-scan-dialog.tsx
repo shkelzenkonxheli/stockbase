@@ -328,13 +328,13 @@ export function BarcodeScanDialog({
         aria-label="Mbyll scanner-in"
       />
 
-      <div className="relative z-[121] flex w-full max-w-xl flex-col overflow-hidden rounded-[26px] border border-slate-200 bg-white shadow-[0_24px_64px_rgba(15,23,42,0.2)]">
-        <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-5 py-4 sm:px-5">
+      <div className="relative z-[121] flex w-full max-w-[720px] flex-col overflow-hidden rounded-[24px] border border-slate-200 bg-white shadow-[0_24px_64px_rgba(15,23,42,0.2)]">
+        <div className="flex items-start justify-between gap-4 border-b border-slate-100 px-4 py-3.5 sm:px-5 sm:py-4">
           <div className="min-w-0">
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
               Scanner
             </p>
-            <h3 className="mt-1.5 truncate text-xl font-semibold tracking-tight text-slate-950">
+            <h3 className="mt-1 truncate text-lg font-semibold tracking-tight text-slate-950 sm:text-xl">
               {title}
             </h3>
             <p className="mt-1 text-sm leading-5 text-slate-500">{description}</p>
@@ -342,14 +342,14 @@ export function BarcodeScanDialog({
           <button
             type="button"
             onClick={onClose}
-            className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-xl font-semibold text-slate-500 transition hover:border-slate-300 hover:text-slate-900"
+            className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-200 bg-white text-xl font-semibold text-slate-500 transition hover:border-slate-300 hover:text-slate-900"
             aria-label="Mbyll"
           >
             ×
           </button>
         </div>
 
-        <div className="space-y-4 px-5 py-4 sm:px-5">
+        <div className="space-y-3 px-4 py-3.5 sm:px-5 sm:py-4">
           <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3.5 py-3.5">
             <label className="space-y-2">
               <span className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
@@ -401,8 +401,8 @@ export function BarcodeScanDialog({
             </div>
           ) : null}
 
-          <div className="overflow-hidden rounded-[24px] border border-slate-200 bg-slate-950">
-            <div className="relative aspect-[16/10] w-full bg-black">
+          <div className="overflow-hidden rounded-[22px] border border-slate-200 bg-slate-950">
+            <div className="relative aspect-[16/9] max-h-[340px] w-full bg-black sm:max-h-[380px]">
               <video
                 ref={videoRef}
                 className="h-full w-full object-cover"
@@ -411,7 +411,7 @@ export function BarcodeScanDialog({
                 playsInline
               />
               <div className="pointer-events-none absolute inset-0 flex items-center justify-center p-4">
-                <div className="h-24 w-full max-w-[240px] rounded-[24px] border-2 border-emerald-400/90 shadow-[0_0_0_9999px_rgba(2,6,23,0.42)]" />
+                <div className="h-20 w-full max-w-[220px] rounded-[22px] border-2 border-emerald-400/90 shadow-[0_0_0_9999px_rgba(2,6,23,0.42)] sm:h-24 sm:max-w-[250px]" />
               </div>
             </div>
             <div className="border-t border-slate-800 px-3.5 py-2.5 text-sm text-slate-300">

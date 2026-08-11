@@ -874,18 +874,19 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
                     />
                   </section>
                 }
+                footer={
+                  <div className="mx-auto mt-8 max-w-3xl border-t border-slate-200 pt-5">
+                    <div className="mx-auto max-w-2xl">
+                      <button
+                        type="submit"
+                        className="inline-flex w-full items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_25px_rgba(15,23,42,0.18)] transition hover:bg-slate-800 sm:w-auto sm:min-w-[220px]"
+                      >
+                        Ruaj ndryshimet
+                      </button>
+                    </div>
+                  </div>
+                }
               />
-            </div>
-
-            <div className="mx-auto mt-8 max-w-3xl border-t border-slate-200 pt-5">
-              <div className="mx-auto max-w-2xl">
-                <button
-                  type="submit"
-                  className="inline-flex w-full items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_25px_rgba(15,23,42,0.18)] transition hover:bg-slate-800 sm:w-auto sm:min-w-[220px]"
-                >
-                  Ruaj ndryshimet
-                </button>
-              </div>
             </div>
           </form>
         </section>

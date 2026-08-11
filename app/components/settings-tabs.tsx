@@ -1,15 +1,16 @@
 "use client";
 
-import { useState } from "react";
+import { Children, type ReactNode, useMemo, useState } from "react";
 
 type TabKey = "settings" | "categories" | "variables" | "view" | "warehouses";
 
 type SettingsTabsProps = {
-  settings: React.ReactNode;
-  categories: React.ReactNode;
-  variables: React.ReactNode;
-  view: React.ReactNode;
-  warehouses: React.ReactNode;
+  settings: ReactNode;
+  categories: ReactNode;
+  variables: ReactNode;
+  view: ReactNode;
+  warehouses: ReactNode;
+  footer?: ReactNode;
 };
 
 const TABS: Array<{ key: TabKey; label: string }> = [
@@ -20,8 +21,19 @@ const TABS: Array<{ key: TabKey; label: string }> = [
   { key: "view", label: "Pamja" },
 ];
 
-export function SettingsTabs({ settings, categories, variables, view, warehouses }: SettingsTabsProps) {
+export function SettingsTabs({ settings, categories, variables, view, warehouses, footer }: SettingsTabsProps) {
   const [activeTab, setActiveTab] = useState<TabKey>("settings");
+  const panels = useMemo(
+    () => ({
+      settings: Children.toArray(settings),
+      warehouses: Children.toArray(warehouses),
+      categories: Children.toArray(categories),
+      variables: Children.toArray(variables),
+      view: Children.toArray(view),
+      footer: footer ? Children.toArray(footer) : null,
+    }),
+    [categories, footer, settings, variables, view, warehouses],
+  );
 
   return (
     <div className="space-y-5">
@@ -44,11 +56,12 @@ export function SettingsTabs({ settings, categories, variables, view, warehouses
         </div>
       </div>
 
-      <div className={activeTab === "settings" ? "block" : "hidden"}>{settings}</div>
-      <div className={activeTab === "warehouses" ? "block" : "hidden"}>{warehouses}</div>
-      <div className={activeTab === "categories" ? "block" : "hidden"}>{categories}</div>
-      <div className={activeTab === "variables" ? "block" : "hidden"}>{variables}</div>
-      <div className={activeTab === "view" ? "block" : "hidden"}>{view}</div>
+      <div className={activeTab === "settings" ? "block" : "hidden"}>{panels.settings}</div>
+      <div className={activeTab === "warehouses" ? "block" : "hidden"}>{panels.warehouses}</div>
+      <div className={activeTab === "categories" ? "block" : "hidden"}>{panels.categories}</div>
+      <div className={activeTab === "variables" ? "block" : "hidden"}>{panels.variables}</div>
+      <div className={activeTab === "view" ? "block" : "hidden"}>{panels.view}</div>
+      {activeTab !== "warehouses" ? panels.footer : null}
     </div>
   );
 }

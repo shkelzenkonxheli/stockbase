@@ -94,7 +94,13 @@ export async function GET(request: Request) {
       warehouseName:
         inventory?.warehouse?.name
           ? inventory.warehouse.name
-          : variant.product.warehouseName,
+          : [
+              ...new Set(
+                variant.inventories
+                  .map((item) => item.warehouse?.name)
+                  .filter((value): value is string => Boolean(value)),
+              ),
+            ].join(", ") || variant.product.warehouseName,
       category: variant.product.category.name,
       size: variant.size,
       color: variant.color,

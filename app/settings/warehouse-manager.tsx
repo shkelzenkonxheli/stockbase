@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 
 type WarehouseSummary = {
   id: number;
@@ -42,6 +42,22 @@ export function WarehouseManager({ warehouses }: WarehouseManagerProps) {
     () => [...warehouses].sort((a, b) => Number(b.isActive) - Number(a.isActive) || a.name.localeCompare(b.name)),
     [warehouses],
   );
+  const activeWarehouseCount = useMemo(
+    () => warehouses.filter((warehouse) => warehouse.isActive).length,
+    [warehouses],
+  );
+
+  useEffect(() => {
+    if (!message) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setMessage(null);
+    }, 3200);
+
+    return () => window.clearTimeout(timeoutId);
+  }, [message]);
 
   function updateDraft(id: number, field: "name" | "isActive", value: string | boolean) {
     setDrafts((current) => ({
@@ -190,6 +206,22 @@ export function WarehouseManager({ warehouses }: WarehouseManagerProps) {
               name: warehouse.name,
               isActive: warehouse.isActive,
             };
+            const hasStock = warehouse.totalStock > 0;
+            const hasAssignments = warehouse.assignedProductCount > 0;
+            const hasHistory =
+              warehouse._count.orders > 0 ||
+              warehouse._count.orderItems > 0 ||
+              warehouse._count.stockMovements > 0 ||
+              warehouse._count.inventoryCounts > 0 ||
+              warehouse._count.auditLogs > 0;
+            const canDeactivate = !warehouse.isActive || (!hasStock && activeWarehouseCount > 1);
+            const canDelete = !hasStock && !hasAssignments && !hasHistory;
+            const statusNotes = [
+              hasStock ? "Ka stok aktiv" : null,
+              hasAssignments ? "Ka produkte te lidhura" : null,
+              hasHistory ? "Ka histori ne sistem" : null,
+              warehouse.isActive && activeWarehouseCount <= 1 ? "Eshte depoja e fundit aktive" : null,
+            ].filter(Boolean) as string[];
 
             return (
               <article
@@ -245,6 +277,37 @@ export function WarehouseManager({ warehouses }: WarehouseManagerProps) {
                         <p className="mt-1 text-sm font-semibold text-slate-950">{warehouse._count.inventoryCounts}</p>
                       </div>
                     </div>
+
+                    <div className="flex flex-wrap gap-2">
+                      <span
+                        className={`rounded-full px-3 py-1 text-xs font-medium ${
+                          draft.isActive ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-700"
+                        }`}
+                      >
+                        {draft.isActive ? "Aktive" : "Jo aktive"}
+                      </span>
+                      {!canDeactivate ? (
+                        <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
+                          Nuk caktivizohet tani
+                        </span>
+                      ) : null}
+                      {!canDelete ? (
+                        <span className="rounded-full bg-rose-100 px-3 py-1 text-xs font-medium text-rose-700">
+                          Nuk fshihet tani
+                        </span>
+                      ) : null}
+                    </div>
+
+                    {statusNotes.length > 0 ? (
+                      <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-xs text-slate-600">
+                        <p className="font-semibold uppercase tracking-[0.14em] text-slate-500">Kufizime</p>
+                        <p className="mt-1">{statusNotes.join(" · ")}.</p>
+                      </div>
+                    ) : (
+                      <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-3 text-xs text-emerald-800">
+                        Kjo depo mund te caktivizohet ose fshihet nese nuk lidhet me te dhena te reja.
+                      </div>
+                    )}
                   </div>
 
                   <div className="flex flex-wrap gap-2 lg:justify-end">
@@ -259,7 +322,7 @@ export function WarehouseManager({ warehouses }: WarehouseManagerProps) {
                     <button
                       type="button"
                       onClick={() => void handleDelete(warehouse.id)}
-                      disabled={isPending}
+                      disabled={isPending || !canDelete}
                       className="inline-flex items-center justify-center rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 transition hover:border-rose-300 hover:bg-rose-100 disabled:opacity-60"
                     >
                       Fshi

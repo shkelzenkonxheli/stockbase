@@ -373,7 +373,15 @@ export default async function QuickOrdersPage({
             id: product.id,
             name: product.name,
             brand: product.brand ?? "",
-            warehouseName: product.warehouseName ?? "",
+            warehouseName: [
+              ...new Set(
+                product.variants.flatMap((variant) =>
+                  variant.inventories
+                    .map((inventory) => warehouses.find((warehouse) => warehouse.id === inventory.warehouseId)?.name)
+                    .filter((value): value is string => Boolean(value)),
+                ),
+              ),
+            ].join(", "),
             category: product.category.name,
             imagePath:
               product.variants.find((variant) => variant.imagePath)?.imagePath ?? null,
