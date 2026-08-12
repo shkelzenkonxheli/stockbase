@@ -455,6 +455,14 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              {canManageInventory ? (
+                <Link
+                  href="/products/import"
+                  className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+                >
+                  Importo file
+                </Link>
+              ) : null}
               <Link
                 href="/"
                 className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-white"

@@ -697,7 +697,6 @@ export default async function VariantLabelsPage({
                         </section>
                       }
                     />
-
                     <Link
                       href={`/products/${productId}/variants/${variant.id}/edit`}
                       className="inline-flex h-[50px] w-[50px] items-center justify-center rounded-2xl border border-slate-200 bg-white text-slate-700 shadow-sm transition hover:border-emerald-200 hover:bg-emerald-50/60 hover:text-emerald-700"

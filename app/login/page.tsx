@@ -2,8 +2,15 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
+import { DismissiblePanel } from "@/app/components/dismissible-panel";
 import { FlashMessage } from "@/app/components/flash-message";
-import { createSession, getCurrentUser, isPlatformAdmin } from "@/lib/auth";
+import {
+  createSession,
+  getCurrentUser,
+  getTenantAccessBlockedReason,
+  hasTenantAccess,
+  isPlatformAdmin,
+} from "@/lib/auth";
 import {
   clearLoginFailures,
   getLoginThrottleKey,
@@ -16,12 +23,32 @@ import { prisma } from "@/lib/prisma";
 type LoginPageProps = {
   searchParams?: Promise<{
     error?: string;
+    reason?: string;
+    expiredAt?: string;
   }>;
 };
 
 export const metadata: Metadata = {
   title: "Hyrje",
 };
+
+function formatBlockedDate(value?: string) {
+  if (!value) {
+    return null;
+  }
+
+  const parsed = new Date(value);
+
+  if (Number.isNaN(parsed.getTime())) {
+    return null;
+  }
+
+  return new Intl.DateTimeFormat("sq-AL", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(parsed);
+}
 
 async function login(formData: FormData) {
   "use server";
@@ -52,6 +79,18 @@ async function login(formData: FormData) {
         },
         select: {
           tenantId: true,
+          tenant: {
+            select: {
+              status: true,
+              subscription: {
+                select: {
+                  status: true,
+                  trialEnd: true,
+                  currentPeriodEnd: true,
+                },
+              },
+            },
+          },
         },
       },
     },
@@ -69,10 +108,44 @@ async function login(formData: FormData) {
     redirect("/login?error=credentials");
   }
 
+  const authUser = {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    role: user.role,
+    tenant: null,
+  };
+
+  if (!isPlatformAdmin(authUser)) {
+    const primaryMembership = user.memberships[0];
+    const blockedReason = primaryMembership
+      ? getTenantAccessBlockedReason({
+          tenantStatus: primaryMembership.tenant.status,
+          subscriptionStatus: primaryMembership.tenant.subscription?.status ?? null,
+          trialEnd: primaryMembership.tenant.subscription?.trialEnd ?? null,
+          currentPeriodEnd: primaryMembership.tenant.subscription?.currentPeriodEnd ?? null,
+        })
+      : null;
+
+    if (blockedReason) {
+      const params = new URLSearchParams({ error: "inactive", reason: blockedReason });
+      const expiredAt =
+        blockedReason === "TRIAL_EXPIRED"
+          ? primaryMembership?.tenant.subscription?.trialEnd
+          : primaryMembership?.tenant.subscription?.currentPeriodEnd;
+
+      if (expiredAt) {
+        params.set("expiredAt", expiredAt.toISOString());
+      }
+
+      redirect(`/login?${params.toString()}`);
+    }
+  }
+
   clearLoginFailures(throttleKey);
   await createSession(user.id, user.memberships[0]?.tenantId ?? null);
 
-  if (isPlatformAdmin({ id: user.id, name: user.name, email: user.email, role: user.role, tenant: null })) {
+  if (isPlatformAdmin(authUser)) {
     redirect("/platform/tenants");
   }
 
@@ -92,12 +165,49 @@ function getErrorMessage(error?: string) {
   }
 }
 
+function getBlockedAccessCopy(reason?: string, expiredAt?: string) {
+  const formattedDate = formatBlockedDate(expiredAt);
+
+  switch (reason) {
+    case "TRIAL_EXPIRED":
+      return {
+        title: "Free trial ka skaduar",
+        description: formattedDate
+          ? `Qasja per kete biznes ka skaduar me ${formattedDate}. Nese don me vazhdu perdorimin, kontakto administratorin e platformes per riaktivizim.`
+          : "Qasja per kete biznes ka skaduar. Nese don me vazhdu perdorimin, kontakto administratorin e platformes per riaktivizim.",
+      };
+    case "SUSPENDED":
+      return {
+        title: "Llogaria eshte pezulluar",
+        description:
+          "Ky biznes eshte pezulluar perkohesisht. Nese don me vazhdu perdorimin, kontakto administratorin e platformes.",
+      };
+    case "SUBSCRIPTION_INACTIVE":
+      return {
+        title: "Abonimi ka skaduar",
+        description: formattedDate
+          ? `Periudha aktive ka perfunduar me ${formattedDate}. Nese don me vazhdu perdorimin, kontakto administratorin e platformes per riaktivizim.`
+          : "Periudha aktive ka perfunduar. Nese don me vazhdu perdorimin, kontakto administratorin e platformes per riaktivizim.",
+      };
+    default:
+      return {
+        title: "Qasja nuk eshte aktive",
+        description:
+          "Ky tenant nuk ka qasje aktive. Kontakto administratorin e platformes nese don me vazhdu.",
+      };
+  }
+}
+
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   const currentUser = await getCurrentUser();
 
   if (currentUser) {
     if (isPlatformAdmin(currentUser)) {
       redirect("/platform/tenants");
+    }
+
+    if (!hasTenantAccess(currentUser)) {
+      redirect("/subscription");
     }
 
     redirect("/");
@@ -111,6 +221,13 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
 
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const errorMessage = getErrorMessage(resolvedSearchParams?.error);
+  const blockedAccess =
+    resolvedSearchParams?.error === "inactive"
+      ? getBlockedAccessCopy(
+          resolvedSearchParams.reason,
+          resolvedSearchParams.expiredAt,
+        )
+      : null;
 
   return (
     <main className="relative min-h-screen overflow-hidden px-4 py-6 sm:px-6 lg:px-8">
@@ -148,6 +265,34 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
               text={errorMessage}
               className="mt-6 rounded-2xl px-4 py-3 text-sm"
             />
+          ) : null}
+
+          {blockedAccess ? (
+            <DismissiblePanel className="mt-6 overflow-hidden rounded-[28px] border border-amber-200 bg-[linear-gradient(180deg,rgba(255,251,235,0.98),rgba(255,255,255,1))] shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
+              <div className="border-b border-amber-100 px-5 py-4 pr-16">
+                <div className="flex items-start gap-3">
+                  <div className="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-amber-100 text-amber-700">
+                    <svg viewBox="0 0 24 24" className="h-5 w-5 fill-none stroke-current stroke-[1.8]">
+                      <path d="M12 8v5" strokeLinecap="round" />
+                      <path d="M12 16h.01" strokeLinecap="round" />
+                      <path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.72 3h16.92a2 2 0 0 0 1.72-3L13.71 3.86a2 2 0 0 0-3.42 0Z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <p className="text-base font-semibold text-slate-950">{blockedAccess.title}</p>
+                    <p className="mt-1 text-sm leading-6 text-slate-700">{blockedAccess.description}</p>
+                  </div>
+                </div>
+              </div>
+              <div className="flex flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+                <p className="text-xs font-medium uppercase tracking-[0.16em] text-slate-500">
+                  Per vazhdim, kontakto platform admin
+                </p>
+                <span className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700">
+                  Kontakto per riaktivizim
+                </span>
+              </div>
+            </DismissiblePanel>
           ) : null}
 
           <form action={login} className="mt-8 space-y-5">

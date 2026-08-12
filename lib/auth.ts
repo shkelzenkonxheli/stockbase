@@ -52,10 +52,11 @@ function isPlatformAdminEmail(email: string) {
   return platformAdminEmails.includes(email.trim().toLowerCase());
 }
 
-function getTenantAccessBlockedReason(input: {
+export function getTenantAccessBlockedReason(input: {
   tenantStatus: AuthTenant["status"];
   subscriptionStatus: AuthTenant["subscriptionStatus"];
   trialEnd: Date | null;
+  currentPeriodEnd: Date | null;
 }) {
   if (input.tenantStatus === "SUSPENDED") {
     return "SUSPENDED" as const;
@@ -68,6 +69,14 @@ function getTenantAccessBlockedReason(input: {
   if (input.subscriptionStatus === "TRIALING") {
     if (input.trialEnd && input.trialEnd.getTime() < Date.now()) {
       return "TRIAL_EXPIRED" as const;
+    }
+
+    return null;
+  }
+
+  if (input.subscriptionStatus === "ACTIVE") {
+    if (input.currentPeriodEnd && input.currentPeriodEnd.getTime() < Date.now()) {
+      return "SUBSCRIPTION_INACTIVE" as const;
     }
 
     return null;
@@ -200,10 +209,11 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
   }
 
   const accessBlockedReason = activeMembership
-    ? getTenantAccessBlockedReason({
+      ? getTenantAccessBlockedReason({
         tenantStatus: activeMembership.tenant.status,
         subscriptionStatus: activeMembership.tenant.subscription?.status ?? null,
         trialEnd: activeMembership.tenant.subscription?.trialEnd ?? null,
+        currentPeriodEnd: activeMembership.tenant.subscription?.currentPeriodEnd ?? null,
       })
     : null;
 
@@ -330,7 +340,7 @@ export async function requirePlatformAdmin() {
   const user = await getCurrentUser();
 
   if (!user) {
-    redirect("/login");
+    redirect("/admin/login");
   }
 
   if (!isPlatformAdmin(user)) {

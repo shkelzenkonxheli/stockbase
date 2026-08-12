@@ -8,7 +8,7 @@ Ky dokument perdoret para deploy-it dhe para se tenant-et ta testojne app-in.
 - Hyr me `PLATFORM_ADMIN_EMAILS`
 - Verifiko qe redirect shkon te `/platform/tenants`
 - Verifiko qe owner nuk sheh tenant shell normal
-- Hape `/platform/tenants/new`
+- Hape `/platform/tenants?create=1`
 - Krijo tenant te ri
 - Verifiko qe tenant-i krijohet me:
   - `14 dite trial`
@@ -175,3 +175,4 @@ App-i konsiderohet gati per trial nga klienti vetem nese kalohen:
 - orders
 - stock incoming
 - tenant isolation
+

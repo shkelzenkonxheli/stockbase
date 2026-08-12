@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const publicPaths = ["/login", "/setup"];
+const publicPaths = ["/login", "/admin/login", "/setup"];
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -31,7 +31,11 @@ export function proxy(request: NextRequest) {
   const sessionCookie = request.cookies.get("stock_app_session")?.value;
 
   if (!sessionCookie) {
-    const loginUrl = new URL("/login", request.url);
+    const loginPath =
+      pathname.startsWith("/platform") || pathname.startsWith("/admin")
+        ? "/admin/login"
+        : "/login";
+    const loginUrl = new URL(loginPath, request.url);
     return NextResponse.redirect(loginUrl);
   }
 

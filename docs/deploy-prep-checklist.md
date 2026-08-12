@@ -46,7 +46,7 @@ Nese billing eshte manual:
 
 Per cdo tenant demo / klient:
 
-- krijo tenant nga `/platform/tenants/new`
+- krijo tenant nga `/platform/tenants?create=1`
 - verifiko trial status
 - bej login me owner te tenant-it
 - kontrollo settings dhe kategorite
@@ -76,7 +76,7 @@ Pas deploy-it, testo:
 - `/login`
 - owner login
 - tenant login
-- `/platform/tenants/new`
+- `/platform/tenants?create=1`
 - `/settings`
 - `/products/new`
 - `/products/[id]/variants/new`
@@ -94,3 +94,4 @@ Deploy-i konsiderohet gati vetem nese:
 - tenant onboarding punon
 - tenant isolation eshte verifikuar
 - product / variant / order flow punon pa error
+
