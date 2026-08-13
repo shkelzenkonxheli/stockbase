@@ -41,6 +41,18 @@ export default async function ProductImportPage() {
 
           <div className="flex flex-wrap gap-3">
             <Link
+              href="/api/products/import/template"
+              className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+            >
+              Shkarko template
+            </Link>
+            <Link
+              href="/api/products/import/template?kind=sample"
+              className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+            >
+              Shkarko sample
+            </Link>
+            <Link
               href="/products"
               className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
             >

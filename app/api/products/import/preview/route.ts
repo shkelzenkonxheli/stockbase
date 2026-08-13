@@ -3,7 +3,6 @@ import * as XLSX from "xlsx";
 import { requireRole } from "@/lib/auth";
 import { suggestImportField } from "@/lib/product-import";
 
-const MAX_PREVIEW_ROWS = 50;
 const MAX_FILE_SIZE = 8 * 1024 * 1024;
 
 export async function POST(request: Request) {
@@ -69,7 +68,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Nuk u gjeten rreshta me te dhena." }, { status: 400 });
     }
 
-    const previewRows = dataRows.slice(0, MAX_PREVIEW_ROWS).map((row) =>
+    const previewRows = dataRows.map((row) =>
       headerRow.reduce<Record<string, string>>((accumulator, header, index) => {
         accumulator[header] = String(row[index] ?? "").trim();
         return accumulator;

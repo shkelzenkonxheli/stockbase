@@ -24,7 +24,9 @@ type ImportWizardProps = {
 type ImportResult = {
   createdProducts: number;
   createdVariants: number;
+  updatedVariants: number;
   updatedInventories: number;
+  skippedRows: number;
 };
 
 const FIELD_OPTIONS = IMPORT_FIELD_KEYS.map((field) => ({
@@ -55,6 +57,9 @@ export function ProductImportWizard({ categories, warehouses }: ImportWizardProp
   const [error, setError] = useState<string | null>(null);
   const [validationErrors, setValidationErrors] = useState<string[]>([]);
   const [result, setResult] = useState<ImportResult | null>(null);
+  const [duplicateStrategy, setDuplicateStrategy] = useState<"skip" | "add_stock" | "replace">(
+    "add_stock",
+  );
 
   const mappedHeaders = useMemo(() => new Set(Object.values(mapping).filter(Boolean)), [mapping]);
 
@@ -109,6 +114,7 @@ export function ProductImportWizard({ categories, warehouses }: ImportWizardProp
       const formData = new FormData();
       formData.append("file", file);
       formData.append("mapping", JSON.stringify(mapping));
+      formData.append("duplicateStrategy", duplicateStrategy);
 
       const response = await fetch("/api/products/import/commit", {
         method: "POST",
@@ -253,6 +259,23 @@ export function ProductImportWizard({ categories, warehouses }: ImportWizardProp
               ))}
             </div>
 
+            <div className="mt-5 space-y-2">
+              <label className="block text-sm font-medium text-slate-800">
+                Nese varianti ekziston tashme
+              </label>
+              <select
+                value={duplicateStrategy}
+                onChange={(event) =>
+                  setDuplicateStrategy(event.target.value as "skip" | "add_stock" | "replace")
+                }
+                className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-100"
+              >
+                <option value="add_stock">Shto stok te ekzistuesi</option>
+                <option value="skip">Kaloje rreshtin</option>
+                <option value="replace">Perditeso ekzistuesen</option>
+              </select>
+            </div>
+
             {preview ? (
               <div className="mt-5 sm:hidden">
                 <button
@@ -288,20 +311,54 @@ export function ProductImportWizard({ categories, warehouses }: ImportWizardProp
           ) : null}
 
           {result ? (
-            <div className="rounded-[24px] border border-emerald-200 bg-emerald-50 px-4 py-4 text-sm text-emerald-800">
-              <p className="font-semibold">Importi u krye me sukses.</p>
-              <div className="mt-2 grid gap-2 sm:grid-cols-3">
-                <div className="rounded-2xl bg-white px-3 py-3">
-                  <p className="text-xs uppercase tracking-[0.14em] text-slate-500">Produkte</p>
-                  <p className="mt-1 text-lg font-semibold text-slate-950">{result.createdProducts}</p>
+            <div className="rounded-[24px] border border-emerald-200 bg-gradient-to-br from-emerald-50 via-white to-teal-50 px-4 py-4 text-sm text-emerald-900 shadow-[0_12px_30px_rgba(16,185,129,0.08)] sm:px-5">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                <div>
+                  <p className="font-semibold text-emerald-950">Importi u krye me sukses.</p>
+                  <p className="mt-1 text-xs text-emerald-800/80">
+                    Rezultati i importit per file-in aktual.
+                  </p>
                 </div>
-                <div className="rounded-2xl bg-white px-3 py-3">
-                  <p className="text-xs uppercase tracking-[0.14em] text-slate-500">Variante</p>
-                  <p className="mt-1 text-lg font-semibold text-slate-950">{result.createdVariants}</p>
+                <span className="inline-flex w-fit items-center rounded-full border border-emerald-200 bg-white/90 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-emerald-700">
+                  Import OK
+                </span>
+              </div>
+
+              <div className="mt-4 space-y-2">
+                <div className="flex items-center justify-between rounded-2xl border border-white/80 bg-white/90 px-4 py-3 shadow-sm">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">Produkte te reja</p>
+                    <p className="text-xs text-slate-500">Produkte te krijuara nga importi</p>
+                  </div>
+                  <p className="text-2xl font-semibold leading-none text-slate-950">{result.createdProducts}</p>
                 </div>
-                <div className="rounded-2xl bg-white px-3 py-3">
-                  <p className="text-xs uppercase tracking-[0.14em] text-slate-500">Inventare</p>
-                  <p className="mt-1 text-lg font-semibold text-slate-950">{result.updatedInventories}</p>
+                <div className="flex items-center justify-between rounded-2xl border border-white/80 bg-white/90 px-4 py-3 shadow-sm">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">Variante te reja</p>
+                    <p className="text-xs text-slate-500">Variante te krijuara nga importi</p>
+                  </div>
+                  <p className="text-2xl font-semibold leading-none text-slate-950">{result.createdVariants}</p>
+                </div>
+                <div className="flex items-center justify-between rounded-2xl border border-white/80 bg-white/90 px-4 py-3 shadow-sm">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">Variante te perditesuara</p>
+                    <p className="text-xs text-slate-500">Ekzistueset qe u rifreskuan</p>
+                  </div>
+                  <p className="text-2xl font-semibold leading-none text-slate-950">{result.updatedVariants}</p>
+                </div>
+                <div className="flex items-center justify-between rounded-2xl border border-white/80 bg-white/90 px-4 py-3 shadow-sm">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">Inventar i perditesuar</p>
+                    <p className="text-xs text-slate-500">Levizje ose rregullime stoku</p>
+                  </div>
+                  <p className="text-2xl font-semibold leading-none text-slate-950">{result.updatedInventories}</p>
+                </div>
+                <div className="flex items-center justify-between rounded-2xl border border-white/80 bg-white/90 px-4 py-3 shadow-sm">
+                  <div>
+                    <p className="text-sm font-semibold text-slate-900">Rreshta te kaluar</p>
+                    <p className="text-xs text-slate-500">U anashkaluan sipas strategjise</p>
+                  </div>
+                  <p className="text-2xl font-semibold leading-none text-slate-950">{result.skippedRows}</p>
                 </div>
               </div>
             </div>
@@ -316,6 +373,11 @@ export function ProductImportWizard({ categories, warehouses }: ImportWizardProp
                 <p className="mt-1 text-sm text-slate-600">
                   {preview ? `${preview.totalRows} rreshta u gjeten ne file.` : "Pasi te ngarkosh file, ketu shfaqet preview i kolonave."}
                 </p>
+                {preview ? (
+                  <p className="mt-1 text-xs font-medium text-slate-500">
+                    Po shfaqen {preview.previewRows.length} nga {preview.totalRows} rreshta.
+                  </p>
+                ) : null}
               </div>
               {preview ? (
                 <button
@@ -331,18 +393,20 @@ export function ProductImportWizard({ categories, warehouses }: ImportWizardProp
 
             {preview ? (
               <div className="mt-5 overflow-hidden rounded-[24px] border border-slate-200">
-                <div className="overflow-x-auto">
+                <div className="max-h-[420px] overflow-x-auto overflow-y-scroll">
                   <table className="min-w-full text-sm">
-                    <thead className="bg-slate-50 text-left text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                    <thead className="sticky top-0 z-10 bg-slate-50 text-left text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
                       <tr>
+                        <th className="w-[72px] px-4 py-3">Rreshti</th>
                         {preview.headers.map((header) => (
                           <th key={header} className="px-4 py-3">{header}</th>
                         ))}
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 bg-white">
-                      {preview.previewRows.slice(0, 10).map((row, index) => (
+                      {preview.previewRows.map((row, index) => (
                         <tr key={index} className="align-top">
+                          <td className="px-4 py-3 font-medium text-slate-500">{index + 2}</td>
                           {preview.headers.map((header) => (
                             <td key={header} className="px-4 py-3 text-slate-700">
                               <span className="block max-w-[220px] truncate" title={row[header] ?? ""}>

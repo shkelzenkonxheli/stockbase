@@ -48,6 +48,8 @@ type PreparedImportRow = {
   locationCode: string | null;
 };
 
+type DuplicateStrategy = "skip" | "add_stock" | "replace";
+
 function isImportFieldKey(value: string): value is ImportFieldKey {
   return (IMPORT_FIELD_KEYS as readonly string[]).includes(value);
 }
@@ -209,6 +211,7 @@ export async function POST(request: Request) {
 
   const formData = await request.formData();
   const file = formData.get("file");
+  const duplicateStrategy = (formData.get("duplicateStrategy")?.toString() ?? "add_stock") as DuplicateStrategy;
 
   if (!(file instanceof File)) {
     return NextResponse.json({ error: "Zgjidh nje file per import." }, { status: 400 });
@@ -233,6 +236,11 @@ export async function POST(request: Request) {
     const buffer = Buffer.from(await file.arrayBuffer());
     const { dataRows } = extractRowsFromWorkbook(buffer);
     const { prepared, errors } = prepareRows(dataRows, mapping);
+    const hasMappedSku = Boolean(mapping.sku);
+    const hasMappedBarcode = Boolean(mapping.barcode);
+    const hasMappedMaterial = Boolean(mapping.material);
+    const hasMappedPowerWatts = Boolean(mapping.powerWatts);
+    const hasMappedLocationCode = Boolean(mapping.locationCode);
 
     if (errors.length > 0) {
       return NextResponse.json({ error: "File ka gabime.", validationErrors: errors }, { status: 400 });
@@ -280,10 +288,13 @@ export async function POST(request: Request) {
         select: {
           id: true,
           productId: true,
+          variantIdentityKey: true,
           size: true,
           color: true,
           material: true,
           powerWatts: true,
+          locationCode: true,
+          price: true,
           sku: true,
           barcode: true,
         },
@@ -319,13 +330,6 @@ export async function POST(request: Request) {
         parseCategoryFieldConfig(category.config),
       );
 
-      const duplicateInFile = findDuplicateVariantInRows(row, prepared, categoryConfig);
-      if (duplicateInFile) {
-        rowErrors.push(
-          `Rreshti ${row.rowNumber}: varianti eshte duplikat me rreshtin ${duplicateInFile.rowNumber}.`,
-        );
-      }
-
       if (!categoryConfig.showMaterialField) {
         row.material = null;
       }
@@ -343,6 +347,8 @@ export async function POST(request: Request) {
       let createdProducts = 0;
       let createdVariants = 0;
       let updatedInventories = 0;
+      let skippedRows = 0;
+      let updatedVariants = 0;
 
       const productCache = new Map<string, { id: number; categoryId: number }>();
       for (const product of existingProducts) {
@@ -353,11 +359,12 @@ export async function POST(request: Request) {
       }
 
       const variantKeyByProduct = new Map<string, number>();
+      const existingVariantById = new Map(existingVariants.map((variant) => [variant.id, variant]));
       for (const variant of existingVariants) {
-        const key = `${variant.productId}::${buildVariantIdentityKey(
-          { showMaterialField: true, showPowerField: true } as CategoryConfig,
-          variant,
-        )}`;
+        const key = `${variant.productId}::${
+          variant.variantIdentityKey ??
+          buildVariantIdentityKey({ showMaterialField: true, showPowerField: true } as CategoryConfig, variant)
+        }`;
         variantKeyByProduct.set(key, variant.id);
       }
 
@@ -372,13 +379,14 @@ export async function POST(request: Request) {
           variantId: true,
           warehouseId: true,
           stock: true,
+          locationCode: true,
         },
       });
 
       const inventoryKeyMap = new Map(
         existingInventories.map((inventory) => [
           `${inventory.variantId}::${inventory.warehouseId}`,
-          { id: inventory.id, stock: inventory.stock },
+          { id: inventory.id, stock: inventory.stock, locationCode: inventory.locationCode },
         ]),
       );
 
@@ -442,6 +450,19 @@ export async function POST(request: Request) {
 
           variantId = createdVariant.id;
           variantKeyByProduct.set(variantLookupKey, variantId);
+          existingVariantById.set(variantId, {
+            id: createdVariant.id,
+            productId: productRecord.id,
+            variantIdentityKey,
+            size: row.size,
+            color: row.color,
+            material: categoryConfig.showMaterialField ? row.material : null,
+            powerWatts: categoryConfig.showPowerField ? row.powerWatts : null,
+            locationCode: row.locationCode,
+            price: new Prisma.Decimal(row.price),
+            sku: row.sku,
+            barcode: createdVariant.barcode,
+          });
           createdVariants += 1;
 
           let nextBarcode = createdVariant.barcode;
@@ -457,6 +478,79 @@ export async function POST(request: Request) {
           }
 
           usedBarcodes.add(nextBarcode);
+          const createdVariantRecord = existingVariantById.get(variantId);
+          if (createdVariantRecord) {
+            createdVariantRecord.barcode = nextBarcode;
+          }
+        } else if (duplicateStrategy === "skip") {
+          skippedRows += 1;
+          continue;
+        } else if (duplicateStrategy === "replace") {
+          const currentVariant = existingVariantById.get(variantId);
+          const nextSku =
+            hasMappedSku
+              ? row.sku && currentVariant?.sku !== row.sku && !usedSkus.has(row.sku)
+                ? ensureUniqueSku(row.sku, usedSkus)
+                : row.sku ?? null
+              : (currentVariant?.sku ?? null);
+          const nextBarcode =
+            hasMappedBarcode
+              ? row.barcode && currentVariant?.barcode !== row.barcode && !usedBarcodes.has(row.barcode)
+                ? row.barcode
+                : row.barcode ?? null
+              : (currentVariant?.barcode ?? null);
+
+          const nextPrice = new Prisma.Decimal(row.price);
+          const nextMaterial =
+            categoryConfig.showMaterialField && hasMappedMaterial
+              ? row.material
+              : (currentVariant?.material ?? null);
+          const nextPowerWatts =
+            categoryConfig.showPowerField && hasMappedPowerWatts
+              ? row.powerWatts
+              : (currentVariant?.powerWatts ?? null);
+          const nextLocationCode = hasMappedLocationCode ? row.locationCode : (currentVariant?.locationCode ?? null);
+          const variantChanged =
+            currentVariant?.price.toString() !== nextPrice.toString() ||
+            (currentVariant?.sku ?? null) !== nextSku ||
+            (currentVariant?.barcode ?? null) !== nextBarcode ||
+            (currentVariant?.material ?? null) !== nextMaterial ||
+            (currentVariant?.powerWatts ?? null) !== nextPowerWatts ||
+            (currentVariant?.locationCode ?? null) !== nextLocationCode;
+
+          if (variantChanged) {
+            await tx.variant.update({
+              where: { id: variantId },
+              data: {
+                price: nextPrice,
+                sku: nextSku,
+                barcode: nextBarcode,
+                material: nextMaterial,
+                powerWatts: nextPowerWatts,
+                locationCode: nextLocationCode,
+              },
+            });
+
+            if (nextBarcode) {
+              usedBarcodes.add(nextBarcode);
+            }
+            existingVariantById.set(variantId, {
+              ...(currentVariant ?? {
+                id: variantId,
+                productId: productRecord.id,
+                variantIdentityKey,
+                size: row.size,
+                color: row.color,
+              }),
+              material: nextMaterial,
+              powerWatts: nextPowerWatts,
+              locationCode: nextLocationCode,
+              price: nextPrice,
+              sku: nextSku,
+              barcode: nextBarcode,
+            });
+            updatedVariants += 1;
+          }
         }
 
         if (warehouse) {
@@ -464,50 +558,76 @@ export async function POST(request: Request) {
           const existingInventory = inventoryKeyMap.get(inventoryKey);
 
           if (existingInventory) {
-            const nextStock = existingInventory.stock + row.stock;
-            await tx.variantInventory.update({
-              where: { id: existingInventory.id },
-              data: {
+            const nextStock =
+              duplicateStrategy === "replace" && variantKeyByProduct.get(variantLookupKey)
+                ? row.stock
+                : existingInventory.stock + row.stock;
+            const nextInventoryLocationCode = hasMappedLocationCode ? row.locationCode : (existingInventory.locationCode ?? null);
+            const inventoryChanged =
+              existingInventory.stock !== nextStock ||
+              (existingInventory.locationCode ?? null) !== nextInventoryLocationCode;
+
+            if (inventoryChanged) {
+              await tx.variantInventory.update({
+                where: { id: existingInventory.id },
+                data: {
+                  stock: nextStock,
+                  locationCode: nextInventoryLocationCode,
+                },
+              });
+              inventoryKeyMap.set(inventoryKey, {
+                id: existingInventory.id,
                 stock: nextStock,
-                locationCode: row.locationCode,
-              },
-            });
-            inventoryKeyMap.set(inventoryKey, {
-              id: existingInventory.id,
-              stock: nextStock,
-            });
-            updatedInventories += 1;
+                locationCode: nextInventoryLocationCode,
+              });
+              updatedInventories += 1;
+            }
+
+            const stockDelta =
+              duplicateStrategy === "replace" ? nextStock - existingInventory.stock : row.stock;
+            if (stockDelta !== 0) {
+              await tx.stockMovement.create({
+                data: {
+                  tenantId,
+                  variantId,
+                  warehouseId: warehouse.id,
+                  quantity: stockDelta,
+                  reason: duplicateStrategy === "replace" ? "INVENTORY_COUNT" : "INCOMING_STOCK",
+                },
+              });
+            }
           } else {
             const createdInventory = await tx.variantInventory.create({
               data: {
                 variantId,
                 warehouseId: warehouse.id,
                 stock: row.stock,
-                locationCode: row.locationCode,
+                locationCode: hasMappedLocationCode ? row.locationCode : null,
               },
             });
             inventoryKeyMap.set(inventoryKey, {
               id: createdInventory.id,
               stock: createdInventory.stock,
+              locationCode: createdInventory.locationCode,
             });
             updatedInventories += 1;
-          }
 
-          if (row.stock > 0) {
-            await tx.stockMovement.create({
-              data: {
-                tenantId,
-                variantId,
-                warehouseId: warehouse.id,
-                quantity: row.stock,
-                reason: "INCOMING_STOCK",
-              },
-            });
+            if (row.stock > 0) {
+              await tx.stockMovement.create({
+                data: {
+                  tenantId,
+                  variantId,
+                  warehouseId: warehouse.id,
+                  quantity: row.stock,
+                  reason: duplicateStrategy === "replace" ? "INVENTORY_COUNT" : "INCOMING_STOCK",
+                },
+              });
+            }
           }
         }
       }
 
-      return { createdProducts, createdVariants, updatedInventories };
+      return { createdProducts, createdVariants, updatedVariants, updatedInventories, skippedRows };
     }, {
       maxWait: 10000,
       timeout: 30000,
