@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
-import { hasRole, requireUser } from "@/lib/auth";
+import { redirect } from "next/navigation";
+import { getCurrentUser, hasRole, hasTenantAccess, isPlatformAdmin } from "@/lib/auth";
 import { getEffectiveReorderLevel, isLowStock } from "@/lib/inventory";
 import { prisma } from "@/lib/prisma";
 import { getCatalogTemplate } from "@/lib/product-taxonomy";
@@ -105,8 +107,325 @@ function getTimeZoneDayBounds(dateString: string, timeZone: string) {
   };
 }
 
+function getSupportEmail() {
+  const firstPlatformEmail = (process.env.PLATFORM_ADMIN_EMAILS ?? "")
+    .split(",")
+    .map((value) => value.trim())
+    .find(Boolean);
+
+  return firstPlatformEmail || "hello@stockbase.app";
+}
+
+function LandingPreviewCard({
+  eyebrow,
+  title,
+  children,
+}: {
+  eyebrow: string;
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <article className="overflow-hidden rounded-[28px] border border-emerald-100 bg-white/95 shadow-[0_24px_70px_rgba(15,23,42,0.10)]">
+      <div className="border-b border-emerald-100 bg-[linear-gradient(180deg,#f4fdf7_0%,#ffffff_100%)] px-5 py-4">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.2em] text-emerald-700">
+          {eyebrow}
+        </p>
+        <h3 className="mt-2 text-lg font-semibold tracking-tight text-slate-950">{title}</h3>
+      </div>
+      <div className="p-5">{children}</div>
+    </article>
+  );
+}
+
+function PublicLandingPage() {
+  const supportEmail = getSupportEmail();
+
+  return (
+    <main className="min-h-screen bg-[linear-gradient(180deg,#ecfdf3_0%,#f8fafc_38%,#eef5f7_100%)]">
+      <section className="relative overflow-hidden border-b border-emerald-100/80 bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.16)_0%,transparent_28%),radial-gradient(circle_at_top_right,rgba(15,23,42,0.10)_0%,transparent_20%),linear-gradient(180deg,#f7fff9_0%,#eff8f3_100%)]">
+        <div className="absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(16,185,129,0.35),transparent)]" />
+        <div className="mx-auto flex w-full max-w-7xl flex-col gap-12 px-4 py-6 sm:px-6 lg:px-8 lg:py-8">
+          <header className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <Link href="/" className="flex items-center gap-3">
+              <span className="relative h-12 w-12 overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-sm">
+                <Image
+                  src="/stock-app-logo.svg"
+                  alt="StockBase"
+                  fill
+                  className="object-contain p-2"
+                  sizes="48px"
+                  priority
+                />
+              </span>
+              <div>
+                <p className="text-lg font-semibold tracking-tight text-slate-950">StockBase</p>
+                <p className="text-sm text-slate-500">Inventory, orders and warehouse control</p>
+              </div>
+            </Link>
+
+            <div className="flex flex-wrap items-center gap-3">
+              <Link
+                href="/login"
+                className="inline-flex items-center justify-center rounded-2xl border border-emerald-200 bg-white/90 px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50"
+              >
+                Login
+              </Link>
+              <Link
+                href="/trial"
+                className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-2.5 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(15,23,42,0.16)] transition hover:bg-emerald-700"
+              >
+                Kerko Trial
+              </Link>
+            </div>
+          </header>
+
+          <div className="grid gap-10 lg:grid-cols-[minmax(0,1.08fr)_minmax(380px,0.92fr)] lg:items-center">
+            <div className="max-w-2xl">
+              <p className="inline-flex items-center rounded-full border border-emerald-200 bg-white/88 px-3 py-1 text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700 shadow-sm">
+                SaaS per inventar dhe shitje
+              </p>
+              <h1 className="mt-5 text-5xl font-semibold tracking-tight text-slate-950 sm:text-6xl">
+                Menaxho produktet, depot dhe porosite ne nje platforme te vetme.
+              </h1>
+              <p className="mt-6 max-w-xl text-base leading-8 text-slate-600 sm:text-lg">
+                StockBase i ndihmon bizneset me katalog fleksibel, multi-warehouse, quick stock,
+                porosi, barcode scan, inventory count dhe import nga Excel/CSV pa workflow te komplikuar.
+              </p>
+
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+                <Link
+                  href="/trial"
+                  className="inline-flex items-center justify-center rounded-2xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-[0_18px_40px_rgba(16,185,129,0.24)] transition hover:bg-emerald-500"
+                >
+                  Fillo kerkesen per trial
+                </Link>
+                <Link
+                  href="/login"
+                  className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-medium text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50"
+                >
+                  Hyr ne platforme
+                </Link>
+              </div>
+
+              <div className="mt-8 grid gap-3 sm:grid-cols-3">
+                {[
+                  { value: "Multi-warehouse", label: "Depo, transfer dhe lokacione" },
+                  { value: "Quick Orders", label: "Shitje dhe porosi me barcode" },
+                  { value: "Excel Import", label: "Import me preview dhe validim" },
+                ].map((item) => (
+                  <div
+                    key={item.value}
+                    className="rounded-[24px] border border-emerald-100 bg-white/90 px-4 py-4 shadow-sm"
+                  >
+                    <p className="text-sm font-semibold text-slate-950">{item.value}</p>
+                    <p className="mt-1 text-sm leading-6 text-slate-500">{item.label}</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="relative">
+              <div className="absolute -left-6 top-10 hidden h-28 w-28 rounded-full bg-emerald-200/40 blur-3xl lg:block" />
+              <div className="absolute -right-4 bottom-8 hidden h-24 w-24 rounded-full bg-slate-300/40 blur-3xl lg:block" />
+              <div className="relative overflow-hidden rounded-[34px] border border-emerald-100 bg-[#0f172a] p-4 shadow-[0_30px_80px_rgba(15,23,42,0.22)]">
+                <div className="rounded-[28px] border border-white/10 bg-[linear-gradient(180deg,#172033_0%,#0f172a_100%)] p-4">
+                  <div className="flex items-center justify-between rounded-[22px] border border-white/10 bg-white/5 px-4 py-3">
+                    <div>
+                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-300">
+                        Products workspace
+                      </p>
+                      <p className="mt-1 text-lg font-semibold text-white">Inventory overview</p>
+                    </div>
+                    <span className="rounded-full bg-emerald-400/15 px-3 py-1 text-xs font-medium text-emerald-200">
+                      Live stock
+                    </span>
+                  </div>
+
+                  <div className="mt-4 grid gap-3 sm:grid-cols-3">
+                    {[
+                      { label: "Produkte", value: "248" },
+                      { label: "Njesi", value: "4,912" },
+                      { label: "Low stock", value: "17" },
+                    ].map((item) => (
+                      <div key={item.label} className="rounded-[22px] border border-white/10 bg-white/5 px-4 py-4">
+                        <p className="text-xs uppercase tracking-[0.16em] text-slate-400">{item.label}</p>
+                        <p className="mt-2 text-2xl font-semibold text-white">{item.value}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-4 overflow-hidden rounded-[26px] border border-white/10 bg-white">
+                    <div className="border-b border-slate-100 bg-[linear-gradient(180deg,#f8fdf9_0%,#eef8f2_100%)] px-4 py-3">
+                      <div className="grid grid-cols-[1.3fr_0.8fr_0.7fr_0.9fr] gap-3 text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-800">
+                        <span>Produkti</span>
+                        <span>Kategoria</span>
+                        <span>Stoku</span>
+                        <span>Veprime</span>
+                      </div>
+                    </div>
+                    <div className="divide-y divide-slate-100">
+                      {[
+                        { name: "Nike Air Force", category: "Patika", stock: "69" },
+                        { name: "Toaster Pro", category: "Pajisje", stock: "12" },
+                        { name: "Batanije Cozy", category: "Lini shtepie", stock: "7" },
+                      ].map((item, index) => (
+                        <div key={item.name} className="grid grid-cols-[1.3fr_0.8fr_0.7fr_0.9fr] items-center gap-3 px-4 py-3">
+                          <div className="flex items-center gap-3">
+                            <span className="relative h-11 w-11 overflow-hidden rounded-xl border border-slate-200 bg-slate-100">
+                              <Image
+                                src={index === 0 ? "/nike.jpg" : index === 1 ? "/IMG_6366.webp" : "/bg1.jpg"}
+                                alt={item.name}
+                                fill
+                                className="object-cover"
+                                sizes="44px"
+                              />
+                            </span>
+                            <div className="min-w-0">
+                              <p className="truncate text-sm font-semibold text-slate-950">{item.name}</p>
+                              <p className="text-xs text-slate-500">Quick stock, manage, barcode</p>
+                            </div>
+                          </div>
+                          <span className="text-sm text-slate-600">{item.category}</span>
+                          <span className="text-sm font-semibold text-emerald-700">{item.stock}</span>
+                          <div className="flex gap-2">
+                            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-emerald-200 bg-emerald-50 text-emerald-700">
+                              +
+                            </span>
+                            <span className="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-slate-200 bg-white text-slate-600">
+                              ...
+                            </span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto grid w-full max-w-7xl gap-6 px-4 py-10 sm:px-6 lg:grid-cols-3 lg:px-8">
+        <LandingPreviewCard eyebrow="Products" title="Katalog fleksibel sipas biznesit">
+          <div className="space-y-3">
+            <div className="rounded-[22px] border border-emerald-100 bg-[linear-gradient(180deg,#f8fdf9_0%,#ffffff_100%)] p-4">
+              <p className="text-sm font-semibold text-slate-950">Footwear, electronics, home goods, decor</p>
+              <p className="mt-2 text-sm leading-6 text-slate-500">
+                Cdo tenant konfiguron kategorite, variablat, brandet, depot dhe view-at sipas nevojes.
+              </p>
+            </div>
+            <div className="grid grid-cols-2 gap-3 text-sm text-slate-600">
+              <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4">
+                <p className="font-semibold text-slate-900">Variants</p>
+                <p className="mt-1">Ngjyra, numer, dimension, material, fuqi</p>
+              </div>
+              <div className="rounded-2xl border border-slate-200 bg-white px-4 py-4">
+                <p className="font-semibold text-slate-900">Barcode labels</p>
+                <p className="mt-1">Print browser, PDF, A4 templates</p>
+              </div>
+            </div>
+          </div>
+        </LandingPreviewCard>
+
+        <LandingPreviewCard eyebrow="Operations" title="Shitje, depo dhe levizje stoku">
+          <div className="space-y-3">
+            <div className="rounded-[22px] border border-slate-200 bg-white p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-semibold text-slate-950">Quick order / POS-like flow</p>
+                  <p className="mt-1 text-sm text-slate-500">Zgjedh kategori, produkt, variant dhe perfundon porosine.</p>
+                </div>
+                <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-semibold text-emerald-700">
+                  Barcode ready
+                </span>
+              </div>
+            </div>
+            <div className="rounded-[22px] border border-slate-200 bg-white p-4">
+              <p className="text-sm font-semibold text-slate-950">Incoming stock, transfer dhe inventory count</p>
+              <p className="mt-2 text-sm leading-6 text-slate-500">
+                Menaxho hyrje stoku, kalime mes depove, low stock alerts dhe numerim fizik me export.
+              </p>
+            </div>
+          </div>
+        </LandingPreviewCard>
+
+        <LandingPreviewCard eyebrow="Import" title="Import i shpejte nga Excel / CSV">
+          <div className="space-y-3">
+            <div className="rounded-[22px] border border-slate-200 bg-white p-4">
+              <p className="text-sm font-semibold text-slate-950">Preview para importit</p>
+              <p className="mt-2 text-sm leading-6 text-slate-500">
+                Shikon kolonat, mapon fushat, heq rreshta, vendos kategori/depo kur mungojne dhe pastaj importon.
+              </p>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { label: "Mapim", value: "Auto" },
+                { label: "Validim", value: "Po" },
+                { label: "Barcode", value: "Auto" },
+              ].map((item) => (
+                <div key={item.label} className="rounded-2xl border border-emerald-100 bg-emerald-50 px-4 py-4 text-center">
+                  <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-700">{item.label}</p>
+                  <p className="mt-2 text-lg font-semibold text-slate-950">{item.value}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </LandingPreviewCard>
+      </section>
+
+      <section className="mx-auto w-full max-w-7xl px-4 pb-14 sm:px-6 lg:px-8">
+        <div className="overflow-hidden rounded-[34px] border border-emerald-100 bg-[linear-gradient(135deg,#0f172a_0%,#16352c_100%)] px-6 py-8 text-white shadow-[0_26px_80px_rgba(15,23,42,0.20)] sm:px-8">
+          <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-center">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.18em] text-emerald-300">
+                Gati per testim
+              </p>
+              <h2 className="mt-3 text-3xl font-semibold tracking-tight">
+                Kerko trial dhe provo StockBase me biznesin tend.
+              </h2>
+              <p className="mt-4 max-w-2xl text-sm leading-7 text-white/78 sm:text-base">
+                Per momentin aktivizimi i trial-it behet manualisht nga platforma. Na dergo kerkesen,
+                trego llojin e biznesit dhe ne ta hapim workspace-in me trial 14 dite.
+              </p>
+            </div>
+            <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
+              <Link
+                href="/trial"
+                className="inline-flex items-center justify-center rounded-2xl bg-emerald-500 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-400"
+              >
+                Kerko Trial
+              </Link>
+              <a
+                href={`mailto:${supportEmail}?subject=StockBase%20Trial%20Request`}
+                className="inline-flex items-center justify-center rounded-2xl border border-white/16 bg-white/10 px-5 py-3 text-sm font-medium text-white transition hover:bg-white/15"
+              >
+                {supportEmail}
+              </a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+  );
+}
+
 export default async function Home() {
-  const currentUser = await requireUser();
+  const currentUser = await getCurrentUser();
+
+  if (!currentUser) {
+    return <PublicLandingPage />;
+  }
+
+  if (isPlatformAdmin(currentUser)) {
+    redirect("/platform/tenants");
+  }
+
+  if (!hasTenantAccess(currentUser)) {
+    redirect("/subscription");
+  }
+
   const tenant = currentUser.tenant;
   const tenantId = tenant?.id;
 

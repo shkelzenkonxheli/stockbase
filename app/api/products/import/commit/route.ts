@@ -26,6 +26,12 @@ const MAX_FILE_SIZE = 8 * 1024 * 1024;
 
 type MappingPayload = Partial<Record<ImportFieldKey, string>>;
 
+type GlobalSelectionsPayload = {
+  categoryName?: string;
+  warehouseName?: string;
+  brandName?: string;
+};
+
 type RawImportRow = {
   rowNumber: number;
   values: Record<string, string>;
@@ -48,7 +54,30 @@ type PreparedImportRow = {
   locationCode: string | null;
 };
 
+type PendingBarcodeUpdate = {
+  variantId: number;
+  barcode: string;
+};
+
+type PendingStockMovement = {
+  tenantId: number;
+  variantId: number;
+  warehouseId: number;
+  quantity: number;
+  reason: "INCOMING_STOCK" | "INVENTORY_COUNT";
+};
+
 type DuplicateStrategy = "skip" | "add_stock" | "replace";
+
+function slugifyWarehouse(value: string) {
+  return value
+    .normalize("NFKD")
+    .replace(/[^\w\s-]/g, "")
+    .trim()
+    .toLowerCase()
+    .replace(/[\s_-]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+}
 
 function isImportFieldKey(value: string): value is ImportFieldKey {
   return (IMPORT_FIELD_KEYS as readonly string[]).includes(value);
@@ -111,13 +140,30 @@ function parseMapping(rawMapping: string | null) {
     }
   }
 
-  for (const field of REQUIRED_IMPORT_FIELDS) {
+  for (const field of REQUIRED_IMPORT_FIELDS.filter((field) => field !== "category")) {
     if (!mapping[field]) {
       throw new Error(`Fusha ${field} duhet te mapohet para importit.`);
     }
   }
 
   return mapping;
+}
+
+function parseGlobalSelections(rawSelections: string | null) {
+  if (!rawSelections) {
+    return {
+      categoryName: "",
+      warehouseName: "",
+      brandName: "",
+    };
+  }
+
+  const parsed = JSON.parse(rawSelections) as GlobalSelectionsPayload;
+  return {
+    categoryName: normalizeImportText(parsed.categoryName),
+    warehouseName: normalizeImportText(parsed.warehouseName),
+    brandName: normalizeImportText(parsed.brandName),
+  };
 }
 
 function readMappedValue(row: RawImportRow, mapping: MappingPayload, field: ImportFieldKey) {
@@ -129,13 +175,17 @@ function readMappedValue(row: RawImportRow, mapping: MappingPayload, field: Impo
   return normalizeImportText(row.values[header]);
 }
 
-function prepareRows(rows: RawImportRow[], mapping: MappingPayload) {
+function prepareRows(
+  rows: RawImportRow[],
+  mapping: MappingPayload,
+  globalSelections: ReturnType<typeof parseGlobalSelections>,
+) {
   const prepared: PreparedImportRow[] = [];
   const errors: string[] = [];
 
   for (const row of rows) {
     const productName = readMappedValue(row, mapping, "productName");
-    const categoryName = readMappedValue(row, mapping, "category");
+    const categoryName = readMappedValue(row, mapping, "category") || globalSelections.categoryName;
     const stockRaw = readMappedValue(row, mapping, "stock");
     const priceRaw = readMappedValue(row, mapping, "price");
     const size = readMappedValue(row, mapping, "size") || "standard";
@@ -166,9 +216,9 @@ function prepareRows(rows: RawImportRow[], mapping: MappingPayload) {
     prepared.push({
       rowNumber: row.rowNumber,
       productName,
-      brand: readMappedValue(row, mapping, "brand") || null,
+      brand: readMappedValue(row, mapping, "brand") || globalSelections.brandName || null,
       categoryName,
-      warehouseName: readMappedValue(row, mapping, "warehouse") || null,
+      warehouseName: readMappedValue(row, mapping, "warehouse") || globalSelections.warehouseName || null,
       size,
       color,
       stock,
@@ -222,8 +272,10 @@ export async function POST(request: Request) {
   }
 
   let mapping: MappingPayload;
+  let globalSelections: ReturnType<typeof parseGlobalSelections>;
   try {
     mapping = parseMapping(formData.get("mapping")?.toString() ?? null);
+    globalSelections = parseGlobalSelections(formData.get("globalSelections")?.toString() ?? null);
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Mapimi nuk eshte valid." },
@@ -235,7 +287,7 @@ export async function POST(request: Request) {
     await ensureTenantCategories(tenantId, tenant.catalogType);
     const buffer = Buffer.from(await file.arrayBuffer());
     const { dataRows } = extractRowsFromWorkbook(buffer);
-    const { prepared, errors } = prepareRows(dataRows, mapping);
+    const { prepared, errors } = prepareRows(dataRows, mapping, globalSelections);
     const hasMappedSku = Boolean(mapping.sku);
     const hasMappedBarcode = Boolean(mapping.barcode);
     const hasMappedMaterial = Boolean(mapping.material);
@@ -271,6 +323,56 @@ export async function POST(request: Request) {
           },
         }),
       ),
+    );
+
+    const missingWarehouseNames = [
+      ...new Set(prepared.map((row) => row.warehouseName?.trim() ?? "").filter(Boolean)),
+    ];
+
+    await Promise.all(
+      missingWarehouseNames.map(async (warehouseName) => {
+        const existingWarehouse = await prisma.warehouse.findFirst({
+          where: {
+            tenantId,
+            name: warehouseName,
+          },
+          select: { id: true },
+        });
+
+        if (existingWarehouse) {
+          await prisma.warehouse.update({
+            where: { id: existingWarehouse.id },
+            data: { isActive: true },
+          });
+          return;
+        }
+
+        const baseSlug = slugifyWarehouse(warehouseName) || "warehouse";
+        let slug = baseSlug;
+        let suffix = 2;
+
+        while (
+          await prisma.warehouse.findFirst({
+            where: {
+              tenantId,
+              slug,
+            },
+            select: { id: true },
+          })
+        ) {
+          slug = `${baseSlug}-${suffix}`;
+          suffix += 1;
+        }
+
+        await prisma.warehouse.create({
+          data: {
+            tenantId,
+            name: warehouseName,
+            slug,
+            isActive: true,
+          },
+        });
+      }),
     );
 
     const [categories, warehouses, existingProducts, existingVariants] = await Promise.all([
@@ -311,6 +413,17 @@ export async function POST(request: Request) {
     );
 
     const rowErrors: string[] = [];
+    const categoryConfigById = new Map(
+      categories.map((category) => [
+        category.id,
+        getCatalogAwareCategoryConfig(
+          tenant.catalogType,
+          category.name,
+          tenant.catalogConfig,
+          parseCategoryFieldConfig(category.config),
+        ),
+      ]),
+    );
 
     for (const row of prepared) {
       const category = categoryMap.get(row.categoryName.toLowerCase());
@@ -319,16 +432,11 @@ export async function POST(request: Request) {
         continue;
       }
 
-      if (row.warehouseName && !warehouseMap.has(row.warehouseName.toLowerCase())) {
-        rowErrors.push(`Rreshti ${row.rowNumber}: depoja "${row.warehouseName}" nuk ekziston.`);
+      const categoryConfig = categoryConfigById.get(category.id);
+      if (!categoryConfig) {
+        rowErrors.push(`Rreshti ${row.rowNumber}: konfigurimi i kategorise "${row.categoryName}" mungon.`);
+        continue;
       }
-
-      const categoryConfig = getCatalogAwareCategoryConfig(
-        tenant.catalogType,
-        category.name,
-        tenant.catalogConfig,
-        parseCategoryFieldConfig(category.config),
-      );
 
       if (!categoryConfig.showMaterialField) {
         row.material = null;
@@ -349,6 +457,8 @@ export async function POST(request: Request) {
       let updatedInventories = 0;
       let skippedRows = 0;
       let updatedVariants = 0;
+      const pendingBarcodeUpdates: PendingBarcodeUpdate[] = [];
+      const pendingStockMovements: PendingStockMovement[] = [];
 
       const productCache = new Map<string, { id: number; categoryId: number }>();
       for (const product of existingProducts) {
@@ -396,12 +506,10 @@ export async function POST(request: Request) {
           continue;
         }
 
-        const categoryConfig = getCatalogAwareCategoryConfig(
-          tenant.catalogType,
-          category.name,
-          tenant.catalogConfig,
-          parseCategoryFieldConfig(category.config),
-        );
+        const categoryConfig = categoryConfigById.get(category.id);
+        if (!categoryConfig) {
+          continue;
+        }
 
         const productKey = `${row.productName.toLowerCase()}::${String(row.brand ?? "").toLowerCase()}::${category.id}`;
         let productRecord = productCache.get(productKey);
@@ -471,9 +579,9 @@ export async function POST(request: Request) {
             while (usedBarcodes.has(nextBarcode)) {
               nextBarcode = `${nextBarcode}${createdVariant.id}`;
             }
-            await tx.variant.update({
-              where: { id: createdVariant.id },
-              data: { barcode: nextBarcode },
+            pendingBarcodeUpdates.push({
+              variantId: createdVariant.id,
+              barcode: nextBarcode,
             });
           }
 
@@ -553,6 +661,25 @@ export async function POST(request: Request) {
           }
         }
 
+        const variantAfterUpsert = existingVariantById.get(variantId);
+        if (variantAfterUpsert && !variantAfterUpsert.barcode) {
+          let generatedBarcode = buildBarcodeFromVariantId(variantId);
+          while (usedBarcodes.has(generatedBarcode)) {
+            generatedBarcode = `${generatedBarcode}${variantId}`;
+          }
+
+          pendingBarcodeUpdates.push({
+            variantId,
+            barcode: generatedBarcode,
+          });
+
+          usedBarcodes.add(generatedBarcode);
+          existingVariantById.set(variantId, {
+            ...variantAfterUpsert,
+            barcode: generatedBarcode,
+          });
+        }
+
         if (warehouse) {
           const inventoryKey = `${variantId}::${warehouse.id}`;
           const existingInventory = inventoryKeyMap.get(inventoryKey);
@@ -586,14 +713,12 @@ export async function POST(request: Request) {
             const stockDelta =
               duplicateStrategy === "replace" ? nextStock - existingInventory.stock : row.stock;
             if (stockDelta !== 0) {
-              await tx.stockMovement.create({
-                data: {
-                  tenantId,
-                  variantId,
-                  warehouseId: warehouse.id,
-                  quantity: stockDelta,
-                  reason: duplicateStrategy === "replace" ? "INVENTORY_COUNT" : "INCOMING_STOCK",
-                },
+              pendingStockMovements.push({
+                tenantId,
+                variantId,
+                warehouseId: warehouse.id,
+                quantity: stockDelta,
+                reason: duplicateStrategy === "replace" ? "INVENTORY_COUNT" : "INCOMING_STOCK",
               });
             }
           } else {
@@ -613,24 +738,39 @@ export async function POST(request: Request) {
             updatedInventories += 1;
 
             if (row.stock > 0) {
-              await tx.stockMovement.create({
-                data: {
-                  tenantId,
-                  variantId,
-                  warehouseId: warehouse.id,
-                  quantity: row.stock,
-                  reason: duplicateStrategy === "replace" ? "INVENTORY_COUNT" : "INCOMING_STOCK",
-                },
+              pendingStockMovements.push({
+                tenantId,
+                variantId,
+                warehouseId: warehouse.id,
+                quantity: row.stock,
+                reason: duplicateStrategy === "replace" ? "INVENTORY_COUNT" : "INCOMING_STOCK",
               });
             }
           }
         }
       }
 
+      if (pendingBarcodeUpdates.length > 0) {
+        await Promise.all(
+          pendingBarcodeUpdates.map((item) =>
+            tx.variant.update({
+              where: { id: item.variantId },
+              data: { barcode: item.barcode },
+            }),
+          ),
+        );
+      }
+
+      if (pendingStockMovements.length > 0) {
+        await tx.stockMovement.createMany({
+          data: pendingStockMovements,
+        });
+      }
+
       return { createdProducts, createdVariants, updatedVariants, updatedInventories, skippedRows };
     }, {
-      maxWait: 10000,
-      timeout: 30000,
+      maxWait: 20000,
+      timeout: 120000,
     });
 
     revalidatePath("/");

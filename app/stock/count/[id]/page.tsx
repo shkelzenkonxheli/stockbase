@@ -585,10 +585,10 @@ export default async function InventoryCountDetailPage({
   return (
     <main className="px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-6">
-        <section className="rounded-[30px] border border-slate-200 bg-white px-5 py-6 shadow-[0_18px_45px_rgba(15,23,42,0.06)] sm:px-6 lg:px-8">
+        <section className="rounded-[30px] border border-emerald-100 bg-[linear-gradient(135deg,#f7fffb_0%,#ffffff_52%,#edf9f2_100%)] px-5 py-6 shadow-[0_20px_55px_rgba(16,185,129,0.10)] sm:px-6 lg:px-8">
           <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Inventory Count</p>
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700">Inventory Count</p>
               <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
                 Numerim #{session.id}
               </h1>
@@ -599,7 +599,7 @@ export default async function InventoryCountDetailPage({
             </div>
             <Link
               href="/stock/count"
-              className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+              className="inline-flex items-center justify-center rounded-2xl border border-emerald-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50"
             >
               Kthehu te numerimet
             </Link>
@@ -609,22 +609,22 @@ export default async function InventoryCountDetailPage({
         {message ? <FlashMessage type={message.type} text={message.text} /> : null}
 
         <section className="grid gap-4 sm:grid-cols-3">
-          <div className="rounded-[24px] border border-slate-200 bg-white px-5 py-4 shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Rreshta</p>
+          <div className="rounded-[24px] border border-emerald-100 bg-white px-5 py-4 shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-700">Rreshta</p>
             <p className="mt-2 text-2xl font-semibold text-slate-950">{session.lines.length}</p>
           </div>
-          <div className="rounded-[24px] border border-slate-200 bg-white px-5 py-4 shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Te numeruara</p>
+          <div className="rounded-[24px] border border-emerald-100 bg-white px-5 py-4 shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-700">Te numeruara</p>
             <p className="mt-2 text-2xl font-semibold text-slate-950">{countedLines}</p>
           </div>
-          <div className="rounded-[24px] border border-slate-200 bg-white px-5 py-4 shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Me diference</p>
+          <div className="rounded-[24px] border border-emerald-100 bg-white px-5 py-4 shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-700">Me diference</p>
             <p className="mt-2 text-2xl font-semibold text-slate-950">{changedLines}</p>
           </div>
         </section>
 
-        <section className="rounded-[30px] border border-slate-200 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
-          <div className="border-b border-slate-100 px-5 py-4 sm:px-6">
+        <section className="rounded-[30px] border border-emerald-100 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
+          <div className="border-b border-emerald-100 bg-[linear-gradient(180deg,#fcfffd_0%,#f3fbf6_100%)] px-5 py-4 sm:px-6">
             <div className="flex flex-col gap-4 xl:flex-row xl:items-center xl:justify-between">
               <div>
                 <h2 className="text-xl font-semibold text-slate-950">Rreshtat e numerimit</h2>
@@ -638,14 +638,14 @@ export default async function InventoryCountDetailPage({
               <div className="flex flex-wrap gap-2">
                 <Link
                   href={`/stock/count/${session.id}/export.csv${exportSuffix}`}
-                  className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+                  className="inline-flex items-center justify-center rounded-2xl border border-emerald-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50"
                 >
                   Export CSV
                 </Link>
                 <Link
                   href={`/stock/count/${session.id}/export.pdf${exportSuffix}`}
                   target="_blank"
-                  className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+                  className="inline-flex items-center justify-center rounded-2xl border border-emerald-200 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50"
                 >
                   Print / PDF
                 </Link>
@@ -675,9 +675,9 @@ export default async function InventoryCountDetailPage({
 
           <section
             id="details"
-            className="rounded-[30px] border border-slate-200 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.06)]"
+            className="rounded-[30px] border border-emerald-100 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.06)]"
           >
-            <div className="border-b border-slate-100 px-5 py-4 sm:px-6">
+            <div className="border-b border-emerald-100 bg-[linear-gradient(180deg,#fcfffd_0%,#f3fbf6_100%)] px-5 py-4 sm:px-6">
               <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
                   <h3 className="text-lg font-semibold text-slate-950">Detajet</h3>
@@ -687,17 +687,17 @@ export default async function InventoryCountDetailPage({
                 </div>
 
                 {session.status === "OPEN" && shouldShowLines ? (
-                  <div className="grid gap-3 rounded-[24px] border border-slate-200 bg-slate-50/80 p-4 lg:grid-cols-[minmax(0,1fr)_auto_auto_auto]">
+                  <div className="grid gap-3 rounded-[24px] border border-emerald-100 bg-emerald-50/55 p-4 lg:grid-cols-[minmax(0,1fr)_auto_auto_auto]">
                     <input
                       type="text"
                       name="bulkNote"
                       placeholder="Shenim per rreshtat e zgjedhur"
-                      className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-300"
+                      className="rounded-2xl border border-emerald-100 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100"
                     />
                     <button
                       type="submit"
                       formAction={applyNoteToSelected}
-                      className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+                      className="inline-flex items-center justify-center rounded-2xl border border-emerald-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50"
                     >
                       Vendos shenim
                     </button>
@@ -722,7 +722,7 @@ export default async function InventoryCountDetailPage({
 
             {shouldShowLines ? <div className="hidden overflow-x-auto lg:block">
               <table className="min-w-full text-sm">
-                <thead className="bg-slate-50 text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                <thead className="bg-[linear-gradient(180deg,#f6fdf8_0%,#eef8f1_100%)] text-left text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-800">
                   <tr>
                     <th className="px-5 py-4">Zgjedh</th>
                     <th className="px-5 py-4">Produkti</th>
@@ -734,7 +734,7 @@ export default async function InventoryCountDetailPage({
                     <th className="px-5 py-4">Shenim</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 bg-white">
+                <tbody className="divide-y divide-emerald-50 bg-white">
                   {filteredLines.map((line) => {
                     const countedStock = line.countedStock ?? "";
                     const difference = line.countedStock === null ? null : line.countedStock - line.expectedStock;
@@ -747,7 +747,7 @@ export default async function InventoryCountDetailPage({
                               type="checkbox"
                               name="selectedLineIds"
                               value={line.id}
-                              className="h-4 w-4 rounded border-slate-300 text-slate-950 focus:ring-slate-300"
+                              className="h-4 w-4 rounded border-emerald-300 text-emerald-700 focus:ring-emerald-200"
                             />
                           ) : null}
                         </td>
@@ -783,7 +783,7 @@ export default async function InventoryCountDetailPage({
                             name={`counted_${line.id}`}
                             defaultValue={countedStock}
                             disabled={session.status === "COMPLETED"}
-                            className="w-24 rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-300 disabled:bg-slate-50"
+                            className="w-24 rounded-xl border border-emerald-100 px-3 py-2 text-sm outline-none focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100 disabled:bg-slate-50"
                           />
                         </td>
                         <td
@@ -805,7 +805,7 @@ export default async function InventoryCountDetailPage({
                             name={`note_${line.id}`}
                             defaultValue={line.note ?? ""}
                             disabled={session.status === "COMPLETED"}
-                            className="w-full rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-300 disabled:bg-slate-50"
+                            className="w-full rounded-xl border border-emerald-100 px-3 py-2 text-sm outline-none focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100 disabled:bg-slate-50"
                           />
                         </td>
                       </tr>
@@ -821,14 +821,14 @@ export default async function InventoryCountDetailPage({
                 const difference = line.countedStock === null ? null : line.countedStock - line.expectedStock;
 
                 return (
-                  <article key={line.id} className="rounded-[24px] border border-slate-200 bg-slate-50/70 p-4">
+                  <article key={line.id} className="rounded-[24px] border border-emerald-100 bg-[linear-gradient(180deg,#ffffff_0%,#fbfefc_100%)] p-4">
                     {session.status === "OPEN" ? (
                       <label className="mb-3 inline-flex items-center gap-2 text-sm font-medium text-slate-700">
                         <input
                           type="checkbox"
                           name="selectedLineIds"
                           value={line.id}
-                          className="h-4 w-4 rounded border-slate-300 text-slate-950 focus:ring-slate-300"
+                          className="h-4 w-4 rounded border-emerald-300 text-emerald-700 focus:ring-emerald-200"
                         />
                         Zgjedh kete rresht
                       </label>
@@ -875,7 +875,7 @@ export default async function InventoryCountDetailPage({
                           name={`counted_${line.id}`}
                           defaultValue={countedStock}
                           disabled={session.status === "COMPLETED"}
-                          className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-300 disabled:bg-slate-50"
+                          className="rounded-xl border border-emerald-100 px-3 py-2 text-sm outline-none focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100 disabled:bg-slate-50"
                         />
                       </label>
                       <label className="grid gap-2 text-sm font-medium text-slate-700">
@@ -885,7 +885,7 @@ export default async function InventoryCountDetailPage({
                           name={`note_${line.id}`}
                           defaultValue={line.note ?? ""}
                           disabled={session.status === "COMPLETED"}
-                          className="rounded-xl border border-slate-200 px-3 py-2 text-sm outline-none focus:border-slate-300 disabled:bg-slate-50"
+                          className="rounded-xl border border-emerald-100 px-3 py-2 text-sm outline-none focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100 disabled:bg-slate-50"
                         />
                       </label>
                     </div>
@@ -923,13 +923,13 @@ export default async function InventoryCountDetailPage({
             <div className="flex flex-col gap-3 sm:flex-row">
               <button
                 type="submit"
-                className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-5 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+                className="inline-flex items-center justify-center rounded-2xl border border-emerald-200 bg-white px-5 py-3 text-sm font-medium text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50"
               >
                 Ruaj draftin
               </button>
               <button
                 formAction={finalizeCount}
-                className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+                className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700"
               >
                 Perfundo numerimin
               </button>

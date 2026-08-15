@@ -33,8 +33,8 @@ export function AppShellNav({
     <nav
       className={
         isHorizontal
-          ? "flex gap-2"
-          : "space-y-1.5"
+          ? "flex gap-1.5"
+          : "space-y-1"
       }
     >
       {items.map((item) => {
@@ -50,21 +50,23 @@ export function AppShellNav({
                 details.removeAttribute("open");
               }
             }}
-            className={`flex items-center gap-3 rounded-2xl text-sm font-medium transition ${
-              isHorizontal ? "shrink-0 px-3 py-2" : "px-3 py-2.5"
+            className={`flex items-center gap-2.5 rounded-2xl text-sm font-medium transition ${
+              isHorizontal ? "shrink-0 px-2.5 py-2" : "px-2.5 py-2.5"
             } ${
               isActive
-                ? "bg-white text-slate-950 shadow-sm ring-1 ring-slate-200"
-                : "text-slate-600 hover:bg-white/70 hover:text-slate-900"
+                ? "bg-emerald-50 text-emerald-950 shadow-sm ring-1 ring-emerald-200"
+                : "text-slate-600 hover:bg-white/80 hover:text-slate-900"
             }`}
           >
             <span
               className={`flex items-center justify-center rounded-xl ${
-                isHorizontal ? "h-7 w-7" : "h-8 w-8"
+                isHorizontal ? "h-7 w-7" : "h-7.5 w-7.5"
               } ${
                 isActive
-                  ? "bg-slate-950 text-white"
-                  : "bg-slate-100 text-slate-500"
+                  ? "bg-emerald-600 text-white"
+                  : isHorizontal
+                    ? "bg-transparent text-slate-500"
+                    : "bg-emerald-100/70 text-emerald-800"
               }`}
             >
               {item.icon}

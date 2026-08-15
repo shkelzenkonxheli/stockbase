@@ -99,7 +99,7 @@ export function OrdersFilters({
         <div className="relative">
           <svg
             viewBox="0 0 24 24"
-            className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 fill-none stroke-slate-400 stroke-[1.8]"
+            className="pointer-events-none absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 fill-none stroke-emerald-600/70 stroke-[1.8]"
           >
             <circle cx="11" cy="11" r="6" />
             <path d="m20 20-3.5-3.5" />
@@ -109,7 +109,7 @@ export function OrdersFilters({
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Kerko porosi..."
-            className="w-full rounded-2xl border border-slate-200 bg-slate-50 py-3 pl-11 pr-4 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:bg-white"
+            className="w-full rounded-2xl border border-emerald-100 bg-white/90 py-3 pl-11 pr-4 text-sm text-slate-900 outline-none transition focus:border-emerald-300 focus:bg-emerald-50/40 focus:ring-4 focus:ring-emerald-100/70"
           />
         </div>
         <p className="text-xs text-slate-500">
@@ -123,13 +123,13 @@ export function OrdersFilters({
         type="date"
         value={date}
         onChange={(event) => setDate(event.target.value)}
-        className="order-1 h-12 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:bg-white lg:order-1"
+        className="order-1 h-12 rounded-2xl border border-emerald-100 bg-white/90 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-300 focus:bg-emerald-50/40 focus:ring-4 focus:ring-emerald-100/70 lg:order-1"
       />
 
       <select
         value={source}
         onChange={(event) => setSource(event.target.value)}
-        className="order-2 h-12 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:bg-white lg:order-2"
+        className="order-2 h-12 rounded-2xl border border-emerald-100 bg-white/90 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-300 focus:bg-emerald-50/40 focus:ring-4 focus:ring-emerald-100/70 lg:order-2"
       >
         <option value="">Filtra te tjere</option>
         <option value="INSTAGRAM">Instagram</option>

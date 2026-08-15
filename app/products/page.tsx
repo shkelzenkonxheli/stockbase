@@ -95,6 +95,18 @@ function buildProductDetailsHref(
   return `/products/${productId}?${params.toString()}`;
 }
 
+function summarizeList(values: string[], visibleCount: number) {
+  if (values.length === 0) {
+    return "-";
+  }
+
+  if (values.length <= visibleCount) {
+    return values.join(", ");
+  }
+
+  return `${values.slice(0, visibleCount).join(", ")} ...`;
+}
+
 async function deleteProduct(formData: FormData) {
   "use server";
 
@@ -435,20 +447,23 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   return (
     <main className="px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-6">
-        <section className="space-y-5 rounded-[30px] border border-slate-200 bg-white px-5 py-6 shadow-[0_18px_45px_rgba(15,23,42,0.06)] sm:px-6 lg:px-8">
+        <section className="space-y-5 rounded-[30px] border border-emerald-100 bg-[linear-gradient(135deg,#f7fffb_0%,#ffffff_52%,#edf9f2_100%)] px-5 py-6 shadow-[0_20px_55px_rgba(16,185,129,0.10)] sm:px-6 lg:px-8">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
             <div>
-              <h1 className="text-4xl font-semibold tracking-tight text-slate-950">
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700">
+                Inventari aktiv
+              </p>
+              <h1 className="mt-2 text-4xl font-semibold tracking-tight text-slate-950">
                 Inventari i produkteve
               </h1>
               <div className="mt-3 flex flex-wrap gap-3 text-sm">
-                <span className="inline-flex items-center rounded-full bg-slate-100 px-3 py-1 text-slate-600">
+                <span className="inline-flex items-center rounded-full border border-slate-200 bg-white/90 px-3 py-1 text-slate-600 shadow-sm">
                   {totalProducts.toLocaleString("sq-AL")} produkte
                 </span>
-                <span className="inline-flex items-center rounded-full bg-emerald-50 px-3 py-1 font-medium text-emerald-700">
+                <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 font-medium text-emerald-700 shadow-sm">
                   {totalUnits.toLocaleString("sq-AL")} njesi ne total
                 </span>
-                <span className="inline-flex items-center rounded-full bg-rose-50 px-3 py-1 font-medium text-rose-600">
+                <span className="inline-flex items-center rounded-full border border-rose-200 bg-rose-50 px-3 py-1 font-medium text-rose-600 shadow-sm">
                   {lowStockProducts} me stok te ulet
                 </span>
               </div>
@@ -458,21 +473,21 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
               {canManageInventory ? (
                 <Link
                   href="/products/import"
-                  className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+                  className="inline-flex items-center justify-center rounded-2xl border border-emerald-200 bg-white/92 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50"
                 >
                   Importo file
                 </Link>
               ) : null}
               <Link
                 href="/"
-                className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-white"
+                className="inline-flex items-center justify-center rounded-2xl border border-emerald-200 bg-white/82 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50"
               >
                 Ballina
               </Link>
               {canManageInventory ? (
                 <Link
                   href="/products/new"
-                  className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_25px_rgba(15,23,42,0.18)] transition hover:bg-slate-800"
+                  className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(15,23,42,0.18)] transition hover:bg-emerald-700"
                 >
                   + Shto Produkt
                 </Link>
@@ -481,8 +496,8 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
           </div>
         </section>
 
-        <section className="overflow-hidden rounded-[30px] border border-slate-200/80 bg-white shadow-[0_14px_40px_rgba(15,23,42,0.07)]">
-          <div className="border-b border-slate-200/80 px-4 py-4 sm:px-5">
+        <section className="overflow-hidden rounded-[30px] border border-emerald-100/80 bg-[linear-gradient(180deg,#ffffff_0%,#fbfefc_100%)] shadow-[0_16px_44px_rgba(15,23,42,0.08)]">
+          <div className="border-b border-emerald-100/80 bg-[linear-gradient(180deg,#fcfffd_0%,#f3fbf6_100%)] px-4 py-4 sm:px-5">
             <ProductsFilters
               key={`${searchQuery}|${selectedCode}|${selectedCategory}|${selectedModel}|${selectedWarehouse}|${selectedStock}`}
               searchQuery={searchQuery}
@@ -542,8 +557,8 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                         : minPrice === maxPrice
                           ? `${minPrice.toFixed(2)} EUR`
                           : `${minPrice.toFixed(2)} - ${maxPrice?.toFixed(2)} EUR`,
-                    sizes: dimensions.length > 0 ? dimensions.join(", ") : "-",
-                    colors: colors.length > 0 ? colors.join(", ") : "-",
+                    sizes: summarizeList(dimensions, 3),
+                    colors: summarizeList(colors, 2),
                     materials: materials.length > 0 ? materials.join(", ") : null,
                     power: watts.length > 0 ? watts.join(", ") : null,
                   };
@@ -562,7 +577,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                   return (
                     <article
                       key={product.id}
-                      className="relative rounded-[24px] border border-slate-200 bg-white p-4 shadow-sm"
+                      className="relative rounded-[24px] border border-emerald-100 bg-[linear-gradient(180deg,#ffffff_0%,#f8fdf9_100%)] p-4 shadow-[0_10px_24px_rgba(15,23,42,0.05)]"
                     >
                       <details className="absolute right-4 top-4 z-10 lg:hidden">
                         <summary className="flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900">
@@ -572,7 +587,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                             <circle cx="15.5" cy="10" r="1.4" />
                           </svg>
                         </summary>
-                        <div className="absolute right-0 mt-2 w-48 overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 shadow-[0_18px_40px_rgba(15,23,42,0.14)]">
+                        <div className="absolute right-0 mt-2 w-48 overflow-hidden rounded-2xl border border-emerald-100 bg-white p-2 shadow-[0_18px_40px_rgba(15,23,42,0.14)]">
                           <div className="flex flex-col gap-2">
                             <ProductStockQuickView
                               productId={product.id}
@@ -635,7 +650,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                       </details>
 
                       <div className="flex items-start gap-3">
-                        <div className="h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
+                        <div className="h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-emerald-100 bg-slate-100">
                           <ProductStockQuickView
                             productId={product.id}
                             productName={product.brand ? `${product.brand} ${product.name}` : product.name}
@@ -681,7 +696,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                           .filter((key) => productListView.visibility[key] && fieldValues[key])
                           .map((key) => (
                             <p key={key} className="break-words">
-                              <span className="font-medium text-slate-800">{fieldLabels[key]}:</span>{" "}
+                              <span className="font-medium text-emerald-800">{fieldLabels[key]}:</span>{" "}
                               {fieldValues[key]}
                             </p>
                           ))}
@@ -694,7 +709,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
               <div className="hidden overflow-x-auto lg:block">
                 <table className="min-w-full text-sm">
                   <colgroup>
-                    <col className="w-[280px]" />
+                    <col className="w-[250px]" />
                     {productListView.order
                       .filter((key) => productListView.visibility[key])
                       .map((key) => (
@@ -702,17 +717,19 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                           key={key}
                           className={
                             key === "stock"
-                              ? "w-[110px]"
+                              ? "w-[90px]"
                               : key === "price"
-                                ? "w-[160px]"
-                                : "w-[180px]"
+                                ? "w-[130px]"
+                                : key === "sizes" || key === "colors"
+                                  ? "w-[120px]"
+                                  : "w-[130px]"
                           }
                         />
                       ))}
-                    <col className="w-[340px]" />
+                    <col className="w-[170px]" />
                   </colgroup>
-                  <thead className="sticky top-0 z-10 bg-slate-50/95 text-left backdrop-blur">
-                    <tr className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                  <thead className="sticky top-0 z-10 bg-[linear-gradient(180deg,#f6fdf8_0%,#eef8f1_100%)] text-left backdrop-blur">
+                    <tr className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-800">
                       <th className="px-4 py-4">Produkti</th>
                       {productListView.order
                         .filter((key) => productListView.visibility[key])
@@ -734,7 +751,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                       <th className="px-4 py-4 text-right">Veprime</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-slate-100 bg-white">
+                  <tbody className="divide-y divide-emerald-50 bg-white">
                     {visibleProducts.map((product) => {
                       const dimensions = [...new Set(product.variants.map((variant) => variant.size))];
                       const colors = [...new Set(product.variants.map((variant) => variant.color))];
@@ -764,17 +781,17 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                             : minPrice === maxPrice
                               ? `${minPrice.toFixed(2)} EUR`
                               : `${minPrice.toFixed(2)} - ${maxPrice?.toFixed(2)} EUR`,
-                        sizes: dimensions.length > 0 ? dimensions.join(", ") : "-",
-                        colors: colors.length > 0 ? colors.join(", ") : "-",
+                        sizes: summarizeList(dimensions, 3),
+                        colors: summarizeList(colors, 2),
                         materials: materials.length > 0 ? materials.join(", ") : null,
                         power: watts.length > 0 ? watts.join(", ") : null,
                       };
 
                       return (
-                        <tr key={product.id} className="align-top transition hover:bg-slate-50/75">
-                          <td className="px-4 py-4">
+                        <tr key={product.id} className="align-top transition hover:bg-emerald-50/45">
+                          <td className="px-3 py-3.5">
                             <div className="flex items-start gap-3">
-                              <div className="h-12 w-12 shrink-0 overflow-hidden rounded-2xl border border-slate-200 bg-slate-100">
+                              <div className="h-11 w-11 shrink-0 overflow-hidden rounded-xl border border-emerald-100 bg-slate-100">
                                 <ProductStockQuickView
                                   productId={product.id}
                                   productName={product.brand ? `${product.brand} ${product.name}` : product.name}
@@ -812,14 +829,14 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                           {productListView.order
                             .filter((key) => productListView.visibility[key])
                             .map((key) => (
-                              <td key={key} className="px-4 py-4 text-slate-600">
-                                <span className="block max-w-[220px] truncate" title={fieldValues[key] ?? "-"}>
+                              <td key={key} className="px-3 py-3.5 text-slate-600">
+                                <span className="block max-w-[150px] truncate" title={fieldValues[key] ?? "-"}>
                                   {fieldValues[key] ?? "-"}
                                 </span>
                               </td>
                             ))}
-                          <td className="px-4 py-4">
-                            <div className="flex items-center justify-end gap-2 whitespace-nowrap">
+                          <td className="px-3 py-3.5">
+                            <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
                               <ProductStockQuickView
                                 productId={product.id}
                                 productName={product.brand ? `${product.brand} ${product.name}` : product.name}
@@ -855,7 +872,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                                   warehouse: selectedWarehouse,
                                   returnTo: currentListHref,
                                 })}
-                                className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+                                className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
                                 aria-label="Menaxho"
                                 title="Menaxho"
                               >
@@ -864,7 +881,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                               {canManageInventory ? (
                                 <Link
                                   href={`/products/${product.id}/edit`}
-                                  className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+                                  className="inline-flex h-9 w-9 items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
                                   aria-label="Edito"
                                   title="Edito"
                                 >

@@ -641,17 +641,23 @@ export default async function OrdersPage({
   return (
     <main className="px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-6">
-        <section className="space-y-5 rounded-[30px] border border-slate-200 bg-white px-5 py-6 shadow-[0_18px_45px_rgba(15,23,42,0.06)] sm:px-6 lg:px-8">
+        <section className="space-y-5 rounded-[30px] border border-emerald-100 bg-[linear-gradient(135deg,#f7fffb_0%,#ffffff_52%,#edf9f2_100%)] px-5 py-6 shadow-[0_20px_55px_rgba(16,185,129,0.10)] sm:px-6 lg:px-8">
           <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
             <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700">
+                Shitje dhe porosi
+              </p>
               <div className="flex flex-wrap items-end gap-3">
-                <h1 className="text-4xl font-semibold tracking-tight text-slate-950">
+                <h1 className="mt-2 text-4xl font-semibold tracking-tight text-slate-950">
                   Te gjitha porosite
                 </h1>
-                <span className="inline-flex rounded-2xl border border-slate-200 bg-slate-50 px-3 py-1.5 text-sm font-semibold text-slate-600">
+                <span className="inline-flex rounded-2xl border border-emerald-200 bg-white/90 px-3 py-1.5 text-sm font-semibold text-emerald-800 shadow-sm">
                   {totalOrders} porosi
                 </span>
               </div>
+              <p className="mt-3 text-sm text-slate-600">
+                Filtrimi, menaxhimi dhe fshirja e porosive ne nje pamje te vetme.
+              </p>
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
@@ -659,13 +665,13 @@ export default async function OrdersPage({
                 <>
                   <Link
                     href="/orders/quick"
-                    className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-slate-50 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-white"
+                    className="inline-flex items-center justify-center rounded-2xl border border-emerald-200 bg-white/92 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50"
                   >
                     Porosi te shpejta
                   </Link>
                   <Link
                     href="/orders/new"
-                    className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_25px_rgba(15,23,42,0.18)] transition hover:bg-slate-800"
+                    className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(15,23,42,0.18)] transition hover:bg-emerald-700"
                   >
                     + Krijo Porosi
                   </Link>
@@ -675,8 +681,8 @@ export default async function OrdersPage({
           </div>
         </section>
 
-        <section className="overflow-hidden rounded-[30px] border border-slate-200/80 bg-white shadow-[0_14px_40px_rgba(15,23,42,0.07)]">
-          <div className="border-b border-slate-200/80 px-4 py-4 sm:px-5">
+        <section className="overflow-hidden rounded-[30px] border border-emerald-100/80 bg-[linear-gradient(180deg,#ffffff_0%,#fbfefc_100%)] shadow-[0_16px_44px_rgba(15,23,42,0.08)]">
+          <div className="border-b border-emerald-100/80 bg-[linear-gradient(180deg,#fcfffd_0%,#f3fbf6_100%)] px-4 py-4 sm:px-5">
             <OrdersFilters
               searchQuery={searchQuery}
               selectedSource={selectedSource}
@@ -713,7 +719,7 @@ export default async function OrdersPage({
         </section>
 
         {totalOrders > PAGE_SIZE ? (
-          <div className="flex flex-col gap-3 rounded-[28px] border border-slate-200/80 bg-white px-5 py-4 shadow-[0_10px_30px_rgba(15,23,42,0.05)] sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex flex-col gap-3 rounded-[28px] border border-emerald-100 bg-white px-5 py-4 shadow-[0_10px_30px_rgba(15,23,42,0.05)] sm:flex-row sm:items-center sm:justify-between">
             <p className="text-sm text-slate-600">
               Faqja <span className="font-semibold text-slate-950">{currentPage}</span> nga{" "}
               <span className="font-semibold text-slate-950">{totalPages}</span>
@@ -727,7 +733,7 @@ export default async function OrdersPage({
                     selectedSource,
                     selectedDate,
                   )}
-                  className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+                  className="inline-flex items-center justify-center rounded-xl border border-emerald-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50"
                 >
                   Mbrapa
                 </Link>
@@ -744,7 +750,7 @@ export default async function OrdersPage({
                     selectedSource,
                     selectedDate,
                   )}
-                  className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+                  className="inline-flex items-center justify-center rounded-xl border border-emerald-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50"
                 >
                   Para
                 </Link>

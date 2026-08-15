@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState, useTransition } from "react";
+import { useCallback, useEffect, useState, useTransition } from "react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { BarcodeScanDialog } from "@/app/components/barcode-scan-dialog";
 
@@ -91,6 +91,17 @@ export function ProductsFilters({
     [pathname, router, searchParams],
   );
 
+  useEffect(() => {
+    const timeout = window.setTimeout(() => {
+      if (query === searchQuery) {
+        return;
+      }
+      updateFilters(query, code, category, model, warehouse, stock);
+    }, 220);
+
+    return () => window.clearTimeout(timeout);
+  }, [category, code, model, query, searchQuery, stock, updateFilters, warehouse]);
+
   return (
     <>
       <form
@@ -100,7 +111,7 @@ export function ProductsFilters({
           updateFilters(query, code, category, model, warehouse, stock);
         }}
       >
-        <div className="grid gap-2.5 lg:grid-cols-[minmax(0,1.45fr)_96px_180px_180px_180px_150px_108px]">
+        <div className="grid gap-2 lg:grid-cols-[minmax(0,1.25fr)_74px_152px_152px_152px_124px_52px]">
           <div className="flex flex-col gap-2 sm:flex-row">
             <div className="relative min-w-0 flex-1">
               <svg
@@ -115,12 +126,12 @@ export function ProductsFilters({
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 placeholder="Kerko produkt, kategori, ngjyre, dimension ose SKU..."
-                className="w-full rounded-xl border border-slate-200 bg-slate-50 py-2.5 pl-10 pr-3.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:bg-white"
+                className="w-full rounded-xl border border-emerald-100 bg-white py-2.5 pl-10 pr-3 text-sm text-slate-900 outline-none transition focus:border-emerald-300 focus:bg-white focus:ring-2 focus:ring-emerald-100"
               />
             </div>
             <button
               type="submit"
-              className="inline-flex shrink-0 items-center justify-center rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 sm:min-w-[78px]"
+              className="inline-flex shrink-0 items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-sm font-medium text-emerald-800 transition hover:border-emerald-300 hover:bg-emerald-100 sm:min-w-[68px]"
             >
               <svg
                 viewBox="0 0 20 20"
@@ -137,7 +148,7 @@ export function ProductsFilters({
           <button
             type="button"
             onClick={() => setScannerOpen(true)}
-            className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-3 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+            className="inline-flex items-center justify-center rounded-xl border border-emerald-200 bg-white px-2 py-2.5 text-sm font-medium text-emerald-800 transition hover:border-emerald-300 hover:bg-emerald-50"
           >
             Scan
           </button>
@@ -150,7 +161,7 @@ export function ProductsFilters({
               setModel("");
               updateFilters(query, code, nextCategory, "", warehouse, stock);
             }}
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:bg-white"
+            className="w-full rounded-xl border border-emerald-100 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-emerald-300 focus:bg-white focus:ring-2 focus:ring-emerald-100"
           >
             <option value="">Te gjitha kategorite</option>
             {categories.map((categoryOption) => (
@@ -168,7 +179,7 @@ export function ProductsFilters({
               updateFilters(query, code, category, nextModel, warehouse, stock);
             }}
             disabled={filteredModels.length === 0}
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:bg-white"
+            className="w-full rounded-xl border border-emerald-100 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-emerald-300 focus:bg-white focus:ring-2 focus:ring-emerald-100"
           >
             <option value="">Te gjitha produktet</option>
             {filteredModels.map((modelOption) => (
@@ -186,7 +197,7 @@ export function ProductsFilters({
               updateFilters(query, code, category, model, nextWarehouse, stock);
             }}
             disabled={warehouses.length === 0}
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:bg-white disabled:cursor-not-allowed disabled:bg-slate-100"
+            className="w-full rounded-xl border border-emerald-100 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-emerald-300 focus:bg-white focus:ring-2 focus:ring-emerald-100 disabled:cursor-not-allowed disabled:bg-slate-100"
           >
             <option value="">Te gjitha depot</option>
             {warehouses.map((warehouseOption) => (
@@ -203,7 +214,7 @@ export function ProductsFilters({
               setStock(nextStock);
               updateFilters(query, code, category, model, warehouse, nextStock);
             }}
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-300 focus:bg-white"
+            className="w-full rounded-xl border border-emerald-100 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-emerald-300 focus:bg-white focus:ring-2 focus:ring-emerald-100"
           >
             <option value="">Gjithe stoku</option>
             <option value="low">Vetem stok i ulet</option>
@@ -224,17 +235,18 @@ export function ProductsFilters({
                 router.replace(pathname);
               });
             }}
-            className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-slate-50 px-2.5 py-2.5 text-sm font-medium text-slate-600 transition hover:border-slate-300 hover:bg-white"
+            aria-label="Reset filtrat"
+            title="Reset filtrat"
+            className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-0 py-2.5 text-sm font-medium text-slate-600 transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-800"
           >
             <svg
               viewBox="0 0 20 20"
               aria-hidden="true"
-              className="mr-1.5 h-4 w-4 fill-none stroke-current stroke-[1.8]"
+              className="h-4 w-4 fill-none stroke-current stroke-[1.8]"
             >
               <path d="M4.5 10A5.5 5.5 0 1 0 6 6.1" strokeLinecap="round" />
               <path d="M4.5 4.75v2.5H7" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
-            Reset
           </button>
         </div>
         <p className="text-[11px] text-slate-500">

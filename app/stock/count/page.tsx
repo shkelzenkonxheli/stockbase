@@ -145,8 +145,8 @@ export default async function InventoryCountPage({ searchParams }: InventoryCoun
   return (
     <main className="px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-6">
-        <section className="rounded-[30px] border border-slate-200 bg-white px-5 py-6 shadow-[0_18px_45px_rgba(15,23,42,0.06)] sm:px-6 lg:px-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Stock / Count</p>
+        <section className="rounded-[30px] border border-emerald-100 bg-[linear-gradient(135deg,#f7fffb_0%,#ffffff_52%,#edf9f2_100%)] px-5 py-6 shadow-[0_20px_55px_rgba(16,185,129,0.10)] sm:px-6 lg:px-8">
+          <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700">Stock / Count</p>
           <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
             Inventory Count
           </h1>
@@ -158,7 +158,7 @@ export default async function InventoryCountPage({ searchParams }: InventoryCoun
         {message ? <FlashMessage type={message.type} text={message.text} /> : null}
 
         <section className="grid gap-6 xl:grid-cols-[380px_minmax(0,1fr)]">
-          <form action={createInventoryCount} className="rounded-[30px] border border-slate-200 bg-white px-5 py-6 shadow-[0_18px_45px_rgba(15,23,42,0.06)] sm:px-6">
+          <form action={createInventoryCount} className="rounded-[30px] border border-emerald-100 bg-[linear-gradient(180deg,#ffffff_0%,#fbfefc_100%)] px-5 py-6 shadow-[0_18px_45px_rgba(15,23,42,0.06)] sm:px-6">
             <h2 className="text-xl font-semibold text-slate-950">Numerim i ri</h2>
             <div className="mt-5 space-y-4">
               <label className="grid gap-2 text-sm font-medium text-slate-700">
@@ -166,7 +166,7 @@ export default async function InventoryCountPage({ searchParams }: InventoryCoun
                 <select
                   name="warehouseId"
                   required
-                  className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-300"
+                  className="rounded-2xl border border-emerald-100 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100"
                 >
                   <option value="">Zgjedh depon</option>
                   {warehouses.map((warehouse) => (
@@ -182,22 +182,22 @@ export default async function InventoryCountPage({ searchParams }: InventoryCoun
                 <textarea
                   name="note"
                   rows={4}
-                  className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-300"
+                  className="rounded-2xl border border-emerald-100 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100"
                   placeholder="p.sh. Numerim javor i Depo 1"
                 />
               </label>
 
               <button
                 type="submit"
-                className="inline-flex w-full items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+                className="inline-flex w-full items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-emerald-700"
               >
                 Krijo numerimin
               </button>
             </div>
           </form>
 
-          <section className="rounded-[30px] border border-slate-200 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
-            <div className="border-b border-slate-100 px-5 py-4 sm:px-6">
+          <section className="rounded-[30px] border border-emerald-100 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
+            <div className="border-b border-emerald-100 bg-[linear-gradient(180deg,#fcfffd_0%,#f3fbf6_100%)] px-5 py-4 sm:px-6">
               <h2 className="text-xl font-semibold text-slate-950">Numerimet e fundit</h2>
             </div>
             {sessions.length === 0 ? (
@@ -205,12 +205,12 @@ export default async function InventoryCountPage({ searchParams }: InventoryCoun
                 Ende nuk ka numerime te krijuara.
               </div>
             ) : (
-              <div className="divide-y divide-slate-100">
+              <div className="divide-y divide-emerald-50">
                 {sessions.map((session) => (
                   <Link
                     key={session.id}
                     href={`/stock/count/${session.id}`}
-                    className="flex flex-col gap-3 px-5 py-4 transition hover:bg-slate-50 sm:px-6 md:flex-row md:items-center md:justify-between"
+                    className="flex flex-col gap-3 px-5 py-4 transition hover:bg-emerald-50/45 sm:px-6 md:flex-row md:items-center md:justify-between"
                   >
                     <div>
                       <p className="text-base font-semibold text-slate-950">Numerim #{session.id}</p>

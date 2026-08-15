@@ -302,9 +302,10 @@ export default async function TransferStockPage({
   return (
     <main className="px-4 py-6 sm:px-6 lg:px-8">
       <section className="mx-auto w-full max-w-7xl">
+        <div className="rounded-[30px] border border-emerald-100 bg-[linear-gradient(135deg,#f7fffb_0%,#ffffff_52%,#edf9f2_100%)] px-5 py-6 shadow-[0_20px_55px_rgba(16,185,129,0.10)] sm:px-6 lg:px-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700">
               Transfer Stoku
             </p>
             <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">
@@ -318,17 +319,18 @@ export default async function TransferStockPage({
           <div className="flex flex-wrap items-center gap-3">
             <Link
               href="/stock/incoming"
-              className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+              className="inline-flex items-center justify-center rounded-2xl border border-emerald-200 bg-white/92 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50"
             >
               Hyrje stoku
             </Link>
             <Link
               href="/products"
-              className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+              className="inline-flex items-center justify-center rounded-2xl border border-emerald-200 bg-white/92 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50"
             >
               Shiko produktet
             </Link>
           </div>
+        </div>
         </div>
 
         {message ? (

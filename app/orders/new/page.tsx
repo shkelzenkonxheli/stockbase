@@ -322,8 +322,11 @@ export default async function NewOrderPage({
   return (
     <main className="px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-6">
-        <section className="rounded-[30px] border border-slate-200 bg-white px-5 py-6 shadow-[0_18px_45px_rgba(15,23,42,0.06)] sm:px-6 lg:px-8">
+        <section className="rounded-[30px] border border-emerald-100 bg-[linear-gradient(135deg,#f7fffb_0%,#ffffff_52%,#edf9f2_100%)] px-5 py-6 shadow-[0_20px_55px_rgba(16,185,129,0.10)] sm:px-6 lg:px-8">
           <div>
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700">
+              Porosi standarde
+            </p>
             <h1 className="text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
               Krijo Porosi te Re
             </h1>

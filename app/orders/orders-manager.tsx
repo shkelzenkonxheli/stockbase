@@ -268,13 +268,13 @@ export function OrdersManager({
   return (
     <div className="space-y-4">
       {canDeleteOrders && selectedIds.length > 0 ? (
-        <div className="flex flex-col gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 p-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-3 rounded-2xl border border-emerald-100 bg-[linear-gradient(135deg,#f7fffb_0%,#f9fdfb_100%)] p-4 sm:flex-row sm:items-center sm:justify-between">
           <label className="inline-flex items-center gap-3 text-sm font-medium text-slate-700">
             <input
               type="checkbox"
               checked={allSelected}
               onChange={toggleAll}
-              className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-300"
+              className="h-4 w-4 rounded border-emerald-300 text-emerald-700 focus:ring-emerald-200"
             />
             Zgjidh te gjitha
           </label>
@@ -293,7 +293,7 @@ export function OrdersManager({
         {orders.map((order) => (
           <article
             key={order.id}
-            className="rounded-[26px] border border-slate-200 bg-white p-4 shadow-sm"
+            className="rounded-[26px] border border-emerald-100 bg-[linear-gradient(180deg,#ffffff_0%,#fbfefc_100%)] p-4 shadow-[0_14px_34px_rgba(15,23,42,0.06)]"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="flex min-w-0 items-start gap-3">
@@ -302,7 +302,7 @@ export function OrdersManager({
                     type="checkbox"
                     checked={selectedIds.includes(order.id)}
                     onChange={() => toggleOne(order.id)}
-                    className="mt-1 h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-300"
+                    className="mt-1 h-4 w-4 rounded border-emerald-300 text-emerald-700 focus:ring-emerald-200"
                   />
                 ) : null}
                 <div className="flex min-w-0 items-start gap-3">
@@ -345,7 +345,7 @@ export function OrdersManager({
 
             <div className="mt-4 flex flex-wrap items-center gap-2">
               {viewConfig.visibility.quantity ? (
-                <span className="inline-flex min-w-8 items-center justify-center rounded-xl bg-slate-100 px-2.5 py-1.5 text-sm font-semibold text-slate-700">
+                <span className="inline-flex min-w-8 items-center justify-center rounded-xl border border-emerald-100 bg-emerald-50 px-2.5 py-1.5 text-sm font-semibold text-emerald-700">
                   {order.totalQuantity} cope
                 </span>
               ) : null}
@@ -357,7 +357,7 @@ export function OrdersManager({
                 </span>
               ) : null}
               {viewConfig.visibility.date ? (
-                <span className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-xs font-medium text-slate-600">
+                <span className="rounded-xl border border-emerald-100 bg-emerald-50/60 px-3 py-2 text-xs font-medium text-slate-600">
                   <span className="block">{order.createdAtDateLabel}</span>
                   <span className="mt-1 block text-[11px] text-slate-500">
                     {order.createdAtTimeLabel}
@@ -394,8 +394,8 @@ export function OrdersManager({
             ))}
             <col className="w-[170px]" />
           </colgroup>
-          <thead className="sticky top-0 z-10 bg-slate-50/95 text-left backdrop-blur">
-            <tr className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+          <thead className="sticky top-0 z-10 bg-[linear-gradient(180deg,#f6fdf8_0%,#eef8f1_100%)] text-left backdrop-blur">
+            <tr className="text-[11px] font-semibold uppercase tracking-[0.18em] text-emerald-800">
               {canDeleteOrders ? (
                 <th className={`px-5 text-center ${viewConfig.density === "compact" ? "py-3" : "py-4"}`}>Select</th>
               ) : null}
@@ -411,11 +411,11 @@ export function OrdersManager({
               <th className={`px-5 text-right ${viewConfig.density === "compact" ? "py-3" : "py-4"}`}>Veprime</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-slate-100 bg-white">
+          <tbody className="divide-y divide-emerald-50 bg-white">
             {orders.map((order) => (
               <tr
                 key={order.id}
-                className="align-top transition hover:bg-slate-50/75"
+                className="align-top transition hover:bg-emerald-50/45"
               >
                 {canDeleteOrders ? (
                   <td className={`px-5 text-center ${viewConfig.density === "compact" ? "py-3" : "py-4"}`}>
@@ -424,7 +424,7 @@ export function OrdersManager({
                         type="checkbox"
                         checked={selectedIds.includes(order.id)}
                         onChange={() => toggleOne(order.id)}
-                        className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-300"
+                        className="h-4 w-4 rounded border-emerald-300 text-emerald-700 focus:ring-emerald-200"
                       />
                     ) : null}
                   </td>
@@ -487,7 +487,7 @@ export function OrdersManager({
                   if (field === "quantity") {
                     return (
                       <td key={field} className={`px-5 text-center ${viewConfig.density === "compact" ? "py-3" : "py-4"}`}>
-                        <span className="inline-flex min-w-8 items-center justify-center rounded-xl bg-slate-100 px-2.5 py-1.5 font-semibold text-slate-700">
+                        <span className="inline-flex min-w-8 items-center justify-center rounded-xl border border-emerald-100 bg-emerald-50 px-2.5 py-1.5 font-semibold text-emerald-700">
                           {order.totalQuantity}
                         </span>
                       </td>

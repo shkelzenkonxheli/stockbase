@@ -327,11 +327,11 @@ export default async function QuickOrdersPage({
   });
 
   return (
-    <main className="min-h-screen bg-[radial-gradient(circle_at_top_left,#ecfccb_0%,transparent_20%),radial-gradient(circle_at_top_right,#dbeafe_0%,transparent_24%),linear-gradient(180deg,#f8fafc_0%,#eef2f7_100%)] px-4 py-6 sm:px-6 lg:px-8">
-      <section className="mx-auto w-full max-w-7xl rounded-[32px] border border-slate-200/80 bg-white/95 px-6 py-6 shadow-[0_18px_50px_rgba(15,23,42,0.08)] sm:px-8">
+    <main className="min-h-screen bg-[linear-gradient(180deg,#ebf8f0_0%,#eef4f7_100%)] px-4 py-6 sm:px-6 lg:px-8">
+      <section className="mx-auto w-full max-w-7xl rounded-[32px] border border-emerald-100 bg-[linear-gradient(135deg,#f7fffb_0%,#ffffff_52%,#edf9f2_100%)] px-6 py-6 shadow-[0_20px_55px_rgba(16,185,129,0.10)] sm:px-8">
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
+            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700">
               Porosi te shpejta
             </p>
             <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">
@@ -342,13 +342,13 @@ export default async function QuickOrdersPage({
           <div className="flex flex-wrap items-center gap-3">
             <Link
               href="/orders"
-              className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+              className="inline-flex items-center justify-center rounded-2xl border border-emerald-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50"
             >
               Shiko porosite
             </Link>
             <Link
               href="/orders/new"
-              className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+              className="inline-flex items-center justify-center rounded-2xl border border-emerald-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50"
             >
               Porosi normale
             </Link>

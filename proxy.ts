@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-const publicPaths = ["/login", "/admin/login", "/setup"];
+const publicPaths = ["/", "/trial", "/login", "/admin/login", "/setup"];
 
 export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
@@ -20,7 +20,11 @@ export function proxy(request: NextRequest) {
     });
   }
 
-  if (publicPaths.some((path) => pathname.startsWith(path))) {
+  if (
+    publicPaths.some((path) =>
+      path === "/" ? pathname === "/" : pathname.startsWith(path),
+    )
+  ) {
     return NextResponse.next({
       request: {
         headers: requestHeaders,

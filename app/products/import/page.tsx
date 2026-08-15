@@ -17,13 +17,24 @@ export default async function ProductImportPage() {
     return null;
   }
 
-  const [categories, warehouses] = await Promise.all([
+  const [categories, warehouses, brands] = await Promise.all([
     prisma.category.findMany({
       where: { tenantId, isActive: true },
       orderBy: { name: "asc" },
       select: { name: true },
     }),
     getTenantWarehouses(tenantId, currentUser.tenant?.catalogConfig),
+    prisma.product.findMany({
+      where: {
+        tenantId,
+        brand: {
+          not: null,
+        },
+      },
+      distinct: ["brand"],
+      orderBy: { brand: "asc" },
+      select: { brand: true },
+    }),
   ]);
 
   return (
@@ -64,6 +75,7 @@ export default async function ProductImportPage() {
         <ProductImportWizard
           categories={categories.map((category) => category.name)}
           warehouses={warehouses.map((warehouse) => warehouse.name)}
+          brands={brands.map((brand) => brand.brand).filter((brand): brand is string => Boolean(brand))}
         />
       </div>
     </main>

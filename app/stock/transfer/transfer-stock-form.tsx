@@ -242,7 +242,7 @@ export function TransferStockForm({
       <input type="hidden" name="toWarehouseId" value={toWarehouseId} />
       <input type="hidden" name="adjustments" value={serializedAdjustments} />
 
-      <section className="rounded-[30px] border border-slate-200 bg-white p-6 shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
+      <section className="rounded-[30px] border border-emerald-100 bg-[linear-gradient(180deg,#ffffff_0%,#fbfefc_100%)] p-6 shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
         <div className="grid gap-4 lg:grid-cols-5">
           <label className="space-y-2">
             <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
@@ -259,7 +259,7 @@ export function TransferStockForm({
                 }
                 setProductId("");
               }}
-              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm font-medium text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-100"
+              className="w-full rounded-2xl border border-emerald-100 bg-white px-4 py-3.5 text-sm font-medium text-slate-900 outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100"
             >
               {warehouses.map((warehouse) => (
                 <option key={warehouse.id} value={warehouse.id}>
@@ -276,7 +276,7 @@ export function TransferStockForm({
             <select
               value={toWarehouseId}
               onChange={(event) => setToWarehouseId(event.target.value)}
-              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm font-medium text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-100"
+              className="w-full rounded-2xl border border-emerald-100 bg-white px-4 py-3.5 text-sm font-medium text-slate-900 outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100"
             >
               {warehouses.map((warehouse) => (
                 <option
@@ -300,7 +300,7 @@ export function TransferStockForm({
                 setSelectedBrand(event.target.value);
                 setProductId("");
               }}
-              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm font-medium text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-100"
+              className="w-full rounded-2xl border border-emerald-100 bg-white px-4 py-3.5 text-sm font-medium text-slate-900 outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100"
             >
               <option value="">Te gjitha kategorite</option>
               {brands.map((brand, index) => (
@@ -318,7 +318,7 @@ export function TransferStockForm({
             <select
               value={productId}
               onChange={(event) => setProductId(event.target.value)}
-              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm font-medium text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-100"
+              className="w-full rounded-2xl border border-emerald-100 bg-white px-4 py-3.5 text-sm font-medium text-slate-900 outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100"
             >
               <option value="">Zgjidh produktin</option>
               {filteredProducts.map((product) => (
@@ -337,7 +337,7 @@ export function TransferStockForm({
               value={selectedColor}
               onChange={(event) => setSelectedColor(event.target.value)}
               disabled={!productId || colors.length === 0}
-              className="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3.5 text-sm font-medium text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-100 disabled:cursor-not-allowed disabled:opacity-60"
+              className="w-full rounded-2xl border border-emerald-100 bg-white px-4 py-3.5 text-sm font-medium text-slate-900 outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100 disabled:cursor-not-allowed disabled:opacity-60"
             >
               <option value="">Te gjitha ngjyrat</option>
               {colors.map((color) => (
@@ -350,7 +350,7 @@ export function TransferStockForm({
         </div>
 
         <div className="mt-5 grid gap-4 md:grid-cols-3">
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
+          <div className="rounded-2xl border border-emerald-100 bg-emerald-50/50 px-4 py-4">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
               Variante ne burim
             </p>
@@ -366,7 +366,7 @@ export function TransferStockForm({
               {totalTransferred}
             </p>
           </div>
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
+          <div className="rounded-2xl border border-emerald-100 bg-white px-4 py-4 shadow-sm">
             <p className="text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
               Drejtimi
             </p>
@@ -382,12 +382,12 @@ export function TransferStockForm({
           <button
             type="button"
             onClick={() => setScannerOpen(true)}
-            className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
+            className="inline-flex items-center justify-center rounded-2xl border border-emerald-200 bg-white px-4 py-3 text-sm font-semibold text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50"
           >
             Scan barcode
           </button>
           {scannerMessage ? (
-            <span className="inline-flex items-center rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+            <span className="inline-flex items-center rounded-2xl border border-emerald-100 bg-emerald-50/60 px-4 py-3 text-sm text-slate-700">
               {scannerMessage}
             </span>
           ) : null}
@@ -474,11 +474,11 @@ export function TransferStockForm({
             })}
           </div>
 
-          <div className="hidden overflow-hidden rounded-[28px] border border-slate-200 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.06)] lg:block">
+          <div className="hidden overflow-hidden rounded-[28px] border border-emerald-100 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.06)] lg:block">
             <div className="overflow-x-auto">
               <table className="min-w-full text-sm">
-                <thead className="border-b border-slate-100 bg-slate-50 text-left">
-                  <tr className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                <thead className="border-b border-emerald-100 bg-[linear-gradient(180deg,#f6fdf8_0%,#eef8f1_100%)] text-left">
+                  <tr className="text-xs font-semibold uppercase tracking-[0.16em] text-emerald-800">
                     <th className="px-4 py-3.5">Foto</th>
                     <th className="px-4 py-3.5">Numri</th>
                     <th className="px-4 py-3.5">Ngjyra</th>
@@ -487,7 +487,7 @@ export function TransferStockForm({
                     <th className="px-4 py-3.5 text-right">Transfero</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-100 bg-white">
+                <tbody className="divide-y divide-emerald-50 bg-white">
                   {visibleVariants.map((variant) => (
                     <tr key={variant.id}>
                       <td className="px-4 py-4">
@@ -554,7 +554,7 @@ export function TransferStockForm({
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-end">
         <button
           type="submit"
-          className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_25px_rgba(15,23,42,0.18)] transition hover:bg-slate-800"
+          className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_25px_rgba(15,23,42,0.18)] transition hover:bg-emerald-700"
         >
           Ruaj transferin
         </button>

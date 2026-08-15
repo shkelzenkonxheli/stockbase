@@ -237,14 +237,14 @@ export default async function RootLayout({
   return (
     <html lang="sq" className="light" style={{ colorScheme: "light" }}>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} bg-[#f3f6fb] text-slate-950 antialiased`}
+        className={`${geistSans.variable} ${geistMono.variable} bg-[linear-gradient(180deg,#ebf8f0_0%,#eef4f7_100%)] text-slate-950 antialiased`}
       >
         <div className="min-h-screen">
           {currentUser && hasAccess && !isPlatformRoute ? (
             <div className="flex min-h-screen print:block">
-              <aside className="hidden w-[248px] shrink-0 border-r border-slate-200 bg-[#edf2f8] px-5 py-6 xl:flex xl:flex-col print:hidden">
+              <aside className="hidden w-[224px] shrink-0 border-r border-emerald-200 bg-[linear-gradient(180deg,#dcf7e7_0%,#e9f8ef_46%,#edf3f8_100%)] px-4 py-5 xl:flex xl:flex-col print:hidden">
                 <Link href="/" className="flex items-center gap-3">
-                  <span className="relative h-11 w-11 overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+                  <span className="relative h-10 w-10 overflow-hidden rounded-2xl border border-emerald-200 bg-white shadow-sm">
                     <Image
                       src="/stock-app-logo.svg"
                       alt="Logo"
@@ -264,12 +264,12 @@ export default async function RootLayout({
                   </div>
                 </Link>
 
-                <div className="mt-8">
+                <div className="mt-6">
                   <AppShellNav items={navItems} />
                 </div>
 
-                <div className="mt-auto space-y-3 border-t border-slate-200 pt-5">
-                  <div className="rounded-2xl bg-white px-3 py-3 shadow-sm ring-1 ring-slate-200">
+                <div className="mt-auto space-y-3 border-t border-emerald-200/80 pt-4">
+                  <div className="rounded-2xl bg-white/88 px-3 py-3 shadow-sm ring-1 ring-emerald-200/80">
                     <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
                       Aktive
                     </p>
@@ -284,14 +284,14 @@ export default async function RootLayout({
               </aside>
 
               <div className="flex min-w-0 flex-1 flex-col">
-                <header className="sticky top-0 z-40 border-b border-slate-200/80 bg-white/92 backdrop-blur print:hidden">
-                  <div className="flex items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+                <header className="sticky top-0 z-40 border-b border-emerald-200/80 bg-[linear-gradient(180deg,rgba(212,250,226,0.96)_0%,rgba(236,253,245,0.94)_52%,rgba(255,255,255,0.92)_100%)] backdrop-blur print:hidden">
+                  <div className="flex items-center justify-between gap-4 px-4 py-3 sm:px-6 lg:px-8">
                     <div className="flex min-w-0 items-center gap-3 xl:hidden">
                       <Link
                         href="/"
                         className="flex min-w-0 items-center gap-2 text-base font-semibold tracking-tight text-slate-950 sm:gap-3 sm:text-lg"
                       >
-                        <span className="relative h-9 w-9 shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm sm:h-10 sm:w-10 sm:rounded-2xl">
+                        <span className="relative h-9 w-9 shrink-0 overflow-hidden rounded-xl border border-emerald-200 bg-white shadow-sm sm:h-10 sm:w-10 sm:rounded-2xl">
                           <Image
                             src="/stock-app-logo.svg"
                             alt="Logo"
@@ -308,7 +308,7 @@ export default async function RootLayout({
                     </div>
 
                     <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
-                      <span className="hidden rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-slate-600 sm:inline-flex">
+                      <span className="hidden rounded-full border border-emerald-300 bg-emerald-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-emerald-800 sm:inline-flex">
                         {roleLabel(currentUser.role)}
                       </span>
                       <form action={logout} className="print:hidden">
@@ -316,7 +316,7 @@ export default async function RootLayout({
                           type="submit"
                           aria-label="Dil"
                           title="Dil"
-                          className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-300 bg-white text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 sm:h-auto sm:w-auto sm:gap-2 sm:rounded-2xl sm:px-4 sm:py-2.5"
+                          className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-200 bg-white/95 text-slate-700 transition hover:border-emerald-400 hover:bg-emerald-100 sm:h-auto sm:w-auto sm:gap-2 sm:rounded-2xl sm:px-4 sm:py-2.5"
                         >
                           <svg
                             viewBox="0 0 24 24"
@@ -329,7 +329,7 @@ export default async function RootLayout({
                           <span className="hidden sm:inline">Dil</span>
                         </button>
                       </form>
-                      <div className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-2.5 py-2 shadow-sm sm:gap-3 sm:rounded-2xl sm:px-3">
+                      <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-white/92 px-2.5 py-2 shadow-sm sm:gap-3 sm:rounded-2xl sm:px-3">
                         <span
                           className="flex h-9 w-9 items-center justify-center rounded-full text-xs font-semibold text-white"
                           style={{ backgroundColor: primaryColor }}
@@ -347,9 +347,9 @@ export default async function RootLayout({
                       </div>
                     </div>
                   </div>
-                  <div className="border-t border-slate-100 px-4 py-3 xl:hidden">
+                  <div className="border-t border-emerald-200/80 px-4 py-2.5 xl:hidden">
                     <details className="relative sm:hidden">
-                      <summary className="flex h-11 w-full cursor-pointer list-none items-center justify-between rounded-2xl border border-slate-200 bg-slate-50 px-4 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-white">
+                      <summary className="flex h-10 w-full cursor-pointer list-none items-center justify-between rounded-2xl border border-emerald-200 bg-white/95 px-4 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-emerald-400 hover:bg-emerald-100">
                         <span>Menu</span>
                         <svg
                           viewBox="0 0 20 20"
@@ -362,7 +362,7 @@ export default async function RootLayout({
                           <circle cx="15.5" cy="10" r="1.4" />
                         </svg>
                       </summary>
-                      <div className="absolute left-0 right-0 z-30 mt-2 overflow-hidden rounded-2xl border border-slate-200 bg-white p-2 shadow-[0_18px_40px_rgba(15,23,42,0.14)]">
+                      <div className="absolute left-0 right-0 z-30 mt-2 overflow-hidden rounded-2xl border border-emerald-200 bg-white p-2 shadow-[0_18px_40px_rgba(15,23,42,0.14)]">
                         <AppShellNav items={navItems} />
                       </div>
                     </details>
