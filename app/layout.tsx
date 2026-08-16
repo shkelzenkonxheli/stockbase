@@ -137,6 +137,35 @@ export default async function RootLayout({
                 ),
               },
               {
+                href: "/suppliers",
+                label: "Furnitoret",
+                icon: (
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-4 w-4 fill-none stroke-current stroke-[1.8]"
+                  >
+                    <path d="M4 19.5h16" />
+                    <path d="M6 19.5V8.5l6-3 6 3v11" />
+                    <path d="M9 12h.01M12 12h.01M15 12h.01" strokeLinecap="round" />
+                  </svg>
+                ),
+              },
+              {
+                href: "/purchases",
+                label: "Purchase Orders",
+                icon: (
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-4 w-4 fill-none stroke-current stroke-[1.8]"
+                  >
+                    <path d="M5 7.5h14" />
+                    <path d="M5 12h14" />
+                    <path d="M5 16.5h9" />
+                    <path d="M17 4v6" />
+                  </svg>
+                ),
+              },
+              {
                 href: "/stock/count",
                 label: "Inventory Count",
                 icon: (

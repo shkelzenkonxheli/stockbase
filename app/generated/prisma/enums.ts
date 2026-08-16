@@ -84,3 +84,14 @@ export const StockMovementReason = {
 } as const
 
 export type StockMovementReason = (typeof StockMovementReason)[keyof typeof StockMovementReason]
+
+
+export const PurchaseOrderStatus = {
+  DRAFT: 'DRAFT',
+  ORDERED: 'ORDERED',
+  PARTIALLY_RECEIVED: 'PARTIALLY_RECEIVED',
+  RECEIVED: 'RECEIVED',
+  CANCELED: 'CANCELED'
+} as const
+
+export type PurchaseOrderStatus = (typeof PurchaseOrderStatus)[keyof typeof PurchaseOrderStatus]

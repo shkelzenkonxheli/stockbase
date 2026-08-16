@@ -14,6 +14,8 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   ORDER_CREATED: "Krijo porosi",
   ORDER_DELETED: "Fshi porosi",
   ORDER_BULK_DELETED: "Fshi disa porosi",
+  PURCHASE_ORDER_CREATED: "Krijo purchase order",
+  PURCHASE_ORDER_RECEIVED: "Prano purchase order",
   WAREHOUSE_CREATED: "Krijo depo",
   WAREHOUSE_UPDATED: "Perditeso depo",
   WAREHOUSE_DELETED: "Fshi depo",
@@ -25,6 +27,7 @@ export const AUDIT_ENTITY_LABELS: Record<string, string> = {
   INVENTORY_COUNT: "Numerim",
   VARIANT: "Variant",
   ORDER: "Porosi",
+  PURCHASE_ORDER: "Purchase order",
   WAREHOUSE: "Depo",
 };
 

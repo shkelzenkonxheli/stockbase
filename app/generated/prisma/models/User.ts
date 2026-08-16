@@ -237,6 +237,7 @@ export type UserWhereInput = {
   auditLogs?: Prisma.AuditLogListRelationFilter
   createdInventoryCounts?: Prisma.InventoryCountSessionListRelationFilter
   completedInventoryCounts?: Prisma.InventoryCountSessionListRelationFilter
+  createdPurchaseOrders?: Prisma.PurchaseOrderListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -252,6 +253,7 @@ export type UserOrderByWithRelationInput = {
   auditLogs?: Prisma.AuditLogOrderByRelationAggregateInput
   createdInventoryCounts?: Prisma.InventoryCountSessionOrderByRelationAggregateInput
   completedInventoryCounts?: Prisma.InventoryCountSessionOrderByRelationAggregateInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -270,6 +272,7 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   auditLogs?: Prisma.AuditLogListRelationFilter
   createdInventoryCounts?: Prisma.InventoryCountSessionListRelationFilter
   completedInventoryCounts?: Prisma.InventoryCountSessionListRelationFilter
+  createdPurchaseOrders?: Prisma.PurchaseOrderListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -312,6 +315,7 @@ export type UserCreateInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   createdInventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutCreatedByInput
   completedInventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutCompletedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -327,6 +331,7 @@ export type UserUncheckedCreateInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
   createdInventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutCreatedByInput
   completedInventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutCompletedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUpdateInput = {
@@ -341,6 +346,7 @@ export type UserUpdateInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   createdInventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutCreatedByNestedInput
   completedInventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutCompletedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -356,6 +362,7 @@ export type UserUncheckedUpdateInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
   createdInventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutCreatedByNestedInput
   completedInventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutCompletedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -515,6 +522,22 @@ export type UserUpdateOneRequiredWithoutMembershipsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutMembershipsInput, Prisma.UserUpdateWithoutMembershipsInput>, Prisma.UserUncheckedUpdateWithoutMembershipsInput>
 }
 
+export type UserCreateNestedOneWithoutCreatedPurchaseOrdersInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCreatedPurchaseOrdersInput, Prisma.UserUncheckedCreateWithoutCreatedPurchaseOrdersInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCreatedPurchaseOrdersInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneWithoutCreatedPurchaseOrdersNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutCreatedPurchaseOrdersInput, Prisma.UserUncheckedCreateWithoutCreatedPurchaseOrdersInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutCreatedPurchaseOrdersInput
+  upsert?: Prisma.UserUpsertWithoutCreatedPurchaseOrdersInput
+  disconnect?: Prisma.UserWhereInput | boolean
+  delete?: Prisma.UserWhereInput | boolean
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutCreatedPurchaseOrdersInput, Prisma.UserUpdateWithoutCreatedPurchaseOrdersInput>, Prisma.UserUncheckedUpdateWithoutCreatedPurchaseOrdersInput>
+}
+
 export type UserCreateWithoutSessionsInput = {
   name: string
   email: string
@@ -526,6 +549,7 @@ export type UserCreateWithoutSessionsInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   createdInventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutCreatedByInput
   completedInventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutCompletedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutSessionsInput = {
@@ -540,6 +564,7 @@ export type UserUncheckedCreateWithoutSessionsInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
   createdInventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutCreatedByInput
   completedInventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutCompletedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutSessionsInput = {
@@ -569,6 +594,7 @@ export type UserUpdateWithoutSessionsInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   createdInventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutCreatedByNestedInput
   completedInventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutCompletedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutSessionsInput = {
@@ -583,6 +609,7 @@ export type UserUncheckedUpdateWithoutSessionsInput = {
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
   createdInventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutCreatedByNestedInput
   completedInventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutCompletedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutAuditLogsInput = {
@@ -596,6 +623,7 @@ export type UserCreateWithoutAuditLogsInput = {
   memberships?: Prisma.TenantMembershipCreateNestedManyWithoutUserInput
   createdInventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutCreatedByInput
   completedInventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutCompletedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutAuditLogsInput = {
@@ -610,6 +638,7 @@ export type UserUncheckedCreateWithoutAuditLogsInput = {
   memberships?: Prisma.TenantMembershipUncheckedCreateNestedManyWithoutUserInput
   createdInventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutCreatedByInput
   completedInventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutCompletedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutAuditLogsInput = {
@@ -639,6 +668,7 @@ export type UserUpdateWithoutAuditLogsInput = {
   memberships?: Prisma.TenantMembershipUpdateManyWithoutUserNestedInput
   createdInventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutCreatedByNestedInput
   completedInventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutCompletedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAuditLogsInput = {
@@ -653,6 +683,7 @@ export type UserUncheckedUpdateWithoutAuditLogsInput = {
   memberships?: Prisma.TenantMembershipUncheckedUpdateManyWithoutUserNestedInput
   createdInventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutCreatedByNestedInput
   completedInventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutCompletedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutCreatedInventoryCountsInput = {
@@ -666,6 +697,7 @@ export type UserCreateWithoutCreatedInventoryCountsInput = {
   memberships?: Prisma.TenantMembershipCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   completedInventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutCompletedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutCreatedInventoryCountsInput = {
@@ -680,6 +712,7 @@ export type UserUncheckedCreateWithoutCreatedInventoryCountsInput = {
   memberships?: Prisma.TenantMembershipUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
   completedInventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutCompletedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutCreatedInventoryCountsInput = {
@@ -698,6 +731,7 @@ export type UserCreateWithoutCompletedInventoryCountsInput = {
   memberships?: Prisma.TenantMembershipCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   createdInventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutCreatedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutCompletedInventoryCountsInput = {
@@ -712,6 +746,7 @@ export type UserUncheckedCreateWithoutCompletedInventoryCountsInput = {
   memberships?: Prisma.TenantMembershipUncheckedCreateNestedManyWithoutUserInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
   createdInventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutCreatedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutCompletedInventoryCountsInput = {
@@ -741,6 +776,7 @@ export type UserUpdateWithoutCreatedInventoryCountsInput = {
   memberships?: Prisma.TenantMembershipUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   completedInventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutCompletedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCreatedInventoryCountsInput = {
@@ -755,6 +791,7 @@ export type UserUncheckedUpdateWithoutCreatedInventoryCountsInput = {
   memberships?: Prisma.TenantMembershipUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
   completedInventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutCompletedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUpsertWithoutCompletedInventoryCountsInput = {
@@ -779,6 +816,7 @@ export type UserUpdateWithoutCompletedInventoryCountsInput = {
   memberships?: Prisma.TenantMembershipUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   createdInventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutCreatedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutCompletedInventoryCountsInput = {
@@ -793,6 +831,7 @@ export type UserUncheckedUpdateWithoutCompletedInventoryCountsInput = {
   memberships?: Prisma.TenantMembershipUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
   createdInventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutCreatedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserCreateWithoutMembershipsInput = {
@@ -806,6 +845,7 @@ export type UserCreateWithoutMembershipsInput = {
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
   createdInventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutCreatedByInput
   completedInventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutCompletedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserUncheckedCreateWithoutMembershipsInput = {
@@ -820,6 +860,7 @@ export type UserUncheckedCreateWithoutMembershipsInput = {
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
   createdInventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutCreatedByInput
   completedInventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutCompletedByInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutCreatedByInput
 }
 
 export type UserCreateOrConnectWithoutMembershipsInput = {
@@ -849,6 +890,7 @@ export type UserUpdateWithoutMembershipsInput = {
   auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
   createdInventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutCreatedByNestedInput
   completedInventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutCompletedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutCreatedByNestedInput
 }
 
 export type UserUncheckedUpdateWithoutMembershipsInput = {
@@ -860,6 +902,81 @@ export type UserUncheckedUpdateWithoutMembershipsInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
+  createdInventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutCreatedByNestedInput
+  completedInventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutCompletedByNestedInput
+  createdPurchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutCreatedByNestedInput
+}
+
+export type UserCreateWithoutCreatedPurchaseOrdersInput = {
+  name: string
+  email: string
+  passwordHash: string
+  role: $Enums.UserRole
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  sessions?: Prisma.SessionCreateNestedManyWithoutUserInput
+  memberships?: Prisma.TenantMembershipCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutUserInput
+  createdInventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutCreatedByInput
+  completedInventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutCompletedByInput
+}
+
+export type UserUncheckedCreateWithoutCreatedPurchaseOrdersInput = {
+  id?: number
+  name: string
+  email: string
+  passwordHash: string
+  role: $Enums.UserRole
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutUserInput
+  memberships?: Prisma.TenantMembershipUncheckedCreateNestedManyWithoutUserInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutUserInput
+  createdInventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutCreatedByInput
+  completedInventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutCompletedByInput
+}
+
+export type UserCreateOrConnectWithoutCreatedPurchaseOrdersInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutCreatedPurchaseOrdersInput, Prisma.UserUncheckedCreateWithoutCreatedPurchaseOrdersInput>
+}
+
+export type UserUpsertWithoutCreatedPurchaseOrdersInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutCreatedPurchaseOrdersInput, Prisma.UserUncheckedUpdateWithoutCreatedPurchaseOrdersInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutCreatedPurchaseOrdersInput, Prisma.UserUncheckedCreateWithoutCreatedPurchaseOrdersInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutCreatedPurchaseOrdersInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutCreatedPurchaseOrdersInput, Prisma.UserUncheckedUpdateWithoutCreatedPurchaseOrdersInput>
+}
+
+export type UserUpdateWithoutCreatedPurchaseOrdersInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessions?: Prisma.SessionUpdateManyWithoutUserNestedInput
+  memberships?: Prisma.TenantMembershipUpdateManyWithoutUserNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutUserNestedInput
+  createdInventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutCreatedByNestedInput
+  completedInventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutCompletedByNestedInput
+}
+
+export type UserUncheckedUpdateWithoutCreatedPurchaseOrdersInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  passwordHash?: Prisma.StringFieldUpdateOperationsInput | string
+  role?: Prisma.EnumUserRoleFieldUpdateOperationsInput | $Enums.UserRole
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutUserNestedInput
+  memberships?: Prisma.TenantMembershipUncheckedUpdateManyWithoutUserNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutUserNestedInput
   createdInventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutCreatedByNestedInput
   completedInventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutCompletedByNestedInput
@@ -876,6 +993,7 @@ export type UserCountOutputType = {
   auditLogs: number
   createdInventoryCounts: number
   completedInventoryCounts: number
+  createdPurchaseOrders: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -884,6 +1002,7 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   auditLogs?: boolean | UserCountOutputTypeCountAuditLogsArgs
   createdInventoryCounts?: boolean | UserCountOutputTypeCountCreatedInventoryCountsArgs
   completedInventoryCounts?: boolean | UserCountOutputTypeCountCompletedInventoryCountsArgs
+  createdPurchaseOrders?: boolean | UserCountOutputTypeCountCreatedPurchaseOrdersArgs
 }
 
 /**
@@ -931,6 +1050,13 @@ export type UserCountOutputTypeCountCompletedInventoryCountsArgs<ExtArgs extends
   where?: Prisma.InventoryCountSessionWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountCreatedPurchaseOrdersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PurchaseOrderWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -945,6 +1071,7 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   auditLogs?: boolean | Prisma.User$auditLogsArgs<ExtArgs>
   createdInventoryCounts?: boolean | Prisma.User$createdInventoryCountsArgs<ExtArgs>
   completedInventoryCounts?: boolean | Prisma.User$completedInventoryCountsArgs<ExtArgs>
+  createdPurchaseOrders?: boolean | Prisma.User$createdPurchaseOrdersArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -985,6 +1112,7 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   auditLogs?: boolean | Prisma.User$auditLogsArgs<ExtArgs>
   createdInventoryCounts?: boolean | Prisma.User$createdInventoryCountsArgs<ExtArgs>
   completedInventoryCounts?: boolean | Prisma.User$completedInventoryCountsArgs<ExtArgs>
+  createdPurchaseOrders?: boolean | Prisma.User$createdPurchaseOrdersArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -998,6 +1126,7 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     auditLogs: Prisma.$AuditLogPayload<ExtArgs>[]
     createdInventoryCounts: Prisma.$InventoryCountSessionPayload<ExtArgs>[]
     completedInventoryCounts: Prisma.$InventoryCountSessionPayload<ExtArgs>[]
+    createdPurchaseOrders: Prisma.$PurchaseOrderPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1406,6 +1535,7 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   auditLogs<T extends Prisma.User$auditLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$auditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   createdInventoryCounts<T extends Prisma.User$createdInventoryCountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$createdInventoryCountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InventoryCountSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   completedInventoryCounts<T extends Prisma.User$completedInventoryCountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$completedInventoryCountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InventoryCountSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  createdPurchaseOrders<T extends Prisma.User$createdPurchaseOrdersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$createdPurchaseOrdersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PurchaseOrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1952,6 +2082,30 @@ export type User$completedInventoryCountsArgs<ExtArgs extends runtime.Types.Exte
   take?: number
   skip?: number
   distinct?: Prisma.InventoryCountSessionScalarFieldEnum | Prisma.InventoryCountSessionScalarFieldEnum[]
+}
+
+/**
+ * User.createdPurchaseOrders
+ */
+export type User$createdPurchaseOrdersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PurchaseOrder
+   */
+  select?: Prisma.PurchaseOrderSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PurchaseOrder
+   */
+  omit?: Prisma.PurchaseOrderOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PurchaseOrderInclude<ExtArgs> | null
+  where?: Prisma.PurchaseOrderWhereInput
+  orderBy?: Prisma.PurchaseOrderOrderByWithRelationInput | Prisma.PurchaseOrderOrderByWithRelationInput[]
+  cursor?: Prisma.PurchaseOrderWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PurchaseOrderScalarFieldEnum | Prisma.PurchaseOrderScalarFieldEnum[]
 }
 
 /**
