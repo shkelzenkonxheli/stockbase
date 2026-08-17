@@ -457,6 +457,11 @@ export type ProductScalarRelationFilter = {
   isNot?: Prisma.ProductWhereInput
 }
 
+export type ProductNullableScalarRelationFilter = {
+  is?: Prisma.ProductWhereInput | null
+  isNot?: Prisma.ProductWhereInput | null
+}
+
 export type StringFieldUpdateOperationsInput = {
   set?: string
 }
@@ -589,10 +594,12 @@ export type ProductCreateNestedOneWithoutPurchaseOrderItemsInput = {
   connect?: Prisma.ProductWhereUniqueInput
 }
 
-export type ProductUpdateOneRequiredWithoutPurchaseOrderItemsNestedInput = {
+export type ProductUpdateOneWithoutPurchaseOrderItemsNestedInput = {
   create?: Prisma.XOR<Prisma.ProductCreateWithoutPurchaseOrderItemsInput, Prisma.ProductUncheckedCreateWithoutPurchaseOrderItemsInput>
   connectOrCreate?: Prisma.ProductCreateOrConnectWithoutPurchaseOrderItemsInput
   upsert?: Prisma.ProductUpsertWithoutPurchaseOrderItemsInput
+  disconnect?: Prisma.ProductWhereInput | boolean
+  delete?: Prisma.ProductWhereInput | boolean
   connect?: Prisma.ProductWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.ProductUpdateToOneWithWhereWithoutPurchaseOrderItemsInput, Prisma.ProductUpdateWithoutPurchaseOrderItemsInput>, Prisma.ProductUncheckedUpdateWithoutPurchaseOrderItemsInput>
 }

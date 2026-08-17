@@ -139,23 +139,41 @@ async function createPurchaseOrder(formData: FormData) {
       }
 
       const candidate = item as {
+        draftKind?: unknown;
         variantId?: unknown;
         productId?: unknown;
+        productName?: unknown;
+        brand?: unknown;
+        categoryName?: unknown;
         size?: unknown;
         color?: unknown;
+        material?: unknown;
+        powerWatts?: unknown;
         quantity?: unknown;
         unitCost?: unknown;
         note?: unknown;
       };
 
+      const draftKind =
+        candidate.draftKind === "pendingVariant" || candidate.draftKind === "pendingProduct"
+          ? candidate.draftKind
+          : "existing";
       const rawVariantId = candidate.variantId;
       const variantId =
         rawVariantId === null || rawVariantId === undefined || rawVariantId === ""
           ? null
           : Number(rawVariantId);
       const productId = Number(candidate.productId);
+      const productName =
+        typeof candidate.productName === "string" ? candidate.productName.trim() : "";
+      const brand = typeof candidate.brand === "string" ? candidate.brand.trim() : "";
+      const categoryName =
+        typeof candidate.categoryName === "string" ? candidate.categoryName.trim() : "";
       const size = typeof candidate.size === "string" ? candidate.size.trim() : "";
       const color = typeof candidate.color === "string" ? candidate.color.trim() : "";
+      const material = typeof candidate.material === "string" ? candidate.material.trim() : "";
+      const powerWatts =
+        typeof candidate.powerWatts === "string" ? candidate.powerWatts.trim() : "";
       const orderedQuantity = Number(candidate.quantity);
       const unitCost = Number(candidate.unitCost);
       const lineNote =
@@ -175,15 +193,31 @@ async function createPurchaseOrder(formData: FormData) {
         return null;
       }
 
-      if (variantId === null && (!productId || !size || !color)) {
+      if (draftKind === "existing" && variantId === null) {
+        return null;
+      }
+
+      if (draftKind === "pendingVariant" && (!productId || !size || !color)) {
+        return null;
+      }
+
+      if (draftKind === "pendingProduct" && (!categoryName || !productName || !size || !color)) {
         return null;
       }
 
       return {
+        draftKind,
         variantId,
-        productId: variantId === null ? productId : null,
-        size: variantId === null ? size : null,
-        color: variantId === null ? color : null,
+        productId:
+          draftKind === "existing" ? null : Number.isInteger(productId) && productId > 0 ? productId : null,
+        productName: draftKind === "pendingProduct" ? productName : null,
+        brand: brand || null,
+        categoryName:
+          draftKind === "pendingProduct" ? categoryName : draftKind === "pendingVariant" ? categoryName || null : null,
+        size,
+        color,
+        material: material || null,
+        powerWatts: powerWatts || null,
         orderedQuantity,
         unitCost,
         note: lineNote,
@@ -193,10 +227,16 @@ async function createPurchaseOrder(formData: FormData) {
       (
         item,
       ): item is {
+        draftKind: "existing" | "pendingVariant" | "pendingProduct";
         variantId: number | null;
         productId: number | null;
-        size: string | null;
-        color: string | null;
+        productName: string | null;
+        brand: string | null;
+        categoryName: string | null;
+        size: string;
+        color: string;
+        material: string | null;
+        powerWatts: string | null;
         orderedQuantity: number;
         unitCost: number;
         note: string | null;
@@ -208,11 +248,17 @@ async function createPurchaseOrder(formData: FormData) {
   }
 
   const uniqueLineKeys = new Set(
-    items.map((item) =>
-      item.variantId !== null
-        ? `variant:${item.variantId}`
-        : `custom:${item.productId}:${item.color}:${item.size}`,
-    ),
+    items.map((item) => {
+      if (item.draftKind === "existing" && item.variantId !== null) {
+        return `variant:${item.variantId}`;
+      }
+
+      if (item.draftKind === "pendingVariant") {
+        return `pending-variant:${item.productId}:${item.color}:${item.size}:${item.material ?? ""}:${item.powerWatts ?? ""}`;
+      }
+
+      return `pending-product:${item.categoryName}:${item.brand ?? ""}:${item.productName}:${item.color}:${item.size}:${item.material ?? ""}:${item.powerWatts ?? ""}`;
+    }),
   );
   if (uniqueLineKeys.size !== items.length) {
     redirect("/purchases?error=items");
@@ -224,18 +270,24 @@ async function createPurchaseOrder(formData: FormData) {
   }
 
   const existingVariantIds = items
-    .filter((item): item is typeof item & { variantId: number } => item.variantId !== null)
+    .filter(
+      (item): item is typeof item & { variantId: number } =>
+        item.draftKind === "existing" && item.variantId !== null,
+    )
     .map((item) => item.variantId);
-  const customProductIds = [
+  const pendingVariantProductIds = [
     ...new Set(
       items
-        .filter((item): item is typeof item & { productId: number } => item.variantId === null)
+        .filter(
+          (item): item is typeof item & { productId: number } =>
+            item.draftKind === "pendingVariant" && item.productId !== null,
+        )
         .map((item) => item.productId),
     ),
   ];
 
   const result = await prisma.$transaction(async (tx) => {
-    const [supplier, warehouse, variants, customProducts] = await Promise.all([
+    const [supplier, warehouse, variants, pendingVariantProducts] = await Promise.all([
       tx.supplier.findFirst({
         where: { id: supplierId, tenantId, isActive: true },
         select: { id: true, name: true },
@@ -266,20 +318,15 @@ async function createPurchaseOrder(formData: FormData) {
       tx.product.findMany({
         where: {
           tenantId,
-          id: { in: customProductIds },
+          id: { in: pendingVariantProductIds },
         },
         select: {
           id: true,
           name: true,
+          brand: true,
           category: {
             select: {
               name: true,
-            },
-          },
-          variants: {
-            select: {
-              sku: true,
-              barcode: true,
             },
           },
         },
@@ -291,101 +338,7 @@ async function createPurchaseOrder(formData: FormData) {
     }
 
     const variantMap = new Map(variants.map((variant) => [variant.id, variant]));
-    const productMap = new Map(customProducts.map((product) => [product.id, product]));
-    const createdOrResolvedCustomVariants = new Map<
-      string,
-      { id: number; productId: number; size: string; color: string; product: { name: string } }
-    >();
-
-    for (const item of items) {
-      if (item.variantId !== null) {
-        continue;
-      }
-
-      const identity = `custom:${item.productId}:${item.color}:${item.size}`;
-      if (createdOrResolvedCustomVariants.has(identity)) {
-        continue;
-      }
-
-      const product = productMap.get(item.productId!);
-      if (!product) {
-        return { ok: false as const };
-      }
-
-      const categoryConfig = getCategoryConfig(product.category.name);
-      const variantIdentityKey = buildVariantIdentityKey(categoryConfig, {
-        size: item.size,
-        color: item.color,
-        material: null,
-        powerWatts: null,
-      });
-
-      const existingVariant = await tx.variant.findFirst({
-        where: {
-          tenantId,
-          productId: product.id,
-          variantIdentityKey,
-        },
-        select: {
-          id: true,
-          productId: true,
-          size: true,
-          color: true,
-          product: {
-            select: {
-              name: true,
-            },
-          },
-        },
-      });
-
-      if (existingVariant) {
-        createdOrResolvedCustomVariants.set(identity, existingVariant);
-        continue;
-      }
-
-      const usedSkus = new Set(
-        product.variants.map((variant) => variant.sku).filter((sku): sku is string => Boolean(sku)),
-      );
-      const baseSku = buildVariantSku({
-        productName: product.name,
-        size: item.size,
-        color: item.color!,
-      });
-      const nextSku = ensureUniqueSku(baseSku, usedSkus);
-
-      const createdVariant = await tx.variant.create({
-        data: {
-          tenantId,
-          productId: product.id,
-          size: item.size!,
-          color: item.color!,
-          stock: 0,
-          price: item.unitCost.toFixed(2),
-          sku: nextSku,
-          variantIdentityKey,
-        },
-        select: {
-          id: true,
-          productId: true,
-          size: true,
-          color: true,
-          product: {
-            select: {
-              name: true,
-            },
-          },
-        },
-      });
-
-      const barcode = buildBarcodeFromVariantId(createdVariant.id);
-      await tx.variant.update({
-        where: { id: createdVariant.id },
-        data: { barcode },
-      });
-
-      createdOrResolvedCustomVariants.set(identity, createdVariant);
-    }
+    const productMap = new Map(pendingVariantProducts.map((product) => [product.id, product]));
 
     const purchaseOrder = await tx.purchaseOrder.create({
       data: {
@@ -398,21 +351,48 @@ async function createPurchaseOrder(formData: FormData) {
         createdById: currentUser.id,
         items: {
           create: items.map((item) => {
-            const variant =
-              item.variantId !== null
-                ? variantMap.get(item.variantId)
-                : createdOrResolvedCustomVariants.get(
-                    `custom:${item.productId}:${item.color}:${item.size}`,
-                  );
-            if (!variant) {
-              throw new Error("Missing purchase order variant");
+            if (item.draftKind === "existing") {
+              const variant = variantMap.get(item.variantId!);
+              if (!variant) {
+                throw new Error("Missing purchase order variant");
+              }
+              return {
+                productId: variant.productId,
+                variantId: variant.id,
+                orderedQuantity: item.orderedQuantity,
+                unitCost: item.unitCost.toFixed(2),
+                note: item.note,
+              };
             }
+
+            const sourceProduct =
+              item.productId !== null ? productMap.get(item.productId) : null;
+            const pendingCategoryName =
+              item.categoryName ?? sourceProduct?.category.name ?? null;
+            const pendingProductName = item.productName ?? sourceProduct?.name ?? null;
+            const pendingBrand = item.brand ?? sourceProduct?.brand ?? null;
+            const categoryConfig = getCategoryConfig(pendingCategoryName);
+            const pendingVariantIdentityKey = buildVariantIdentityKey(categoryConfig, {
+              size: item.size,
+              color: item.color,
+              material: item.material,
+              powerWatts: item.powerWatts,
+            });
+
             return {
-              productId: variant.productId,
-              variantId: variant.id,
+              productId: item.productId,
+              variantId: null,
               orderedQuantity: item.orderedQuantity,
               unitCost: item.unitCost.toFixed(2),
               note: item.note,
+              pendingProductName,
+              pendingBrand,
+              pendingCategoryName,
+              pendingColor: item.color,
+              pendingSize: item.size,
+              pendingMaterial: item.material,
+              pendingPowerWatts: item.powerWatts,
+              pendingVariantIdentityKey,
             };
           }),
         },
@@ -436,22 +416,31 @@ async function createPurchaseOrder(formData: FormData) {
         status,
         orderedAt: orderedAt.toISOString(),
         lines: items.map((item) => {
-          const variant =
-            item.variantId !== null
-              ? variantMap.get(item.variantId)
-              : createdOrResolvedCustomVariants.get(
-                  `custom:${item.productId}:${item.color}:${item.size}`,
-                );
-          if (!variant) {
-            throw new Error("Missing purchase order variant");
+          if (item.draftKind === "existing") {
+            const variant = variantMap.get(item.variantId!);
+            if (!variant) {
+              throw new Error("Missing purchase order variant");
+            }
+            return {
+              variantId: variant.id,
+              product: variant.product.name,
+              size: variant.size,
+              color: variant.color,
+              quantity: item.orderedQuantity,
+              unitCost: item.unitCost,
+              kind: "existing",
+            };
           }
+          const sourceProduct =
+            item.productId !== null ? productMap.get(item.productId) : null;
           return {
-            variantId: variant.id,
-            product: variant.product.name,
-            size: variant.size,
-            color: variant.color,
+            variantId: null,
+            product: item.productName ?? sourceProduct?.name ?? "Produkt i ri",
+            size: item.size,
+            color: item.color,
             quantity: item.orderedQuantity,
             unitCost: item.unitCost,
+            kind: item.draftKind,
           };
         }),
       },
@@ -496,6 +485,19 @@ async function receivePurchaseOrder(formData: FormData) {
         },
         items: {
           include: {
+            product: {
+              select: {
+                id: true,
+                name: true,
+                brand: true,
+                category: {
+                  select: {
+                    id: true,
+                    name: true,
+                  },
+                },
+              },
+            },
             variant: {
               select: {
                 id: true,
@@ -522,6 +524,8 @@ async function receivePurchaseOrder(formData: FormData) {
       return { ok: false as const, reason: "state" as const };
     }
 
+    const warehouseId = order.warehouse.id;
+
     const adjustments =
       receiveMode === "all"
         ? order.items
@@ -547,12 +551,30 @@ async function receivePurchaseOrder(formData: FormData) {
       return { ok: false as const, reason: "validation" as const };
     }
 
+    const tenant = await tx.tenant.findUnique({
+      where: { id: tenantId },
+      select: { catalogType: true },
+    });
+
     const items = await tx.purchaseOrderItem.findMany({
       where: {
         purchaseOrderId,
         id: { in: adjustments.map((item) => item.itemId) },
       },
       include: {
+        product: {
+          select: {
+            id: true,
+            name: true,
+            brand: true,
+            category: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
         variant: {
           select: {
             id: true,
@@ -567,7 +589,7 @@ async function receivePurchaseOrder(formData: FormData) {
             },
             inventories: {
               where: {
-                warehouseId: order.warehouse.id,
+                warehouseId,
               },
               select: {
                 id: true,
@@ -585,6 +607,186 @@ async function receivePurchaseOrder(formData: FormData) {
     }
 
     const itemMap = new Map(items.map((item) => [item.id, item]));
+    const resolvedVariants = new Map<
+      number,
+      {
+        variantId: number;
+        productId: number;
+        productName: string;
+        size: string;
+        color: string;
+        inventoryId: number | null;
+      }
+    >();
+
+    async function resolveVariantForItem(item: (typeof items)[number]) {
+      if (resolvedVariants.has(item.id)) {
+        return resolvedVariants.get(item.id)!;
+      }
+
+      if (item.variant && item.product) {
+        const resolved = {
+          variantId: item.variant.id,
+          productId: item.product.id,
+          productName: item.product.name,
+          size: item.variant.size,
+          color: item.variant.color,
+          inventoryId: item.variant.inventories[0]?.id ?? null,
+        };
+        resolvedVariants.set(item.id, resolved);
+        return resolved;
+      }
+
+      let product = item.product;
+
+      if (!product) {
+        if (!tenant || !item.pendingCategoryName || !item.pendingProductName) {
+          throw new Error("Missing pending purchase order product");
+        }
+
+        let category = await tx.category.findFirst({
+          where: {
+            tenantId,
+            name: item.pendingCategoryName,
+          },
+          select: { id: true, name: true },
+        });
+
+        if (!category) {
+          category = await tx.category.create({
+            data: {
+              tenantId,
+              name: item.pendingCategoryName,
+              catalogType: tenant.catalogType,
+              isActive: true,
+            },
+            select: { id: true, name: true },
+          });
+        }
+
+        product = await tx.product.create({
+          data: {
+            tenantId,
+            categoryId: category.id,
+            name: item.pendingProductName,
+            brand: item.pendingBrand,
+          },
+          select: {
+            id: true,
+            name: true,
+            brand: true,
+            category: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        });
+      }
+
+      const categoryConfig = getCategoryConfig(product.category.name);
+      const size = item.pendingSize ?? "Standard";
+      const color = item.pendingColor ?? "Standard";
+      const material = item.pendingMaterial;
+      const powerWatts = item.pendingPowerWatts;
+      const variantIdentityKey =
+        item.pendingVariantIdentityKey ??
+        buildVariantIdentityKey(categoryConfig, {
+          size,
+          color,
+          material,
+          powerWatts,
+        });
+
+      let variant = await tx.variant.findFirst({
+        where: {
+          tenantId,
+          productId: product.id,
+          variantIdentityKey,
+        },
+        select: {
+          id: true,
+          size: true,
+          color: true,
+          inventories: {
+            where: {
+              warehouseId,
+            },
+            select: {
+              id: true,
+            },
+            take: 1,
+          },
+        },
+      });
+
+      if (!variant) {
+        const existingSkus = await tx.variant.findMany({
+          where: { productId: product.id },
+          select: { sku: true },
+        });
+        const usedSkus = new Set(
+          existingSkus.map((entry) => entry.sku).filter((sku): sku is string => Boolean(sku)),
+        );
+        const baseSku = buildVariantSku({
+          productName: product.name,
+          size,
+          color,
+        });
+        const nextSku = ensureUniqueSku(baseSku, usedSkus);
+
+        const createdVariant = await tx.variant.create({
+          data: {
+            tenantId,
+            productId: product.id,
+            size,
+            color,
+            stock: 0,
+            price: item.unitCost,
+            sku: nextSku,
+            material,
+            powerWatts,
+            variantIdentityKey,
+          },
+          select: {
+            id: true,
+          },
+        });
+
+        const barcode = buildBarcodeFromVariantId(createdVariant.id);
+        await tx.variant.update({
+          where: { id: createdVariant.id },
+          data: { barcode },
+        });
+
+        variant = {
+          id: createdVariant.id,
+          size,
+          color,
+          inventories: [],
+        };
+      }
+
+      await tx.purchaseOrderItem.update({
+        where: { id: item.id },
+        data: {
+          productId: product.id,
+          variantId: variant.id,
+        },
+      });
+
+      const resolved = {
+        variantId: variant.id,
+        productId: product.id,
+        productName: product.name,
+        size: variant.size,
+        color: variant.color,
+        inventoryId: variant.inventories[0]?.id ?? null,
+      };
+      resolvedVariants.set(item.id, resolved);
+      return resolved;
+    }
 
     for (const adjustment of adjustments) {
       const item = itemMap.get(adjustment.itemId);
@@ -597,11 +799,11 @@ async function receivePurchaseOrder(formData: FormData) {
         return { ok: false as const, reason: "items" as const };
       }
 
-      const existingInventory = item.variant.inventories[0];
+      const resolvedVariant = await resolveVariantForItem(item);
 
-      if (existingInventory) {
+      if (resolvedVariant.inventoryId) {
         await tx.variantInventory.update({
-          where: { id: existingInventory.id },
+          where: { id: resolvedVariant.inventoryId },
           data: {
             stock: {
               increment: adjustment.quantity,
@@ -611,15 +813,15 @@ async function receivePurchaseOrder(formData: FormData) {
       } else {
         await tx.variantInventory.create({
           data: {
-            variantId: item.variantId,
-            warehouseId: order.warehouse.id,
+            variantId: resolvedVariant.variantId,
+            warehouseId,
             stock: adjustment.quantity,
           },
         });
       }
 
       await tx.variant.update({
-        where: { id: item.variantId },
+        where: { id: resolvedVariant.variantId },
         data: {
           stock: {
             increment: adjustment.quantity,
@@ -640,10 +842,11 @@ async function receivePurchaseOrder(formData: FormData) {
     await tx.stockMovement.createMany({
       data: adjustments.map((adjustment) => {
         const item = itemMap.get(adjustment.itemId)!;
+        const resolvedVariant = resolvedVariants.get(item.id)!;
         return {
           tenantId,
-          variantId: item.variantId,
-          warehouseId: order.warehouse.id,
+          variantId: resolvedVariant.variantId,
+          warehouseId,
           quantity: adjustment.quantity,
           reason: "INCOMING_STOCK" as const,
         };
@@ -676,7 +879,7 @@ async function receivePurchaseOrder(formData: FormData) {
       entityType: "PURCHASE_ORDER",
       entityId: order.id,
       entityLabel: `PO #${order.id}`,
-      warehouseId: order.warehouse.id,
+      warehouseId,
       metadata: {
         supplier: order.supplier.name,
         warehouse: order.warehouse.name,
@@ -684,12 +887,13 @@ async function receivePurchaseOrder(formData: FormData) {
         receivedAt: new Date().toISOString(),
         adjustments: adjustments.map((adjustment) => {
           const item = itemMap.get(adjustment.itemId)!;
+          const resolvedVariant = resolvedVariants.get(item.id)!;
           return {
             itemId: item.id,
-            variantId: item.variantId,
-            product: item.variant.product.name,
-            size: item.variant.size,
-            color: item.variant.color,
+            variantId: resolvedVariant.variantId,
+            product: resolvedVariant.productName,
+            size: resolvedVariant.size,
+            color: resolvedVariant.color,
             quantity: adjustment.quantity,
           };
         }),
@@ -698,8 +902,8 @@ async function receivePurchaseOrder(formData: FormData) {
 
     return {
       ok: true as const,
-      warehouseId: order.warehouse.id,
-      productIds: [...new Set(items.map((item) => item.variant.product.id))],
+      warehouseId,
+      productIds: [...new Set(Array.from(resolvedVariants.values()).map((item) => item.productId))],
     };
   });
 
@@ -765,7 +969,7 @@ export default async function PurchasesPage({ searchParams }: PurchasesPageProps
   const numericSearchId = Number(searchQuery);
   const hasNumericSearchId = Number.isInteger(numericSearchId) && numericSearchId > 0;
 
-  const [suppliers, warehouses, variants, purchaseOrders] = await Promise.all([
+  const [suppliers, warehouses, categories, variants, purchaseOrders] = await Promise.all([
     prisma.supplier.findMany({
       where: { tenantId, isActive: true },
       orderBy: { name: "asc" },
@@ -775,6 +979,11 @@ export default async function PurchasesPage({ searchParams }: PurchasesPageProps
       },
     }),
     getTenantWarehouses(tenantId),
+    prisma.category.findMany({
+      where: { tenantId, isActive: true },
+      orderBy: { name: "asc" },
+      select: { name: true },
+    }),
     prisma.product.findMany({
       where: {
         tenantId,
@@ -824,9 +1033,19 @@ export default async function PurchasesPage({ searchParams }: PurchasesPageProps
         items: {
           select: {
             id: true,
+            product: {
+              select: {
+                name: true,
+              },
+            },
             orderedQuantity: true,
             receivedQuantity: true,
             unitCost: true,
+            pendingProductName: true,
+            pendingBrand: true,
+            pendingCategoryName: true,
+            pendingColor: true,
+            pendingSize: true,
             variant: {
               select: {
                 size: true,
@@ -872,9 +1091,14 @@ export default async function PurchasesPage({ searchParams }: PurchasesPageProps
       totalQuantity: order.items.reduce((sum, item) => sum + item.orderedQuantity, 0),
       items: order.items.map((item) => ({
         id: item.id,
-        productName: item.variant.product.name,
-        size: item.variant.size,
-        color: item.variant.color,
+        productName:
+          item.variant?.product.name ??
+          item.product?.name ??
+          item.pendingProductName ??
+          "Produkt i ri",
+        size: item.variant?.size ?? item.pendingSize ?? "Standard",
+        color: item.variant?.color ?? item.pendingColor ?? "Standard",
+        isPending: !item.variant,
         orderedQuantity: item.orderedQuantity,
         receivedQuantity: item.receivedQuantity,
         remainingQuantity: Math.max(0, item.orderedQuantity - item.receivedQuantity),
@@ -943,6 +1167,7 @@ export default async function PurchasesPage({ searchParams }: PurchasesPageProps
             id: warehouse.id,
             name: warehouse.name,
           }))}
+          categoryOptions={categories.map((category) => category.name)}
           products={variants.map((product) => ({
             id: product.id,
             name: product.name,

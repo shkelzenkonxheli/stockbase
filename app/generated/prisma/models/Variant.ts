@@ -898,10 +898,12 @@ export type VariantCreateNestedOneWithoutPurchaseOrderItemsInput = {
   connect?: Prisma.VariantWhereUniqueInput
 }
 
-export type VariantUpdateOneRequiredWithoutPurchaseOrderItemsNestedInput = {
+export type VariantUpdateOneWithoutPurchaseOrderItemsNestedInput = {
   create?: Prisma.XOR<Prisma.VariantCreateWithoutPurchaseOrderItemsInput, Prisma.VariantUncheckedCreateWithoutPurchaseOrderItemsInput>
   connectOrCreate?: Prisma.VariantCreateOrConnectWithoutPurchaseOrderItemsInput
   upsert?: Prisma.VariantUpsertWithoutPurchaseOrderItemsInput
+  disconnect?: Prisma.VariantWhereInput | boolean
+  delete?: Prisma.VariantWhereInput | boolean
   connect?: Prisma.VariantWhereUniqueInput
   update?: Prisma.XOR<Prisma.XOR<Prisma.VariantUpdateToOneWithWhereWithoutPurchaseOrderItemsInput, Prisma.VariantUpdateWithoutPurchaseOrderItemsInput>, Prisma.VariantUncheckedUpdateWithoutPurchaseOrderItemsInput>
 }

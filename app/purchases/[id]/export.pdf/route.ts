@@ -65,6 +65,14 @@ export async function GET(_request: Request, { params }: RouteProps) {
           orderedQuantity: true,
           receivedQuantity: true,
           unitCost: true,
+          product: {
+            select: {
+              name: true,
+            },
+          },
+          pendingProductName: true,
+          pendingColor: true,
+          pendingSize: true,
           variant: {
             select: {
               size: true,
@@ -103,8 +111,9 @@ export async function GET(_request: Request, { params }: RouteProps) {
       note: order.note,
     },
     items: order.items.map((item) => ({
-      productName: item.variant.product.name,
-      variantLabel: `${item.variant.color} / ${item.variant.size || "Standard"}`,
+      productName:
+        item.variant?.product.name ?? item.product?.name ?? item.pendingProductName ?? "Produkt",
+      variantLabel: `${item.variant?.color ?? item.pendingColor ?? "Standard"} / ${item.variant?.size ?? item.pendingSize ?? "Standard"}`,
       orderedQuantity: item.orderedQuantity,
       receivedQuantity: item.receivedQuantity,
       remainingQuantity: Math.max(0, item.orderedQuantity - item.receivedQuantity),

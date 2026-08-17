@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { getCategoryConfig } from "@/lib/product-taxonomy";
 
 type SupplierOption = {
   id: number;
@@ -42,6 +43,7 @@ type PurchaseOrderListItem = {
     productName: string;
     size: string;
     color: string;
+    isPending?: boolean;
     orderedQuantity: number;
     receivedQuantity: number;
     remainingQuantity: number;
@@ -53,10 +55,13 @@ type PurchaseOrderListItem = {
 type DraftLine = {
   key: string;
   identityKey: string;
+  draftKind: "existing" | "pendingVariant" | "pendingProduct";
   variantId: number | null;
-  productId: number;
+  productId: number | null;
   size: string;
   color: string;
+  material?: string;
+  powerWatts?: string;
   quantity: number;
   unitCost: string;
   note: string;
@@ -65,7 +70,7 @@ type DraftLine = {
 
 type DraftGroup = {
   id: string;
-  productId: number;
+  productId: number | null;
   productName: string;
   brand: string | null;
   categoryName: string;
@@ -78,6 +83,7 @@ type PurchaseOrdersManagerProps = {
   receiveAction: (formData: FormData) => void | Promise<void>;
   suppliers: SupplierOption[];
   warehouses: WarehouseOption[];
+  categoryOptions: string[];
   products: CatalogProduct[];
   purchaseOrders: PurchaseOrderListItem[];
   searchQuery: string;
@@ -95,6 +101,25 @@ function buildDraftIdentityKey(productId: number, size: string, color: string) {
     productId,
     color.trim().toLowerCase(),
     size.trim().toLowerCase() || "standard",
+  ].join("::");
+}
+
+function buildPendingProductIdentityKey(
+  categoryName: string,
+  productName: string,
+  color: string,
+  size: string,
+  material?: string,
+  powerWatts?: string,
+) {
+  return [
+    "pending-product",
+    categoryName.trim().toLowerCase(),
+    productName.trim().toLowerCase(),
+    color.trim().toLowerCase(),
+    size.trim().toLowerCase() || "standard",
+    material?.trim().toLowerCase() || "",
+    powerWatts?.trim().toLowerCase() || "",
   ].join("::");
 }
 
@@ -156,6 +181,7 @@ export function PurchaseOrdersManager({
   receiveAction,
   suppliers,
   warehouses,
+  categoryOptions,
   products,
   purchaseOrders,
   searchQuery,
@@ -177,8 +203,18 @@ export function PurchaseOrdersManager({
   const [selectedBrand, setSelectedBrand] = useState("");
   const [selectedProductId, setSelectedProductId] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
+  const [customColor, setCustomColor] = useState("");
   const [selectionMap, setSelectionMap] = useState<Record<string, DraftLine>>({});
   const [customSize, setCustomSize] = useState("");
+  const [pickerMode, setPickerMode] = useState<"existing" | "new">("existing");
+  const [newCategoryName, setNewCategoryName] = useState("");
+  const [newProductName, setNewProductName] = useState("");
+  const [newProductBrand, setNewProductBrand] = useState("");
+  const [newProductColor, setNewProductColor] = useState("");
+  const [newProductSize, setNewProductSize] = useState("");
+  const [newProductMaterial, setNewProductMaterial] = useState("");
+  const [newProductPower, setNewProductPower] = useState("");
+  const [newProductSelections, setNewProductSelections] = useState<DraftLine[]>([]);
   const [draftGroups, setDraftGroups] = useState<DraftGroup[]>([]);
 
   useEffect(() => {
@@ -269,34 +305,86 @@ export function PurchaseOrdersManager({
     [selectedProduct],
   );
 
+  const activeSelectedColor = useMemo(() => {
+    if (selectedColor === "__new__") {
+      return customColor.trim();
+    }
+    return selectedColor.trim();
+  }, [customColor, selectedColor]);
+
   const usedVariantKeys = useMemo(
     () => new Set(draftGroups.flatMap((group) => group.lines.map((line) => line.identityKey))),
     [draftGroups],
   );
 
   const activeVariants = useMemo(() => {
-    if (!selectedProduct || !selectedColor) {
+    if (!selectedProduct || !activeSelectedColor || selectedColor === "__new__") {
       return [];
     }
 
     return selectedProduct.variants
-      .filter((variant) => variant.color === selectedColor)
+      .filter((variant) => variant.color === activeSelectedColor)
       .sort((a, b) => a.size.localeCompare(b.size, undefined, { numeric: true }));
-  }, [selectedProduct, selectedColor]);
+  }, [activeSelectedColor, selectedColor, selectedProduct]);
 
   const isFootwear = selectedProduct
     ? FOOTWEAR_CATEGORIES.has(selectedProduct.categoryName)
     : false;
+  const selectedCategoryConfig = useMemo(
+    () => getCategoryConfig(selectedProduct?.categoryName ?? selectedCategory ?? null),
+    [selectedCategory, selectedProduct],
+  );
+  const newProductCategoryConfig = useMemo(
+    () => getCategoryConfig(newCategoryName || null),
+    [newCategoryName],
+  );
+  const newProductBrandOptions = useMemo(
+    () =>
+      [
+        ...new Set(
+          products
+            .filter((product) =>
+              newCategoryName ? product.categoryName === newCategoryName : true,
+            )
+            .map((product) => product.brand?.trim())
+            .filter(Boolean) as string[],
+        ),
+      ].sort((a, b) => a.localeCompare(b)),
+    [newCategoryName, products],
+  );
+  const newProductModelOptions = useMemo(
+    () =>
+      [
+        ...new Set(
+          products
+            .filter((product) =>
+              newCategoryName ? product.categoryName === newCategoryName : true,
+            )
+            .filter((product) =>
+              newProductBrand.trim() ? (product.brand ?? "").trim() === newProductBrand.trim() : true,
+            )
+            .map((product) => product.name.trim())
+            .filter(Boolean),
+        ),
+      ].sort((a, b) => a.localeCompare(b)),
+    [newCategoryName, newProductBrand, products],
+  );
 
   const itemsPayload = useMemo(
     () =>
       JSON.stringify(
         draftGroups.flatMap((group) =>
           group.lines.map((line) => ({
+            draftKind: line.draftKind,
             variantId: line.variantId,
             productId: line.productId,
+            productName: group.productName,
+            brand: group.brand,
+            categoryName: group.categoryName,
             size: line.size,
             color: line.color,
+            material: line.material ?? "",
+            powerWatts: line.powerWatts ?? "",
             quantity: line.quantity,
             unitCost: Number(line.unitCost || 0),
             note: line.note,
@@ -329,12 +417,22 @@ export function PurchaseOrdersManager({
   const selectionCount = Object.keys(selectionMap).length;
 
   function resetActivePicker() {
+    setPickerMode("existing");
     setSelectedCategory("");
     setSelectedBrand("");
     setSelectedProductId("");
     setSelectedColor("");
+    setCustomColor("");
     setSelectionMap({});
     setCustomSize("");
+    setNewCategoryName("");
+    setNewProductName("");
+    setNewProductBrand("");
+    setNewProductColor("");
+    setNewProductSize("");
+    setNewProductMaterial("");
+    setNewProductPower("");
+    setNewProductSelections([]);
   }
 
   function resetCreateState() {
@@ -365,6 +463,7 @@ export function PurchaseOrdersManager({
     setSelectedBrand("");
     setSelectedProductId("");
     setSelectedColor("");
+    setCustomColor("");
     setSelectionMap({});
     setCustomSize("");
   }
@@ -380,12 +479,14 @@ export function PurchaseOrdersManager({
   function handleProductChange(value: string) {
     setSelectedProductId(value);
     setSelectedColor("");
+    setCustomColor("");
     setSelectionMap({});
     setCustomSize("");
   }
 
   function handleColorChange(value: string) {
     setSelectedColor(value);
+    setCustomColor("");
     setSelectionMap({});
     setCustomSize("");
   }
@@ -409,6 +510,7 @@ export function PurchaseOrdersManager({
         [lineKey]: {
           key: lineKey,
           identityKey: lineKey,
+          draftKind: "existing",
           variantId: variant.id,
           productId: selectedProduct?.id ?? 0,
           size: variant.size,
@@ -445,7 +547,7 @@ export function PurchaseOrdersManager({
   }
 
   function addCustomSizeSelection() {
-    if (!selectedProduct || !selectedColor) {
+    if (!selectedProduct || !activeSelectedColor) {
       return;
     }
 
@@ -454,7 +556,7 @@ export function PurchaseOrdersManager({
       return;
     }
 
-    const lineKey = buildDraftIdentityKey(selectedProduct.id, normalizedSize, selectedColor);
+    const lineKey = buildDraftIdentityKey(selectedProduct.id, normalizedSize, activeSelectedColor);
     if (usedVariantKeys.has(lineKey)) {
       return;
     }
@@ -469,10 +571,13 @@ export function PurchaseOrdersManager({
         [lineKey]: {
           key: lineKey,
           identityKey: lineKey,
+          draftKind: "pendingVariant",
           variantId: null,
           productId: selectedProduct.id,
           size: normalizedSize,
-          color: selectedColor,
+          color: activeSelectedColor,
+          material: undefined,
+          powerWatts: undefined,
           quantity: 1,
           unitCost: activeVariants[0]?.price?.toFixed(2) ?? "0.00",
           note: "",
@@ -485,7 +590,7 @@ export function PurchaseOrdersManager({
   }
 
   function addCurrentSelection() {
-    if (!selectedProduct || !selectedColor) {
+    if (!selectedProduct || !activeSelectedColor) {
       return;
     }
 
@@ -504,14 +609,107 @@ export function PurchaseOrdersManager({
         productName: selectedProduct.name,
         brand: selectedProduct.brand,
         categoryName: selectedProduct.categoryName,
-        color: selectedColor,
+        color: activeSelectedColor,
         lines,
       },
     ]);
 
     setSelectedProductId("");
     setSelectedColor("");
+    setCustomColor("");
     setSelectionMap({});
+  }
+
+  function addPendingProductLine() {
+    const normalizedCategory = newCategoryName.trim();
+    const normalizedProductName = newProductName.trim();
+    const normalizedColor = newProductColor.trim();
+
+    if (
+      !normalizedCategory ||
+      !normalizedProductName ||
+      !normalizedColor ||
+      newProductSelections.length === 0
+    ) {
+      return;
+    }
+
+    setDraftGroups((current) => [
+      ...current,
+      {
+        id: createGroupId(),
+        productId: null,
+        productName: normalizedProductName,
+        brand: newProductBrand.trim() || null,
+        categoryName: normalizedCategory,
+        color: normalizedColor,
+        lines: newProductSelections,
+      },
+    ]);
+
+    setNewProductColor("");
+    setNewProductSelections([]);
+  }
+
+  function addNewProductSelection() {
+    const normalizedCategory = newCategoryName.trim();
+    const normalizedProductName = newProductName.trim();
+    const normalizedColor = newProductColor.trim();
+    const normalizedSize = newProductSize.trim();
+    const normalizedMaterial = newProductMaterial.trim();
+    const normalizedPower = newProductPower.trim();
+
+    if (!normalizedCategory || !normalizedProductName || !normalizedColor || !normalizedSize) {
+      return;
+    }
+
+    const identityKey = buildPendingProductIdentityKey(
+      normalizedCategory,
+      normalizedProductName,
+      normalizedColor,
+      normalizedSize,
+      normalizedMaterial,
+      normalizedPower,
+    );
+
+    if (usedVariantKeys.has(identityKey)) {
+      return;
+    }
+
+    setNewProductSelections((current) => {
+      if (current.some((line) => line.identityKey === identityKey)) {
+        return current;
+      }
+
+      return [
+        ...current,
+        {
+          key: identityKey,
+          identityKey,
+          draftKind: "pendingProduct",
+          variantId: null,
+          productId: null,
+          size: normalizedSize,
+          color: normalizedColor,
+          material: normalizedMaterial || undefined,
+          powerWatts: normalizedPower || undefined,
+          quantity: 1,
+          unitCost: "0.00",
+          note: "",
+          isCustom: true,
+        },
+      ];
+    });
+
+    setNewProductSize("");
+    setNewProductMaterial("");
+    setNewProductPower("");
+  }
+
+  function removeNewProductSelection(identityKey: string) {
+    setNewProductSelections((current) =>
+      current.filter((line) => line.identityKey !== identityKey),
+    );
   }
 
   function removeGroup(groupId: string) {
@@ -918,164 +1116,254 @@ export function PurchaseOrdersManager({
                     </div>
 
                     <div className="grid gap-4 md:grid-cols-2">
-                      <label className="grid gap-2 text-sm font-medium text-slate-700">
-                        Category
-                        <select
-                          value={selectedCategory}
-                          onChange={(event) => handleCategoryChange(event.target.value)}
-                          className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100"
-                        >
-                          <option value="">Select category</option>
-                          {categories.map((category) => (
-                            <option key={category} value={category}>
-                              {category}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
+                      <div className="md:col-span-2">
+                        <div className="inline-flex rounded-2xl border border-emerald-100 bg-emerald-50/60 p-1">
+                          <button
+                            type="button"
+                            onClick={() => setPickerMode("existing")}
+                            className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${pickerMode === "existing" ? "bg-white text-emerald-700 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}
+                          >
+                            Produkt ekzistues
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setPickerMode("new")}
+                            className={`rounded-xl px-4 py-2 text-sm font-semibold transition ${pickerMode === "new" ? "bg-white text-emerald-700 shadow-sm" : "text-slate-600 hover:text-slate-900"}`}
+                          >
+                            Produkt i ri
+                          </button>
+                        </div>
+                      </div>
 
-                      <label className="grid gap-2 text-sm font-medium text-slate-700">
-                        Brand
-                        <select
-                          value={selectedBrand}
-                          onChange={(event) => handleBrandChange(event.target.value)}
-                          disabled={!shouldShowBrand}
-                          className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition disabled:cursor-not-allowed disabled:bg-slate-50 focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100"
-                        >
-                          <option value="">
-                            {shouldShowBrand ? "Select brand" : "No brand filter"}
-                          </option>
-                          {brandOptions.map((brand) => (
-                            <option key={brand} value={brand}>
-                              {brand}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
+                      {pickerMode === "existing" ? (
+                        <>
+                          <label className="grid gap-2 text-sm font-medium text-slate-700">
+                            Category
+                            <select
+                              value={selectedCategory}
+                              onChange={(event) => handleCategoryChange(event.target.value)}
+                              className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100"
+                            >
+                              <option value="">Select category</option>
+                              {categories.map((category) => (
+                                <option key={category} value={category}>
+                                  {category}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
 
-                      <label className="grid gap-2 text-sm font-medium text-slate-700">
-                        Model
-                        <select
-                          value={selectedProductId}
-                          onChange={(event) => handleProductChange(event.target.value)}
-                          disabled={productOptions.length === 0}
-                          className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition disabled:cursor-not-allowed disabled:bg-slate-50 focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100"
-                        >
-                          <option value="">Select model</option>
-                          {productOptions.map((product) => (
-                            <option key={product.id} value={product.id}>
-                              {product.brand ? `${product.brand} - ${product.name}` : product.name}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
+                          <label className="grid gap-2 text-sm font-medium text-slate-700">
+                            Brand
+                            <select
+                              value={selectedBrand}
+                              onChange={(event) => handleBrandChange(event.target.value)}
+                              disabled={!shouldShowBrand}
+                              className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition disabled:cursor-not-allowed disabled:bg-slate-50 focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100"
+                            >
+                              <option value="">{shouldShowBrand ? "Select brand" : "No brand filter"}</option>
+                              {brandOptions.map((brand) => (
+                                <option key={brand} value={brand}>
+                                  {brand}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
 
-                      <label className="grid gap-2 text-sm font-medium text-slate-700">
-                        Color
-                        <select
-                          value={selectedColor}
-                          onChange={(event) => handleColorChange(event.target.value)}
-                          disabled={colorOptions.length === 0}
-                          className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition disabled:cursor-not-allowed disabled:bg-slate-50 focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100"
-                        >
-                          <option value="">Select color</option>
-                          {colorOptions.map((color) => (
-                            <option key={color} value={color}>
-                              {color}
-                            </option>
-                          ))}
-                        </select>
-                      </label>
+                          <label className="grid gap-2 text-sm font-medium text-slate-700">
+                            Model
+                            <select
+                              value={selectedProductId}
+                              onChange={(event) => handleProductChange(event.target.value)}
+                              disabled={productOptions.length === 0}
+                              className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition disabled:cursor-not-allowed disabled:bg-slate-50 focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100"
+                            >
+                              <option value="">Select model</option>
+                              {productOptions.map((product) => (
+                                <option key={product.id} value={product.id}>
+                                  {product.brand ? `${product.brand} - ${product.name}` : product.name}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+
+                          <label className="grid gap-2 text-sm font-medium text-slate-700">
+                            Color
+                            <select
+                              value={selectedColor}
+                              onChange={(event) => handleColorChange(event.target.value)}
+                              disabled={!selectedProduct}
+                              className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition disabled:cursor-not-allowed disabled:bg-slate-50 focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100"
+                            >
+                              <option value="">Select color</option>
+                              {colorOptions.map((color) => (
+                                <option key={color} value={color}>
+                                  {color}
+                                </option>
+                              ))}
+                              {selectedProduct ? <option value="__new__">Ngjyre e re...</option> : null}
+                            </select>
+                          </label>
+                        </>
+                      ) : (
+                        <>
+                          <label className="grid gap-2 text-sm font-medium text-slate-700">
+                            Category
+                            <select
+                              value={newCategoryName}
+                              onChange={(event) => setNewCategoryName(event.target.value)}
+                              className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100"
+                            >
+                              <option value="">Select category</option>
+                              {categoryOptions.map((category) => (
+                                <option key={category} value={category}>
+                                  {category}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+
+                          <label className="grid gap-2 text-sm font-medium text-slate-700">
+                            Brand
+                            <input
+                              type="text"
+                              list="purchase-new-brand-options"
+                              value={newProductBrand}
+                              onChange={(event) => setNewProductBrand(event.target.value)}
+                              placeholder="Zgjedh brand ose shkruaj te ri"
+                              className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100"
+                            />
+                            <datalist id="purchase-new-brand-options">
+                              {newProductBrandOptions.map((brand) => (
+                                <option key={brand} value={brand} />
+                              ))}
+                            </datalist>
+                          </label>
+
+                          <label className="grid gap-2 text-sm font-medium text-slate-700">
+                            Model
+                            <input
+                              type="text"
+                              list="purchase-new-model-options"
+                              value={newProductName}
+                              onChange={(event) => setNewProductName(event.target.value)}
+                              placeholder="Zgjedh model ose shkruaj te ri"
+                              className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100"
+                            />
+                            <datalist id="purchase-new-model-options">
+                              {newProductModelOptions.map((model) => (
+                                <option key={model} value={model} />
+                              ))}
+                            </datalist>
+                          </label>
+
+                          <label className="grid gap-2 text-sm font-medium text-slate-700">
+                            Color
+                            <input
+                              type="text"
+                              value={newProductColor}
+                              onChange={(event) => setNewProductColor(event.target.value)}
+                              placeholder={newProductCategoryConfig.colorPlaceholder}
+                              className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100"
+                            />
+                          </label>
+                        </>
+                      )}
                     </div>
 
                     <div className="mt-5 rounded-[24px] border border-slate-200 bg-slate-50/55 p-4">
-                      {selectedProduct ? (
-                        <div>
-                          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                            <div>
-                              <p className="text-base font-semibold text-slate-950">
-                                {selectedProduct.brand
-                                  ? `${selectedProduct.brand} ${selectedProduct.name}`
-                                  : selectedProduct.name}
-                              </p>
-                              <p className="mt-1 text-sm text-slate-500">
-                                {selectedProduct.categoryName}
-                                {selectedColor ? ` / ${selectedColor}` : ""}
-                              </p>
-                            </div>
-                            <button
-                              type="button"
-                              onClick={addCurrentSelection}
-                              disabled={selectionCount === 0}
-                              className="inline-flex items-center justify-center rounded-2xl border border-emerald-300 bg-white px-4 py-2.5 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-50"
-                            >
-                              Add selected
-                            </button>
-                          </div>
-
-                          {selectedColor ? (
-                            <div className="mt-4 space-y-4">
-                              <div
-                                className={`${isFootwear ? "grid grid-cols-2 gap-3 sm:grid-cols-3" : "space-y-3"}`}
-                              >
-                              {activeVariants.map((variant) => {
-                                const lineKey = buildDraftIdentityKey(
-                                  selectedProduct.id,
-                                  variant.size,
-                                  variant.color,
-                                );
-                                const selected = Boolean(selectionMap[lineKey]);
-                                const disabled = usedVariantKeys.has(lineKey);
-
-                                return (
-                                  <div
-                                    key={variant.id}
-                                    className={`rounded-2xl border p-3 transition ${
-                                      selected
-                                        ? "border-emerald-300 bg-emerald-50"
-                                        : "border-slate-200 bg-white"
-                                    } ${disabled ? "opacity-50" : ""}`}
-                                  >
-                                    <button
-                                      type="button"
-                                      onClick={() => toggleVariantSelection(variant)}
-                                      disabled={disabled}
-                                      className={`w-full text-left ${disabled ? "cursor-not-allowed" : ""}`}
-                                    >
-                                      <div className="flex items-center justify-between gap-2">
-                                        <div>
-                                          <p className="text-sm font-semibold text-slate-950">
-                                            {variant.size || "Standard"}
-                                          </p>
-                                          <p className="mt-1 text-xs text-slate-500">
-                                            {variant.price.toFixed(2)} EUR
-                                          </p>
-                                        </div>
-                                        <span
-                                          className={`h-5 w-5 rounded-full border ${
-                                            selected
-                                              ? "border-emerald-500 bg-emerald-500"
-                                              : "border-slate-300 bg-white"
-                                          }`}
-                                        />
-                                      </div>
-                                    </button>
-                                  </div>
-                                );
-                              })}
+                      {pickerMode === "existing" ? (
+                        selectedProduct ? (
+                          <div>
+                            <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+                              <div>
+                                <p className="text-base font-semibold text-slate-950">
+                                  {selectedProduct.brand ? `${selectedProduct.brand} ${selectedProduct.name}` : selectedProduct.name}
+                                </p>
+                                <p className="mt-1 text-sm text-slate-500">
+                                  {selectedProduct.categoryName}
+                                  {activeSelectedColor ? ` / ${activeSelectedColor}` : ""}
+                                </p>
                               </div>
+                              <button
+                                type="button"
+                                onClick={addCurrentSelection}
+                                disabled={selectionCount === 0}
+                                className="inline-flex items-center justify-center rounded-2xl border border-emerald-300 bg-white px-4 py-2.5 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                Add selected
+                              </button>
+                            </div>
 
-                              {isFootwear && selectedProduct ? (
+                            {selectedColor === "__new__" ? (
+                              <div className="mt-4">
+                                <label className="grid gap-2 text-sm font-medium text-slate-700">
+                                  Emri i ngjyres se re
+                                  <input
+                                    type="text"
+                                    value={customColor}
+                                    onChange={(event) => setCustomColor(event.target.value)}
+                                    placeholder={selectedCategoryConfig.colorPlaceholder}
+                                    className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100"
+                                  />
+                                </label>
+                              </div>
+                            ) : null}
+
+                            {activeSelectedColor ? (
+                              <div className="mt-4 space-y-4">
+                                {activeVariants.length > 0 ? (
+                                  <div className={`${isFootwear ? "grid grid-cols-2 gap-3 sm:grid-cols-3" : "space-y-3"}`}>
+                                    {activeVariants.map((variant) => {
+                                      const lineKey = buildDraftIdentityKey(selectedProduct.id, variant.size, variant.color);
+                                      const selected = Boolean(selectionMap[lineKey]);
+                                      const disabled = usedVariantKeys.has(lineKey);
+
+                                      return (
+                                        <div
+                                          key={variant.id}
+                                          className={`rounded-2xl border p-3 transition ${selected ? "border-emerald-300 bg-emerald-50" : "border-slate-200 bg-white"} ${disabled ? "opacity-50" : ""}`}
+                                        >
+                                          <button
+                                            type="button"
+                                            onClick={() => toggleVariantSelection(variant)}
+                                            disabled={disabled}
+                                            className={`w-full text-left ${disabled ? "cursor-not-allowed" : ""}`}
+                                          >
+                                            <div className="flex items-center justify-between gap-2">
+                                              <div>
+                                                <p className="text-sm font-semibold text-slate-950">
+                                                  {variant.size || "Standard"}
+                                                </p>
+                                                <p className="mt-1 text-xs text-slate-500">
+                                                  {variant.price.toFixed(2)} EUR
+                                                </p>
+                                              </div>
+                                              <span
+                                                className={`h-5 w-5 rounded-full border ${selected ? "border-emerald-500 bg-emerald-500" : "border-slate-300 bg-white"}`}
+                                              />
+                                            </div>
+                                          </button>
+                                        </div>
+                                      );
+                                    })}
+                                  </div>
+                                ) : (
+                                  <div className="rounded-2xl border border-amber-200 bg-amber-50/70 p-3 text-sm text-amber-800">
+                                    Nuk ka variante ekzistuese per kete ngjyre. Shto variantet si pending me fushen me poshte.
+                                  </div>
+                                )}
+
                                 <div className="rounded-2xl border border-dashed border-emerald-200 bg-emerald-50/50 p-3">
                                   <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">
-                                    Shto numer qe nuk eshte ne sistem
+                                    {selectedCategoryConfig.sizeLabel}
                                   </p>
                                   <div className="mt-3 flex flex-col gap-3 sm:flex-row">
                                     <input
                                       type="text"
                                       value={customSize}
                                       onChange={(event) => setCustomSize(event.target.value)}
-                                      placeholder="p.sh. 45"
+                                      placeholder={selectedCategoryConfig.sizePlaceholder}
                                       className="min-w-0 flex-1 rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100"
                                     />
                                     <button
@@ -1083,42 +1371,154 @@ export function PurchaseOrdersManager({
                                       onClick={addCustomSizeSelection}
                                       className="inline-flex items-center justify-center rounded-2xl border border-emerald-300 bg-white px-4 py-3 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50"
                                     >
-                                      Shto numer
+                                      Shto variant pending
                                     </button>
                                   </div>
                                 </div>
-                              ) : null}
-
-                              {!isFootwear ? (
-                                <div className="rounded-2xl border border-slate-200 bg-slate-50/60 p-3 text-xs text-slate-500">
-                                  Sasinë dhe koston mund t'i rregullosh më poshtë te tabela e order items.
-                                </div>
-                              ) : null}
-                            </div>
-                          ) : (
-                            <p className="mt-4 text-sm text-slate-500">
-                              Zgjedh ngjyren per me pa variantet.
-                            </p>
-                          )}
-                        </div>
-                      ) : (
-                        <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                          <div className="flex h-28 w-28 items-center justify-center rounded-[22px] border border-slate-200 bg-white text-slate-300">
-                            <svg
-                              viewBox="0 0 24 24"
-                              className="h-8 w-8 fill-none stroke-current stroke-[1.7]"
-                            >
-                              <path d="M7 7h10v10H7z" />
-                              <path d="m9 13 2 2 4-4" />
-                            </svg>
+                              </div>
+                            ) : (
+                              <p className="mt-4 text-sm text-slate-500">
+                                Zgjedh ngjyren ose shkruaj ngjyre te re.
+                              </p>
+                            )}
                           </div>
-                          <div>
-                            <p className="text-lg font-semibold text-slate-900">
-                              No product selected
+                        ) : (
+                          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+                            <div className="flex h-28 w-28 items-center justify-center rounded-[22px] border border-slate-200 bg-white text-slate-300">
+                              <svg viewBox="0 0 24 24" className="h-8 w-8 fill-none stroke-current stroke-[1.7]">
+                                <path d="M7 7h10v10H7z" />
+                                <path d="m9 13 2 2 4-4" />
+                              </svg>
+                            </div>
+                            <div>
+                              <p className="text-lg font-semibold text-slate-900">No product selected</p>
+                              <p className="mt-2 text-sm text-slate-500">
+                                Choose a product and variants to add to the order.
+                              </p>
+                            </div>
+                          </div>
+                        )
+                      ) : (
+                        <div className="space-y-4">
+                          <div className="grid gap-4 md:grid-cols-2">
+                            <label className="grid gap-2 text-sm font-medium text-slate-700">
+                              {newProductCategoryConfig.sizeLabel}
+                              <input
+                                type="text"
+                                value={newProductSize}
+                                onChange={(event) => setNewProductSize(event.target.value)}
+                                placeholder={newProductCategoryConfig.sizePlaceholder}
+                                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100"
+                              />
+                            </label>
+
+                            {newProductCategoryConfig.showMaterialField ? (
+                              <label className="grid gap-2 text-sm font-medium text-slate-700">
+                                {newProductCategoryConfig.materialLabel}
+                                <input
+                                  type="text"
+                                  value={newProductMaterial}
+                                  onChange={(event) => setNewProductMaterial(event.target.value)}
+                                  placeholder={newProductCategoryConfig.materialPlaceholder}
+                                  className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100"
+                                />
+                              </label>
+                            ) : null}
+
+                            {newProductCategoryConfig.showPowerField ? (
+                              <label className="grid gap-2 text-sm font-medium text-slate-700">
+                                {newProductCategoryConfig.powerLabel}
+                                <input
+                                  type="text"
+                                  value={newProductPower}
+                                  onChange={(event) => setNewProductPower(event.target.value)}
+                                  placeholder={newProductCategoryConfig.powerPlaceholder}
+                                  className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100"
+                                />
+                              </label>
+                            ) : null}
+                          </div>
+
+                          <div className="flex flex-col gap-2 rounded-xl border border-dashed border-emerald-200 bg-emerald-50/45 px-3 py-2.5 sm:flex-row sm:items-center sm:justify-between">
+                            <p className="text-xs text-slate-600 sm:text-sm">
+                              Shto nje madhesi/variant ne liste, pastaj mundesh me shtu tjetrin.
                             </p>
-                            <p className="mt-2 text-sm text-slate-500">
-                              Choose a product and variants to add to the order.
+                            <button
+                              type="button"
+                              onClick={addNewProductSelection}
+                              className="inline-flex items-center justify-center rounded-xl border border-emerald-300 bg-white px-3 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50"
+                            >
+                              Shto variant ne liste
+                            </button>
+                          </div>
+
+                          {newProductSelections.length > 0 ? (
+                            <div className="rounded-xl border border-slate-200 bg-white p-3">
+                              <div className="flex flex-wrap items-center justify-between gap-2">
+                                <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
+                                  Variantet qe do te krijohen
+                                </p>
+                                <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
+                                  {newProductSelections.length}
+                                </span>
+                              </div>
+                              <div className="mt-2 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+                                {newProductSelections.map((line) => (
+                                  <div
+                                    key={line.identityKey}
+                                    className="rounded-2xl border border-slate-200 bg-[linear-gradient(180deg,#ffffff_0%,#f8fbfa_100%)] px-3 py-2.5 shadow-[0_6px_16px_rgba(15,23,42,0.035)]"
+                                  >
+                                    <div className="flex items-start justify-between gap-2">
+                                      <div>
+                                        <p className="text-sm font-semibold text-slate-950">
+                                          {line.size || "Standard"}
+                                        </p>
+                                        <p className="mt-0.5 text-xs text-slate-600">
+                                          {line.color}
+                                        </p>
+                                      </div>
+                                      <button
+                                        type="button"
+                                        onClick={() => removeNewProductSelection(line.identityKey)}
+                                        className="inline-flex h-8 min-w-8 items-center justify-center rounded-lg border border-rose-200 bg-rose-50 px-2.5 text-[11px] font-semibold text-rose-600 transition hover:bg-rose-100"
+                                      >
+                                        Largo
+                                      </button>
+                                    </div>
+
+                                    <div className="mt-2 flex flex-wrap items-center gap-1.5 text-xs text-slate-600">
+                                      <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[11px] font-semibold text-emerald-700">
+                                        Pending
+                                      </span>
+                                      {line.material ? (
+                                        <span className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[11px]">
+                                          {line.material}
+                                        </span>
+                                      ) : null}
+                                      {line.powerWatts ? (
+                                        <span className="rounded-full border border-slate-200 bg-white px-2 py-0.5 text-[11px]">
+                                          {line.powerWatts}
+                                        </span>
+                                      ) : null}
+                                    </div>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          ) : null}
+
+                          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                            <p className="text-xs leading-5 text-slate-500 sm:text-sm">
+                              Ky produkt ruhet vetem brenda purchase order dhe krijohet realisht kur ben receive.
                             </p>
+                            <button
+                              type="button"
+                              onClick={addPendingProductLine}
+                              disabled={newProductSelections.length === 0}
+                              className="inline-flex items-center justify-center rounded-xl border border-emerald-300 bg-white px-3 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50"
+                            >
+                              Shto produkt pending
+                            </button>
                           </div>
                         </div>
                       )}
@@ -1276,9 +1676,13 @@ export function PurchaseOrdersManager({
                                   <span>
                                     {line.color} / {line.size || "Standard"}
                                   </span>
-                                  {line.isCustom ? (
+                                  {line.draftKind === "pendingProduct" ? (
+                                    <span className="rounded-full border border-sky-200 bg-sky-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-sky-700">
+                                      Produkt pending
+                                    </span>
+                                  ) : line.draftKind === "pendingVariant" || line.isCustom ? (
                                     <span className="rounded-full border border-amber-200 bg-amber-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em] text-amber-700">
-                                      I ri
+                                      Variant pending
                                     </span>
                                   ) : null}
                                 </div>

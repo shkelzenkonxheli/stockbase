@@ -2239,6 +2239,14 @@ export const PurchaseOrderItemScalarFieldEnum = {
   receivedQuantity: 'receivedQuantity',
   unitCost: 'unitCost',
   note: 'note',
+  pendingProductName: 'pendingProductName',
+  pendingBrand: 'pendingBrand',
+  pendingCategoryName: 'pendingCategoryName',
+  pendingColor: 'pendingColor',
+  pendingSize: 'pendingSize',
+  pendingMaterial: 'pendingMaterial',
+  pendingPowerWatts: 'pendingPowerWatts',
+  pendingVariantIdentityKey: 'pendingVariantIdentityKey',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const

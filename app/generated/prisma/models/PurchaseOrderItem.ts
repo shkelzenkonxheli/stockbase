@@ -55,6 +55,14 @@ export type PurchaseOrderItemMinAggregateOutputType = {
   receivedQuantity: number | null
   unitCost: runtime.Decimal | null
   note: string | null
+  pendingProductName: string | null
+  pendingBrand: string | null
+  pendingCategoryName: string | null
+  pendingColor: string | null
+  pendingSize: string | null
+  pendingMaterial: string | null
+  pendingPowerWatts: string | null
+  pendingVariantIdentityKey: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -68,6 +76,14 @@ export type PurchaseOrderItemMaxAggregateOutputType = {
   receivedQuantity: number | null
   unitCost: runtime.Decimal | null
   note: string | null
+  pendingProductName: string | null
+  pendingBrand: string | null
+  pendingCategoryName: string | null
+  pendingColor: string | null
+  pendingSize: string | null
+  pendingMaterial: string | null
+  pendingPowerWatts: string | null
+  pendingVariantIdentityKey: string | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -81,6 +97,14 @@ export type PurchaseOrderItemCountAggregateOutputType = {
   receivedQuantity: number
   unitCost: number
   note: number
+  pendingProductName: number
+  pendingBrand: number
+  pendingCategoryName: number
+  pendingColor: number
+  pendingSize: number
+  pendingMaterial: number
+  pendingPowerWatts: number
+  pendingVariantIdentityKey: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -116,6 +140,14 @@ export type PurchaseOrderItemMinAggregateInputType = {
   receivedQuantity?: true
   unitCost?: true
   note?: true
+  pendingProductName?: true
+  pendingBrand?: true
+  pendingCategoryName?: true
+  pendingColor?: true
+  pendingSize?: true
+  pendingMaterial?: true
+  pendingPowerWatts?: true
+  pendingVariantIdentityKey?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -129,6 +161,14 @@ export type PurchaseOrderItemMaxAggregateInputType = {
   receivedQuantity?: true
   unitCost?: true
   note?: true
+  pendingProductName?: true
+  pendingBrand?: true
+  pendingCategoryName?: true
+  pendingColor?: true
+  pendingSize?: true
+  pendingMaterial?: true
+  pendingPowerWatts?: true
+  pendingVariantIdentityKey?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -142,6 +182,14 @@ export type PurchaseOrderItemCountAggregateInputType = {
   receivedQuantity?: true
   unitCost?: true
   note?: true
+  pendingProductName?: true
+  pendingBrand?: true
+  pendingCategoryName?: true
+  pendingColor?: true
+  pendingSize?: true
+  pendingMaterial?: true
+  pendingPowerWatts?: true
+  pendingVariantIdentityKey?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -236,12 +284,20 @@ export type PurchaseOrderItemGroupByArgs<ExtArgs extends runtime.Types.Extension
 export type PurchaseOrderItemGroupByOutputType = {
   id: number
   purchaseOrderId: number
-  productId: number
-  variantId: number
+  productId: number | null
+  variantId: number | null
   orderedQuantity: number
   receivedQuantity: number
   unitCost: runtime.Decimal
   note: string | null
+  pendingProductName: string | null
+  pendingBrand: string | null
+  pendingCategoryName: string | null
+  pendingColor: string | null
+  pendingSize: string | null
+  pendingMaterial: string | null
+  pendingPowerWatts: string | null
+  pendingVariantIdentityKey: string | null
   createdAt: Date
   updatedAt: Date
   _count: PurchaseOrderItemCountAggregateOutputType | null
@@ -272,28 +328,44 @@ export type PurchaseOrderItemWhereInput = {
   NOT?: Prisma.PurchaseOrderItemWhereInput | Prisma.PurchaseOrderItemWhereInput[]
   id?: Prisma.IntFilter<"PurchaseOrderItem"> | number
   purchaseOrderId?: Prisma.IntFilter<"PurchaseOrderItem"> | number
-  productId?: Prisma.IntFilter<"PurchaseOrderItem"> | number
-  variantId?: Prisma.IntFilter<"PurchaseOrderItem"> | number
+  productId?: Prisma.IntNullableFilter<"PurchaseOrderItem"> | number | null
+  variantId?: Prisma.IntNullableFilter<"PurchaseOrderItem"> | number | null
   orderedQuantity?: Prisma.IntFilter<"PurchaseOrderItem"> | number
   receivedQuantity?: Prisma.IntFilter<"PurchaseOrderItem"> | number
   unitCost?: Prisma.DecimalFilter<"PurchaseOrderItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: Prisma.StringNullableFilter<"PurchaseOrderItem"> | string | null
+  pendingProductName?: Prisma.StringNullableFilter<"PurchaseOrderItem"> | string | null
+  pendingBrand?: Prisma.StringNullableFilter<"PurchaseOrderItem"> | string | null
+  pendingCategoryName?: Prisma.StringNullableFilter<"PurchaseOrderItem"> | string | null
+  pendingColor?: Prisma.StringNullableFilter<"PurchaseOrderItem"> | string | null
+  pendingSize?: Prisma.StringNullableFilter<"PurchaseOrderItem"> | string | null
+  pendingMaterial?: Prisma.StringNullableFilter<"PurchaseOrderItem"> | string | null
+  pendingPowerWatts?: Prisma.StringNullableFilter<"PurchaseOrderItem"> | string | null
+  pendingVariantIdentityKey?: Prisma.StringNullableFilter<"PurchaseOrderItem"> | string | null
   createdAt?: Prisma.DateTimeFilter<"PurchaseOrderItem"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"PurchaseOrderItem"> | Date | string
   purchaseOrder?: Prisma.XOR<Prisma.PurchaseOrderScalarRelationFilter, Prisma.PurchaseOrderWhereInput>
-  product?: Prisma.XOR<Prisma.ProductScalarRelationFilter, Prisma.ProductWhereInput>
-  variant?: Prisma.XOR<Prisma.VariantScalarRelationFilter, Prisma.VariantWhereInput>
+  product?: Prisma.XOR<Prisma.ProductNullableScalarRelationFilter, Prisma.ProductWhereInput> | null
+  variant?: Prisma.XOR<Prisma.VariantNullableScalarRelationFilter, Prisma.VariantWhereInput> | null
 }
 
 export type PurchaseOrderItemOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   purchaseOrderId?: Prisma.SortOrder
-  productId?: Prisma.SortOrder
-  variantId?: Prisma.SortOrder
+  productId?: Prisma.SortOrderInput | Prisma.SortOrder
+  variantId?: Prisma.SortOrderInput | Prisma.SortOrder
   orderedQuantity?: Prisma.SortOrder
   receivedQuantity?: Prisma.SortOrder
   unitCost?: Prisma.SortOrder
   note?: Prisma.SortOrderInput | Prisma.SortOrder
+  pendingProductName?: Prisma.SortOrderInput | Prisma.SortOrder
+  pendingBrand?: Prisma.SortOrderInput | Prisma.SortOrder
+  pendingCategoryName?: Prisma.SortOrderInput | Prisma.SortOrder
+  pendingColor?: Prisma.SortOrderInput | Prisma.SortOrder
+  pendingSize?: Prisma.SortOrderInput | Prisma.SortOrder
+  pendingMaterial?: Prisma.SortOrderInput | Prisma.SortOrder
+  pendingPowerWatts?: Prisma.SortOrderInput | Prisma.SortOrder
+  pendingVariantIdentityKey?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   purchaseOrder?: Prisma.PurchaseOrderOrderByWithRelationInput
@@ -307,28 +379,44 @@ export type PurchaseOrderItemWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.PurchaseOrderItemWhereInput[]
   NOT?: Prisma.PurchaseOrderItemWhereInput | Prisma.PurchaseOrderItemWhereInput[]
   purchaseOrderId?: Prisma.IntFilter<"PurchaseOrderItem"> | number
-  productId?: Prisma.IntFilter<"PurchaseOrderItem"> | number
-  variantId?: Prisma.IntFilter<"PurchaseOrderItem"> | number
+  productId?: Prisma.IntNullableFilter<"PurchaseOrderItem"> | number | null
+  variantId?: Prisma.IntNullableFilter<"PurchaseOrderItem"> | number | null
   orderedQuantity?: Prisma.IntFilter<"PurchaseOrderItem"> | number
   receivedQuantity?: Prisma.IntFilter<"PurchaseOrderItem"> | number
   unitCost?: Prisma.DecimalFilter<"PurchaseOrderItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: Prisma.StringNullableFilter<"PurchaseOrderItem"> | string | null
+  pendingProductName?: Prisma.StringNullableFilter<"PurchaseOrderItem"> | string | null
+  pendingBrand?: Prisma.StringNullableFilter<"PurchaseOrderItem"> | string | null
+  pendingCategoryName?: Prisma.StringNullableFilter<"PurchaseOrderItem"> | string | null
+  pendingColor?: Prisma.StringNullableFilter<"PurchaseOrderItem"> | string | null
+  pendingSize?: Prisma.StringNullableFilter<"PurchaseOrderItem"> | string | null
+  pendingMaterial?: Prisma.StringNullableFilter<"PurchaseOrderItem"> | string | null
+  pendingPowerWatts?: Prisma.StringNullableFilter<"PurchaseOrderItem"> | string | null
+  pendingVariantIdentityKey?: Prisma.StringNullableFilter<"PurchaseOrderItem"> | string | null
   createdAt?: Prisma.DateTimeFilter<"PurchaseOrderItem"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"PurchaseOrderItem"> | Date | string
   purchaseOrder?: Prisma.XOR<Prisma.PurchaseOrderScalarRelationFilter, Prisma.PurchaseOrderWhereInput>
-  product?: Prisma.XOR<Prisma.ProductScalarRelationFilter, Prisma.ProductWhereInput>
-  variant?: Prisma.XOR<Prisma.VariantScalarRelationFilter, Prisma.VariantWhereInput>
+  product?: Prisma.XOR<Prisma.ProductNullableScalarRelationFilter, Prisma.ProductWhereInput> | null
+  variant?: Prisma.XOR<Prisma.VariantNullableScalarRelationFilter, Prisma.VariantWhereInput> | null
 }, "id">
 
 export type PurchaseOrderItemOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   purchaseOrderId?: Prisma.SortOrder
-  productId?: Prisma.SortOrder
-  variantId?: Prisma.SortOrder
+  productId?: Prisma.SortOrderInput | Prisma.SortOrder
+  variantId?: Prisma.SortOrderInput | Prisma.SortOrder
   orderedQuantity?: Prisma.SortOrder
   receivedQuantity?: Prisma.SortOrder
   unitCost?: Prisma.SortOrder
   note?: Prisma.SortOrderInput | Prisma.SortOrder
+  pendingProductName?: Prisma.SortOrderInput | Prisma.SortOrder
+  pendingBrand?: Prisma.SortOrderInput | Prisma.SortOrder
+  pendingCategoryName?: Prisma.SortOrderInput | Prisma.SortOrder
+  pendingColor?: Prisma.SortOrderInput | Prisma.SortOrder
+  pendingSize?: Prisma.SortOrderInput | Prisma.SortOrder
+  pendingMaterial?: Prisma.SortOrderInput | Prisma.SortOrder
+  pendingPowerWatts?: Prisma.SortOrderInput | Prisma.SortOrder
+  pendingVariantIdentityKey?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.PurchaseOrderItemCountOrderByAggregateInput
@@ -344,12 +432,20 @@ export type PurchaseOrderItemScalarWhereWithAggregatesInput = {
   NOT?: Prisma.PurchaseOrderItemScalarWhereWithAggregatesInput | Prisma.PurchaseOrderItemScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"PurchaseOrderItem"> | number
   purchaseOrderId?: Prisma.IntWithAggregatesFilter<"PurchaseOrderItem"> | number
-  productId?: Prisma.IntWithAggregatesFilter<"PurchaseOrderItem"> | number
-  variantId?: Prisma.IntWithAggregatesFilter<"PurchaseOrderItem"> | number
+  productId?: Prisma.IntNullableWithAggregatesFilter<"PurchaseOrderItem"> | number | null
+  variantId?: Prisma.IntNullableWithAggregatesFilter<"PurchaseOrderItem"> | number | null
   orderedQuantity?: Prisma.IntWithAggregatesFilter<"PurchaseOrderItem"> | number
   receivedQuantity?: Prisma.IntWithAggregatesFilter<"PurchaseOrderItem"> | number
   unitCost?: Prisma.DecimalWithAggregatesFilter<"PurchaseOrderItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: Prisma.StringNullableWithAggregatesFilter<"PurchaseOrderItem"> | string | null
+  pendingProductName?: Prisma.StringNullableWithAggregatesFilter<"PurchaseOrderItem"> | string | null
+  pendingBrand?: Prisma.StringNullableWithAggregatesFilter<"PurchaseOrderItem"> | string | null
+  pendingCategoryName?: Prisma.StringNullableWithAggregatesFilter<"PurchaseOrderItem"> | string | null
+  pendingColor?: Prisma.StringNullableWithAggregatesFilter<"PurchaseOrderItem"> | string | null
+  pendingSize?: Prisma.StringNullableWithAggregatesFilter<"PurchaseOrderItem"> | string | null
+  pendingMaterial?: Prisma.StringNullableWithAggregatesFilter<"PurchaseOrderItem"> | string | null
+  pendingPowerWatts?: Prisma.StringNullableWithAggregatesFilter<"PurchaseOrderItem"> | string | null
+  pendingVariantIdentityKey?: Prisma.StringNullableWithAggregatesFilter<"PurchaseOrderItem"> | string | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"PurchaseOrderItem"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"PurchaseOrderItem"> | Date | string
 }
@@ -359,22 +455,38 @@ export type PurchaseOrderItemCreateInput = {
   receivedQuantity?: number
   unitCost: runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: string | null
+  pendingProductName?: string | null
+  pendingBrand?: string | null
+  pendingCategoryName?: string | null
+  pendingColor?: string | null
+  pendingSize?: string | null
+  pendingMaterial?: string | null
+  pendingPowerWatts?: string | null
+  pendingVariantIdentityKey?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   purchaseOrder: Prisma.PurchaseOrderCreateNestedOneWithoutItemsInput
-  product: Prisma.ProductCreateNestedOneWithoutPurchaseOrderItemsInput
-  variant: Prisma.VariantCreateNestedOneWithoutPurchaseOrderItemsInput
+  product?: Prisma.ProductCreateNestedOneWithoutPurchaseOrderItemsInput
+  variant?: Prisma.VariantCreateNestedOneWithoutPurchaseOrderItemsInput
 }
 
 export type PurchaseOrderItemUncheckedCreateInput = {
   id?: number
   purchaseOrderId: number
-  productId: number
-  variantId: number
+  productId?: number | null
+  variantId?: number | null
   orderedQuantity: number
   receivedQuantity?: number
   unitCost: runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: string | null
+  pendingProductName?: string | null
+  pendingBrand?: string | null
+  pendingCategoryName?: string | null
+  pendingColor?: string | null
+  pendingSize?: string | null
+  pendingMaterial?: string | null
+  pendingPowerWatts?: string | null
+  pendingVariantIdentityKey?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -384,22 +496,38 @@ export type PurchaseOrderItemUpdateInput = {
   receivedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingProductName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingBrand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingCategoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingSize?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingMaterial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingPowerWatts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingVariantIdentityKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   purchaseOrder?: Prisma.PurchaseOrderUpdateOneRequiredWithoutItemsNestedInput
-  product?: Prisma.ProductUpdateOneRequiredWithoutPurchaseOrderItemsNestedInput
-  variant?: Prisma.VariantUpdateOneRequiredWithoutPurchaseOrderItemsNestedInput
+  product?: Prisma.ProductUpdateOneWithoutPurchaseOrderItemsNestedInput
+  variant?: Prisma.VariantUpdateOneWithoutPurchaseOrderItemsNestedInput
 }
 
 export type PurchaseOrderItemUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   purchaseOrderId?: Prisma.IntFieldUpdateOperationsInput | number
-  productId?: Prisma.IntFieldUpdateOperationsInput | number
-  variantId?: Prisma.IntFieldUpdateOperationsInput | number
+  productId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  variantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   orderedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   receivedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingProductName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingBrand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingCategoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingSize?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingMaterial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingPowerWatts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingVariantIdentityKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -407,12 +535,20 @@ export type PurchaseOrderItemUncheckedUpdateInput = {
 export type PurchaseOrderItemCreateManyInput = {
   id?: number
   purchaseOrderId: number
-  productId: number
-  variantId: number
+  productId?: number | null
+  variantId?: number | null
   orderedQuantity: number
   receivedQuantity?: number
   unitCost: runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: string | null
+  pendingProductName?: string | null
+  pendingBrand?: string | null
+  pendingCategoryName?: string | null
+  pendingColor?: string | null
+  pendingSize?: string | null
+  pendingMaterial?: string | null
+  pendingPowerWatts?: string | null
+  pendingVariantIdentityKey?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -422,6 +558,14 @@ export type PurchaseOrderItemUpdateManyMutationInput = {
   receivedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingProductName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingBrand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingCategoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingSize?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingMaterial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingPowerWatts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingVariantIdentityKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -429,12 +573,20 @@ export type PurchaseOrderItemUpdateManyMutationInput = {
 export type PurchaseOrderItemUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   purchaseOrderId?: Prisma.IntFieldUpdateOperationsInput | number
-  productId?: Prisma.IntFieldUpdateOperationsInput | number
-  variantId?: Prisma.IntFieldUpdateOperationsInput | number
+  productId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  variantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   orderedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   receivedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingProductName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingBrand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingCategoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingSize?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingMaterial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingPowerWatts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingVariantIdentityKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -458,6 +610,14 @@ export type PurchaseOrderItemCountOrderByAggregateInput = {
   receivedQuantity?: Prisma.SortOrder
   unitCost?: Prisma.SortOrder
   note?: Prisma.SortOrder
+  pendingProductName?: Prisma.SortOrder
+  pendingBrand?: Prisma.SortOrder
+  pendingCategoryName?: Prisma.SortOrder
+  pendingColor?: Prisma.SortOrder
+  pendingSize?: Prisma.SortOrder
+  pendingMaterial?: Prisma.SortOrder
+  pendingPowerWatts?: Prisma.SortOrder
+  pendingVariantIdentityKey?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -481,6 +641,14 @@ export type PurchaseOrderItemMaxOrderByAggregateInput = {
   receivedQuantity?: Prisma.SortOrder
   unitCost?: Prisma.SortOrder
   note?: Prisma.SortOrder
+  pendingProductName?: Prisma.SortOrder
+  pendingBrand?: Prisma.SortOrder
+  pendingCategoryName?: Prisma.SortOrder
+  pendingColor?: Prisma.SortOrder
+  pendingSize?: Prisma.SortOrder
+  pendingMaterial?: Prisma.SortOrder
+  pendingPowerWatts?: Prisma.SortOrder
+  pendingVariantIdentityKey?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -494,6 +662,14 @@ export type PurchaseOrderItemMinOrderByAggregateInput = {
   receivedQuantity?: Prisma.SortOrder
   unitCost?: Prisma.SortOrder
   note?: Prisma.SortOrder
+  pendingProductName?: Prisma.SortOrder
+  pendingBrand?: Prisma.SortOrder
+  pendingCategoryName?: Prisma.SortOrder
+  pendingColor?: Prisma.SortOrder
+  pendingSize?: Prisma.SortOrder
+  pendingMaterial?: Prisma.SortOrder
+  pendingPowerWatts?: Prisma.SortOrder
+  pendingVariantIdentityKey?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -639,20 +815,36 @@ export type PurchaseOrderItemCreateWithoutProductInput = {
   receivedQuantity?: number
   unitCost: runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: string | null
+  pendingProductName?: string | null
+  pendingBrand?: string | null
+  pendingCategoryName?: string | null
+  pendingColor?: string | null
+  pendingSize?: string | null
+  pendingMaterial?: string | null
+  pendingPowerWatts?: string | null
+  pendingVariantIdentityKey?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   purchaseOrder: Prisma.PurchaseOrderCreateNestedOneWithoutItemsInput
-  variant: Prisma.VariantCreateNestedOneWithoutPurchaseOrderItemsInput
+  variant?: Prisma.VariantCreateNestedOneWithoutPurchaseOrderItemsInput
 }
 
 export type PurchaseOrderItemUncheckedCreateWithoutProductInput = {
   id?: number
   purchaseOrderId: number
-  variantId: number
+  variantId?: number | null
   orderedQuantity: number
   receivedQuantity?: number
   unitCost: runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: string | null
+  pendingProductName?: string | null
+  pendingBrand?: string | null
+  pendingCategoryName?: string | null
+  pendingColor?: string | null
+  pendingSize?: string | null
+  pendingMaterial?: string | null
+  pendingPowerWatts?: string | null
+  pendingVariantIdentityKey?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -689,12 +881,20 @@ export type PurchaseOrderItemScalarWhereInput = {
   NOT?: Prisma.PurchaseOrderItemScalarWhereInput | Prisma.PurchaseOrderItemScalarWhereInput[]
   id?: Prisma.IntFilter<"PurchaseOrderItem"> | number
   purchaseOrderId?: Prisma.IntFilter<"PurchaseOrderItem"> | number
-  productId?: Prisma.IntFilter<"PurchaseOrderItem"> | number
-  variantId?: Prisma.IntFilter<"PurchaseOrderItem"> | number
+  productId?: Prisma.IntNullableFilter<"PurchaseOrderItem"> | number | null
+  variantId?: Prisma.IntNullableFilter<"PurchaseOrderItem"> | number | null
   orderedQuantity?: Prisma.IntFilter<"PurchaseOrderItem"> | number
   receivedQuantity?: Prisma.IntFilter<"PurchaseOrderItem"> | number
   unitCost?: Prisma.DecimalFilter<"PurchaseOrderItem"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: Prisma.StringNullableFilter<"PurchaseOrderItem"> | string | null
+  pendingProductName?: Prisma.StringNullableFilter<"PurchaseOrderItem"> | string | null
+  pendingBrand?: Prisma.StringNullableFilter<"PurchaseOrderItem"> | string | null
+  pendingCategoryName?: Prisma.StringNullableFilter<"PurchaseOrderItem"> | string | null
+  pendingColor?: Prisma.StringNullableFilter<"PurchaseOrderItem"> | string | null
+  pendingSize?: Prisma.StringNullableFilter<"PurchaseOrderItem"> | string | null
+  pendingMaterial?: Prisma.StringNullableFilter<"PurchaseOrderItem"> | string | null
+  pendingPowerWatts?: Prisma.StringNullableFilter<"PurchaseOrderItem"> | string | null
+  pendingVariantIdentityKey?: Prisma.StringNullableFilter<"PurchaseOrderItem"> | string | null
   createdAt?: Prisma.DateTimeFilter<"PurchaseOrderItem"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"PurchaseOrderItem"> | Date | string
 }
@@ -704,20 +904,36 @@ export type PurchaseOrderItemCreateWithoutVariantInput = {
   receivedQuantity?: number
   unitCost: runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: string | null
+  pendingProductName?: string | null
+  pendingBrand?: string | null
+  pendingCategoryName?: string | null
+  pendingColor?: string | null
+  pendingSize?: string | null
+  pendingMaterial?: string | null
+  pendingPowerWatts?: string | null
+  pendingVariantIdentityKey?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
   purchaseOrder: Prisma.PurchaseOrderCreateNestedOneWithoutItemsInput
-  product: Prisma.ProductCreateNestedOneWithoutPurchaseOrderItemsInput
+  product?: Prisma.ProductCreateNestedOneWithoutPurchaseOrderItemsInput
 }
 
 export type PurchaseOrderItemUncheckedCreateWithoutVariantInput = {
   id?: number
   purchaseOrderId: number
-  productId: number
+  productId?: number | null
   orderedQuantity: number
   receivedQuantity?: number
   unitCost: runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: string | null
+  pendingProductName?: string | null
+  pendingBrand?: string | null
+  pendingCategoryName?: string | null
+  pendingColor?: string | null
+  pendingSize?: string | null
+  pendingMaterial?: string | null
+  pendingPowerWatts?: string | null
+  pendingVariantIdentityKey?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -753,20 +969,36 @@ export type PurchaseOrderItemCreateWithoutPurchaseOrderInput = {
   receivedQuantity?: number
   unitCost: runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: string | null
+  pendingProductName?: string | null
+  pendingBrand?: string | null
+  pendingCategoryName?: string | null
+  pendingColor?: string | null
+  pendingSize?: string | null
+  pendingMaterial?: string | null
+  pendingPowerWatts?: string | null
+  pendingVariantIdentityKey?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  product: Prisma.ProductCreateNestedOneWithoutPurchaseOrderItemsInput
-  variant: Prisma.VariantCreateNestedOneWithoutPurchaseOrderItemsInput
+  product?: Prisma.ProductCreateNestedOneWithoutPurchaseOrderItemsInput
+  variant?: Prisma.VariantCreateNestedOneWithoutPurchaseOrderItemsInput
 }
 
 export type PurchaseOrderItemUncheckedCreateWithoutPurchaseOrderInput = {
   id?: number
-  productId: number
-  variantId: number
+  productId?: number | null
+  variantId?: number | null
   orderedQuantity: number
   receivedQuantity?: number
   unitCost: runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: string | null
+  pendingProductName?: string | null
+  pendingBrand?: string | null
+  pendingCategoryName?: string | null
+  pendingColor?: string | null
+  pendingSize?: string | null
+  pendingMaterial?: string | null
+  pendingPowerWatts?: string | null
+  pendingVariantIdentityKey?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -800,11 +1032,19 @@ export type PurchaseOrderItemUpdateManyWithWhereWithoutPurchaseOrderInput = {
 export type PurchaseOrderItemCreateManyProductInput = {
   id?: number
   purchaseOrderId: number
-  variantId: number
+  variantId?: number | null
   orderedQuantity: number
   receivedQuantity?: number
   unitCost: runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: string | null
+  pendingProductName?: string | null
+  pendingBrand?: string | null
+  pendingCategoryName?: string | null
+  pendingColor?: string | null
+  pendingSize?: string | null
+  pendingMaterial?: string | null
+  pendingPowerWatts?: string | null
+  pendingVariantIdentityKey?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -814,20 +1054,36 @@ export type PurchaseOrderItemUpdateWithoutProductInput = {
   receivedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingProductName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingBrand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingCategoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingSize?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingMaterial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingPowerWatts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingVariantIdentityKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   purchaseOrder?: Prisma.PurchaseOrderUpdateOneRequiredWithoutItemsNestedInput
-  variant?: Prisma.VariantUpdateOneRequiredWithoutPurchaseOrderItemsNestedInput
+  variant?: Prisma.VariantUpdateOneWithoutPurchaseOrderItemsNestedInput
 }
 
 export type PurchaseOrderItemUncheckedUpdateWithoutProductInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   purchaseOrderId?: Prisma.IntFieldUpdateOperationsInput | number
-  variantId?: Prisma.IntFieldUpdateOperationsInput | number
+  variantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   orderedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   receivedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingProductName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingBrand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingCategoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingSize?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingMaterial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingPowerWatts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingVariantIdentityKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -835,11 +1091,19 @@ export type PurchaseOrderItemUncheckedUpdateWithoutProductInput = {
 export type PurchaseOrderItemUncheckedUpdateManyWithoutProductInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   purchaseOrderId?: Prisma.IntFieldUpdateOperationsInput | number
-  variantId?: Prisma.IntFieldUpdateOperationsInput | number
+  variantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   orderedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   receivedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingProductName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingBrand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingCategoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingSize?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingMaterial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingPowerWatts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingVariantIdentityKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -847,11 +1111,19 @@ export type PurchaseOrderItemUncheckedUpdateManyWithoutProductInput = {
 export type PurchaseOrderItemCreateManyVariantInput = {
   id?: number
   purchaseOrderId: number
-  productId: number
+  productId?: number | null
   orderedQuantity: number
   receivedQuantity?: number
   unitCost: runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: string | null
+  pendingProductName?: string | null
+  pendingBrand?: string | null
+  pendingCategoryName?: string | null
+  pendingColor?: string | null
+  pendingSize?: string | null
+  pendingMaterial?: string | null
+  pendingPowerWatts?: string | null
+  pendingVariantIdentityKey?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -861,20 +1133,36 @@ export type PurchaseOrderItemUpdateWithoutVariantInput = {
   receivedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingProductName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingBrand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingCategoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingSize?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingMaterial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingPowerWatts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingVariantIdentityKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   purchaseOrder?: Prisma.PurchaseOrderUpdateOneRequiredWithoutItemsNestedInput
-  product?: Prisma.ProductUpdateOneRequiredWithoutPurchaseOrderItemsNestedInput
+  product?: Prisma.ProductUpdateOneWithoutPurchaseOrderItemsNestedInput
 }
 
 export type PurchaseOrderItemUncheckedUpdateWithoutVariantInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   purchaseOrderId?: Prisma.IntFieldUpdateOperationsInput | number
-  productId?: Prisma.IntFieldUpdateOperationsInput | number
+  productId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   orderedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   receivedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingProductName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingBrand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingCategoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingSize?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingMaterial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingPowerWatts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingVariantIdentityKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -882,23 +1170,39 @@ export type PurchaseOrderItemUncheckedUpdateWithoutVariantInput = {
 export type PurchaseOrderItemUncheckedUpdateManyWithoutVariantInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   purchaseOrderId?: Prisma.IntFieldUpdateOperationsInput | number
-  productId?: Prisma.IntFieldUpdateOperationsInput | number
+  productId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   orderedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   receivedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingProductName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingBrand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingCategoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingSize?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingMaterial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingPowerWatts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingVariantIdentityKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type PurchaseOrderItemCreateManyPurchaseOrderInput = {
   id?: number
-  productId: number
-  variantId: number
+  productId?: number | null
+  variantId?: number | null
   orderedQuantity: number
   receivedQuantity?: number
   unitCost: runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: string | null
+  pendingProductName?: string | null
+  pendingBrand?: string | null
+  pendingCategoryName?: string | null
+  pendingColor?: string | null
+  pendingSize?: string | null
+  pendingMaterial?: string | null
+  pendingPowerWatts?: string | null
+  pendingVariantIdentityKey?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -908,32 +1212,56 @@ export type PurchaseOrderItemUpdateWithoutPurchaseOrderInput = {
   receivedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingProductName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingBrand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingCategoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingSize?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingMaterial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingPowerWatts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingVariantIdentityKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  product?: Prisma.ProductUpdateOneRequiredWithoutPurchaseOrderItemsNestedInput
-  variant?: Prisma.VariantUpdateOneRequiredWithoutPurchaseOrderItemsNestedInput
+  product?: Prisma.ProductUpdateOneWithoutPurchaseOrderItemsNestedInput
+  variant?: Prisma.VariantUpdateOneWithoutPurchaseOrderItemsNestedInput
 }
 
 export type PurchaseOrderItemUncheckedUpdateWithoutPurchaseOrderInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  productId?: Prisma.IntFieldUpdateOperationsInput | number
-  variantId?: Prisma.IntFieldUpdateOperationsInput | number
+  productId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  variantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   orderedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   receivedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingProductName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingBrand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingCategoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingSize?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingMaterial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingPowerWatts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingVariantIdentityKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
 export type PurchaseOrderItemUncheckedUpdateManyWithoutPurchaseOrderInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  productId?: Prisma.IntFieldUpdateOperationsInput | number
-  variantId?: Prisma.IntFieldUpdateOperationsInput | number
+  productId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  variantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   orderedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   receivedQuantity?: Prisma.IntFieldUpdateOperationsInput | number
   unitCost?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   note?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingProductName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingBrand?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingCategoryName?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingColor?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingSize?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingMaterial?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingPowerWatts?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  pendingVariantIdentityKey?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -949,11 +1277,19 @@ export type PurchaseOrderItemSelect<ExtArgs extends runtime.Types.Extensions.Int
   receivedQuantity?: boolean
   unitCost?: boolean
   note?: boolean
+  pendingProductName?: boolean
+  pendingBrand?: boolean
+  pendingCategoryName?: boolean
+  pendingColor?: boolean
+  pendingSize?: boolean
+  pendingMaterial?: boolean
+  pendingPowerWatts?: boolean
+  pendingVariantIdentityKey?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   purchaseOrder?: boolean | Prisma.PurchaseOrderDefaultArgs<ExtArgs>
-  product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
-  variant?: boolean | Prisma.VariantDefaultArgs<ExtArgs>
+  product?: boolean | Prisma.PurchaseOrderItem$productArgs<ExtArgs>
+  variant?: boolean | Prisma.PurchaseOrderItem$variantArgs<ExtArgs>
 }, ExtArgs["result"]["purchaseOrderItem"]>
 
 export type PurchaseOrderItemSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -965,11 +1301,19 @@ export type PurchaseOrderItemSelectCreateManyAndReturn<ExtArgs extends runtime.T
   receivedQuantity?: boolean
   unitCost?: boolean
   note?: boolean
+  pendingProductName?: boolean
+  pendingBrand?: boolean
+  pendingCategoryName?: boolean
+  pendingColor?: boolean
+  pendingSize?: boolean
+  pendingMaterial?: boolean
+  pendingPowerWatts?: boolean
+  pendingVariantIdentityKey?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   purchaseOrder?: boolean | Prisma.PurchaseOrderDefaultArgs<ExtArgs>
-  product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
-  variant?: boolean | Prisma.VariantDefaultArgs<ExtArgs>
+  product?: boolean | Prisma.PurchaseOrderItem$productArgs<ExtArgs>
+  variant?: boolean | Prisma.PurchaseOrderItem$variantArgs<ExtArgs>
 }, ExtArgs["result"]["purchaseOrderItem"]>
 
 export type PurchaseOrderItemSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -981,11 +1325,19 @@ export type PurchaseOrderItemSelectUpdateManyAndReturn<ExtArgs extends runtime.T
   receivedQuantity?: boolean
   unitCost?: boolean
   note?: boolean
+  pendingProductName?: boolean
+  pendingBrand?: boolean
+  pendingCategoryName?: boolean
+  pendingColor?: boolean
+  pendingSize?: boolean
+  pendingMaterial?: boolean
+  pendingPowerWatts?: boolean
+  pendingVariantIdentityKey?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   purchaseOrder?: boolean | Prisma.PurchaseOrderDefaultArgs<ExtArgs>
-  product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
-  variant?: boolean | Prisma.VariantDefaultArgs<ExtArgs>
+  product?: boolean | Prisma.PurchaseOrderItem$productArgs<ExtArgs>
+  variant?: boolean | Prisma.PurchaseOrderItem$variantArgs<ExtArgs>
 }, ExtArgs["result"]["purchaseOrderItem"]>
 
 export type PurchaseOrderItemSelectScalar = {
@@ -997,43 +1349,59 @@ export type PurchaseOrderItemSelectScalar = {
   receivedQuantity?: boolean
   unitCost?: boolean
   note?: boolean
+  pendingProductName?: boolean
+  pendingBrand?: boolean
+  pendingCategoryName?: boolean
+  pendingColor?: boolean
+  pendingSize?: boolean
+  pendingMaterial?: boolean
+  pendingPowerWatts?: boolean
+  pendingVariantIdentityKey?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type PurchaseOrderItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "purchaseOrderId" | "productId" | "variantId" | "orderedQuantity" | "receivedQuantity" | "unitCost" | "note" | "createdAt" | "updatedAt", ExtArgs["result"]["purchaseOrderItem"]>
+export type PurchaseOrderItemOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "purchaseOrderId" | "productId" | "variantId" | "orderedQuantity" | "receivedQuantity" | "unitCost" | "note" | "pendingProductName" | "pendingBrand" | "pendingCategoryName" | "pendingColor" | "pendingSize" | "pendingMaterial" | "pendingPowerWatts" | "pendingVariantIdentityKey" | "createdAt" | "updatedAt", ExtArgs["result"]["purchaseOrderItem"]>
 export type PurchaseOrderItemInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   purchaseOrder?: boolean | Prisma.PurchaseOrderDefaultArgs<ExtArgs>
-  product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
-  variant?: boolean | Prisma.VariantDefaultArgs<ExtArgs>
+  product?: boolean | Prisma.PurchaseOrderItem$productArgs<ExtArgs>
+  variant?: boolean | Prisma.PurchaseOrderItem$variantArgs<ExtArgs>
 }
 export type PurchaseOrderItemIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   purchaseOrder?: boolean | Prisma.PurchaseOrderDefaultArgs<ExtArgs>
-  product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
-  variant?: boolean | Prisma.VariantDefaultArgs<ExtArgs>
+  product?: boolean | Prisma.PurchaseOrderItem$productArgs<ExtArgs>
+  variant?: boolean | Prisma.PurchaseOrderItem$variantArgs<ExtArgs>
 }
 export type PurchaseOrderItemIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   purchaseOrder?: boolean | Prisma.PurchaseOrderDefaultArgs<ExtArgs>
-  product?: boolean | Prisma.ProductDefaultArgs<ExtArgs>
-  variant?: boolean | Prisma.VariantDefaultArgs<ExtArgs>
+  product?: boolean | Prisma.PurchaseOrderItem$productArgs<ExtArgs>
+  variant?: boolean | Prisma.PurchaseOrderItem$variantArgs<ExtArgs>
 }
 
 export type $PurchaseOrderItemPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "PurchaseOrderItem"
   objects: {
     purchaseOrder: Prisma.$PurchaseOrderPayload<ExtArgs>
-    product: Prisma.$ProductPayload<ExtArgs>
-    variant: Prisma.$VariantPayload<ExtArgs>
+    product: Prisma.$ProductPayload<ExtArgs> | null
+    variant: Prisma.$VariantPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
     purchaseOrderId: number
-    productId: number
-    variantId: number
+    productId: number | null
+    variantId: number | null
     orderedQuantity: number
     receivedQuantity: number
     unitCost: runtime.Decimal
     note: string | null
+    pendingProductName: string | null
+    pendingBrand: string | null
+    pendingCategoryName: string | null
+    pendingColor: string | null
+    pendingSize: string | null
+    pendingMaterial: string | null
+    pendingPowerWatts: string | null
+    pendingVariantIdentityKey: string | null
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["purchaseOrderItem"]>
@@ -1431,8 +1799,8 @@ readonly fields: PurchaseOrderItemFieldRefs;
 export interface Prisma__PurchaseOrderItemClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   purchaseOrder<T extends Prisma.PurchaseOrderDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PurchaseOrderDefaultArgs<ExtArgs>>): Prisma.Prisma__PurchaseOrderClient<runtime.Types.Result.GetResult<Prisma.$PurchaseOrderPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  product<T extends Prisma.ProductDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProductDefaultArgs<ExtArgs>>): Prisma.Prisma__ProductClient<runtime.Types.Result.GetResult<Prisma.$ProductPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  variant<T extends Prisma.VariantDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.VariantDefaultArgs<ExtArgs>>): Prisma.Prisma__VariantClient<runtime.Types.Result.GetResult<Prisma.$VariantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  product<T extends Prisma.PurchaseOrderItem$productArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PurchaseOrderItem$productArgs<ExtArgs>>): Prisma.Prisma__ProductClient<runtime.Types.Result.GetResult<Prisma.$ProductPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  variant<T extends Prisma.PurchaseOrderItem$variantArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PurchaseOrderItem$variantArgs<ExtArgs>>): Prisma.Prisma__VariantClient<runtime.Types.Result.GetResult<Prisma.$VariantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1470,6 +1838,14 @@ export interface PurchaseOrderItemFieldRefs {
   readonly receivedQuantity: Prisma.FieldRef<"PurchaseOrderItem", 'Int'>
   readonly unitCost: Prisma.FieldRef<"PurchaseOrderItem", 'Decimal'>
   readonly note: Prisma.FieldRef<"PurchaseOrderItem", 'String'>
+  readonly pendingProductName: Prisma.FieldRef<"PurchaseOrderItem", 'String'>
+  readonly pendingBrand: Prisma.FieldRef<"PurchaseOrderItem", 'String'>
+  readonly pendingCategoryName: Prisma.FieldRef<"PurchaseOrderItem", 'String'>
+  readonly pendingColor: Prisma.FieldRef<"PurchaseOrderItem", 'String'>
+  readonly pendingSize: Prisma.FieldRef<"PurchaseOrderItem", 'String'>
+  readonly pendingMaterial: Prisma.FieldRef<"PurchaseOrderItem", 'String'>
+  readonly pendingPowerWatts: Prisma.FieldRef<"PurchaseOrderItem", 'String'>
+  readonly pendingVariantIdentityKey: Prisma.FieldRef<"PurchaseOrderItem", 'String'>
   readonly createdAt: Prisma.FieldRef<"PurchaseOrderItem", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"PurchaseOrderItem", 'DateTime'>
 }
@@ -1870,6 +2246,44 @@ export type PurchaseOrderItemDeleteManyArgs<ExtArgs extends runtime.Types.Extens
    * Limit how many PurchaseOrderItems to delete.
    */
   limit?: number
+}
+
+/**
+ * PurchaseOrderItem.product
+ */
+export type PurchaseOrderItem$productArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Product
+   */
+  select?: Prisma.ProductSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Product
+   */
+  omit?: Prisma.ProductOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.ProductInclude<ExtArgs> | null
+  where?: Prisma.ProductWhereInput
+}
+
+/**
+ * PurchaseOrderItem.variant
+ */
+export type PurchaseOrderItem$variantArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Variant
+   */
+  select?: Prisma.VariantSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Variant
+   */
+  omit?: Prisma.VariantOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.VariantInclude<ExtArgs> | null
+  where?: Prisma.VariantWhereInput
 }
 
 /**

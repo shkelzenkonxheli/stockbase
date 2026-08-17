@@ -405,17 +405,25 @@ model PurchaseOrder {
 model PurchaseOrderItem {
   id              Int           @id @default(autoincrement())
   purchaseOrderId Int
-  productId       Int
-  variantId       Int
+  productId       Int?
+  variantId       Int?
   orderedQuantity Int
   receivedQuantity Int         @default(0)
   unitCost        Decimal       @db.Decimal(10, 2)
   note            String?
+  pendingProductName String?
+  pendingBrand    String?
+  pendingCategoryName String?
+  pendingColor    String?
+  pendingSize     String?
+  pendingMaterial String?
+  pendingPowerWatts String?
+  pendingVariantIdentityKey String?
   createdAt       DateTime      @default(now())
   updatedAt       DateTime      @updatedAt
   purchaseOrder   PurchaseOrder @relation(fields: [purchaseOrderId], references: [id], onDelete: Cascade)
-  product         Product       @relation(fields: [productId], references: [id], onDelete: Restrict)
-  variant         Variant       @relation(fields: [variantId], references: [id], onDelete: Restrict)
+  product         Product?      @relation(fields: [productId], references: [id], onDelete: Restrict)
+  variant         Variant?      @relation(fields: [variantId], references: [id], onDelete: Restrict)
 
   @@index([purchaseOrderId])
   @@index([productId])
