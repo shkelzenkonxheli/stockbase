@@ -122,6 +122,7 @@ async function createQuickOrders(formData: FormData) {
         productId: true,
         size: true,
         color: true,
+        costPrice: true,
         inventories: {
           where: { warehouseId },
           select: {
@@ -172,6 +173,7 @@ async function createQuickOrders(formData: FormData) {
         warehouseId,
         quantity: row.quantity,
         unitPrice: row.unitPrice,
+        unitCost: variantsById.get(row.variantId)?.costPrice ?? 0,
       })),
     });
 

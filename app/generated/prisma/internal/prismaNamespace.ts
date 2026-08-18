@@ -1980,6 +1980,7 @@ export const VariantScalarFieldEnum = {
   reorderLevel: 'reorderLevel',
   createdAt: 'createdAt',
   price: 'price',
+  costPrice: 'costPrice',
   updatedAt: 'updatedAt',
   sku: 'sku',
   barcode: 'barcode',
@@ -2058,7 +2059,9 @@ export const OrderItemScalarFieldEnum = {
   variantId: 'variantId',
   warehouseId: 'warehouseId',
   quantity: 'quantity',
+  returnedQuantity: 'returnedQuantity',
   unitPrice: 'unitPrice',
+  unitCost: 'unitCost',
   createdAt: 'createdAt'
 } as const
 

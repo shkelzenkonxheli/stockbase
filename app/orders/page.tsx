@@ -110,7 +110,9 @@ const statusStyles: Record<string, string> = {
   NEW: "bg-amber-50 text-amber-700 border-amber-200",
   READY: "bg-sky-50 text-sky-700 border-sky-200",
   DONE: "bg-emerald-50 text-emerald-700 border-emerald-200",
+  PARTIALLY_RETURNED: "bg-violet-50 text-violet-700 border-violet-200",
   CANCELED: "bg-rose-50 text-rose-700 border-rose-200",
+  RETURNED: "bg-violet-50 text-violet-700 border-violet-200",
 };
 
 const sourceStyles: Record<string, string> = {
@@ -152,6 +154,7 @@ async function deleteOrder(formData: FormData) {
           select: {
             variantId: true,
             quantity: true,
+            returnedQuantity: true,
             warehouseId: true,
           },
         },
@@ -162,9 +165,14 @@ async function deleteOrder(formData: FormData) {
       return;
     }
 
-    if (order.status !== "CANCELED") {
+    if (order.status !== "CANCELED" && order.status !== "RETURNED") {
       if (order.items.length > 0) {
         for (const item of order.items) {
+          const remainingQuantity = Math.max(0, item.quantity - item.returnedQuantity);
+          if (remainingQuantity <= 0) {
+            continue;
+          }
+
           if (item.warehouseId) {
             await tx.variantInventory.upsert({
               where: {
@@ -175,13 +183,13 @@ async function deleteOrder(formData: FormData) {
               },
               update: {
                 stock: {
-                  increment: item.quantity,
+                  increment: remainingQuantity,
                 },
               },
               create: {
                 variantId: item.variantId,
                 warehouseId: item.warehouseId,
-                stock: item.quantity,
+                stock: remainingQuantity,
               },
             });
           }
@@ -190,7 +198,7 @@ async function deleteOrder(formData: FormData) {
             where: { id: item.variantId },
             data: {
               stock: {
-                increment: item.quantity,
+                increment: remainingQuantity,
               },
             },
           });
@@ -308,6 +316,7 @@ async function bulkDeleteOrders(formData: FormData) {
           select: {
             variantId: true,
             quantity: true,
+            returnedQuantity: true,
             warehouseId: true,
           },
         },
@@ -319,12 +328,17 @@ async function bulkDeleteOrders(formData: FormData) {
     }
 
     for (const order of orders) {
-      if (order.status === "CANCELED") {
+      if (order.status === "CANCELED" || order.status === "RETURNED") {
         continue;
       }
 
       if (order.items.length > 0) {
         for (const item of order.items) {
+          const remainingQuantity = Math.max(0, item.quantity - item.returnedQuantity);
+          if (remainingQuantity <= 0) {
+            continue;
+          }
+
           if (item.warehouseId) {
             await tx.variantInventory.upsert({
               where: {
@@ -335,13 +349,13 @@ async function bulkDeleteOrders(formData: FormData) {
               },
               update: {
                 stock: {
-                  increment: item.quantity,
+                  increment: remainingQuantity,
                 },
               },
               create: {
                 variantId: item.variantId,
                 warehouseId: item.warehouseId,
-                stock: item.quantity,
+                stock: remainingQuantity,
               },
             });
           }
@@ -350,7 +364,7 @@ async function bulkDeleteOrders(formData: FormData) {
             where: { id: item.variantId },
             data: {
               stock: {
-                increment: item.quantity,
+                increment: remainingQuantity,
               },
             },
           });
@@ -415,6 +429,383 @@ async function bulkDeleteOrders(formData: FormData) {
   revalidatePath("/orders");
   revalidatePath("/orders/new");
   revalidatePath("/orders/quick");
+}
+
+async function returnOrder(formData: FormData) {
+  "use server";
+
+  const currentUser = await requireRole(["SUPER_ADMIN"]);
+  const tenantId = currentUser.tenant?.id;
+  const orderId = Number(formData.get("orderId"));
+
+  if (!orderId || !tenantId) {
+    return;
+  }
+
+  await prisma.$transaction(async (tx) => {
+    const order = await tx.order.findUnique({
+      where: { id: orderId, tenantId },
+      select: {
+        id: true,
+        customerName: true,
+        source: true,
+        status: true,
+        quantity: true,
+        variantId: true,
+        warehouseId: true,
+        items: {
+          select: {
+            id: true,
+            variantId: true,
+            quantity: true,
+            returnedQuantity: true,
+            warehouseId: true,
+            unitPrice: true,
+            unitCost: true,
+          },
+        },
+      },
+    });
+
+    if (!order || (order.status !== "DONE" && order.status !== "PARTIALLY_RETURNED")) {
+      return;
+    }
+
+    if (order.items.length > 0) {
+      for (const item of order.items) {
+        const remainingQuantity = Math.max(0, item.quantity - item.returnedQuantity);
+        if (remainingQuantity <= 0) {
+          continue;
+        }
+
+        if (item.warehouseId) {
+          await tx.variantInventory.upsert({
+            where: {
+              variantId_warehouseId: {
+                variantId: item.variantId,
+                warehouseId: item.warehouseId,
+              },
+              },
+              update: {
+                stock: {
+                  increment: remainingQuantity,
+                },
+              },
+              create: {
+                variantId: item.variantId,
+                warehouseId: item.warehouseId,
+                stock: remainingQuantity,
+              },
+            });
+          }
+
+        await tx.variant.update({
+          where: { id: item.variantId },
+          data: {
+            stock: {
+              increment: remainingQuantity,
+            },
+          },
+        });
+
+        await tx.stockMovement.create({
+          data: {
+            tenantId,
+            variantId: item.variantId,
+            warehouseId: item.warehouseId ?? null,
+            quantity: remainingQuantity,
+            reason: "CUSTOMER_RETURN",
+          },
+        });
+
+        await tx.orderItem.update({
+          where: { id: item.id },
+          data: {
+            returnedQuantity: item.quantity,
+          },
+        });
+      }
+    } else if (order.variantId && order.quantity) {
+      if (order.warehouseId) {
+        await tx.variantInventory.upsert({
+          where: {
+            variantId_warehouseId: {
+              variantId: order.variantId,
+              warehouseId: order.warehouseId,
+            },
+          },
+          update: {
+            stock: {
+              increment: order.quantity,
+            },
+          },
+          create: {
+            variantId: order.variantId,
+            warehouseId: order.warehouseId,
+            stock: order.quantity,
+          },
+        });
+      }
+
+      await tx.variant.update({
+        where: { id: order.variantId },
+        data: {
+          stock: {
+            increment: order.quantity,
+          },
+        },
+      });
+
+      await tx.stockMovement.create({
+        data: {
+          tenantId,
+          variantId: order.variantId,
+          warehouseId: order.warehouseId ?? null,
+          quantity: order.quantity,
+          reason: "CUSTOMER_RETURN",
+        },
+      });
+    }
+
+    await tx.order.update({
+      where: { id: order.id },
+      data: {
+        status: "RETURNED",
+        quantity: 0,
+      },
+    });
+
+    await writeAuditLog(tx, {
+      tenantId,
+      userId: currentUser.id,
+      action: "ORDER_RETURNED",
+      entityType: "ORDER",
+      entityId: order.id,
+      entityLabel: order.customerName,
+      warehouseId: order.warehouseId ?? null,
+      metadata: {
+        source: order.source,
+        quantity: order.quantity,
+        itemCount: order.items.length,
+        revenueReversed: order.items.reduce(
+          (sum, item) =>
+            sum + Number(item.unitPrice) * Math.max(0, item.quantity - item.returnedQuantity),
+          0,
+        ),
+        costReversed: order.items.reduce(
+          (sum, item) =>
+            sum + Number(item.unitCost) * Math.max(0, item.quantity - item.returnedQuantity),
+          0,
+        ),
+      },
+    });
+  });
+
+  revalidatePath("/");
+  revalidatePath("/products");
+  revalidatePath("/orders");
+  revalidatePath("/orders/new");
+  revalidatePath("/orders/quick");
+  revalidatePath("/reports");
+}
+
+async function partialReturnOrder(formData: FormData) {
+  "use server";
+
+  const currentUser = await requireRole(["SUPER_ADMIN"]);
+  const tenantId = currentUser.tenant?.id;
+  const orderId = Number(formData.get("orderId"));
+  const returnItemsRaw = formData.get("returnItems")?.toString();
+
+  if (!orderId || !tenantId || !returnItemsRaw) {
+    return;
+  }
+
+  let parsedReturnItems: unknown;
+
+  try {
+    parsedReturnItems = JSON.parse(returnItemsRaw);
+  } catch {
+    return;
+  }
+
+  if (!Array.isArray(parsedReturnItems) || parsedReturnItems.length === 0) {
+    return;
+  }
+
+  const returnItems = parsedReturnItems
+    .map((entry) => {
+      if (!entry || typeof entry !== "object") {
+        return null;
+      }
+
+      const candidate = entry as {
+        orderItemId?: unknown;
+        quantity?: unknown;
+      };
+
+      const orderItemId = Number(candidate.orderItemId);
+      const quantity = Number(candidate.quantity);
+
+      if (!Number.isInteger(orderItemId) || orderItemId <= 0 || !Number.isInteger(quantity) || quantity <= 0) {
+        return null;
+      }
+
+      return { orderItemId, quantity };
+    })
+    .filter((item): item is { orderItemId: number; quantity: number } => item !== null);
+
+  if (returnItems.length === 0) {
+    return;
+  }
+
+  await prisma.$transaction(async (tx) => {
+    const order = await tx.order.findUnique({
+      where: { id: orderId, tenantId },
+      select: {
+        id: true,
+        customerName: true,
+        source: true,
+        status: true,
+        warehouseId: true,
+        items: {
+          select: {
+            id: true,
+            variantId: true,
+            quantity: true,
+            returnedQuantity: true,
+            warehouseId: true,
+            unitPrice: true,
+            unitCost: true,
+          },
+        },
+      },
+    });
+
+    if (!order || (order.status !== "DONE" && order.status !== "PARTIALLY_RETURNED")) {
+      return;
+    }
+
+    const orderItemsById = new Map(order.items.map((item) => [item.id, item]));
+    let totalReturnedNow = 0;
+    let revenueReversed = 0;
+    let costReversed = 0;
+
+    for (const returnItem of returnItems) {
+      const orderItem = orderItemsById.get(returnItem.orderItemId);
+
+      if (!orderItem) {
+        continue;
+      }
+
+      const remainingQuantity = Math.max(0, orderItem.quantity - orderItem.returnedQuantity);
+
+      if (returnItem.quantity > remainingQuantity) {
+        continue;
+      }
+
+      if (orderItem.warehouseId) {
+        await tx.variantInventory.upsert({
+          where: {
+            variantId_warehouseId: {
+              variantId: orderItem.variantId,
+              warehouseId: orderItem.warehouseId,
+            },
+          },
+          update: {
+            stock: {
+              increment: returnItem.quantity,
+            },
+          },
+          create: {
+            variantId: orderItem.variantId,
+            warehouseId: orderItem.warehouseId,
+            stock: returnItem.quantity,
+          },
+        });
+      }
+
+      await tx.variant.update({
+        where: { id: orderItem.variantId },
+        data: {
+          stock: {
+            increment: returnItem.quantity,
+          },
+        },
+      });
+
+      await tx.stockMovement.create({
+        data: {
+          tenantId,
+          variantId: orderItem.variantId,
+          warehouseId: orderItem.warehouseId ?? null,
+          quantity: returnItem.quantity,
+          reason: "CUSTOMER_RETURN",
+        },
+      });
+
+      await tx.orderItem.update({
+        where: { id: orderItem.id },
+        data: {
+          returnedQuantity: {
+            increment: returnItem.quantity,
+          },
+        },
+      });
+
+      totalReturnedNow += returnItem.quantity;
+      revenueReversed += Number(orderItem.unitPrice) * returnItem.quantity;
+      costReversed += Number(orderItem.unitCost) * returnItem.quantity;
+    }
+
+    if (totalReturnedNow <= 0) {
+      return;
+    }
+
+    const refreshedItems = await tx.orderItem.findMany({
+      where: { orderId: order.id },
+      select: {
+        quantity: true,
+        returnedQuantity: true,
+      },
+    });
+
+    const totalOrderedQuantity = refreshedItems.reduce((sum, item) => sum + item.quantity, 0);
+    const totalReturnedQuantity = refreshedItems.reduce((sum, item) => sum + item.returnedQuantity, 0);
+    const remainingQuantity = Math.max(0, totalOrderedQuantity - totalReturnedQuantity);
+
+    await tx.order.update({
+      where: { id: order.id },
+      data: {
+        quantity: remainingQuantity,
+        status: remainingQuantity <= 0 ? "RETURNED" : "PARTIALLY_RETURNED",
+      },
+    });
+
+    await writeAuditLog(tx, {
+      tenantId,
+      userId: currentUser.id,
+      action: "ORDER_PARTIALLY_RETURNED",
+      entityType: "ORDER",
+      entityId: order.id,
+      entityLabel: order.customerName,
+      warehouseId: order.warehouseId ?? null,
+      metadata: {
+        source: order.source,
+        returnedNow: totalReturnedNow,
+        revenueReversed,
+        costReversed,
+        items: returnItems,
+      },
+    });
+  });
+
+  revalidatePath("/");
+  revalidatePath("/products");
+  revalidatePath("/orders");
+  revalidatePath("/orders/new");
+  revalidatePath("/orders/quick");
+  revalidatePath("/reports");
 }
 
 export default async function OrdersPage({
@@ -539,6 +930,7 @@ export default async function OrdersPage({
           select: {
             id: true,
             quantity: true,
+            returnedQuantity: true,
             unitPrice: true,
             variant: {
               select: {
@@ -600,6 +992,7 @@ export default async function OrdersPage({
             locationCode: item.variant.locationCode,
             imagePath: item.variant.imagePath,
             quantity: item.quantity,
+            returnedQuantity: item.returnedQuantity,
             unitPrice: Number(item.unitPrice),
           }))
         : order.variant
@@ -617,6 +1010,7 @@ export default async function OrdersPage({
                 locationCode: order.variant.locationCode,
                 imagePath: order.variant.imagePath,
                 quantity: order.quantity ?? 0,
+                returnedQuantity: 0,
               },
             ]
           : [];
@@ -632,7 +1026,10 @@ export default async function OrdersPage({
       createdAtDateLabel: dateFormatter.format(order.createdAt),
       createdAtTimeLabel: timeFormatter.format(order.createdAt),
       itemsCount: items.length,
-      totalQuantity: items.reduce((sum, item) => sum + item.quantity, 0),
+      totalQuantity: items.reduce(
+        (sum, item) => sum + Math.max(0, item.quantity - item.returnedQuantity),
+        0,
+      ),
       deletable: true,
       items,
     };
@@ -713,6 +1110,8 @@ export default async function OrdersPage({
                 statusStyles={statusStyles}
                 deleteOrderAction={deleteOrder}
                 bulkDeleteOrdersAction={bulkDeleteOrders}
+                returnOrderAction={returnOrder}
+                partialReturnOrderAction={partialReturnOrder}
               />
             </>
           )}

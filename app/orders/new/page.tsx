@@ -108,6 +108,7 @@ async function createOrder(formData: FormData) {
         productId: true,
         size: true,
         color: true,
+        costPrice: true,
         inventories: {
           where: { warehouseId },
           select: {
@@ -165,6 +166,7 @@ async function createOrder(formData: FormData) {
         warehouseId,
         quantity: item.quantity,
         unitPrice: item.unitPrice,
+        unitCost: variantsById.get(item.variantId)?.costPrice ?? 0,
       })),
     });
 

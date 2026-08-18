@@ -57,6 +57,7 @@ model Variant {
   reorderLevel   Int?
   createdAt      DateTime        @default(now())
   price          Decimal         @db.Decimal(10, 2)
+  costPrice      Decimal         @default(0) @db.Decimal(10, 2)
   updatedAt      DateTime        @updatedAt
   sku            String?         @unique
   barcode        String?         @unique
@@ -175,7 +176,9 @@ model OrderItem {
     variantId Int
     warehouseId Int?
     quantity  Int
+    returnedQuantity Int @default(0)
     unitPrice Decimal  @db.Decimal(10, 2)
+    unitCost  Decimal  @default(0) @db.Decimal(10, 2)
     createdAt DateTime @default(now())
     order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
     variant   Variant  @relation(fields: [variantId], references: [id])
@@ -434,7 +437,9 @@ enum OrderStatus {
   NEW
   READY
   DONE
+  PARTIALLY_RETURNED
   CANCELED
+  RETURNED
 }
 
 enum OrderSource {

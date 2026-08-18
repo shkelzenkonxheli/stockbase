@@ -136,17 +136,15 @@ export function ReportPdfDocument({ report }: { report: MonthlySalesReport }) {
             <Text style={styles.statValue}>{report.totalRevenue.toFixed(2)} EUR</Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statLabel}>Modele aktive</Text>
-            <Text style={styles.statValue}>{report.topModels.length}</Text>
-            <Text style={styles.statMeta}>Modele me shitje ne kete muaj</Text>
+            <Text style={styles.statLabel}>Kosto totale</Text>
+            <Text style={styles.statValue}>{report.totalCost.toFixed(2)} EUR</Text>
+            <Text style={styles.statMeta}>Kostoja e mallit te shitur</Text>
           </View>
           <View style={styles.statCard}>
-            <Text style={styles.statLabel}>Burimi kryesor</Text>
-            <Text style={styles.statValue}>{report.topSourceLabel ?? "-"}</Text>
+            <Text style={styles.statLabel}>Fitim bruto</Text>
+            <Text style={styles.statValue}>{report.grossProfit.toFixed(2)} EUR</Text>
             <Text style={styles.statMeta}>
-              {report.topSourceLabel
-                ? `${report.topSourceQuantity} cope`
-                : "Nuk ka shitje"}
+              Margin: {report.grossMarginPercent.toFixed(1)}%
             </Text>
           </View>
         </View>

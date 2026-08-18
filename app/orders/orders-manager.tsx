@@ -4,10 +4,17 @@ import { useMemo, useState } from "react";
 import { ConfirmActionForm } from "@/app/components/confirm-action-form";
 import { UploadedImage } from "@/app/components/uploaded-image";
 import { getOrderVariantSummary } from "@/lib/order-variant-display";
+import { OrderPartialReturnModal } from "./order-partial-return-modal";
 import type { OrderListViewConfig } from "@/lib/product-taxonomy";
 import { OrderDetailsModal } from "./order-details-modal";
 
-type OrderStatusValue = "NEW" | "READY" | "DONE" | "CANCELED";
+type OrderStatusValue =
+  | "NEW"
+  | "READY"
+  | "DONE"
+  | "PARTIALLY_RETURNED"
+  | "CANCELED"
+  | "RETURNED";
 type OrderSourceValue = "INSTAGRAM" | "STORE" | "WHOLESALE";
 
 type OrderItem = {
@@ -23,6 +30,7 @@ type OrderItem = {
   locationCode?: string | null;
   imagePath?: string | null;
   quantity: number;
+  returnedQuantity: number;
   unitPrice?: number;
 };
 
@@ -51,6 +59,8 @@ type OrdersManagerProps = {
   statusStyles: Record<OrderStatusValue, string>;
   deleteOrderAction: (formData: FormData) => void | Promise<void>;
   bulkDeleteOrdersAction: (formData: FormData) => void | Promise<void>;
+  returnOrderAction: (formData: FormData) => void | Promise<void>;
+  partialReturnOrderAction: (formData: FormData) => void | Promise<void>;
 };
 
 export function OrdersManager({
@@ -62,6 +72,8 @@ export function OrdersManager({
   statusStyles,
   deleteOrderAction,
   bulkDeleteOrdersAction,
+  returnOrderAction,
+  partialReturnOrderAction,
 }: OrdersManagerProps) {
   const [selectedIds, setSelectedIds] = useState<number[]>([]);
   const [previewImage, setPreviewImage] = useState<{
@@ -151,6 +163,26 @@ export function OrdersManager({
         items={order.items}
       />
 
+      {canDeleteOrders && (order.status === "DONE" || order.status === "PARTIALLY_RETURNED") ? (
+        <OrderPartialReturnModal
+          orderId={order.id}
+          customerName={order.customerName}
+          items={order.items}
+          action={partialReturnOrderAction}
+          className="inline-flex h-9 items-center justify-center rounded-full border border-indigo-200 bg-indigo-50 px-3 text-indigo-700 transition hover:border-indigo-300 hover:bg-indigo-100"
+        />
+      ) : null}
+
+      {canDeleteOrders && (order.status === "DONE" || order.status === "PARTIALLY_RETURNED") ? (
+        <ConfirmActionForm
+          action={returnOrderAction}
+          hiddenFields={[{ name: "orderId", value: order.id }]}
+          confirmMessage="A je i sigurt qe don ta kthesh kete porosi? Stoku do te kthehet mbrapa dhe porosia do te shenohet si RETURNED."
+          buttonLabel="Kthe"
+          className="inline-flex h-9 items-center justify-center rounded-full border border-violet-200 bg-violet-50 px-3 text-violet-700 transition hover:border-violet-300 hover:bg-violet-100"
+        />
+      ) : null}
+
       {canDeleteOrders ? (
         <ConfirmActionForm
           action={deleteOrderAction}
@@ -184,6 +216,27 @@ export function OrdersManager({
         items={order.items}
       />
 
+      {canDeleteOrders && (order.status === "DONE" || order.status === "PARTIALLY_RETURNED") ? (
+        <OrderPartialReturnModal
+          orderId={order.id}
+          customerName={order.customerName}
+          items={order.items}
+          action={partialReturnOrderAction}
+          className="rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-indigo-700 transition hover:border-indigo-300 hover:bg-indigo-100"
+          buttonLabel="Partial return"
+        />
+      ) : null}
+
+      {canDeleteOrders && (order.status === "DONE" || order.status === "PARTIALLY_RETURNED") ? (
+        <ConfirmActionForm
+          action={returnOrderAction}
+          hiddenFields={[{ name: "orderId", value: order.id }]}
+          confirmMessage="A je i sigurt qe don ta kthesh kete porosi? Stoku do te kthehet mbrapa dhe porosia do te shenohet si RETURNED."
+          buttonLabel="Kthe"
+          className="rounded-xl border border-violet-200 bg-violet-50 px-3 py-2 text-xs font-semibold uppercase tracking-[0.14em] text-violet-700 transition hover:border-violet-300 hover:bg-violet-100"
+        />
+      ) : null}
+
       {canDeleteOrders ? (
         <ConfirmActionForm
           action={deleteOrderAction}
@@ -211,6 +264,27 @@ export function OrdersManager({
         className="inline-flex items-center justify-center rounded-xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
         buttonLabel="Shiko"
       />
+
+      {canDeleteOrders && (order.status === "DONE" || order.status === "PARTIALLY_RETURNED") ? (
+        <OrderPartialReturnModal
+          orderId={order.id}
+          customerName={order.customerName}
+          items={order.items}
+          action={partialReturnOrderAction}
+          className="inline-flex items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 px-4 py-2.5 text-sm font-semibold text-indigo-700 transition hover:bg-indigo-100"
+          buttonLabel="Partial"
+        />
+      ) : null}
+
+      {canDeleteOrders && (order.status === "DONE" || order.status === "PARTIALLY_RETURNED") ? (
+        <ConfirmActionForm
+          action={returnOrderAction}
+          hiddenFields={[{ name: "orderId", value: order.id }]}
+          confirmMessage="A je i sigurt qe don ta kthesh kete porosi? Stoku do te kthehet mbrapa dhe porosia do te shenohet si RETURNED."
+          buttonLabel="Kthe"
+          className="inline-flex items-center justify-center rounded-xl border border-violet-200 bg-violet-50 px-4 py-2.5 text-sm font-semibold text-violet-700 transition hover:bg-violet-100"
+        />
+      ) : null}
 
       {canDeleteOrders ? (
         <ConfirmActionForm

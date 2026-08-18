@@ -62,6 +62,9 @@ export type MonthlySalesReport = {
   ordersCount: number;
   totalPairs: number;
   totalRevenue: number;
+  totalCost: number;
+  grossProfit: number;
+  grossMarginPercent: number;
   averageItemsPerOrder: number;
   averageOrderValue: number;
   activeModelsCount: number;
@@ -95,6 +98,9 @@ export async function getMonthlySalesReport(selectedMonth: string, tenantId: num
     prisma.order.count({
       where: {
         tenantId,
+        status: {
+          in: ["DONE", "PARTIALLY_RETURNED"],
+        },
         createdAt: {
           gte: monthFrom,
           lt: monthTo,
@@ -105,6 +111,9 @@ export async function getMonthlySalesReport(selectedMonth: string, tenantId: num
       where: {
         order: {
           tenantId,
+          status: {
+            in: ["DONE", "PARTIALLY_RETURNED"],
+          },
           createdAt: {
             gte: monthFrom,
             lt: monthTo,
@@ -113,7 +122,9 @@ export async function getMonthlySalesReport(selectedMonth: string, tenantId: num
       },
       select: {
         quantity: true,
+        returnedQuantity: true,
         unitPrice: true,
+        unitCost: true,
         order: {
           select: {
             source: true,
@@ -140,17 +151,29 @@ export async function getMonthlySalesReport(selectedMonth: string, tenantId: num
     }),
   ]);
 
-  const totalPairs = orderItems.reduce((sum, item) => sum + item.quantity, 0);
-  const totalRevenue = orderItems.reduce(
-    (sum, item) => sum + item.quantity * Number(item.unitPrice),
+  const totalPairs = orderItems.reduce(
+    (sum, item) => sum + Math.max(0, item.quantity - item.returnedQuantity),
     0,
   );
+  const totalRevenue = orderItems.reduce(
+    (sum, item) =>
+      sum + Math.max(0, item.quantity - item.returnedQuantity) * Number(item.unitPrice),
+    0,
+  );
+  const totalCost = orderItems.reduce(
+    (sum, item) =>
+      sum + Math.max(0, item.quantity - item.returnedQuantity) * Number(item.unitCost),
+    0,
+  );
+  const grossProfit = totalRevenue - totalCost;
+  const grossMarginPercent = totalRevenue > 0 ? (grossProfit / totalRevenue) * 100 : 0;
 
   const sourceMap = orderItems.reduce(
     (acc, item) => {
       const current = acc[item.order.source] ?? { quantity: 0, revenue: 0 };
-      current.quantity += item.quantity;
-      current.revenue += item.quantity * Number(item.unitPrice);
+      const netQuantity = Math.max(0, item.quantity - item.returnedQuantity);
+      current.quantity += netQuantity;
+      current.revenue += netQuantity * Number(item.unitPrice);
       acc[item.order.source] = current;
       return acc;
     },
@@ -176,7 +199,7 @@ export async function getMonthlySalesReport(selectedMonth: string, tenantId: num
         imagePath: item.variant.imagePath ?? null,
         productId: item.variant.productId,
       };
-      current.quantity += item.quantity;
+      current.quantity += Math.max(0, item.quantity - item.returnedQuantity);
       if (!current.imagePath && item.variant.imagePath) {
         current.imagePath = item.variant.imagePath;
       }
@@ -198,7 +221,7 @@ export async function getMonthlySalesReport(selectedMonth: string, tenantId: num
   const brandMap = orderItems.reduce(
     (acc, item) => {
       const key = item.variant.product.category.name;
-      acc.set(key, (acc.get(key) ?? 0) + item.quantity);
+      acc.set(key, (acc.get(key) ?? 0) + Math.max(0, item.quantity - item.returnedQuantity));
       return acc;
     },
     new Map<string, number>(),
@@ -213,8 +236,9 @@ export async function getMonthlySalesReport(selectedMonth: string, tenantId: num
       }).format(item.order.createdAt);
 
       const current = acc.get(key) ?? { quantity: 0, revenue: 0 };
-      current.quantity += item.quantity;
-      current.revenue += item.quantity * Number(item.unitPrice);
+      const netQuantity = Math.max(0, item.quantity - item.returnedQuantity);
+      current.quantity += netQuantity;
+      current.revenue += netQuantity * Number(item.unitPrice);
       acc.set(key, current);
       return acc;
     },
@@ -314,6 +338,9 @@ export async function getMonthlySalesReport(selectedMonth: string, tenantId: num
     ordersCount,
     totalPairs,
     totalRevenue,
+    totalCost,
+    grossProfit,
+    grossMarginPercent,
     averageItemsPerOrder: ordersCount > 0 ? totalPairs / ordersCount : 0,
     averageOrderValue: ordersCount > 0 ? totalRevenue / ordersCount : 0,
     activeModelsCount: modelMap.size,

@@ -163,30 +163,26 @@ export default async function ReportsPage({
           </div>
 
           <div className="rounded-[22px] border border-slate-200 bg-white px-4 py-4 shadow-sm print:break-inside-avoid print:shadow-none">
-            <div className="border-l-[3px] border-slate-500 pl-4">
-              <p className="text-sm text-slate-500">Produkte aktive</p>
-              <div className="mt-3 flex items-end gap-3">
+            <div className="border-l-[3px] border-amber-500 pl-4">
+              <p className="text-sm text-slate-500">Kosto totale</p>
+              <div className="mt-3">
                 <p className="text-4xl font-semibold tracking-tight text-slate-950">
-                  {report.activeModelsCount}
+                  {report.totalCost.toFixed(2)} EUR
                 </p>
-                <span className="pb-1 text-sm font-medium text-emerald-600">
-                  Ne stok
-                </span>
               </div>
             </div>
           </div>
 
           <div className="rounded-[22px] border border-slate-200 bg-white px-4 py-4 shadow-sm print:break-inside-avoid print:shadow-none">
-            <div className="border-l-[3px] border-indigo-950 pl-4">
-              <p className="text-sm text-slate-500">Burimi kryesor</p>
-              <div className="mt-3 flex items-center justify-between gap-3">
-                <p className="text-2xl font-semibold uppercase tracking-tight text-slate-950">
-                  {report.topSourceLabel ?? "-"}
+            <div className="border-l-[3px] border-emerald-600 pl-4">
+              <p className="text-sm text-slate-500">Fitimi bruto</p>
+              <div className="mt-3 flex items-end gap-3">
+                <p className="text-4xl font-semibold tracking-tight text-slate-950">
+                  {report.grossProfit.toFixed(2)} EUR
                 </p>
-                <svg viewBox="0 0 24 24" className="h-5 w-5 fill-none stroke-slate-900 stroke-[1.8]">
-                  <path d="M7 17 17 7" />
-                  <path d="M9 7h8v8" />
-                </svg>
+                <span className="pb-1 text-sm font-medium text-emerald-600">
+                  {report.grossMarginPercent.toFixed(1)}%
+                </span>
               </div>
             </div>
           </div>

@@ -17,6 +17,7 @@ type OrderItem = {
   locationCode?: string | null;
   imagePath?: string | null;
   quantity: number;
+  returnedQuantity: number;
   unitPrice?: number;
 };
 
@@ -76,12 +77,7 @@ export function OrderDetailsModal({
         {buttonLabel ? (
           <span>{buttonLabel}</span>
         ) : (
-          <svg
-            aria-hidden="true"
-            viewBox="0 0 20 20"
-            fill="none"
-            className="h-4 w-4"
-          >
+          <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" className="h-4 w-4">
             <path
               d="M1.75 10C3.15 6.55 6.19 4.25 10 4.25S16.85 6.55 18.25 10C16.85 13.45 13.81 15.75 10 15.75S3.15 13.45 1.75 10Z"
               stroke="currentColor"
@@ -103,10 +99,7 @@ export function OrderDetailsModal({
               <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
                 Porosia #{orderId}
               </p>
-              <h2
-                id={titleId}
-                className="mt-2 text-2xl font-semibold tracking-tight text-slate-950"
-              >
+              <h2 id={titleId} className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
                 {customerName}
               </h2>
               <p className="mt-1 text-sm text-slate-600">{phone}</p>
@@ -135,20 +128,14 @@ export function OrderDetailsModal({
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
                 Koha
               </p>
-              <p className="mt-2 font-semibold text-slate-950">
-                {createdAtDateLabel}
-              </p>
-              <p className="mt-1 text-sm text-slate-600">
-                {createdAtTimeLabel}
-              </p>
+              <p className="mt-2 font-semibold text-slate-950">{createdAtDateLabel}</p>
+              <p className="mt-1 text-sm text-slate-600">{createdAtTimeLabel}</p>
             </div>
             <div className="rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3">
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
                 Referenca
               </p>
-              <p className="mt-2 font-semibold text-slate-950">
-                {reference || "-"}
-              </p>
+              <p className="mt-2 font-semibold text-slate-950">{reference || "-"}</p>
             </div>
             <div className="rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3">
               <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
@@ -156,15 +143,17 @@ export function OrderDetailsModal({
               </p>
               <p className="mt-2 font-semibold text-slate-950">
                 {items.length} /{" "}
-                {items.reduce((sum, item) => sum + item.quantity, 0)} cope
+                {items.reduce(
+                  (sum, item) => sum + Math.max(0, item.quantity - item.returnedQuantity),
+                  0,
+                )}{" "}
+                cope aktive
               </p>
             </div>
           </div>
 
           <div className="space-y-3 text-center">
-            <p className="text-sm font-semibold text-slate-950">
-              Detajet e porosise
-            </p>
+            <p className="text-sm font-semibold text-slate-950">Detajet e porosise</p>
             <div className="grid gap-3 sm:grid-cols-2">
               {items.map((item) => (
                 <div
@@ -182,11 +171,10 @@ export function OrderDetailsModal({
                       ) : null}
                     </div>
                     <div>
-                      <p className="font-semibold text-slate-950">
-                        {getOrderItemTitle(item)}
-                      </p>
+                      <p className="font-semibold text-slate-950">{getOrderItemTitle(item)}</p>
                     </div>
                   </div>
+
                   <div className="mt-3 flex flex-wrap gap-2 text-sm">
                     <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-slate-700">
                       {getOrderVariantSummary(item)}
@@ -197,16 +185,22 @@ export function OrderDetailsModal({
                       </span>
                     ) : null}
                     <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1.5 font-medium text-emerald-700">
-                      {item.quantity} cope
+                      Aktiv: {Math.max(0, item.quantity - item.returnedQuantity)} cope
                     </span>
-                    {typeof item.unitPrice === "number" ? (
-                      <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-slate-700">
-                        €{item.unitPrice.toFixed(2)}
+                    {item.returnedQuantity > 0 ? (
+                      <span className="rounded-full border border-violet-200 bg-violet-50 px-3 py-1.5 text-violet-700">
+                        Kthyer: {item.returnedQuantity}
                       </span>
                     ) : null}
                     {typeof item.unitPrice === "number" ? (
                       <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-slate-700">
-                        Totali: €{(item.unitPrice * item.quantity).toFixed(2)}
+                        EUR {item.unitPrice.toFixed(2)}
+                      </span>
+                    ) : null}
+                    {typeof item.unitPrice === "number" ? (
+                      <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-slate-700">
+                        Totali aktiv: EUR{" "}
+                        {(item.unitPrice * Math.max(0, item.quantity - item.returnedQuantity)).toFixed(2)}
                       </span>
                     ) : null}
                   </div>

@@ -618,6 +618,25 @@ async function receivePurchaseOrder(formData: FormData) {
         inventoryId: number | null;
       }
     >();
+    const resolvedPendingProducts = new Map<
+      string,
+      {
+        id: number;
+        name: string;
+        brand: string | null;
+        category: {
+          id: number;
+          name: string;
+        };
+      }
+    >();
+
+    const buildPendingProductKey = (item: (typeof items)[number]) =>
+      [
+        item.pendingCategoryName?.trim().toLowerCase() ?? "",
+        item.pendingBrand?.trim().toLowerCase() ?? "",
+        item.pendingProductName?.trim().toLowerCase() ?? "",
+      ].join("::");
 
     async function resolveVariantForItem(item: (typeof items)[number]) {
       if (resolvedVariants.has(item.id)) {
@@ -644,45 +663,54 @@ async function receivePurchaseOrder(formData: FormData) {
           throw new Error("Missing pending purchase order product");
         }
 
-        let category = await tx.category.findFirst({
-          where: {
-            tenantId,
-            name: item.pendingCategoryName,
-          },
-          select: { id: true, name: true },
-        });
+        const pendingProductKey = buildPendingProductKey(item);
+        const cachedProduct = resolvedPendingProducts.get(pendingProductKey);
 
-        if (!category) {
-          category = await tx.category.create({
-            data: {
+        if (cachedProduct) {
+          product = cachedProduct;
+        } else {
+          let category = await tx.category.findFirst({
+            where: {
               tenantId,
               name: item.pendingCategoryName,
-              catalogType: tenant.catalogType,
-              isActive: true,
             },
             select: { id: true, name: true },
           });
-        }
 
-        product = await tx.product.create({
-          data: {
-            tenantId,
-            categoryId: category.id,
-            name: item.pendingProductName,
-            brand: item.pendingBrand,
-          },
-          select: {
-            id: true,
-            name: true,
-            brand: true,
-            category: {
-              select: {
-                id: true,
-                name: true,
+          if (!category) {
+            category = await tx.category.create({
+              data: {
+                tenantId,
+                name: item.pendingCategoryName,
+                catalogType: tenant.catalogType,
+                isActive: true,
+              },
+              select: { id: true, name: true },
+            });
+          }
+
+          product = await tx.product.create({
+            data: {
+              tenantId,
+              categoryId: category.id,
+              name: item.pendingProductName,
+              brand: item.pendingBrand,
+            },
+            select: {
+              id: true,
+              name: true,
+              brand: true,
+              category: {
+                select: {
+                  id: true,
+                  name: true,
+                },
               },
             },
-          },
-        });
+          });
+
+          resolvedPendingProducts.set(pendingProductKey, product);
+        }
       }
 
       const categoryConfig = getCategoryConfig(product.category.name);
@@ -744,6 +772,7 @@ async function receivePurchaseOrder(formData: FormData) {
             color,
             stock: 0,
             price: item.unitCost,
+            costPrice: item.unitCost,
             sku: nextSku,
             material,
             powerWatts,
@@ -773,6 +802,13 @@ async function receivePurchaseOrder(formData: FormData) {
         data: {
           productId: product.id,
           variantId: variant.id,
+        },
+      });
+
+      await tx.variant.update({
+        where: { id: variant.id },
+        data: {
+          costPrice: item.unitCost,
         },
       });
 
