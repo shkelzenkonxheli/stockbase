@@ -412,6 +412,7 @@ model PurchaseOrderItem {
   variantId       Int?
   orderedQuantity Int
   receivedQuantity Int         @default(0)
+  returnedQuantity Int         @default(0)
   unitCost        Decimal       @db.Decimal(10, 2)
   note            String?
   pendingProductName String?
@@ -484,6 +485,7 @@ enum InventoryCountStatus {
 enum StockMovementReason {
   INCOMING_STOCK
   CUSTOMER_RETURN
+  SUPPLIER_RETURN
   TRANSFER
   INVENTORY_COUNT
 }
@@ -493,5 +495,7 @@ enum PurchaseOrderStatus {
   ORDERED
   PARTIALLY_RECEIVED
   RECEIVED
+  PARTIALLY_RETURNED
+  RETURNED
   CANCELED
 }

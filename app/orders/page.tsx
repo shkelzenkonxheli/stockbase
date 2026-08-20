@@ -21,11 +21,13 @@ type OrdersPageProps = {
     page?: string;
     q?: string;
     source?: string;
+    status?: string;
     date?: string;
   }>;
 };
 
 type OrderSourceValue = "INSTAGRAM" | "STORE" | "WHOLESALE";
+type OrderStatusValue = "NEW" | "READY" | "DONE" | "PARTIALLY_RETURNED" | "CANCELED" | "RETURNED";
 
 function getDateStringInTimeZone(date: Date, timeZone: string) {
   const formatter = new Intl.DateTimeFormat("en-CA", {
@@ -88,6 +90,7 @@ function buildOrdersPageHref(
   page: number,
   q: string,
   source: string,
+  status: string,
   date: string,
 ) {
   const params = new URLSearchParams();
@@ -98,6 +101,9 @@ function buildOrdersPageHref(
   }
   if (source) {
     params.set("source", source);
+  }
+  if (status) {
+    params.set("status", status);
   }
   if (date) {
     params.set("date", date);
@@ -828,6 +834,7 @@ export default async function OrdersPage({
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const searchQuery = resolvedSearchParams?.q?.trim() || "";
   const rawSource = resolvedSearchParams?.source?.trim() || "";
+  const rawStatus = resolvedSearchParams?.status?.trim() || "";
   const defaultDate = getDateStringInTimeZone(
     new Date(),
     BUSINESS_TIME_ZONE,
@@ -846,6 +853,16 @@ export default async function OrdersPage({
     "WHOLESALE",
   ].includes(rawSource)
     ? (rawSource as OrderSourceValue)
+    : "";
+  const selectedStatus: OrderStatusValue | "" = [
+    "NEW",
+    "READY",
+    "DONE",
+    "PARTIALLY_RETURNED",
+    "CANCELED",
+    "RETURNED",
+  ].includes(rawStatus)
+    ? (rawStatus as OrderStatusValue)
     : "";
   const currentPage = Math.max(1, Number(resolvedSearchParams?.page) || 1);
   const skip = (currentPage - 1) * PAGE_SIZE;
@@ -878,6 +895,11 @@ export default async function OrdersPage({
     ...(selectedSource
       ? {
           source: selectedSource,
+        }
+      : {}),
+    ...(selectedStatus
+      ? {
+          status: selectedStatus,
         }
       : {}),
     createdAt: {
@@ -1058,6 +1080,15 @@ export default async function OrdersPage({
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
+              <div className="flex flex-wrap gap-2">
+                <Link
+                href={`/orders/print?date=${selectedDate}${searchQuery ? `&q=${encodeURIComponent(searchQuery)}` : ""}${selectedSource ? `&source=${selectedSource}` : ""}${selectedStatus ? `&status=${selectedStatus}` : ""}`}
+                target="_blank"
+                className="inline-flex items-center justify-center rounded-2xl border border-emerald-200 bg-white/92 px-4 py-3 text-sm font-semibold text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-50"
+              >
+                Printo daten
+              </Link>
+              </div>
               {canCreateOrders ? (
                 <>
                   <Link
@@ -1083,6 +1114,7 @@ export default async function OrdersPage({
             <OrdersFilters
               searchQuery={searchQuery}
               selectedSource={selectedSource}
+              selectedStatus={selectedStatus}
               selectedDate={selectedDate}
             />
           </div>
@@ -1130,6 +1162,7 @@ export default async function OrdersPage({
                     previousPage,
                     searchQuery,
                     selectedSource,
+                    selectedStatus,
                     selectedDate,
                   )}
                   className="inline-flex items-center justify-center rounded-xl border border-emerald-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50"
@@ -1147,6 +1180,7 @@ export default async function OrdersPage({
                     nextPage,
                     searchQuery,
                     selectedSource,
+                    selectedStatus,
                     selectedDate,
                   )}
                   className="inline-flex items-center justify-center rounded-xl border border-emerald-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50"

@@ -30,9 +30,12 @@ type CatalogProduct = {
 
 type PurchaseOrderListItem = {
   id: number;
+  supplierId: number;
+  warehouseId: number;
   status: string;
   note: string | null;
   orderedAtLabel: string;
+  orderedAtValue: string;
   supplierName: string;
   warehouseName: string;
   totalLabel: string;
@@ -46,9 +49,13 @@ type PurchaseOrderListItem = {
     isPending?: boolean;
     orderedQuantity: number;
     receivedQuantity: number;
+    returnedQuantity: number;
     remainingQuantity: number;
+    returnableQuantity: number;
     unitCostLabel: string;
+    unitCostValue: number;
     lineTotalLabel: string;
+    note: string | null;
   }>;
 };
 
@@ -80,7 +87,10 @@ type DraftGroup = {
 
 type PurchaseOrdersManagerProps = {
   action: (formData: FormData) => void | Promise<void>;
+  updateAction: (formData: FormData) => void | Promise<void>;
+  cancelAction: (formData: FormData) => void | Promise<void>;
   receiveAction: (formData: FormData) => void | Promise<void>;
+  returnAction: (formData: FormData) => void | Promise<void>;
   suppliers: SupplierOption[];
   warehouses: WarehouseOption[];
   categoryOptions: string[];
@@ -131,6 +141,10 @@ function statusClasses(status: string) {
       return "border-amber-200 bg-amber-50 text-amber-700";
     case "RECEIVED":
       return "border-emerald-200 bg-emerald-50 text-emerald-700";
+    case "PARTIALLY_RETURNED":
+      return "border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700";
+    case "RETURNED":
+      return "border-violet-200 bg-violet-50 text-violet-700";
     case "CANCELED":
       return "border-rose-200 bg-rose-50 text-rose-700";
     default:
@@ -146,6 +160,10 @@ function statusLabel(status: string) {
       return "Partial";
     case "RECEIVED":
       return "Received";
+    case "PARTIALLY_RETURNED":
+      return "Supplier return";
+    case "RETURNED":
+      return "Returned";
     case "CANCELED":
       return "Canceled";
     default:
@@ -178,7 +196,10 @@ function sectionCardClass() {
 
 export function PurchaseOrdersManager({
   action,
+  updateAction,
+  cancelAction,
   receiveAction,
+  returnAction,
   suppliers,
   warehouses,
   categoryOptions,
@@ -250,6 +271,34 @@ export function PurchaseOrdersManager({
   const selectedOrder = useMemo(
     () => purchaseOrders.find((order) => order.id === selectedOrderId) ?? null,
     [purchaseOrders, selectedOrderId],
+  );
+  const selectedOrderCanEdit = useMemo(
+    () =>
+      Boolean(
+        selectedOrder &&
+          ["DRAFT", "ORDERED"].includes(selectedOrder.status) &&
+          selectedOrder.items.every((item) => item.receivedQuantity <= 0),
+      ),
+    [selectedOrder],
+  );
+  const selectedOrderCanCancel = selectedOrderCanEdit;
+  const selectedOrderCanReceive = useMemo(
+    () =>
+      Boolean(
+        selectedOrder &&
+          ["ORDERED", "PARTIALLY_RECEIVED", "PARTIALLY_RETURNED"].includes(selectedOrder.status) &&
+          selectedOrder.items.some((item) => item.remainingQuantity > 0),
+      ),
+    [selectedOrder],
+  );
+  const selectedOrderCanReturn = useMemo(
+    () =>
+      Boolean(
+        selectedOrder &&
+          ["RECEIVED", "PARTIALLY_RECEIVED", "PARTIALLY_RETURNED"].includes(selectedOrder.status) &&
+          selectedOrder.items.some((item) => item.returnableQuantity > 0),
+      ),
+    [selectedOrder],
   );
 
   const categories = useMemo(
@@ -816,6 +865,8 @@ export function PurchaseOrdersManager({
               <option value="ORDERED">Ordered</option>
               <option value="PARTIALLY_RECEIVED">Partial</option>
               <option value="RECEIVED">Received</option>
+              <option value="PARTIALLY_RETURNED">Supplier return</option>
+              <option value="RETURNED">Returned</option>
               <option value="CANCELED">Canceled</option>
             </select>
           </label>
@@ -1845,6 +1896,9 @@ export function PurchaseOrdersManager({
                         <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 font-medium text-emerald-700">
                           Pranuar: {item.receivedQuantity}
                         </span>
+                        <span className="rounded-full border border-fuchsia-200 bg-fuchsia-50 px-3 py-1 font-medium text-fuchsia-700">
+                          Kthyer: {item.returnedQuantity}
+                        </span>
                         <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 font-medium text-amber-700">
                           Mbetur: {item.remainingQuantity}
                         </span>
@@ -1860,7 +1914,159 @@ export function PurchaseOrdersManager({
                 ))}
               </div>
 
-              {selectedOrder.status === "ORDERED" || selectedOrder.status === "PARTIALLY_RECEIVED" ? (
+              {selectedOrderCanEdit ? (
+                <form
+                  action={updateAction}
+                  className="rounded-[24px] border border-sky-200 bg-[linear-gradient(180deg,#fbfdff_0%,#eff6ff_100%)] p-4"
+                >
+                  <input type="hidden" name="purchaseOrderId" value={selectedOrder.id} />
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold text-slate-950">Edit purchase order</h3>
+                      <p className="mt-1 text-sm text-slate-500">
+                        Mund te ndryshosh daten, furnitorin, depon dhe rreshtat para pranimit.
+                      </p>
+                    </div>
+                    {selectedOrderCanCancel ? (
+                      <button
+                        type="submit"
+                        formAction={cancelAction}
+                        className="inline-flex items-center justify-center rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm font-semibold text-rose-700 transition hover:bg-rose-100"
+                      >
+                        Anulo porosine
+                      </button>
+                    ) : null}
+                  </div>
+
+                  <div className="mt-4 grid gap-3 md:grid-cols-2">
+                    <label className="grid gap-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                      Furnitori
+                      <select
+                        name="supplierId"
+                        defaultValue={String(selectedOrder.supplierId)}
+                        className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium tracking-normal text-slate-900 outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+                      >
+                        {suppliers.map((supplier) => (
+                          <option key={supplier.id} value={supplier.id}>
+                            {supplier.name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <label className="grid gap-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                      Depoja
+                      <select
+                        name="warehouseId"
+                        defaultValue={String(selectedOrder.warehouseId)}
+                        className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium tracking-normal text-slate-900 outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+                      >
+                        {warehouses.map((warehouse) => (
+                          <option key={warehouse.id} value={warehouse.id}>
+                            {warehouse.name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+
+                    <label className="grid gap-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                      Data
+                      <input
+                        type="date"
+                        name="orderedAt"
+                        defaultValue={selectedOrder.orderedAtValue}
+                        className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium tracking-normal text-slate-900 outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+                      />
+                    </label>
+
+                    <label className="grid gap-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                      Statusi
+                      <select
+                        name="status"
+                        defaultValue={selectedOrder.status === "DRAFT" ? "DRAFT" : "ORDERED"}
+                        className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium tracking-normal text-slate-900 outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+                      >
+                        <option value="ORDERED">Ordered</option>
+                        <option value="DRAFT">Draft</option>
+                      </select>
+                    </label>
+                  </div>
+
+                  <label className="mt-3 grid gap-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                    Shenim
+                    <textarea
+                      name="note"
+                      rows={2}
+                      defaultValue={selectedOrder.note ?? ""}
+                      className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium tracking-normal text-slate-900 outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+                    />
+                  </label>
+
+                  <div className="mt-4 space-y-3">
+                    {selectedOrder.items.map((item) => (
+                      <div
+                        key={`edit-${item.id}`}
+                        className="grid gap-3 rounded-2xl border border-white/80 bg-white/90 p-4 lg:grid-cols-[minmax(0,1fr)_100px_120px]"
+                      >
+                        <input type="hidden" name={`item_${item.id}`} value={item.id} />
+                        <div>
+                          <p className="font-semibold text-slate-950">{item.productName}</p>
+                          <p className="mt-1 text-sm text-slate-500">
+                            {item.color} / {item.size || "Standard"}
+                          </p>
+                          {item.note ? (
+                            <p className="mt-2 text-xs text-slate-400">Aktual: {item.note}</p>
+                          ) : null}
+                        </div>
+
+                        <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                          Sasia
+                          <input
+                            type="number"
+                            name={`quantity_${item.id}`}
+                            min={1}
+                            defaultValue={item.orderedQuantity}
+                            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-sky-300"
+                          />
+                        </label>
+
+                        <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                          Cmimi
+                          <input
+                            type="number"
+                            step="0.01"
+                            min={0}
+                            name={`unitCost_${item.id}`}
+                            defaultValue={item.unitCostValue}
+                            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-sky-300"
+                          />
+                        </label>
+
+                        <label className="lg:col-span-3 grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                          Shenim rreshti
+                          <input
+                            type="text"
+                            name={`note_${item.id}`}
+                            defaultValue={item.note ?? ""}
+                            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-sky-300"
+                          />
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="mt-4 flex justify-end">
+                    <button
+                      type="submit"
+                      className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-sky-700"
+                    >
+                      Ruaj ndryshimet
+                    </button>
+                  </div>
+                </form>
+              ) : null}
+
+              {selectedOrderCanReceive ? (
                 <form action={receiveAction} className="rounded-[24px] border border-emerald-200 bg-[linear-gradient(180deg,#f8fffb_0%,#effaf3_100%)] p-4">
                   <input type="hidden" name="purchaseOrderId" value={selectedOrder.id} />
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -1924,6 +2130,81 @@ export function PurchaseOrdersManager({
                             defaultValue={item.remainingQuantity > 0 ? item.remainingQuantity : 0}
                             disabled={item.remainingQuantity <= 0}
                             className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-emerald-300 disabled:cursor-not-allowed disabled:bg-slate-50"
+                          />
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </form>
+              ) : null}
+
+              {selectedOrderCanReturn ? (
+                <form
+                  action={returnAction}
+                  className="rounded-[24px] border border-fuchsia-200 bg-[linear-gradient(180deg,#fff8fe_0%,#faf1ff_100%)] p-4"
+                >
+                  <input type="hidden" name="purchaseOrderId" value={selectedOrder.id} />
+                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <h3 className="text-lg font-semibold text-slate-950">Return to supplier</h3>
+                      <p className="mt-1 text-sm text-slate-500">
+                        Ul stokun nga depoja dhe shenon sasine e kthyer te ky purchase order.
+                      </p>
+                    </div>
+                    <div className="flex flex-wrap gap-2">
+                      <button
+                        type="submit"
+                        name="returnMode"
+                        value="all"
+                        className="inline-flex items-center justify-center rounded-2xl border border-fuchsia-200 bg-white px-4 py-2.5 text-sm font-semibold text-fuchsia-700 transition hover:bg-fuchsia-50"
+                      >
+                        Kthe te gjitha te mbeturat
+                      </button>
+                      <button
+                        type="submit"
+                        name="returnMode"
+                        value="custom"
+                        className="inline-flex items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#a21caf_0%,#c026d3_100%)] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(192,38,211,0.22)] transition hover:brightness-105"
+                      >
+                        Ruaj kthimin
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 space-y-3">
+                    {selectedOrder.items.map((item) => (
+                      <div
+                        key={`return-${item.id}`}
+                        className="grid gap-3 rounded-2xl border border-white/80 bg-white/90 p-4 sm:grid-cols-[minmax(0,1fr)_120px]"
+                      >
+                        <div>
+                          <p className="font-semibold text-slate-950">{item.productName}</p>
+                          <p className="mt-1 text-sm text-slate-500">
+                            {item.color} / {item.size || "Standard"}
+                          </p>
+                          <div className="mt-2 flex flex-wrap gap-2 text-xs">
+                            <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-emerald-700">
+                              Pranuar {item.receivedQuantity}
+                            </span>
+                            <span className="rounded-full border border-fuchsia-200 bg-fuchsia-50 px-2.5 py-1 text-fuchsia-700">
+                              Kthyer {item.returnedQuantity}
+                            </span>
+                            <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-amber-700">
+                              Te kthyeshme {item.returnableQuantity}
+                            </span>
+                          </div>
+                        </div>
+
+                        <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                          Kthe tani
+                          <input
+                            type="number"
+                            name={`returned_${item.id}`}
+                            min={0}
+                            max={item.returnableQuantity}
+                            defaultValue={item.returnableQuantity > 0 ? item.returnableQuantity : 0}
+                            disabled={item.returnableQuantity <= 0}
+                            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-fuchsia-300 disabled:cursor-not-allowed disabled:bg-slate-50"
                           />
                         </label>
                       </div>

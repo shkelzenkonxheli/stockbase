@@ -81,6 +81,7 @@ export type InventoryCountStatus = (typeof InventoryCountStatus)[keyof typeof In
 export const StockMovementReason = {
   INCOMING_STOCK: 'INCOMING_STOCK',
   CUSTOMER_RETURN: 'CUSTOMER_RETURN',
+  SUPPLIER_RETURN: 'SUPPLIER_RETURN',
   TRANSFER: 'TRANSFER',
   INVENTORY_COUNT: 'INVENTORY_COUNT'
 } as const
@@ -93,6 +94,8 @@ export const PurchaseOrderStatus = {
   ORDERED: 'ORDERED',
   PARTIALLY_RECEIVED: 'PARTIALLY_RECEIVED',
   RECEIVED: 'RECEIVED',
+  PARTIALLY_RETURNED: 'PARTIALLY_RETURNED',
+  RETURNED: 'RETURNED',
   CANCELED: 'CANCELED'
 } as const
 

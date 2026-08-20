@@ -30,6 +30,8 @@ const PURCHASE_ORDER_STATUS_FILTERS = [
   "ORDERED",
   "PARTIALLY_RECEIVED",
   "RECEIVED",
+  "PARTIALLY_RETURNED",
+  "RETURNED",
   "CANCELED",
 ] as const;
 
@@ -82,6 +84,48 @@ function getMessage(error?: string, success?: string) {
     };
   }
 
+  if (error === "update_validation") {
+    return {
+      type: "error" as const,
+      text: "Perditesimi deshtoi. Kontrollo daten, furnitorin, depon dhe rreshtat e porosise.",
+    };
+  }
+
+  if (error === "update_state") {
+    return {
+      type: "error" as const,
+      text: "Kjo porosi nuk mund te editohet me pasi ka pranim ose eshte mbyllur.",
+    };
+  }
+
+  if (error === "cancel_state") {
+    return {
+      type: "error" as const,
+      text: "Mund te anulosh vetem porosite pa pranime ne status draft ose ordered.",
+    };
+  }
+
+  if (error === "return_validation") {
+    return {
+      type: "error" as const,
+      text: "Vendos sasi valide per te pakten nje rresht qe po kthehet te furnitori.",
+    };
+  }
+
+  if (error === "return_state") {
+    return {
+      type: "error" as const,
+      text: "Ky purchase order nuk lejon kthime te furnitori ne gjendjen aktuale.",
+    };
+  }
+
+  if (error === "return_stock") {
+    return {
+      type: "error" as const,
+      text: "Nuk ka stok te mjaftueshem ne depon aktuale per kthimin e kerkuar.",
+    };
+  }
+
   if (success === "created") {
     return {
       type: "success" as const,
@@ -96,7 +140,55 @@ function getMessage(error?: string, success?: string) {
     };
   }
 
+  if (success === "updated") {
+    return {
+      type: "success" as const,
+      text: "Purchase order u perditesua me sukses.",
+    };
+  }
+
+  if (success === "canceled") {
+    return {
+      type: "success" as const,
+      text: "Purchase order u anulua me sukses.",
+    };
+  }
+
+  if (success === "returned") {
+    return {
+      type: "success" as const,
+      text: "Kthimi te furnitori u ruajt me sukses.",
+    };
+  }
+
   return null;
+}
+
+function derivePurchaseOrderStatus(items: Array<{
+  orderedQuantity: number;
+  receivedQuantity: number;
+  returnedQuantity: number;
+}>) {
+  const totalReceived = items.reduce((sum, item) => sum + item.receivedQuantity, 0);
+  const totalReturned = items.reduce((sum, item) => sum + item.returnedQuantity, 0);
+
+  if (totalReceived > 0 && items.every((item) => item.returnedQuantity >= item.receivedQuantity)) {
+    return "RETURNED" as const;
+  }
+
+  if (totalReturned > 0) {
+    return "PARTIALLY_RETURNED" as const;
+  }
+
+  if (items.every((item) => item.receivedQuantity >= item.orderedQuantity)) {
+    return "RECEIVED" as const;
+  }
+
+  if (totalReceived > 0) {
+    return "PARTIALLY_RECEIVED" as const;
+  }
+
+  return "ORDERED" as const;
 }
 
 async function createPurchaseOrder(formData: FormData) {
@@ -458,6 +550,244 @@ async function createPurchaseOrder(formData: FormData) {
   redirect("/purchases?success=created");
 }
 
+async function updatePurchaseOrder(formData: FormData) {
+  "use server";
+
+  const currentUser = await requireRole(["SUPER_ADMIN"]);
+  const tenantId = currentUser.tenant?.id;
+  const purchaseOrderId = Number(formData.get("purchaseOrderId"));
+  const supplierId = Number(formData.get("supplierId"));
+  const warehouseId = Number(formData.get("warehouseId"));
+  const orderedAtRaw = formData.get("orderedAt")?.toString();
+  const note = formData.get("note")?.toString().trim() || null;
+  const statusRaw = formData.get("status")?.toString();
+  const status = statusRaw === "DRAFT" ? "DRAFT" : "ORDERED";
+
+  if (!tenantId || !purchaseOrderId || !supplierId || !warehouseId || !orderedAtRaw) {
+    redirect("/purchases?error=update_validation");
+  }
+
+  const orderedAt = new Date(`${orderedAtRaw}T00:00:00`);
+  if (Number.isNaN(orderedAt.getTime())) {
+    redirect("/purchases?error=update_validation");
+  }
+
+  const itemIds = Array.from(formData.entries())
+    .filter(([key]) => key.startsWith("item_"))
+    .map(([, value]) => Number(value))
+    .filter((value) => Number.isInteger(value) && value > 0);
+
+  if (itemIds.length === 0) {
+    redirect("/purchases?error=update_validation");
+  }
+
+  const result = await prisma.$transaction(async (tx) => {
+    const order = await tx.purchaseOrder.findFirst({
+      where: { id: purchaseOrderId, tenantId },
+      include: {
+        supplier: { select: { name: true } },
+        warehouse: { select: { id: true, name: true } },
+        items: {
+          include: {
+            product: { select: { name: true } },
+            variant: {
+              select: {
+                id: true,
+                size: true,
+                color: true,
+                product: { select: { name: true } },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!order) {
+      return { ok: false as const, reason: "validation" as const };
+    }
+
+    const hasAnyReceive = order.items.some((item) => item.receivedQuantity > 0);
+    if (!["DRAFT", "ORDERED"].includes(order.status) || hasAnyReceive) {
+      return { ok: false as const, reason: "state" as const };
+    }
+
+    const [supplier, warehouse] = await Promise.all([
+      tx.supplier.findFirst({
+        where: { id: supplierId, tenantId, isActive: true },
+        select: { id: true, name: true },
+      }),
+      tx.warehouse.findFirst({
+        where: { id: warehouseId, tenantId, isActive: true },
+        select: { id: true, name: true },
+      }),
+    ]);
+
+    if (!supplier || !warehouse) {
+      return { ok: false as const, reason: "validation" as const };
+    }
+
+    const itemMap = new Map(order.items.map((item) => [item.id, item]));
+    const updates: Array<{
+      id: number;
+      orderedQuantity: number;
+      unitCost: number;
+      note: string | null;
+    }> = [];
+
+    for (const itemId of itemIds) {
+      const item = itemMap.get(itemId);
+      if (!item) {
+        return { ok: false as const, reason: "validation" as const };
+      }
+
+      const orderedQuantity = Math.floor(Number(formData.get(`quantity_${itemId}`)));
+      const unitCost = Number(formData.get(`unitCost_${itemId}`));
+      const itemNote = formData.get(`note_${itemId}`)?.toString().trim() || null;
+
+      if (!Number.isInteger(orderedQuantity) || orderedQuantity <= 0) {
+        return { ok: false as const, reason: "validation" as const };
+      }
+
+      if (!Number.isFinite(unitCost) || unitCost < 0) {
+        return { ok: false as const, reason: "validation" as const };
+      }
+
+      updates.push({ id: itemId, orderedQuantity, unitCost, note: itemNote });
+    }
+
+    if (updates.length !== order.items.length) {
+      return { ok: false as const, reason: "validation" as const };
+    }
+
+    await tx.purchaseOrder.update({
+      where: { id: purchaseOrderId },
+      data: {
+        supplierId,
+        warehouseId,
+        orderedAt,
+        note,
+        status,
+      },
+    });
+
+    for (const item of updates) {
+      await tx.purchaseOrderItem.update({
+        where: { id: item.id },
+        data: {
+          orderedQuantity: item.orderedQuantity,
+          unitCost: item.unitCost.toFixed(2),
+          note: item.note,
+        },
+      });
+    }
+
+    await writeAuditLog(tx, {
+      tenantId,
+      userId: currentUser.id,
+      action: "PURCHASE_ORDER_UPDATED",
+      entityType: "PURCHASE_ORDER",
+      entityId: order.id,
+      entityLabel: `PO #${order.id}`,
+      warehouseId,
+      metadata: {
+        supplier: supplier.name,
+        warehouse: warehouse.name,
+        status,
+        orderedAt: orderedAt.toISOString(),
+        lines: updates.map((item) => {
+          const existing = itemMap.get(item.id)!;
+          return {
+            itemId: item.id,
+            product:
+              existing.variant?.product.name ??
+              existing.product?.name ??
+              existing.pendingProductName ??
+              "Produkt i ri",
+            size: existing.variant?.size ?? existing.pendingSize ?? "Standard",
+            color: existing.variant?.color ?? existing.pendingColor ?? "Standard",
+            quantity: item.orderedQuantity,
+            unitCost: item.unitCost,
+          };
+        }),
+      },
+    });
+
+    return { ok: true as const };
+  });
+
+  if (!result.ok) {
+    redirect(`/purchases?error=${result.reason === "state" ? "update_state" : "update_validation"}`);
+  }
+
+  revalidatePath("/purchases");
+  revalidatePath("/suppliers");
+  redirect("/purchases?success=updated");
+}
+
+async function cancelPurchaseOrder(formData: FormData) {
+  "use server";
+
+  const currentUser = await requireRole(["SUPER_ADMIN"]);
+  const tenantId = currentUser.tenant?.id;
+  const purchaseOrderId = Number(formData.get("purchaseOrderId"));
+
+  if (!tenantId || !purchaseOrderId) {
+    redirect("/purchases?error=cancel_state");
+  }
+
+  const result = await prisma.$transaction(async (tx) => {
+    const order = await tx.purchaseOrder.findFirst({
+      where: { id: purchaseOrderId, tenantId },
+      include: {
+        supplier: { select: { name: true } },
+        warehouse: { select: { id: true, name: true } },
+        items: { select: { orderedQuantity: true, receivedQuantity: true } },
+      },
+    });
+
+    if (!order) {
+      return { ok: false as const };
+    }
+
+    if (
+      !["DRAFT", "ORDERED"].includes(order.status) ||
+      order.items.some((item) => item.receivedQuantity > 0)
+    ) {
+      return { ok: false as const };
+    }
+
+    await tx.purchaseOrder.update({
+      where: { id: order.id },
+      data: { status: "CANCELED" },
+    });
+
+    await writeAuditLog(tx, {
+      tenantId,
+      userId: currentUser.id,
+      action: "PURCHASE_ORDER_CANCELED",
+      entityType: "PURCHASE_ORDER",
+      entityId: order.id,
+      entityLabel: `PO #${order.id}`,
+      warehouseId: order.warehouse.id,
+      metadata: {
+        supplier: order.supplier.name,
+        warehouse: order.warehouse.name,
+        status: "CANCELED",
+      },
+    });
+
+    return { ok: true as const };
+  });
+
+  if (!result.ok) {
+    redirect("/purchases?error=cancel_state");
+  }
+
+  revalidatePath("/purchases");
+  redirect("/purchases?success=canceled");
+}
+
 async function receivePurchaseOrder(formData: FormData) {
   "use server";
 
@@ -520,7 +850,7 @@ async function receivePurchaseOrder(formData: FormData) {
       return { ok: false as const, reason: "items" as const };
     }
 
-    if (!["ORDERED", "PARTIALLY_RECEIVED"].includes(order.status)) {
+    if (!["ORDERED", "PARTIALLY_RECEIVED", "PARTIALLY_RETURNED"].includes(order.status)) {
       return { ok: false as const, reason: "state" as const };
     }
 
@@ -894,14 +1224,11 @@ async function receivePurchaseOrder(formData: FormData) {
       select: {
         orderedQuantity: true,
         receivedQuantity: true,
+        returnedQuantity: true,
       },
     });
 
-    const nextStatus = refreshedItems.every(
-      (item) => item.receivedQuantity >= item.orderedQuantity,
-    )
-      ? "RECEIVED"
-      : "PARTIALLY_RECEIVED";
+    const nextStatus = derivePurchaseOrderStatus(refreshedItems);
 
     await tx.purchaseOrder.update({
       where: { id: purchaseOrderId },
@@ -966,6 +1293,203 @@ async function receivePurchaseOrder(formData: FormData) {
   redirect("/purchases?success=received");
 }
 
+async function returnPurchaseOrderToSupplier(formData: FormData) {
+  "use server";
+
+  const currentUser = await requireRole(["SUPER_ADMIN"]);
+  const tenantId = currentUser.tenant?.id;
+  const purchaseOrderId = Number(formData.get("purchaseOrderId"));
+  const returnMode = formData.get("returnMode")?.toString();
+
+  if (!tenantId || !purchaseOrderId) {
+    redirect("/purchases?error=return_validation");
+  }
+
+  const result = await prisma.$transaction(async (tx) => {
+    const order = await tx.purchaseOrder.findFirst({
+      where: { id: purchaseOrderId, tenantId },
+      include: {
+        supplier: { select: { name: true } },
+        warehouse: { select: { id: true, name: true } },
+        items: {
+          include: {
+            product: { select: { name: true } },
+            variant: {
+              select: {
+                id: true,
+                stock: true,
+                size: true,
+                color: true,
+                product: { select: { id: true, name: true } },
+              },
+            },
+          },
+        },
+      },
+    });
+
+    if (!order) {
+      return { ok: false as const, reason: "validation" as const };
+    }
+
+    if (!["RECEIVED", "PARTIALLY_RECEIVED", "PARTIALLY_RETURNED"].includes(order.status)) {
+      return { ok: false as const, reason: "state" as const };
+    }
+
+    const warehouseId = order.warehouse.id;
+
+    const itemMap = new Map(order.items.map((item) => [item.id, item]));
+
+    const adjustments =
+      returnMode === "all"
+        ? order.items
+            .map((item) => ({
+              itemId: item.id,
+              quantity: item.receivedQuantity - item.returnedQuantity,
+            }))
+            .filter((item) => item.quantity > 0)
+        : Array.from(formData.entries())
+            .filter(([key]) => key.startsWith("returned_"))
+            .map(([key, value]) => ({
+              itemId: Number(key.replace("returned_", "")),
+              quantity: Math.floor(Number(value)),
+            }))
+            .filter(
+              (entry) =>
+                Number.isInteger(entry.itemId) &&
+                Number.isFinite(entry.quantity) &&
+                entry.quantity > 0,
+            );
+
+    if (adjustments.length === 0) {
+      return { ok: false as const, reason: "validation" as const };
+    }
+
+    for (const adjustment of adjustments) {
+      const item = itemMap.get(adjustment.itemId);
+      if (!item || !item.variant) {
+        return { ok: false as const, reason: "validation" as const };
+      }
+
+      const returnableQuantity = item.receivedQuantity - item.returnedQuantity;
+      if (adjustment.quantity <= 0 || adjustment.quantity > returnableQuantity) {
+        return { ok: false as const, reason: "validation" as const };
+      }
+
+      const inventory = await tx.variantInventory.findUnique({
+        where: {
+          variantId_warehouseId: {
+            variantId: item.variant.id,
+            warehouseId,
+          },
+        },
+        select: { id: true, stock: true },
+      });
+
+      if (!inventory || inventory.stock < adjustment.quantity || item.variant.stock < adjustment.quantity) {
+        return { ok: false as const, reason: "stock" as const };
+      }
+
+      await tx.variantInventory.update({
+        where: { id: inventory.id },
+        data: {
+          stock: {
+            decrement: adjustment.quantity,
+          },
+        },
+      });
+
+      await tx.variant.update({
+        where: { id: item.variant.id },
+        data: {
+          stock: {
+            decrement: adjustment.quantity,
+          },
+        },
+      });
+
+      await tx.purchaseOrderItem.update({
+        where: { id: item.id },
+        data: {
+          returnedQuantity: {
+            increment: adjustment.quantity,
+          },
+        },
+      });
+    }
+
+    await tx.stockMovement.createMany({
+      data: adjustments.map((adjustment) => ({
+        tenantId,
+        variantId: itemMap.get(adjustment.itemId)!.variant!.id,
+        warehouseId,
+        quantity: -adjustment.quantity,
+        reason: "SUPPLIER_RETURN" as const,
+      })),
+    });
+
+    const refreshedItems = await tx.purchaseOrderItem.findMany({
+      where: { purchaseOrderId },
+      select: {
+        orderedQuantity: true,
+        receivedQuantity: true,
+        returnedQuantity: true,
+      },
+    });
+
+    const nextStatus = derivePurchaseOrderStatus(refreshedItems);
+
+    await tx.purchaseOrder.update({
+      where: { id: purchaseOrderId },
+      data: { status: nextStatus },
+    });
+
+    await writeAuditLog(tx, {
+      tenantId,
+      userId: currentUser.id,
+      action: "PURCHASE_ORDER_RETURNED_TO_SUPPLIER",
+      entityType: "PURCHASE_ORDER",
+      entityId: order.id,
+      entityLabel: `PO #${order.id}`,
+      warehouseId,
+      metadata: {
+        supplier: order.supplier.name,
+        warehouse: order.warehouse.name,
+        status: nextStatus,
+        returnedAt: new Date().toISOString(),
+        adjustments: adjustments.map((adjustment) => {
+          const item = itemMap.get(adjustment.itemId)!;
+          return {
+            itemId: item.id,
+            variantId: item.variant?.id,
+            product: item.variant?.product.name ?? item.product?.name ?? item.pendingProductName,
+            size: item.variant?.size ?? item.pendingSize ?? "Standard",
+            color: item.variant?.color ?? item.pendingColor ?? "Standard",
+            quantity: adjustment.quantity,
+          };
+        }),
+      },
+    });
+
+    return { ok: true as const };
+  });
+
+  if (!result.ok) {
+    const code =
+      result.reason === "state"
+        ? "return_state"
+        : result.reason === "stock"
+          ? "return_stock"
+          : "return_validation";
+    redirect(`/purchases?error=${code}`);
+  }
+
+  revalidatePath("/purchases");
+  revalidatePath("/products");
+  revalidatePath("/stock/incoming");
+  redirect("/purchases?success=returned");
+}
+
 function formatMoney(value: number) {
   return new Intl.NumberFormat("sq-AL", {
     style: "currency",
@@ -987,6 +1511,8 @@ const statusStyles: Record<string, string> = {
   ORDERED: "border border-sky-200 bg-sky-50 text-sky-700",
   PARTIALLY_RECEIVED: "border border-amber-200 bg-amber-50 text-amber-700",
   RECEIVED: "border border-emerald-200 bg-emerald-50 text-emerald-700",
+  PARTIALLY_RETURNED: "border border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700",
+  RETURNED: "border border-violet-200 bg-violet-50 text-violet-700",
   CANCELED: "border border-rose-200 bg-rose-50 text-rose-700",
 };
 
@@ -1076,7 +1602,9 @@ export default async function PurchasesPage({ searchParams }: PurchasesPageProps
             },
             orderedQuantity: true,
             receivedQuantity: true,
+            returnedQuantity: true,
             unitCost: true,
+            note: true,
             pendingProductName: true,
             pendingBrand: true,
             pendingCategoryName: true,
@@ -1117,9 +1645,12 @@ export default async function PurchasesPage({ searchParams }: PurchasesPageProps
 
     return {
       id: order.id,
+      supplierId: order.supplierId,
+      warehouseId: order.warehouseId,
       status: order.status,
       note: order.note,
       orderedAtLabel: formatDate(order.orderedAt),
+      orderedAtValue: order.orderedAt.toISOString().slice(0, 10),
       supplierName: order.supplier.name,
       warehouseName: order.warehouse.name,
       totalLabel: formatMoney(total),
@@ -1137,9 +1668,13 @@ export default async function PurchasesPage({ searchParams }: PurchasesPageProps
         isPending: !item.variant,
         orderedQuantity: item.orderedQuantity,
         receivedQuantity: item.receivedQuantity,
+        returnedQuantity: item.returnedQuantity,
         remainingQuantity: Math.max(0, item.orderedQuantity - item.receivedQuantity),
+        returnableQuantity: Math.max(0, item.receivedQuantity - item.returnedQuantity),
         unitCostLabel: formatMoney(Number(item.unitCost)),
+        unitCostValue: Number(item.unitCost),
         lineTotalLabel: formatMoney(Number(item.unitCost) * item.orderedQuantity),
+        note: item.note,
       })),
     };
   });
@@ -1197,7 +1732,10 @@ export default async function PurchasesPage({ searchParams }: PurchasesPageProps
 
         <PurchaseOrdersManager
           action={createPurchaseOrder}
+          updateAction={updatePurchaseOrder}
+          cancelAction={cancelPurchaseOrder}
           receiveAction={receivePurchaseOrder}
+          returnAction={returnPurchaseOrderToSupplier}
           suppliers={suppliers}
           warehouses={warehouses.map((warehouse) => ({
             id: warehouse.id,

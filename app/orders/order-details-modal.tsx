@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useId, useRef } from "react";
 import { UploadedImage } from "@/app/components/uploaded-image";
 import { getOrderVariantSummary } from "@/lib/order-variant-display";
@@ -45,6 +46,7 @@ type OrderDetailsModalProps = {
   items: OrderItem[];
   className?: string;
   buttonLabel?: string;
+  printHref?: string;
 };
 
 export function OrderDetailsModal({
@@ -59,6 +61,7 @@ export function OrderDetailsModal({
   items,
   className,
   buttonLabel,
+  printHref,
 }: OrderDetailsModalProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
@@ -105,14 +108,25 @@ export function OrderDetailsModal({
               <p className="mt-1 text-sm text-slate-600">{phone}</p>
             </div>
 
-            <form method="dialog" className="shrink-0">
-              <button
-                type="submit"
-                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 transition hover:border-slate-300 hover:bg-slate-50"
-              >
-                Mbyll
-              </button>
-            </form>
+            <div className="shrink-0 flex items-center gap-2">
+              {printHref ? (
+                <Link
+                  href={printHref}
+                  target="_blank"
+                  className="rounded-xl border border-emerald-200 bg-white px-3 py-2 text-sm font-medium text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-50"
+                >
+                  Print
+                </Link>
+              ) : null}
+              <form method="dialog">
+                <button
+                  type="submit"
+                  className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 transition hover:border-slate-300 hover:bg-slate-50"
+                >
+                  Mbyll
+                </button>
+              </form>
+            </div>
           </div>
         </div>
 

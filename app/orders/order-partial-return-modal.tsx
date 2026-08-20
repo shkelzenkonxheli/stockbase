@@ -20,7 +20,8 @@ type OrderPartialReturnModalProps = {
   orderId: number;
   customerName: string;
   items: ReturnableOrderItem[];
-  action: (formData: FormData) => void | Promise<void>;
+  partialAction: (formData: FormData) => void | Promise<void>;
+  fullAction: (formData: FormData) => void | Promise<void>;
   className?: string;
   buttonLabel?: string;
 };
@@ -29,7 +30,8 @@ export function OrderPartialReturnModal({
   orderId,
   customerName,
   items,
-  action,
+  partialAction,
+  fullAction,
   className,
   buttonLabel,
 }: OrderPartialReturnModalProps) {
@@ -73,10 +75,10 @@ export function OrderPartialReturnModal({
         onClick={() => dialogRef.current?.showModal()}
         className={
           className ??
-          "inline-flex items-center justify-center rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-sm font-semibold text-indigo-700 transition hover:border-indigo-300 hover:bg-indigo-100"
+          "inline-flex items-center justify-center rounded-xl border border-violet-200 bg-violet-50 px-3 py-2 text-sm font-semibold text-violet-700 transition hover:border-violet-300 hover:bg-violet-100"
         }
       >
-        {buttonLabel ?? "Partial return"}
+        {buttonLabel ?? "Kthe"}
       </button>
 
       <dialog
@@ -87,14 +89,14 @@ export function OrderPartialReturnModal({
         <div className="border-b border-slate-200 px-5 py-5 sm:px-6">
           <div className="flex items-start justify-between gap-4">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-indigo-600">
-                Partial Return
+              <p className="text-xs font-semibold uppercase tracking-[0.16em] text-violet-600">
+                Kthimi i porosise
               </p>
               <h2 id={titleId} className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
                 Porosia #{orderId} - {customerName}
               </h2>
               <p className="mt-2 text-sm text-slate-600">
-                Zgjidh sasine qe po kthehet per secilin artikull.
+                Zgjidh nese po kthehet krejt porosia ose vetem nje pjese e saj.
               </p>
             </div>
 
@@ -108,7 +110,36 @@ export function OrderPartialReturnModal({
           </div>
         </div>
 
-        <form action={action} className="space-y-5 px-5 py-5 sm:px-6">
+        <div className="space-y-5 px-5 py-5 sm:px-6">
+          <section className="rounded-2xl border border-violet-200 bg-violet-50/60 p-4">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm font-semibold text-slate-950">Kthe krejt porosine</p>
+                <p className="mt-1 text-sm text-slate-600">
+                  E kthen te gjithe pjesen e mbetur dhe e shenon porosine si `RETURNED`.
+                </p>
+              </div>
+              <form action={fullAction}>
+                <input type="hidden" name="orderId" value={orderId} />
+                <button
+                  type="submit"
+                  className="rounded-xl bg-violet-700 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-violet-800"
+                >
+                  Kthe krejt
+                </button>
+              </form>
+            </div>
+          </section>
+
+          <section className="rounded-2xl border border-slate-200 bg-white">
+            <div className="border-b border-slate-200 px-4 py-3">
+              <p className="text-sm font-semibold text-slate-950">Partial return</p>
+              <p className="mt-1 text-sm text-slate-600">
+                Vendos sasine per artikujt qe po kthehen tani.
+              </p>
+            </div>
+
+            <form action={partialAction} className="space-y-5 p-4">
           <input type="hidden" name="orderId" value={orderId} />
           <input type="hidden" name="returnItems" value={serializedItems} />
 
@@ -183,7 +214,9 @@ export function OrderPartialReturnModal({
               </button>
             </div>
           </div>
-        </form>
+            </form>
+          </section>
+        </div>
       </dialog>
     </>
   );

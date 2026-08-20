@@ -6,12 +6,14 @@ import { usePathname, useRouter, useSearchParams } from "next/navigation";
 type OrdersFiltersProps = {
   searchQuery: string;
   selectedSource: string;
+  selectedStatus: string;
   selectedDate: string;
 };
 
 export function OrdersFilters({
   searchQuery,
   selectedSource,
+  selectedStatus,
   selectedDate,
 }: OrdersFiltersProps) {
   const router = useRouter();
@@ -20,10 +22,11 @@ export function OrdersFilters({
   const [isPending, startTransition] = useTransition();
   const [query, setQuery] = useState(searchQuery);
   const [source, setSource] = useState(selectedSource);
+  const [status, setStatus] = useState(selectedStatus);
   const [date, setDate] = useState(selectedDate);
 
   const updateFilters = useCallback(
-    (nextQuery: string, nextSource: string, nextDate: string) => {
+    (nextQuery: string, nextSource: string, nextStatus: string, nextDate: string) => {
       const params = new URLSearchParams(searchParams.toString());
 
       params.delete("page");
@@ -38,6 +41,12 @@ export function OrdersFilters({
         params.set("source", nextSource);
       } else {
         params.delete("source");
+      }
+
+      if (nextStatus) {
+        params.set("status", nextStatus);
+      } else {
+        params.delete("status");
       }
 
       if (nextDate) {
@@ -66,6 +75,10 @@ export function OrdersFilters({
   }, [selectedSource]);
 
   useEffect(() => {
+    setStatus(selectedStatus);
+  }, [selectedStatus]);
+
+  useEffect(() => {
     setDate(selectedDate);
   }, [selectedDate]);
 
@@ -74,28 +87,31 @@ export function OrdersFilters({
       if (
         query === searchQuery &&
         source === selectedSource &&
+        status === selectedStatus &&
         date === selectedDate
       ) {
         return;
       }
 
-      updateFilters(query, source, date);
+      updateFilters(query, source, status, date);
     }, 250);
 
     return () => clearTimeout(timeout);
   }, [
     query,
     source,
+    status,
     date,
     searchQuery,
     selectedSource,
+    selectedStatus,
     selectedDate,
     updateFilters,
   ]);
 
   return (
-    <div className="grid grid-cols-1 gap-3 lg:grid-cols-[180px_180px_minmax(0,1fr)]">
-      <div className="order-3 space-y-1 lg:order-3">
+    <div className="grid grid-cols-1 gap-3 lg:grid-cols-[180px_180px_180px_minmax(0,1fr)]">
+      <div className="order-4 space-y-1 lg:order-4">
         <div className="relative">
           <svg
             viewBox="0 0 24 24"
@@ -123,18 +139,32 @@ export function OrdersFilters({
         type="date"
         value={date}
         onChange={(event) => setDate(event.target.value)}
-        className="order-1 h-12 rounded-2xl border border-emerald-100 bg-white/90 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-300 focus:bg-emerald-50/40 focus:ring-4 focus:ring-emerald-100/70 lg:order-1"
+        className="order-1 h-12 rounded-2xl border border-emerald-100 bg-white/90 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-300 focus:bg-emerald-50/40 focus:ring-4 focus:ring-emerald-100/70"
       />
 
       <select
         value={source}
         onChange={(event) => setSource(event.target.value)}
-        className="order-2 h-12 rounded-2xl border border-emerald-100 bg-white/90 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-300 focus:bg-emerald-50/40 focus:ring-4 focus:ring-emerald-100/70 lg:order-2"
+        className="order-2 h-12 rounded-2xl border border-emerald-100 bg-white/90 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-300 focus:bg-emerald-50/40 focus:ring-4 focus:ring-emerald-100/70"
       >
         <option value="">Filtra te tjere</option>
         <option value="INSTAGRAM">Instagram</option>
         <option value="STORE">Shitore</option>
         <option value="WHOLESALE">Shumice</option>
+      </select>
+
+      <select
+        value={status}
+        onChange={(event) => setStatus(event.target.value)}
+        className="order-3 h-12 rounded-2xl border border-emerald-100 bg-white/90 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-300 focus:bg-emerald-50/40 focus:ring-4 focus:ring-emerald-100/70"
+      >
+        <option value="">Te gjitha statuset</option>
+        <option value="NEW">NEW</option>
+        <option value="READY">READY</option>
+        <option value="DONE">DONE</option>
+        <option value="PARTIALLY_RETURNED">PARTIALLY_RETURNED</option>
+        <option value="RETURNED">RETURNED</option>
+        <option value="CANCELED">CANCELED</option>
       </select>
     </div>
   );

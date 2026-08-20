@@ -30,6 +30,10 @@ function statusLabel(status: string) {
       return "Partial";
     case "RECEIVED":
       return "Received";
+    case "PARTIALLY_RETURNED":
+      return "Supplier return";
+    case "RETURNED":
+      return "Returned";
     case "CANCELED":
       return "Canceled";
     default:

@@ -2240,6 +2240,7 @@ export const PurchaseOrderItemScalarFieldEnum = {
   variantId: 'variantId',
   orderedQuantity: 'orderedQuantity',
   receivedQuantity: 'receivedQuantity',
+  returnedQuantity: 'returnedQuantity',
   unitCost: 'unitCost',
   note: 'note',
   pendingProductName: 'pendingProductName',

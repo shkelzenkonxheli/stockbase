@@ -221,21 +221,23 @@ function getMessage(error?: string, success?: string) {
 }
 
 const reasonLabels: Record<
-  "INCOMING_STOCK" | "CUSTOMER_RETURN" | "TRANSFER" | "INVENTORY_COUNT",
+  "INCOMING_STOCK" | "CUSTOMER_RETURN" | "SUPPLIER_RETURN" | "TRANSFER" | "INVENTORY_COUNT",
   string
 > = {
   INCOMING_STOCK: "Hyrje stoku",
   CUSTOMER_RETURN: "Kthim klienti",
+  SUPPLIER_RETURN: "Kthim te furnitori",
   TRANSFER: "Transfer",
   INVENTORY_COUNT: "Inventory count",
 };
 
 const reasonStyles: Record<
-  "INCOMING_STOCK" | "CUSTOMER_RETURN" | "TRANSFER" | "INVENTORY_COUNT",
+  "INCOMING_STOCK" | "CUSTOMER_RETURN" | "SUPPLIER_RETURN" | "TRANSFER" | "INVENTORY_COUNT",
   string
 > = {
   INCOMING_STOCK: "border-emerald-200 bg-emerald-50 text-emerald-700",
   CUSTOMER_RETURN: "border-sky-200 bg-sky-50 text-sky-700",
+  SUPPLIER_RETURN: "border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700",
   TRANSFER: "border-amber-200 bg-amber-50 text-amber-700",
   INVENTORY_COUNT: "border-violet-200 bg-violet-50 text-violet-700",
 };
