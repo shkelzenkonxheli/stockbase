@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { FlashMessage } from "@/app/components/flash-message";
 import { requireRole } from "@/lib/auth";
+import { calculatePurchaseOrderMetrics } from "@/lib/purchase-order-metrics";
 import { prisma } from "@/lib/prisma";
 import { SuppliersManager } from "./suppliers-manager";
 
@@ -194,6 +195,8 @@ export default async function SuppliersPage({ searchParams }: SuppliersPageProps
           items: {
             select: {
               orderedQuantity: true,
+              receivedQuantity: true,
+              returnedQuantity: true,
               unitCost: true,
             },
           },
@@ -254,6 +257,45 @@ export default async function SuppliersPage({ searchParams }: SuppliersPageProps
           updateAction={updateSupplier}
           toggleAction={toggleSupplierStatus}
           suppliers={suppliers.map((supplier) => ({
+            ...(function () {
+              const metricsPerOrder = supplier.purchaseOrders.map((order) =>
+                calculatePurchaseOrderMetrics(
+                  order.items.map((item) => ({
+                    orderedQuantity: item.orderedQuantity,
+                    receivedQuantity: item.receivedQuantity,
+                    returnedQuantity: item.returnedQuantity,
+                    unitCost: Number(item.unitCost),
+                  })),
+                ),
+              );
+              const totalOrders = supplier.purchaseOrders.length;
+              const totalOrderedValue = metricsPerOrder.reduce(
+                (sum, order) => sum + order.totalOrderedValue,
+                0,
+              );
+              const totalReceivedValue = metricsPerOrder.reduce(
+                (sum, order) => sum + order.totalReceivedValue,
+                0,
+              );
+              const totalReturnedValue = metricsPerOrder.reduce(
+                (sum, order) => sum + order.totalReturnedValue,
+                0,
+              );
+              const openOrders = supplier.purchaseOrders.filter((order) =>
+                ["DRAFT", "ORDERED", "PARTIALLY_RECEIVED", "PARTIALLY_RETURNED"].includes(order.status),
+              ).length;
+              return {
+                totalOrders,
+                totalOrderedValue,
+                totalReceivedValue,
+                totalReturnedValue,
+                openOrders,
+                averageOrderValue: totalOrders > 0 ? totalOrderedValue / totalOrders : 0,
+                lastOrderLabel: supplier.purchaseOrders[0]?.orderedAt
+                  ? formatDate(supplier.purchaseOrders[0].orderedAt)
+                  : null,
+              };
+            })(),
             id: supplier.id,
             name: supplier.name,
             phone: supplier.phone,
@@ -261,7 +303,6 @@ export default async function SuppliersPage({ searchParams }: SuppliersPageProps
             address: supplier.address,
             notes: supplier.notes,
             isActive: supplier.isActive,
-            totalOrders: supplier.purchaseOrders.length,
             totalValue: formatMoney(
               supplier.purchaseOrders.reduce(
                 (sum, order) =>

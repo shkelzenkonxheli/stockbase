@@ -3,6 +3,7 @@ import { createElement, type ReactElement } from "react";
 import type { DocumentProps } from "@react-pdf/renderer";
 import { renderToBuffer } from "@react-pdf/renderer";
 import { requireRole } from "@/lib/auth";
+import { calculatePurchaseOrderMetrics } from "@/lib/purchase-order-metrics";
 import { prisma } from "@/lib/prisma";
 import { PurchaseOrderPdfDocument } from "../../purchase-order-pdf-document";
 
@@ -57,7 +58,7 @@ export async function GET(_request: Request, { params }: RouteProps) {
       tenantId,
     },
     include: {
-      supplier: { select: { name: true } },
+      supplier: { select: { name: true, phone: true, email: true } },
       warehouse: { select: { name: true } },
       items: {
         orderBy: [
@@ -68,7 +69,9 @@ export async function GET(_request: Request, { params }: RouteProps) {
         select: {
           orderedQuantity: true,
           receivedQuantity: true,
+          returnedQuantity: true,
           unitCost: true,
+          note: true,
           product: {
             select: {
               name: true,
@@ -101,15 +104,28 @@ export async function GET(_request: Request, { params }: RouteProps) {
     (sum, item) => sum + Number(item.unitCost) * item.orderedQuantity,
     0,
   );
+  const metrics = calculatePurchaseOrderMetrics(
+    order.items.map((item) => ({
+      orderedQuantity: item.orderedQuantity,
+      receivedQuantity: item.receivedQuantity,
+      returnedQuantity: item.returnedQuantity,
+      unitCost: Number(item.unitCost),
+    })),
+  );
 
   const document = createElement(PurchaseOrderPdfDocument, {
     order: {
       id: order.id,
       supplierName: order.supplier.name,
+      supplierPhone: order.supplier.phone,
+      supplierEmail: order.supplier.email,
       warehouseName: order.warehouse.name,
       orderedAtLabel: formatDate(order.orderedAt),
       statusLabel: statusLabel(order.status),
       totalLabel: formatMoney(totalValue),
+      receivedLabel: formatMoney(metrics.totalReceivedValue),
+      returnedLabel: formatMoney(metrics.totalReturnedValue),
+      outstandingLabel: formatMoney(metrics.totalOutstandingValue),
       totalQuantity: order.items.reduce((sum, item) => sum + item.orderedQuantity, 0),
       itemCount: order.items.length,
       note: order.note,
@@ -120,9 +136,11 @@ export async function GET(_request: Request, { params }: RouteProps) {
       variantLabel: `${item.variant?.color ?? item.pendingColor ?? "Standard"} / ${item.variant?.size ?? item.pendingSize ?? "Standard"}`,
       orderedQuantity: item.orderedQuantity,
       receivedQuantity: item.receivedQuantity,
+      returnedQuantity: item.returnedQuantity,
       remainingQuantity: Math.max(0, item.orderedQuantity - item.receivedQuantity),
       unitCostLabel: formatMoney(Number(item.unitCost)),
       lineTotalLabel: formatMoney(Number(item.unitCost) * item.orderedQuantity),
+      note: item.note,
     })),
   }) as ReactElement<DocumentProps>;
 

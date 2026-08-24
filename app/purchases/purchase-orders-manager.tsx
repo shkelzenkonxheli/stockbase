@@ -39,8 +39,14 @@ type PurchaseOrderListItem = {
   supplierName: string;
   warehouseName: string;
   totalLabel: string;
+  receivedLabel: string;
+  returnedLabel: string;
+  outstandingLabel: string;
   itemCount: number;
   totalQuantity: number;
+  receivedQuantity: number;
+  returnedQuantity: number;
+  remainingQuantity: number;
   items: Array<{
     id: number;
     productName: string;
@@ -192,6 +198,32 @@ function SectionTitleIcon({
 
 function sectionCardClass() {
   return "rounded-[26px] border border-slate-200/80 bg-white/95 p-5 shadow-[0_12px_30px_rgba(15,23,42,0.045)]";
+}
+
+function MetricPill({
+  label,
+  value,
+  tone = "slate",
+}: {
+  label: string;
+  value: string;
+  tone?: "slate" | "emerald" | "amber" | "fuchsia";
+}) {
+  const styles =
+    tone === "emerald"
+      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
+      : tone === "amber"
+        ? "border-amber-200 bg-amber-50 text-amber-700"
+        : tone === "fuchsia"
+          ? "border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700"
+          : "border-slate-200 bg-slate-50 text-slate-700";
+
+  return (
+    <div className={`rounded-2xl border px-3 py-2 ${styles}`}>
+      <p className="text-[11px] font-semibold uppercase tracking-[0.14em]">{label}</p>
+      <p className="mt-1 text-sm font-semibold">{value}</p>
+    </div>
+  );
 }
 
 export function PurchaseOrdersManager({
@@ -1798,7 +1830,7 @@ export function PurchaseOrdersManager({
 
       <dialog
         ref={detailsDialogRef}
-        className="m-auto w-[min(860px,calc(100%-1.5rem))] rounded-[30px] border border-emerald-100 bg-white p-0 text-left shadow-[0_28px_90px_rgba(15,23,42,0.24)] backdrop:bg-slate-950/45"
+        className="m-auto w-[min(780px,calc(100%-1rem))] rounded-[28px] border border-emerald-100 bg-white p-0 text-left shadow-[0_28px_90px_rgba(15,23,42,0.24)] backdrop:bg-slate-950/45"
         onClose={closeDetailsModal}
       >
         {selectedOrder ? (
@@ -1819,12 +1851,26 @@ export function PurchaseOrdersManager({
 
                 <div className="flex items-center gap-2">
                   <a
+                    href={`/purchases/${selectedOrder.id}/print`}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+                  >
+                    Print
+                  </a>
+                  <a
                     href={`/purchases/${selectedOrder.id}/export.pdf`}
                     target="_blank"
                     rel="noreferrer"
                     className="inline-flex items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-100"
                   >
                     Export PDF
+                  </a>
+                  <a
+                    href={`/purchases/${selectedOrder.id}/export.csv`}
+                    className="inline-flex items-center justify-center rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 transition hover:border-blue-300 hover:bg-blue-100"
+                  >
+                    Export CSV
                   </a>
                   <button
                     type="button"
@@ -1837,13 +1883,13 @@ export function PurchaseOrdersManager({
               </div>
             </div>
 
-            <div className="space-y-5 px-5 py-5 sm:px-6">
-              <div className="grid gap-3 sm:grid-cols-3">
-                <div className="rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3">
+            <div className="space-y-4 px-4 py-4 sm:px-5">
+              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+                <div className="min-w-0 rounded-2xl border border-slate-200 bg-slate-50/70 px-3 py-2.5">
                   <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
                     Statusi
                   </p>
-                  <p className="mt-2">
+                  <p className="mt-1.5">
                     <span
                       className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${statusClasses(selectedOrder.status)}`}
                     >
@@ -1851,67 +1897,117 @@ export function PurchaseOrdersManager({
                     </span>
                   </p>
                 </div>
-                <div className="rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3">
+                <div className="min-w-0 rounded-2xl border border-slate-200 bg-slate-50/70 px-3 py-2.5">
                   <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
                     Artikuj
                   </p>
-                  <p className="mt-2 font-semibold text-slate-950">
+                  <p className="mt-1.5 break-words text-sm font-semibold text-slate-950">
                     {selectedOrder.itemCount} variante / {selectedOrder.totalQuantity} cope
                   </p>
                 </div>
-                <div className="rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3">
+                <div className="min-w-0 rounded-2xl border border-slate-200 bg-slate-50/70 px-3 py-2.5">
                   <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
                     Vlera
                   </p>
-                  <p className="mt-2 font-semibold text-slate-950">
+                  <p className="mt-1.5 break-words text-sm font-semibold text-slate-950">
                     {selectedOrder.totalLabel}
                   </p>
                 </div>
+                <div className="min-w-0 rounded-2xl border border-emerald-200 bg-emerald-50/70 px-3 py-2.5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">
+                    Pranuar
+                  </p>
+                  <p className="mt-1.5 break-words text-sm font-semibold text-emerald-800">{selectedOrder.receivedLabel}</p>
+                </div>
+                <div className="min-w-0 rounded-2xl border border-fuchsia-200 bg-fuchsia-50/70 px-3 py-2.5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-fuchsia-700">
+                    Kthyer
+                  </p>
+                  <p className="mt-1.5 break-words text-sm font-semibold text-fuchsia-800">{selectedOrder.returnedLabel}</p>
+                </div>
+                <div className="min-w-0 rounded-2xl border border-amber-200 bg-amber-50/70 px-3 py-2.5">
+                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-700">
+                    Ne pritje
+                  </p>
+                  <p className="mt-1.5 break-words text-sm font-semibold text-amber-800">{selectedOrder.outstandingLabel}</p>
+                </div>
               </div>
 
-              <div className="space-y-3">
-                <div>
+              <div className="space-y-2">
+                <div className="flex items-center justify-between gap-3">
                   <h3 className="text-lg font-semibold text-slate-950">Rreshtat e porosise</h3>
-                  <p className="mt-1 text-sm text-slate-500">
-                    Shfaq porosine origjinale, sasine e pranuar dhe pjesen e mbetur per secilin variant.
-                  </p>
+                  <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600">
+                    {selectedOrder.itemCount} rreshta
+                  </span>
                 </div>
 
-                {selectedOrder.items.map((item) => (
-                  <div
-                    key={`summary-${item.id}`}
-                    className="rounded-2xl border border-emerald-100 bg-[linear-gradient(180deg,#ffffff_0%,#fbfefc_100%)] px-4 py-4"
-                  >
-                    <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                      <div>
-                        <p className="font-semibold text-slate-950">{item.productName}</p>
-                        <p className="mt-1 text-sm text-slate-500">
-                          {item.color} / {item.size || "Standard"}
-                        </p>
-                      </div>
-                      <div className="flex flex-wrap gap-2 text-sm">
-                        <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-slate-700">
-                          Order: {item.orderedQuantity}
-                        </span>
-                        <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 font-medium text-emerald-700">
-                          Pranuar: {item.receivedQuantity}
-                        </span>
-                        <span className="rounded-full border border-fuchsia-200 bg-fuchsia-50 px-3 py-1 font-medium text-fuchsia-700">
-                          Kthyer: {item.returnedQuantity}
-                        </span>
-                        <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 font-medium text-amber-700">
-                          Mbetur: {item.remainingQuantity}
-                        </span>
-                        <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-slate-700">
-                          {item.unitCostLabel}
-                        </span>
-                        <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-slate-700">
-                          {item.lineTotalLabel}
-                        </span>
-                      </div>
-                    </div>
+                <div className="overflow-hidden rounded-[22px] border border-slate-200 bg-white">
+                  <div className="hidden lg:block">
+                    <table className="min-w-full table-fixed">
+                      <colgroup>
+                        <col className="w-[36%]" />
+                        <col className="w-[10%]" />
+                        <col className="w-[10%]" />
+                        <col className="w-[10%]" />
+                        <col className="w-[10%]" />
+                        <col className="w-[24%]" />
+                      </colgroup>
+                      <thead className="border-b border-slate-200 bg-slate-50">
+                        <tr className="text-left text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
+                          <th className="px-3 py-2.5">Produkti</th>
+                          <th className="px-2 py-2.5">Ord</th>
+                          <th className="px-2 py-2.5">Pran</th>
+                          <th className="px-2 py-2.5">Kth</th>
+                          <th className="px-2 py-2.5">Mbet</th>
+                          <th className="px-2 py-2.5">Cmimi</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {selectedOrder.items.map((item) => (
+                          <tr key={`summary-${item.id}`} className="align-top">
+                            <td className="px-3 py-3">
+                              <p className="truncate text-sm font-semibold text-slate-950">{item.productName}</p>
+                              <p className="mt-0.5 truncate text-xs text-slate-500">
+                                {item.color} / {item.size || "Standard"}
+                              </p>
+                              {item.note ? (
+                                <p className="mt-1 truncate text-[11px] text-slate-400">{item.note}</p>
+                              ) : null}
+                            </td>
+                            <td className="px-2 py-3 text-center text-sm font-semibold text-slate-700">{item.orderedQuantity}</td>
+                            <td className="px-2 py-3 text-center text-sm font-semibold text-emerald-700">{item.receivedQuantity}</td>
+                            <td className="px-2 py-3 text-center text-sm font-semibold text-fuchsia-700">{item.returnedQuantity}</td>
+                            <td className="px-2 py-3 text-center text-sm font-semibold text-amber-700">{item.remainingQuantity}</td>
+                            <td className="px-2 py-3 text-center text-xs font-semibold text-slate-700">{item.unitCostLabel}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
-                ))}
+                  <div className="space-y-2 p-3 lg:hidden">
+                    {selectedOrder.items.map((item) => (
+                      <div key={`summary-mobile-${item.id}`} className="rounded-2xl border border-slate-200 bg-slate-50/50 p-3">
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="font-semibold text-slate-950">{item.productName}</p>
+                            <p className="mt-0.5 text-sm text-slate-500">
+                              {item.color} / {item.size || "Standard"}
+                            </p>
+                          </div>
+                          <span className="text-sm font-semibold text-slate-950">{item.lineTotalLabel}</span>
+                        </div>
+                        <div className="mt-3 grid grid-cols-3 gap-2">
+                          <MetricPill label="Order" value={`${item.orderedQuantity}`} />
+                          <MetricPill label="Pranuar" value={`${item.receivedQuantity}`} tone="emerald" />
+                          <MetricPill label="Mbetur" value={`${item.remainingQuantity}`} tone="amber" />
+                        </div>
+                        {item.note ? (
+                          <p className="mt-2 text-xs text-slate-400">{item.note}</p>
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                </div>
               </div>
 
               {selectedOrderCanEdit ? (
@@ -2096,11 +2192,11 @@ export function PurchaseOrdersManager({
                     </div>
                   </div>
 
-                  <div className="mt-4 space-y-3">
+                  <div className="mt-3 space-y-2.5">
                     {selectedOrder.items.map((item) => (
                       <div
                         key={`receive-${item.id}`}
-                        className="grid gap-3 rounded-2xl border border-white/80 bg-white/90 p-4 sm:grid-cols-[minmax(0,1fr)_120px]"
+                        className="grid gap-3 rounded-2xl border border-white/80 bg-white/90 p-3 sm:grid-cols-[minmax(0,1fr)_110px]"
                       >
                         <div>
                           <p className="font-semibold text-slate-950">{item.productName}</p>
@@ -2147,16 +2243,13 @@ export function PurchaseOrdersManager({
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
                       <h3 className="text-lg font-semibold text-slate-950">Return to supplier</h3>
-                      <p className="mt-1 text-sm text-slate-500">
-                        Ul stokun nga depoja dhe shenon sasine e kthyer te ky purchase order.
-                      </p>
                     </div>
                     <div className="flex flex-wrap gap-2">
                       <button
                         type="submit"
                         name="returnMode"
                         value="all"
-                        className="inline-flex items-center justify-center rounded-2xl border border-fuchsia-200 bg-white px-4 py-2.5 text-sm font-semibold text-fuchsia-700 transition hover:bg-fuchsia-50"
+                        className="inline-flex items-center justify-center rounded-2xl border border-fuchsia-200 bg-white px-3.5 py-2 text-sm font-semibold text-fuchsia-700 transition hover:bg-fuchsia-50"
                       >
                         Kthe te gjitha te mbeturat
                       </button>
@@ -2164,18 +2257,18 @@ export function PurchaseOrdersManager({
                         type="submit"
                         name="returnMode"
                         value="custom"
-                        className="inline-flex items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#a21caf_0%,#c026d3_100%)] px-4 py-2.5 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(192,38,211,0.22)] transition hover:brightness-105"
+                        className="inline-flex items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#a21caf_0%,#c026d3_100%)] px-3.5 py-2 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(192,38,211,0.22)] transition hover:brightness-105"
                       >
                         Ruaj kthimin
                       </button>
                     </div>
                   </div>
 
-                  <div className="mt-4 space-y-3">
+                  <div className="mt-3 space-y-2.5">
                     {selectedOrder.items.map((item) => (
                       <div
                         key={`return-${item.id}`}
-                        className="grid gap-3 rounded-2xl border border-white/80 bg-white/90 p-4 sm:grid-cols-[minmax(0,1fr)_120px]"
+                        className="grid gap-3 rounded-2xl border border-white/80 bg-white/90 p-3 sm:grid-cols-[minmax(0,1fr)_110px]"
                       >
                         <div>
                           <p className="font-semibold text-slate-950">{item.productName}</p>

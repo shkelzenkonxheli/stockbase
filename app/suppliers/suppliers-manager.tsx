@@ -14,6 +14,11 @@ type SupplierItem = {
   isActive: boolean;
   totalOrders: number;
   totalValue: string;
+  totalReceivedValue: number;
+  totalReturnedValue: number;
+  openOrders: number;
+  averageOrderValue: number;
+  lastOrderLabel: string | null;
   recentOrders: Array<{
     id: number;
     status: string;
@@ -50,6 +55,10 @@ function orderStatusClasses(status: string) {
       return "border-amber-200 bg-amber-50 text-amber-700";
     case "RECEIVED":
       return "border-emerald-200 bg-emerald-50 text-emerald-700";
+    case "PARTIALLY_RETURNED":
+      return "border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700";
+    case "RETURNED":
+      return "border-violet-200 bg-violet-50 text-violet-700";
     case "CANCELED":
       return "border-rose-200 bg-rose-50 text-rose-700";
     default:
@@ -65,11 +74,19 @@ function orderStatusLabel(status: string) {
       return "Partial";
     case "RECEIVED":
       return "Received";
+    case "PARTIALLY_RETURNED":
+      return "Supplier return";
+    case "RETURNED":
+      return "Returned";
     case "CANCELED":
       return "Canceled";
     default:
       return "Draft";
   }
+}
+
+function formatMoney(value: number) {
+  return `${value.toFixed(2)} EUR`;
 }
 
 export function SuppliersManager({
@@ -174,6 +191,9 @@ export function SuppliersManager({
                         <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-slate-600">
                           {supplier.totalOrders} PO
                         </span>
+                        <span className="rounded-full border border-amber-200 bg-amber-50 px-2.5 py-1 text-amber-700">
+                          {supplier.openOrders} open
+                        </span>
                         <span className="rounded-full border border-emerald-200 bg-emerald-50 px-2.5 py-1 text-emerald-700">
                           {supplier.totalValue}
                         </span>
@@ -228,6 +248,7 @@ export function SuppliersManager({
                     <th className="px-5 py-4">Furnitori</th>
                     <th className="px-5 py-4">Kontakti</th>
                     <th className="px-5 py-4">Purchase orders</th>
+                    <th className="px-5 py-4">Historia</th>
                     <th className="px-5 py-4">Adresa</th>
                     <th className="px-5 py-4">Statusi</th>
                     <th className="px-5 py-4 text-right">Veprime</th>
@@ -254,6 +275,12 @@ export function SuppliersManager({
                         <div className="space-y-1">
                           <p className="font-medium text-slate-900">{supplier.totalOrders} PO</p>
                           <p>{supplier.totalValue}</p>
+                        </div>
+                      </td>
+                      <td className="px-5 py-4 align-top text-slate-600">
+                        <div className="space-y-1">
+                          <p className="font-medium text-slate-900">{supplier.openOrders} open</p>
+                          <p>{supplier.lastOrderLabel ?? "Pa porosi"}</p>
                         </div>
                       </td>
                       <td className="px-5 py-4 align-top text-slate-600">
@@ -539,7 +566,7 @@ export function SuppliersManager({
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
                       <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">
-                        Purchase Orders
+                        Purchase History
                       </h3>
                       <p className="mt-2 text-base font-semibold text-slate-950">
                         {editingSupplier.totalOrders} gjithsej
@@ -548,11 +575,30 @@ export function SuppliersManager({
                     </div>
                     <button
                       type="button"
-                      onClick={() => router.push("/purchases")}
+                      onClick={() => router.push(`/purchases?q=${encodeURIComponent(editingSupplier.name)}`)}
                       className="inline-flex items-center justify-center rounded-xl border border-emerald-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50"
                     >
-                      Hape purchases
+                      Shiko purchases
                     </button>
+                  </div>
+
+                  <div className="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                    <div className="rounded-2xl border border-white/80 bg-white px-4 py-3">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">Open PO</p>
+                      <p className="mt-1 text-lg font-semibold text-slate-950">{editingSupplier.openOrders}</p>
+                    </div>
+                    <div className="rounded-2xl border border-white/80 bg-white px-4 py-3">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">Pranuar</p>
+                      <p className="mt-1 text-lg font-semibold text-emerald-700">{formatMoney(editingSupplier.totalReceivedValue)}</p>
+                    </div>
+                    <div className="rounded-2xl border border-white/80 bg-white px-4 py-3">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">Kthyer</p>
+                      <p className="mt-1 text-lg font-semibold text-fuchsia-700">{formatMoney(editingSupplier.totalReturnedValue)}</p>
+                    </div>
+                    <div className="rounded-2xl border border-white/80 bg-white px-4 py-3">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">Mesatarja</p>
+                      <p className="mt-1 text-lg font-semibold text-slate-950">{formatMoney(editingSupplier.averageOrderValue)}</p>
+                    </div>
                   </div>
 
                   {editingSupplier.recentOrders.length > 0 ? (

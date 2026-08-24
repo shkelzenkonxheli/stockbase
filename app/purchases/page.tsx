@@ -6,6 +6,7 @@ import { FlashMessage } from "@/app/components/flash-message";
 import { requireRole } from "@/lib/auth";
 import { writeAuditLog } from "@/lib/audit-log";
 import { buildVariantIdentityKey, getCategoryConfig } from "@/lib/product-taxonomy";
+import { calculatePurchaseOrderMetrics } from "@/lib/purchase-order-metrics";
 import { prisma } from "@/lib/prisma";
 import { buildBarcodeFromVariantId, buildVariantSku, ensureUniqueSku } from "@/lib/variant-codes";
 import { getTenantWarehouses } from "@/lib/warehouses";
@@ -1627,21 +1628,45 @@ export default async function PurchasesPage({ searchParams }: PurchasesPageProps
     }),
   ]);
 
-  const totalOrderedValue = purchaseOrders.reduce((sum, order) => {
-    return (
-      sum +
-      order.items.reduce(
-        (orderSum, item) => orderSum + Number(item.unitCost) * item.orderedQuantity,
-        0,
-      )
+  const purchaseOrderMetrics = purchaseOrders.map((order) => {
+    const metrics = calculatePurchaseOrderMetrics(
+      order.items.map((item) => ({
+        orderedQuantity: item.orderedQuantity,
+        receivedQuantity: item.receivedQuantity,
+        returnedQuantity: item.returnedQuantity,
+        unitCost: Number(item.unitCost),
+      })),
     );
-  }, 0);
+
+    return {
+      orderId: order.id,
+      ...metrics,
+    };
+  });
+
+  const totalOrderedValue = purchaseOrderMetrics.reduce((sum, order) => sum + order.totalOrderedValue, 0);
+  const totalReceivedValue = purchaseOrderMetrics.reduce((sum, order) => sum + order.totalReceivedValue, 0);
+  const totalReturnedValue = purchaseOrderMetrics.reduce((sum, order) => sum + order.totalReturnedValue, 0);
+  const totalOutstandingValue = purchaseOrderMetrics.reduce(
+    (sum, order) => sum + order.totalOutstandingValue,
+    0,
+  );
+  const openOrdersCount = purchaseOrders.filter((order) =>
+    ["DRAFT", "ORDERED", "PARTIALLY_RECEIVED", "PARTIALLY_RETURNED"].includes(order.status),
+  ).length;
+  const avgOrderValue = purchaseOrders.length > 0 ? totalOrderedValue / purchaseOrders.length : 0;
 
   const purchaseOrderItems = purchaseOrders.map((order) => {
-    const total = order.items.reduce(
-      (sum, item) => sum + Number(item.unitCost) * item.orderedQuantity,
-      0,
-    );
+    const metrics =
+      purchaseOrderMetrics.find((entry) => entry.orderId === order.id) ??
+      calculatePurchaseOrderMetrics(
+        order.items.map((item) => ({
+          orderedQuantity: item.orderedQuantity,
+          receivedQuantity: item.receivedQuantity,
+          returnedQuantity: item.returnedQuantity,
+          unitCost: Number(item.unitCost),
+        })),
+      );
 
     return {
       id: order.id,
@@ -1653,9 +1678,15 @@ export default async function PurchasesPage({ searchParams }: PurchasesPageProps
       orderedAtValue: order.orderedAt.toISOString().slice(0, 10),
       supplierName: order.supplier.name,
       warehouseName: order.warehouse.name,
-      totalLabel: formatMoney(total),
-      itemCount: order.items.length,
-      totalQuantity: order.items.reduce((sum, item) => sum + item.orderedQuantity, 0),
+      totalLabel: formatMoney(metrics.totalOrderedValue),
+      receivedLabel: formatMoney(metrics.totalReceivedValue),
+      returnedLabel: formatMoney(metrics.totalReturnedValue),
+      outstandingLabel: formatMoney(metrics.totalOutstandingValue),
+      itemCount: metrics.itemCount,
+      totalQuantity: metrics.totalOrderedQuantity,
+      receivedQuantity: metrics.totalReceivedQuantity,
+      returnedQuantity: metrics.totalReturnedQuantity,
+      remainingQuantity: metrics.totalRemainingQuantity,
       items: order.items.map((item) => ({
         id: item.id,
         productName:
@@ -1692,8 +1723,8 @@ export default async function PurchasesPage({ searchParams }: PurchasesPageProps
                 Purchase Orders
               </h1>
               <p className="mt-3 max-w-2xl text-sm leading-7 text-slate-600">
-                Ketu krijon porosite blerese ndaj furnitoreve. Hapi i ardhshem do
-                te jete receiving dhe partial receiving.
+                Menaxho porosite blerese, pranimin ne depo, kthimet te furnitori dhe
+                kontrollin e kostove nga nje vend.
               </p>
               <div className="mt-4 flex flex-wrap gap-3 text-sm">
                 <span className="inline-flex items-center rounded-full border border-emerald-200 bg-white/90 px-3 py-1 text-slate-600 shadow-sm">
@@ -1720,6 +1751,34 @@ export default async function PurchasesPage({ searchParams }: PurchasesPageProps
               </Link>
             </div>
           </div>
+        </section>
+
+        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
+          <article className="rounded-[24px] border border-slate-200 bg-white px-5 py-4 shadow-[0_12px_30px_rgba(15,23,42,0.05)]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Totali i porosive</p>
+            <p className="mt-2 text-2xl font-semibold text-slate-950">{formatMoney(totalOrderedValue)}</p>
+            <p className="mt-1 text-sm text-slate-500">{purchaseOrders.length} PO</p>
+          </article>
+          <article className="rounded-[24px] border border-emerald-200 bg-[linear-gradient(180deg,#ffffff_0%,#f3fbf6_100%)] px-5 py-4 shadow-[0_12px_30px_rgba(16,185,129,0.08)]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-700">Stok i pranuar</p>
+            <p className="mt-2 text-2xl font-semibold text-slate-950">{formatMoney(totalReceivedValue)}</p>
+            <p className="mt-1 text-sm text-slate-500">Vlera e pranuar deri tani</p>
+          </article>
+          <article className="rounded-[24px] border border-amber-200 bg-[linear-gradient(180deg,#ffffff_0%,#fff9ec_100%)] px-5 py-4 shadow-[0_12px_30px_rgba(245,158,11,0.08)]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-700">Pritet ende</p>
+            <p className="mt-2 text-2xl font-semibold text-slate-950">{formatMoney(totalOutstandingValue)}</p>
+            <p className="mt-1 text-sm text-slate-500">{openOrdersCount} porosi te hapura</p>
+          </article>
+          <article className="rounded-[24px] border border-fuchsia-200 bg-[linear-gradient(180deg,#ffffff_0%,#fff4ff_100%)] px-5 py-4 shadow-[0_12px_30px_rgba(192,38,211,0.08)]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-fuchsia-700">Kthime furnitori</p>
+            <p className="mt-2 text-2xl font-semibold text-slate-950">{formatMoney(totalReturnedValue)}</p>
+            <p className="mt-1 text-sm text-slate-500">Vlera totale e kthyer</p>
+          </article>
+          <article className="rounded-[24px] border border-slate-200 bg-white px-5 py-4 shadow-[0_12px_30px_rgba(15,23,42,0.05)]">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Mesatarja</p>
+            <p className="mt-2 text-2xl font-semibold text-slate-950">{formatMoney(avgOrderValue)}</p>
+            <p className="mt-1 text-sm text-slate-500">Vlera mesatare per PO</p>
+          </article>
         </section>
 
         {message ? (
