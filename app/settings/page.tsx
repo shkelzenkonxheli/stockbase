@@ -19,6 +19,7 @@ import {
   getOrderListViewConfig,
   getProductListViewConfig,
   getCatalogTemplate,
+  getPosConfig,
   getWarehouseConfig,
   ORDER_LIST_FIELD_KEYS,
   parseCategoryFieldConfig,
@@ -285,6 +286,9 @@ async function updateTenantSettings(formData: FormData) {
     warehouse: {
       enabled: isTruthyField(formData.get("warehouseEnabled")),
       options: existingTenantConfig?.warehouse?.options ?? [],
+    },
+    pos: {
+      enabled: isTruthyField(formData.get("posEnabled")),
     },
     productListView: parseProductListViewConfig(
       formData.get("productListViewConfig"),
@@ -565,6 +569,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
   const productListView = getProductListViewConfig(tenantCatalogConfig);
   const orderListView = getOrderListViewConfig(tenantCatalogConfig);
   const warehouseConfig = getWarehouseConfig(tenantCatalogConfig);
+  const posConfig = getPosConfig(tenantCatalogConfig);
   const catalogOptions = CATALOG_TYPES.map((type) => ({
     value: type,
     label: getCatalogTemplate(type).label,
@@ -684,26 +689,51 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
                     </section>
 
                     <section className="rounded-[24px] border border-slate-200 bg-white p-4 sm:p-5">
-                      <div className="flex flex-wrap items-center justify-between gap-3">
-                        <div>
-                          <p className="text-sm font-semibold text-slate-950">Depoja</p>
-                          <p className="mt-1 text-sm text-slate-600">
-                            Aktivizo zgjedhjen e depos te produktet dhe shfaqe ne stok e porosi.
-                          </p>
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                          <div className="flex flex-wrap items-center justify-between gap-3">
+                            <div>
+                              <p className="text-sm font-semibold text-slate-950">Depoja</p>
+                              <p className="mt-1 text-sm text-slate-600">
+                                Aktivizo zgjedhjen e depos te produktet dhe shfaqe ne stok e porosi.
+                              </p>
+                            </div>
+                            <label className="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
+                              <input
+                                type="checkbox"
+                                name="warehouseEnabled"
+                                value="true"
+                                defaultChecked={warehouseConfig.enabled}
+                                className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-300"
+                              />
+                              Shfaq depo
+                            </label>
+                          </div>
                         </div>
-                        <label className="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
-                          <input
-                            type="checkbox"
-                            name="warehouseEnabled"
-                            value="true"
-                            defaultChecked={warehouseConfig.enabled}
-                            className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-300"
-                          />
-                          Shfaq depo
-                        </label>
+
+                        <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                          <div className="flex flex-wrap items-center justify-between gap-3">
+                            <div>
+                              <p className="text-sm font-semibold text-slate-950">POS Module</p>
+                              <p className="mt-1 text-sm text-slate-600">
+                                Aktivizo register-at dhe hapjen e session-eve POS per kete tenant.
+                              </p>
+                            </div>
+                            <label className="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
+                              <input
+                                type="checkbox"
+                                name="posEnabled"
+                                value="true"
+                                defaultChecked={posConfig.enabled}
+                                className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-300"
+                              />
+                              Aktivizo POS
+                            </label>
+                          </div>
+                        </div>
                       </div>
                       <p className="mt-4 text-xs text-slate-500">
-                        Emrat dhe statuset e depove menaxhohen te tab-i Depot.
+                        Emrat dhe statuset e depove menaxhohen te tab-i Depot. Register-at POS menaxhohen te moduli POS pasi te aktivizohet.
                       </p>
                     </section>
 

@@ -91,6 +91,7 @@ model Warehouse {
   name        String
   slug        String
   isActive    Boolean            @default(true)
+  supportsPos Boolean            @default(false)
   createdAt   DateTime           @default(now())
   updatedAt   DateTime           @updatedAt
   inventories VariantInventory[]
@@ -100,12 +101,15 @@ model Warehouse {
   inventoryCounts InventoryCountSession[]
   stockMovements StockMovement[]
   auditLogs   AuditLog[]
+  posRegisters PosRegister[]
+  posSessions  PosSession[]
   tenant      Tenant             @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 
   @@unique([tenantId, slug])
   @@unique([tenantId, name])
   @@index([tenantId])
   @@index([isActive])
+  @@index([supportsPos])
 }
 
 model VariantInventory {
@@ -149,6 +153,7 @@ model Order {
     quantity     Int?
     variantId    Int?
     warehouseId  Int?
+    posSessionId Int?
     createdAt    DateTime    @default(now())
     customerName String
   instagram    String?
@@ -160,6 +165,7 @@ model Order {
     tenant       Tenant?     @relation(fields: [tenantId], references: [id])
     variant      Variant?    @relation(fields: [variantId], references: [id])
     warehouse    Warehouse?  @relation(fields: [warehouseId], references: [id], onDelete: SetNull)
+    posSession   PosSession? @relation(fields: [posSessionId], references: [id], onDelete: SetNull)
     items        OrderItem[]
 
   @@index([tenantId])
@@ -168,6 +174,7 @@ model Order {
     @@index([source])
     @@index([variantId])
     @@index([warehouseId])
+    @@index([posSessionId])
   }
 
 model OrderItem {
@@ -203,6 +210,8 @@ model User {
   createdInventoryCounts InventoryCountSession[] @relation("InventoryCountCreatedBy")
   completedInventoryCounts InventoryCountSession[] @relation("InventoryCountCompletedBy")
   createdPurchaseOrders PurchaseOrder[] @relation("PurchaseOrderCreatedBy")
+  openedPosSessions PosSession[] @relation("PosSessionOpenedBy")
+  closedPosSessions PosSession[] @relation("PosSessionClosedBy")
 }
 
 model Session {
@@ -242,10 +251,66 @@ model Tenant {
     purchaseOrders PurchaseOrder[]
     auditLogs      AuditLog[]
     inventoryCounts InventoryCountSession[]
+    posRegisters   PosRegister[]
+    posSessions    PosSession[]
 
     @@index([status])
     @@index([catalogType])
   }
+
+model PosRegister {
+  id          Int          @id @default(autoincrement())
+  tenantId    Int
+  warehouseId Int
+  name        String
+  slug        String
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  tenant      Tenant       @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  warehouse   Warehouse    @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  sessions    PosSession[]
+
+  @@unique([tenantId, slug])
+  @@unique([warehouseId, name])
+  @@index([tenantId])
+  @@index([warehouseId])
+  @@index([isActive])
+}
+
+model PosSession {
+  id             Int              @id @default(autoincrement())
+  tenantId       Int
+  registerId     Int
+  warehouseId    Int
+  openedById     Int
+  closedById     Int?
+  status         PosSessionStatus @default(OPEN)
+  openingCash    Decimal          @db.Decimal(10, 2)
+  openingNote    String?
+  closingNote    String?
+  openedAt       DateTime         @default(now())
+  closedAt       DateTime?
+  expectedCash   Decimal?         @db.Decimal(10, 2)
+  countedCash    Decimal?         @db.Decimal(10, 2)
+  createdAt      DateTime         @default(now())
+  updatedAt      DateTime         @updatedAt
+  tenant         Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  register       PosRegister      @relation(fields: [registerId], references: [id], onDelete: Cascade)
+  warehouse      Warehouse        @relation(fields: [warehouseId], references: [id], onDelete: Cascade)
+  openedBy       User             @relation("PosSessionOpenedBy", fields: [openedById], references: [id], onDelete: Restrict)
+  closedBy       User?            @relation("PosSessionClosedBy", fields: [closedById], references: [id], onDelete: SetNull)
+  orders         Order[]
+
+  @@index([tenantId])
+  @@index([registerId])
+  @@index([warehouseId])
+  @@index([openedById])
+  @@index([closedById])
+  @@index([status])
+  @@index([openedAt])
+  @@index([closedAt])
+}
 
 model AuditLog {
   id          Int       @id @default(autoincrement())
@@ -498,4 +563,9 @@ enum PurchaseOrderStatus {
   PARTIALLY_RETURNED
   RETURNED
   CANCELED
+}
+
+enum PosSessionStatus {
+  OPEN
+  CLOSED
 }

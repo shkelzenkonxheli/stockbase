@@ -100,3 +100,11 @@ export const PurchaseOrderStatus = {
 } as const
 
 export type PurchaseOrderStatus = (typeof PurchaseOrderStatus)[keyof typeof PurchaseOrderStatus]
+
+
+export const PosSessionStatus = {
+  OPEN: 'OPEN',
+  CLOSED: 'CLOSED'
+} as const
+
+export type PosSessionStatus = (typeof PosSessionStatus)[keyof typeof PosSessionStatus]

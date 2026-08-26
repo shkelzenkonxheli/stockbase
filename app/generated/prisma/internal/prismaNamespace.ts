@@ -395,6 +395,8 @@ export const ModelName = {
   User: 'User',
   Session: 'Session',
   Tenant: 'Tenant',
+  PosRegister: 'PosRegister',
+  PosSession: 'PosSession',
   AuditLog: 'AuditLog',
   InventoryCountSession: 'InventoryCountSession',
   InventoryCountLine: 'InventoryCountLine',
@@ -419,7 +421,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "product" | "category" | "variant" | "warehouse" | "variantInventory" | "stockMovement" | "order" | "orderItem" | "user" | "session" | "tenant" | "auditLog" | "inventoryCountSession" | "inventoryCountLine" | "tenantMembership" | "subscription" | "tenantSettings" | "supplier" | "purchaseOrder" | "purchaseOrderItem"
+    modelProps: "product" | "category" | "variant" | "warehouse" | "variantInventory" | "stockMovement" | "order" | "orderItem" | "user" | "session" | "tenant" | "posRegister" | "posSession" | "auditLog" | "inventoryCountSession" | "inventoryCountLine" | "tenantMembership" | "subscription" | "tenantSettings" | "supplier" | "purchaseOrder" | "purchaseOrderItem"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1237,6 +1239,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    PosRegister: {
+      payload: Prisma.$PosRegisterPayload<ExtArgs>
+      fields: Prisma.PosRegisterFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PosRegisterFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosRegisterPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PosRegisterFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosRegisterPayload>
+        }
+        findFirst: {
+          args: Prisma.PosRegisterFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosRegisterPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PosRegisterFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosRegisterPayload>
+        }
+        findMany: {
+          args: Prisma.PosRegisterFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosRegisterPayload>[]
+        }
+        create: {
+          args: Prisma.PosRegisterCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosRegisterPayload>
+        }
+        createMany: {
+          args: Prisma.PosRegisterCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PosRegisterCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosRegisterPayload>[]
+        }
+        delete: {
+          args: Prisma.PosRegisterDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosRegisterPayload>
+        }
+        update: {
+          args: Prisma.PosRegisterUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosRegisterPayload>
+        }
+        deleteMany: {
+          args: Prisma.PosRegisterDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PosRegisterUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PosRegisterUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosRegisterPayload>[]
+        }
+        upsert: {
+          args: Prisma.PosRegisterUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosRegisterPayload>
+        }
+        aggregate: {
+          args: Prisma.PosRegisterAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePosRegister>
+        }
+        groupBy: {
+          args: Prisma.PosRegisterGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PosRegisterGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PosRegisterCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PosRegisterCountAggregateOutputType> | number
+        }
+      }
+    }
+    PosSession: {
+      payload: Prisma.$PosSessionPayload<ExtArgs>
+      fields: Prisma.PosSessionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PosSessionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosSessionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PosSessionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosSessionPayload>
+        }
+        findFirst: {
+          args: Prisma.PosSessionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosSessionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PosSessionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosSessionPayload>
+        }
+        findMany: {
+          args: Prisma.PosSessionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosSessionPayload>[]
+        }
+        create: {
+          args: Prisma.PosSessionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosSessionPayload>
+        }
+        createMany: {
+          args: Prisma.PosSessionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PosSessionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosSessionPayload>[]
+        }
+        delete: {
+          args: Prisma.PosSessionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosSessionPayload>
+        }
+        update: {
+          args: Prisma.PosSessionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosSessionPayload>
+        }
+        deleteMany: {
+          args: Prisma.PosSessionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PosSessionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PosSessionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosSessionPayload>[]
+        }
+        upsert: {
+          args: Prisma.PosSessionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosSessionPayload>
+        }
+        aggregate: {
+          args: Prisma.PosSessionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePosSession>
+        }
+        groupBy: {
+          args: Prisma.PosSessionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PosSessionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PosSessionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PosSessionCountAggregateOutputType> | number
+        }
+      }
+    }
     AuditLog: {
       payload: Prisma.$AuditLogPayload<ExtArgs>
       fields: Prisma.AuditLogFieldRefs
@@ -2001,6 +2151,7 @@ export const WarehouseScalarFieldEnum = {
   name: 'name',
   slug: 'slug',
   isActive: 'isActive',
+  supportsPos: 'supportsPos',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -2104,6 +2255,42 @@ export const TenantScalarFieldEnum = {
 } as const
 
 export type TenantScalarFieldEnum = (typeof TenantScalarFieldEnum)[keyof typeof TenantScalarFieldEnum]
+
+
+export const PosRegisterScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  warehouseId: 'warehouseId',
+  name: 'name',
+  slug: 'slug',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PosRegisterScalarFieldEnum = (typeof PosRegisterScalarFieldEnum)[keyof typeof PosRegisterScalarFieldEnum]
+
+
+export const PosSessionScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  registerId: 'registerId',
+  warehouseId: 'warehouseId',
+  openedById: 'openedById',
+  closedById: 'closedById',
+  status: 'status',
+  openingCash: 'openingCash',
+  openingNote: 'openingNote',
+  closingNote: 'closingNote',
+  openedAt: 'openedAt',
+  closedAt: 'closedAt',
+  expectedCash: 'expectedCash',
+  countedCash: 'countedCash',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PosSessionScalarFieldEnum = (typeof PosSessionScalarFieldEnum)[keyof typeof PosSessionScalarFieldEnum]
 
 
 export const AuditLogScalarFieldEnum = {
@@ -2467,6 +2654,20 @@ export type ListEnumTenantStatusFieldRefInput<$PrismaModel> = FieldRefInputType<
 
 
 /**
+ * Reference to a field of type 'PosSessionStatus'
+ */
+export type EnumPosSessionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PosSessionStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'PosSessionStatus[]'
+ */
+export type ListEnumPosSessionStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PosSessionStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'InventoryCountStatus'
  */
 export type EnumInventoryCountStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InventoryCountStatus'>
@@ -2627,6 +2828,8 @@ export type GlobalOmitConfig = {
   user?: Prisma.UserOmit
   session?: Prisma.SessionOmit
   tenant?: Prisma.TenantOmit
+  posRegister?: Prisma.PosRegisterOmit
+  posSession?: Prisma.PosSessionOmit
   auditLog?: Prisma.AuditLogOmit
   inventoryCountSession?: Prisma.InventoryCountSessionOmit
   inventoryCountLine?: Prisma.InventoryCountLineOmit

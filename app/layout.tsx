@@ -6,7 +6,7 @@ import { headers } from "next/headers";
 import { logout } from "@/app/actions/auth";
 import { AppShellNav } from "@/app/components/app-shell-nav";
 import { getCurrentUser, hasRole, hasTenantAccess } from "@/lib/auth";
-import { getCatalogTemplate } from "@/lib/product-taxonomy";
+import { getCatalogTemplate, getPosConfig } from "@/lib/product-taxonomy";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -68,6 +68,7 @@ export default async function RootLayout({
   const tenantTemplate = currentUser?.tenant
     ? getCatalogTemplate(currentUser.tenant.catalogType)
     : null;
+  const posEnabled = currentUser?.tenant ? getPosConfig(currentUser.tenant.catalogConfig).enabled : false;
   const primaryColor = currentUser?.tenant?.primaryColor?.trim() || "#0f172a";
   const navItems = currentUser
     ? [
@@ -107,6 +108,25 @@ export default async function RootLayout({
             </svg>
           ),
         },
+        ...(posEnabled && hasRole(currentUser, ["SUPER_ADMIN", "SELLER"])
+          ? [
+              {
+                href: "/pos",
+                label: "POS",
+                icon: (
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-4 w-4 fill-none stroke-current stroke-[1.8]"
+                  >
+                    <path d="M4 6.5A2.5 2.5 0 0 1 6.5 4h11A2.5 2.5 0 0 1 20 6.5v11a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 17.5z" />
+                    <path d="M8 9h8" />
+                    <path d="M8 13h5" />
+                    <path d="M8 17h3" />
+                  </svg>
+                ),
+              },
+            ]
+          : []),
         ...(hasRole(currentUser, ["SUPER_ADMIN"])
           ? [
               {

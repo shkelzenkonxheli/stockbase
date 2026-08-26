@@ -42,6 +42,7 @@ export type WarehouseMinAggregateOutputType = {
   name: string | null
   slug: string | null
   isActive: boolean | null
+  supportsPos: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -52,6 +53,7 @@ export type WarehouseMaxAggregateOutputType = {
   name: string | null
   slug: string | null
   isActive: boolean | null
+  supportsPos: boolean | null
   createdAt: Date | null
   updatedAt: Date | null
 }
@@ -62,6 +64,7 @@ export type WarehouseCountAggregateOutputType = {
   name: number
   slug: number
   isActive: number
+  supportsPos: number
   createdAt: number
   updatedAt: number
   _all: number
@@ -84,6 +87,7 @@ export type WarehouseMinAggregateInputType = {
   name?: true
   slug?: true
   isActive?: true
+  supportsPos?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -94,6 +98,7 @@ export type WarehouseMaxAggregateInputType = {
   name?: true
   slug?: true
   isActive?: true
+  supportsPos?: true
   createdAt?: true
   updatedAt?: true
 }
@@ -104,6 +109,7 @@ export type WarehouseCountAggregateInputType = {
   name?: true
   slug?: true
   isActive?: true
+  supportsPos?: true
   createdAt?: true
   updatedAt?: true
   _all?: true
@@ -201,6 +207,7 @@ export type WarehouseGroupByOutputType = {
   name: string
   slug: string
   isActive: boolean
+  supportsPos: boolean
   createdAt: Date
   updatedAt: Date
   _count: WarehouseCountAggregateOutputType | null
@@ -234,6 +241,7 @@ export type WarehouseWhereInput = {
   name?: Prisma.StringFilter<"Warehouse"> | string
   slug?: Prisma.StringFilter<"Warehouse"> | string
   isActive?: Prisma.BoolFilter<"Warehouse"> | boolean
+  supportsPos?: Prisma.BoolFilter<"Warehouse"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Warehouse"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Warehouse"> | Date | string
   inventories?: Prisma.VariantInventoryListRelationFilter
@@ -243,6 +251,8 @@ export type WarehouseWhereInput = {
   inventoryCounts?: Prisma.InventoryCountSessionListRelationFilter
   stockMovements?: Prisma.StockMovementListRelationFilter
   auditLogs?: Prisma.AuditLogListRelationFilter
+  posRegisters?: Prisma.PosRegisterListRelationFilter
+  posSessions?: Prisma.PosSessionListRelationFilter
   tenant?: Prisma.XOR<Prisma.TenantScalarRelationFilter, Prisma.TenantWhereInput>
 }
 
@@ -252,6 +262,7 @@ export type WarehouseOrderByWithRelationInput = {
   name?: Prisma.SortOrder
   slug?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  supportsPos?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   inventories?: Prisma.VariantInventoryOrderByRelationAggregateInput
@@ -261,6 +272,8 @@ export type WarehouseOrderByWithRelationInput = {
   inventoryCounts?: Prisma.InventoryCountSessionOrderByRelationAggregateInput
   stockMovements?: Prisma.StockMovementOrderByRelationAggregateInput
   auditLogs?: Prisma.AuditLogOrderByRelationAggregateInput
+  posRegisters?: Prisma.PosRegisterOrderByRelationAggregateInput
+  posSessions?: Prisma.PosSessionOrderByRelationAggregateInput
   tenant?: Prisma.TenantOrderByWithRelationInput
 }
 
@@ -275,6 +288,7 @@ export type WarehouseWhereUniqueInput = Prisma.AtLeast<{
   name?: Prisma.StringFilter<"Warehouse"> | string
   slug?: Prisma.StringFilter<"Warehouse"> | string
   isActive?: Prisma.BoolFilter<"Warehouse"> | boolean
+  supportsPos?: Prisma.BoolFilter<"Warehouse"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Warehouse"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Warehouse"> | Date | string
   inventories?: Prisma.VariantInventoryListRelationFilter
@@ -284,6 +298,8 @@ export type WarehouseWhereUniqueInput = Prisma.AtLeast<{
   inventoryCounts?: Prisma.InventoryCountSessionListRelationFilter
   stockMovements?: Prisma.StockMovementListRelationFilter
   auditLogs?: Prisma.AuditLogListRelationFilter
+  posRegisters?: Prisma.PosRegisterListRelationFilter
+  posSessions?: Prisma.PosSessionListRelationFilter
   tenant?: Prisma.XOR<Prisma.TenantScalarRelationFilter, Prisma.TenantWhereInput>
 }, "id" | "tenantId_slug" | "tenantId_name">
 
@@ -293,6 +309,7 @@ export type WarehouseOrderByWithAggregationInput = {
   name?: Prisma.SortOrder
   slug?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  supportsPos?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   _count?: Prisma.WarehouseCountOrderByAggregateInput
@@ -311,6 +328,7 @@ export type WarehouseScalarWhereWithAggregatesInput = {
   name?: Prisma.StringWithAggregatesFilter<"Warehouse"> | string
   slug?: Prisma.StringWithAggregatesFilter<"Warehouse"> | string
   isActive?: Prisma.BoolWithAggregatesFilter<"Warehouse"> | boolean
+  supportsPos?: Prisma.BoolWithAggregatesFilter<"Warehouse"> | boolean
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Warehouse"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"Warehouse"> | Date | string
 }
@@ -319,6 +337,7 @@ export type WarehouseCreateInput = {
   name: string
   slug: string
   isActive?: boolean
+  supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   inventories?: Prisma.VariantInventoryCreateNestedManyWithoutWarehouseInput
@@ -328,6 +347,8 @@ export type WarehouseCreateInput = {
   inventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutWarehouseInput
   stockMovements?: Prisma.StockMovementCreateNestedManyWithoutWarehouseInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutWarehouseInput
+  posRegisters?: Prisma.PosRegisterCreateNestedManyWithoutWarehouseInput
+  posSessions?: Prisma.PosSessionCreateNestedManyWithoutWarehouseInput
   tenant: Prisma.TenantCreateNestedOneWithoutWarehousesInput
 }
 
@@ -337,6 +358,7 @@ export type WarehouseUncheckedCreateInput = {
   name: string
   slug: string
   isActive?: boolean
+  supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   inventories?: Prisma.VariantInventoryUncheckedCreateNestedManyWithoutWarehouseInput
@@ -346,12 +368,15 @@ export type WarehouseUncheckedCreateInput = {
   inventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutWarehouseInput
   stockMovements?: Prisma.StockMovementUncheckedCreateNestedManyWithoutWarehouseInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutWarehouseInput
+  posRegisters?: Prisma.PosRegisterUncheckedCreateNestedManyWithoutWarehouseInput
+  posSessions?: Prisma.PosSessionUncheckedCreateNestedManyWithoutWarehouseInput
 }
 
 export type WarehouseUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   inventories?: Prisma.VariantInventoryUpdateManyWithoutWarehouseNestedInput
@@ -361,6 +386,8 @@ export type WarehouseUpdateInput = {
   inventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutWarehouseNestedInput
   stockMovements?: Prisma.StockMovementUpdateManyWithoutWarehouseNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutWarehouseNestedInput
+  posRegisters?: Prisma.PosRegisterUpdateManyWithoutWarehouseNestedInput
+  posSessions?: Prisma.PosSessionUpdateManyWithoutWarehouseNestedInput
   tenant?: Prisma.TenantUpdateOneRequiredWithoutWarehousesNestedInput
 }
 
@@ -370,6 +397,7 @@ export type WarehouseUncheckedUpdateInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   inventories?: Prisma.VariantInventoryUncheckedUpdateManyWithoutWarehouseNestedInput
@@ -379,6 +407,8 @@ export type WarehouseUncheckedUpdateInput = {
   inventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutWarehouseNestedInput
   stockMovements?: Prisma.StockMovementUncheckedUpdateManyWithoutWarehouseNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutWarehouseNestedInput
+  posRegisters?: Prisma.PosRegisterUncheckedUpdateManyWithoutWarehouseNestedInput
+  posSessions?: Prisma.PosSessionUncheckedUpdateManyWithoutWarehouseNestedInput
 }
 
 export type WarehouseCreateManyInput = {
@@ -387,6 +417,7 @@ export type WarehouseCreateManyInput = {
   name: string
   slug: string
   isActive?: boolean
+  supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -395,6 +426,7 @@ export type WarehouseUpdateManyMutationInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -405,6 +437,7 @@ export type WarehouseUncheckedUpdateManyInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -425,6 +458,7 @@ export type WarehouseCountOrderByAggregateInput = {
   name?: Prisma.SortOrder
   slug?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  supportsPos?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -440,6 +474,7 @@ export type WarehouseMaxOrderByAggregateInput = {
   name?: Prisma.SortOrder
   slug?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  supportsPos?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -450,6 +485,7 @@ export type WarehouseMinOrderByAggregateInput = {
   name?: Prisma.SortOrder
   slug?: Prisma.SortOrder
   isActive?: Prisma.SortOrder
+  supportsPos?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
 }
@@ -583,6 +619,34 @@ export type WarehouseUncheckedUpdateManyWithoutTenantNestedInput = {
   deleteMany?: Prisma.WarehouseScalarWhereInput | Prisma.WarehouseScalarWhereInput[]
 }
 
+export type WarehouseCreateNestedOneWithoutPosRegistersInput = {
+  create?: Prisma.XOR<Prisma.WarehouseCreateWithoutPosRegistersInput, Prisma.WarehouseUncheckedCreateWithoutPosRegistersInput>
+  connectOrCreate?: Prisma.WarehouseCreateOrConnectWithoutPosRegistersInput
+  connect?: Prisma.WarehouseWhereUniqueInput
+}
+
+export type WarehouseUpdateOneRequiredWithoutPosRegistersNestedInput = {
+  create?: Prisma.XOR<Prisma.WarehouseCreateWithoutPosRegistersInput, Prisma.WarehouseUncheckedCreateWithoutPosRegistersInput>
+  connectOrCreate?: Prisma.WarehouseCreateOrConnectWithoutPosRegistersInput
+  upsert?: Prisma.WarehouseUpsertWithoutPosRegistersInput
+  connect?: Prisma.WarehouseWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.WarehouseUpdateToOneWithWhereWithoutPosRegistersInput, Prisma.WarehouseUpdateWithoutPosRegistersInput>, Prisma.WarehouseUncheckedUpdateWithoutPosRegistersInput>
+}
+
+export type WarehouseCreateNestedOneWithoutPosSessionsInput = {
+  create?: Prisma.XOR<Prisma.WarehouseCreateWithoutPosSessionsInput, Prisma.WarehouseUncheckedCreateWithoutPosSessionsInput>
+  connectOrCreate?: Prisma.WarehouseCreateOrConnectWithoutPosSessionsInput
+  connect?: Prisma.WarehouseWhereUniqueInput
+}
+
+export type WarehouseUpdateOneRequiredWithoutPosSessionsNestedInput = {
+  create?: Prisma.XOR<Prisma.WarehouseCreateWithoutPosSessionsInput, Prisma.WarehouseUncheckedCreateWithoutPosSessionsInput>
+  connectOrCreate?: Prisma.WarehouseCreateOrConnectWithoutPosSessionsInput
+  upsert?: Prisma.WarehouseUpsertWithoutPosSessionsInput
+  connect?: Prisma.WarehouseWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.WarehouseUpdateToOneWithWhereWithoutPosSessionsInput, Prisma.WarehouseUpdateWithoutPosSessionsInput>, Prisma.WarehouseUncheckedUpdateWithoutPosSessionsInput>
+}
+
 export type WarehouseCreateNestedOneWithoutAuditLogsInput = {
   create?: Prisma.XOR<Prisma.WarehouseCreateWithoutAuditLogsInput, Prisma.WarehouseUncheckedCreateWithoutAuditLogsInput>
   connectOrCreate?: Prisma.WarehouseCreateOrConnectWithoutAuditLogsInput
@@ -631,6 +695,7 @@ export type WarehouseCreateWithoutInventoriesInput = {
   name: string
   slug: string
   isActive?: boolean
+  supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   orders?: Prisma.OrderCreateNestedManyWithoutWarehouseInput
@@ -639,6 +704,8 @@ export type WarehouseCreateWithoutInventoriesInput = {
   inventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutWarehouseInput
   stockMovements?: Prisma.StockMovementCreateNestedManyWithoutWarehouseInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutWarehouseInput
+  posRegisters?: Prisma.PosRegisterCreateNestedManyWithoutWarehouseInput
+  posSessions?: Prisma.PosSessionCreateNestedManyWithoutWarehouseInput
   tenant: Prisma.TenantCreateNestedOneWithoutWarehousesInput
 }
 
@@ -648,6 +715,7 @@ export type WarehouseUncheckedCreateWithoutInventoriesInput = {
   name: string
   slug: string
   isActive?: boolean
+  supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutWarehouseInput
@@ -656,6 +724,8 @@ export type WarehouseUncheckedCreateWithoutInventoriesInput = {
   inventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutWarehouseInput
   stockMovements?: Prisma.StockMovementUncheckedCreateNestedManyWithoutWarehouseInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutWarehouseInput
+  posRegisters?: Prisma.PosRegisterUncheckedCreateNestedManyWithoutWarehouseInput
+  posSessions?: Prisma.PosSessionUncheckedCreateNestedManyWithoutWarehouseInput
 }
 
 export type WarehouseCreateOrConnectWithoutInventoriesInput = {
@@ -678,6 +748,7 @@ export type WarehouseUpdateWithoutInventoriesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orders?: Prisma.OrderUpdateManyWithoutWarehouseNestedInput
@@ -686,6 +757,8 @@ export type WarehouseUpdateWithoutInventoriesInput = {
   inventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutWarehouseNestedInput
   stockMovements?: Prisma.StockMovementUpdateManyWithoutWarehouseNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutWarehouseNestedInput
+  posRegisters?: Prisma.PosRegisterUpdateManyWithoutWarehouseNestedInput
+  posSessions?: Prisma.PosSessionUpdateManyWithoutWarehouseNestedInput
   tenant?: Prisma.TenantUpdateOneRequiredWithoutWarehousesNestedInput
 }
 
@@ -695,6 +768,7 @@ export type WarehouseUncheckedUpdateWithoutInventoriesInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   orders?: Prisma.OrderUncheckedUpdateManyWithoutWarehouseNestedInput
@@ -703,12 +777,15 @@ export type WarehouseUncheckedUpdateWithoutInventoriesInput = {
   inventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutWarehouseNestedInput
   stockMovements?: Prisma.StockMovementUncheckedUpdateManyWithoutWarehouseNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutWarehouseNestedInput
+  posRegisters?: Prisma.PosRegisterUncheckedUpdateManyWithoutWarehouseNestedInput
+  posSessions?: Prisma.PosSessionUncheckedUpdateManyWithoutWarehouseNestedInput
 }
 
 export type WarehouseCreateWithoutStockMovementsInput = {
   name: string
   slug: string
   isActive?: boolean
+  supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   inventories?: Prisma.VariantInventoryCreateNestedManyWithoutWarehouseInput
@@ -717,6 +794,8 @@ export type WarehouseCreateWithoutStockMovementsInput = {
   purchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutWarehouseInput
   inventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutWarehouseInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutWarehouseInput
+  posRegisters?: Prisma.PosRegisterCreateNestedManyWithoutWarehouseInput
+  posSessions?: Prisma.PosSessionCreateNestedManyWithoutWarehouseInput
   tenant: Prisma.TenantCreateNestedOneWithoutWarehousesInput
 }
 
@@ -726,6 +805,7 @@ export type WarehouseUncheckedCreateWithoutStockMovementsInput = {
   name: string
   slug: string
   isActive?: boolean
+  supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   inventories?: Prisma.VariantInventoryUncheckedCreateNestedManyWithoutWarehouseInput
@@ -734,6 +814,8 @@ export type WarehouseUncheckedCreateWithoutStockMovementsInput = {
   purchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutWarehouseInput
   inventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutWarehouseInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutWarehouseInput
+  posRegisters?: Prisma.PosRegisterUncheckedCreateNestedManyWithoutWarehouseInput
+  posSessions?: Prisma.PosSessionUncheckedCreateNestedManyWithoutWarehouseInput
 }
 
 export type WarehouseCreateOrConnectWithoutStockMovementsInput = {
@@ -756,6 +838,7 @@ export type WarehouseUpdateWithoutStockMovementsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   inventories?: Prisma.VariantInventoryUpdateManyWithoutWarehouseNestedInput
@@ -764,6 +847,8 @@ export type WarehouseUpdateWithoutStockMovementsInput = {
   purchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutWarehouseNestedInput
   inventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutWarehouseNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutWarehouseNestedInput
+  posRegisters?: Prisma.PosRegisterUpdateManyWithoutWarehouseNestedInput
+  posSessions?: Prisma.PosSessionUpdateManyWithoutWarehouseNestedInput
   tenant?: Prisma.TenantUpdateOneRequiredWithoutWarehousesNestedInput
 }
 
@@ -773,6 +858,7 @@ export type WarehouseUncheckedUpdateWithoutStockMovementsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   inventories?: Prisma.VariantInventoryUncheckedUpdateManyWithoutWarehouseNestedInput
@@ -781,12 +867,15 @@ export type WarehouseUncheckedUpdateWithoutStockMovementsInput = {
   purchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutWarehouseNestedInput
   inventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutWarehouseNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutWarehouseNestedInput
+  posRegisters?: Prisma.PosRegisterUncheckedUpdateManyWithoutWarehouseNestedInput
+  posSessions?: Prisma.PosSessionUncheckedUpdateManyWithoutWarehouseNestedInput
 }
 
 export type WarehouseCreateWithoutOrdersInput = {
   name: string
   slug: string
   isActive?: boolean
+  supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   inventories?: Prisma.VariantInventoryCreateNestedManyWithoutWarehouseInput
@@ -795,6 +884,8 @@ export type WarehouseCreateWithoutOrdersInput = {
   inventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutWarehouseInput
   stockMovements?: Prisma.StockMovementCreateNestedManyWithoutWarehouseInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutWarehouseInput
+  posRegisters?: Prisma.PosRegisterCreateNestedManyWithoutWarehouseInput
+  posSessions?: Prisma.PosSessionCreateNestedManyWithoutWarehouseInput
   tenant: Prisma.TenantCreateNestedOneWithoutWarehousesInput
 }
 
@@ -804,6 +895,7 @@ export type WarehouseUncheckedCreateWithoutOrdersInput = {
   name: string
   slug: string
   isActive?: boolean
+  supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   inventories?: Prisma.VariantInventoryUncheckedCreateNestedManyWithoutWarehouseInput
@@ -812,6 +904,8 @@ export type WarehouseUncheckedCreateWithoutOrdersInput = {
   inventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutWarehouseInput
   stockMovements?: Prisma.StockMovementUncheckedCreateNestedManyWithoutWarehouseInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutWarehouseInput
+  posRegisters?: Prisma.PosRegisterUncheckedCreateNestedManyWithoutWarehouseInput
+  posSessions?: Prisma.PosSessionUncheckedCreateNestedManyWithoutWarehouseInput
 }
 
 export type WarehouseCreateOrConnectWithoutOrdersInput = {
@@ -834,6 +928,7 @@ export type WarehouseUpdateWithoutOrdersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   inventories?: Prisma.VariantInventoryUpdateManyWithoutWarehouseNestedInput
@@ -842,6 +937,8 @@ export type WarehouseUpdateWithoutOrdersInput = {
   inventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutWarehouseNestedInput
   stockMovements?: Prisma.StockMovementUpdateManyWithoutWarehouseNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutWarehouseNestedInput
+  posRegisters?: Prisma.PosRegisterUpdateManyWithoutWarehouseNestedInput
+  posSessions?: Prisma.PosSessionUpdateManyWithoutWarehouseNestedInput
   tenant?: Prisma.TenantUpdateOneRequiredWithoutWarehousesNestedInput
 }
 
@@ -851,6 +948,7 @@ export type WarehouseUncheckedUpdateWithoutOrdersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   inventories?: Prisma.VariantInventoryUncheckedUpdateManyWithoutWarehouseNestedInput
@@ -859,12 +957,15 @@ export type WarehouseUncheckedUpdateWithoutOrdersInput = {
   inventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutWarehouseNestedInput
   stockMovements?: Prisma.StockMovementUncheckedUpdateManyWithoutWarehouseNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutWarehouseNestedInput
+  posRegisters?: Prisma.PosRegisterUncheckedUpdateManyWithoutWarehouseNestedInput
+  posSessions?: Prisma.PosSessionUncheckedUpdateManyWithoutWarehouseNestedInput
 }
 
 export type WarehouseCreateWithoutOrderItemsInput = {
   name: string
   slug: string
   isActive?: boolean
+  supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   inventories?: Prisma.VariantInventoryCreateNestedManyWithoutWarehouseInput
@@ -873,6 +974,8 @@ export type WarehouseCreateWithoutOrderItemsInput = {
   inventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutWarehouseInput
   stockMovements?: Prisma.StockMovementCreateNestedManyWithoutWarehouseInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutWarehouseInput
+  posRegisters?: Prisma.PosRegisterCreateNestedManyWithoutWarehouseInput
+  posSessions?: Prisma.PosSessionCreateNestedManyWithoutWarehouseInput
   tenant: Prisma.TenantCreateNestedOneWithoutWarehousesInput
 }
 
@@ -882,6 +985,7 @@ export type WarehouseUncheckedCreateWithoutOrderItemsInput = {
   name: string
   slug: string
   isActive?: boolean
+  supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   inventories?: Prisma.VariantInventoryUncheckedCreateNestedManyWithoutWarehouseInput
@@ -890,6 +994,8 @@ export type WarehouseUncheckedCreateWithoutOrderItemsInput = {
   inventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutWarehouseInput
   stockMovements?: Prisma.StockMovementUncheckedCreateNestedManyWithoutWarehouseInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutWarehouseInput
+  posRegisters?: Prisma.PosRegisterUncheckedCreateNestedManyWithoutWarehouseInput
+  posSessions?: Prisma.PosSessionUncheckedCreateNestedManyWithoutWarehouseInput
 }
 
 export type WarehouseCreateOrConnectWithoutOrderItemsInput = {
@@ -912,6 +1018,7 @@ export type WarehouseUpdateWithoutOrderItemsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   inventories?: Prisma.VariantInventoryUpdateManyWithoutWarehouseNestedInput
@@ -920,6 +1027,8 @@ export type WarehouseUpdateWithoutOrderItemsInput = {
   inventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutWarehouseNestedInput
   stockMovements?: Prisma.StockMovementUpdateManyWithoutWarehouseNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutWarehouseNestedInput
+  posRegisters?: Prisma.PosRegisterUpdateManyWithoutWarehouseNestedInput
+  posSessions?: Prisma.PosSessionUpdateManyWithoutWarehouseNestedInput
   tenant?: Prisma.TenantUpdateOneRequiredWithoutWarehousesNestedInput
 }
 
@@ -929,6 +1038,7 @@ export type WarehouseUncheckedUpdateWithoutOrderItemsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   inventories?: Prisma.VariantInventoryUncheckedUpdateManyWithoutWarehouseNestedInput
@@ -937,12 +1047,15 @@ export type WarehouseUncheckedUpdateWithoutOrderItemsInput = {
   inventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutWarehouseNestedInput
   stockMovements?: Prisma.StockMovementUncheckedUpdateManyWithoutWarehouseNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutWarehouseNestedInput
+  posRegisters?: Prisma.PosRegisterUncheckedUpdateManyWithoutWarehouseNestedInput
+  posSessions?: Prisma.PosSessionUncheckedUpdateManyWithoutWarehouseNestedInput
 }
 
 export type WarehouseCreateWithoutTenantInput = {
   name: string
   slug: string
   isActive?: boolean
+  supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   inventories?: Prisma.VariantInventoryCreateNestedManyWithoutWarehouseInput
@@ -952,6 +1065,8 @@ export type WarehouseCreateWithoutTenantInput = {
   inventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutWarehouseInput
   stockMovements?: Prisma.StockMovementCreateNestedManyWithoutWarehouseInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutWarehouseInput
+  posRegisters?: Prisma.PosRegisterCreateNestedManyWithoutWarehouseInput
+  posSessions?: Prisma.PosSessionCreateNestedManyWithoutWarehouseInput
 }
 
 export type WarehouseUncheckedCreateWithoutTenantInput = {
@@ -959,6 +1074,7 @@ export type WarehouseUncheckedCreateWithoutTenantInput = {
   name: string
   slug: string
   isActive?: boolean
+  supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   inventories?: Prisma.VariantInventoryUncheckedCreateNestedManyWithoutWarehouseInput
@@ -968,6 +1084,8 @@ export type WarehouseUncheckedCreateWithoutTenantInput = {
   inventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutWarehouseInput
   stockMovements?: Prisma.StockMovementUncheckedCreateNestedManyWithoutWarehouseInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutWarehouseInput
+  posRegisters?: Prisma.PosRegisterUncheckedCreateNestedManyWithoutWarehouseInput
+  posSessions?: Prisma.PosSessionUncheckedCreateNestedManyWithoutWarehouseInput
 }
 
 export type WarehouseCreateOrConnectWithoutTenantInput = {
@@ -1005,14 +1123,16 @@ export type WarehouseScalarWhereInput = {
   name?: Prisma.StringFilter<"Warehouse"> | string
   slug?: Prisma.StringFilter<"Warehouse"> | string
   isActive?: Prisma.BoolFilter<"Warehouse"> | boolean
+  supportsPos?: Prisma.BoolFilter<"Warehouse"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Warehouse"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Warehouse"> | Date | string
 }
 
-export type WarehouseCreateWithoutAuditLogsInput = {
+export type WarehouseCreateWithoutPosRegistersInput = {
   name: string
   slug: string
   isActive?: boolean
+  supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   inventories?: Prisma.VariantInventoryCreateNestedManyWithoutWarehouseInput
@@ -1021,6 +1141,188 @@ export type WarehouseCreateWithoutAuditLogsInput = {
   purchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutWarehouseInput
   inventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutWarehouseInput
   stockMovements?: Prisma.StockMovementCreateNestedManyWithoutWarehouseInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutWarehouseInput
+  posSessions?: Prisma.PosSessionCreateNestedManyWithoutWarehouseInput
+  tenant: Prisma.TenantCreateNestedOneWithoutWarehousesInput
+}
+
+export type WarehouseUncheckedCreateWithoutPosRegistersInput = {
+  id?: number
+  tenantId: number
+  name: string
+  slug: string
+  isActive?: boolean
+  supportsPos?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  inventories?: Prisma.VariantInventoryUncheckedCreateNestedManyWithoutWarehouseInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutWarehouseInput
+  orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutWarehouseInput
+  purchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutWarehouseInput
+  inventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutWarehouseInput
+  stockMovements?: Prisma.StockMovementUncheckedCreateNestedManyWithoutWarehouseInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutWarehouseInput
+  posSessions?: Prisma.PosSessionUncheckedCreateNestedManyWithoutWarehouseInput
+}
+
+export type WarehouseCreateOrConnectWithoutPosRegistersInput = {
+  where: Prisma.WarehouseWhereUniqueInput
+  create: Prisma.XOR<Prisma.WarehouseCreateWithoutPosRegistersInput, Prisma.WarehouseUncheckedCreateWithoutPosRegistersInput>
+}
+
+export type WarehouseUpsertWithoutPosRegistersInput = {
+  update: Prisma.XOR<Prisma.WarehouseUpdateWithoutPosRegistersInput, Prisma.WarehouseUncheckedUpdateWithoutPosRegistersInput>
+  create: Prisma.XOR<Prisma.WarehouseCreateWithoutPosRegistersInput, Prisma.WarehouseUncheckedCreateWithoutPosRegistersInput>
+  where?: Prisma.WarehouseWhereInput
+}
+
+export type WarehouseUpdateToOneWithWhereWithoutPosRegistersInput = {
+  where?: Prisma.WarehouseWhereInput
+  data: Prisma.XOR<Prisma.WarehouseUpdateWithoutPosRegistersInput, Prisma.WarehouseUncheckedUpdateWithoutPosRegistersInput>
+}
+
+export type WarehouseUpdateWithoutPosRegistersInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  inventories?: Prisma.VariantInventoryUpdateManyWithoutWarehouseNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutWarehouseNestedInput
+  orderItems?: Prisma.OrderItemUpdateManyWithoutWarehouseNestedInput
+  purchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutWarehouseNestedInput
+  inventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutWarehouseNestedInput
+  stockMovements?: Prisma.StockMovementUpdateManyWithoutWarehouseNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutWarehouseNestedInput
+  posSessions?: Prisma.PosSessionUpdateManyWithoutWarehouseNestedInput
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutWarehousesNestedInput
+}
+
+export type WarehouseUncheckedUpdateWithoutPosRegistersInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  inventories?: Prisma.VariantInventoryUncheckedUpdateManyWithoutWarehouseNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutWarehouseNestedInput
+  orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutWarehouseNestedInput
+  purchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutWarehouseNestedInput
+  inventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutWarehouseNestedInput
+  stockMovements?: Prisma.StockMovementUncheckedUpdateManyWithoutWarehouseNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutWarehouseNestedInput
+  posSessions?: Prisma.PosSessionUncheckedUpdateManyWithoutWarehouseNestedInput
+}
+
+export type WarehouseCreateWithoutPosSessionsInput = {
+  name: string
+  slug: string
+  isActive?: boolean
+  supportsPos?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  inventories?: Prisma.VariantInventoryCreateNestedManyWithoutWarehouseInput
+  orders?: Prisma.OrderCreateNestedManyWithoutWarehouseInput
+  orderItems?: Prisma.OrderItemCreateNestedManyWithoutWarehouseInput
+  purchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutWarehouseInput
+  inventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutWarehouseInput
+  stockMovements?: Prisma.StockMovementCreateNestedManyWithoutWarehouseInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutWarehouseInput
+  posRegisters?: Prisma.PosRegisterCreateNestedManyWithoutWarehouseInput
+  tenant: Prisma.TenantCreateNestedOneWithoutWarehousesInput
+}
+
+export type WarehouseUncheckedCreateWithoutPosSessionsInput = {
+  id?: number
+  tenantId: number
+  name: string
+  slug: string
+  isActive?: boolean
+  supportsPos?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  inventories?: Prisma.VariantInventoryUncheckedCreateNestedManyWithoutWarehouseInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutWarehouseInput
+  orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutWarehouseInput
+  purchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutWarehouseInput
+  inventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutWarehouseInput
+  stockMovements?: Prisma.StockMovementUncheckedCreateNestedManyWithoutWarehouseInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutWarehouseInput
+  posRegisters?: Prisma.PosRegisterUncheckedCreateNestedManyWithoutWarehouseInput
+}
+
+export type WarehouseCreateOrConnectWithoutPosSessionsInput = {
+  where: Prisma.WarehouseWhereUniqueInput
+  create: Prisma.XOR<Prisma.WarehouseCreateWithoutPosSessionsInput, Prisma.WarehouseUncheckedCreateWithoutPosSessionsInput>
+}
+
+export type WarehouseUpsertWithoutPosSessionsInput = {
+  update: Prisma.XOR<Prisma.WarehouseUpdateWithoutPosSessionsInput, Prisma.WarehouseUncheckedUpdateWithoutPosSessionsInput>
+  create: Prisma.XOR<Prisma.WarehouseCreateWithoutPosSessionsInput, Prisma.WarehouseUncheckedCreateWithoutPosSessionsInput>
+  where?: Prisma.WarehouseWhereInput
+}
+
+export type WarehouseUpdateToOneWithWhereWithoutPosSessionsInput = {
+  where?: Prisma.WarehouseWhereInput
+  data: Prisma.XOR<Prisma.WarehouseUpdateWithoutPosSessionsInput, Prisma.WarehouseUncheckedUpdateWithoutPosSessionsInput>
+}
+
+export type WarehouseUpdateWithoutPosSessionsInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  inventories?: Prisma.VariantInventoryUpdateManyWithoutWarehouseNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutWarehouseNestedInput
+  orderItems?: Prisma.OrderItemUpdateManyWithoutWarehouseNestedInput
+  purchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutWarehouseNestedInput
+  inventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutWarehouseNestedInput
+  stockMovements?: Prisma.StockMovementUpdateManyWithoutWarehouseNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutWarehouseNestedInput
+  posRegisters?: Prisma.PosRegisterUpdateManyWithoutWarehouseNestedInput
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutWarehousesNestedInput
+}
+
+export type WarehouseUncheckedUpdateWithoutPosSessionsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  inventories?: Prisma.VariantInventoryUncheckedUpdateManyWithoutWarehouseNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutWarehouseNestedInput
+  orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutWarehouseNestedInput
+  purchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutWarehouseNestedInput
+  inventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutWarehouseNestedInput
+  stockMovements?: Prisma.StockMovementUncheckedUpdateManyWithoutWarehouseNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutWarehouseNestedInput
+  posRegisters?: Prisma.PosRegisterUncheckedUpdateManyWithoutWarehouseNestedInput
+}
+
+export type WarehouseCreateWithoutAuditLogsInput = {
+  name: string
+  slug: string
+  isActive?: boolean
+  supportsPos?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  inventories?: Prisma.VariantInventoryCreateNestedManyWithoutWarehouseInput
+  orders?: Prisma.OrderCreateNestedManyWithoutWarehouseInput
+  orderItems?: Prisma.OrderItemCreateNestedManyWithoutWarehouseInput
+  purchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutWarehouseInput
+  inventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutWarehouseInput
+  stockMovements?: Prisma.StockMovementCreateNestedManyWithoutWarehouseInput
+  posRegisters?: Prisma.PosRegisterCreateNestedManyWithoutWarehouseInput
+  posSessions?: Prisma.PosSessionCreateNestedManyWithoutWarehouseInput
   tenant: Prisma.TenantCreateNestedOneWithoutWarehousesInput
 }
 
@@ -1030,6 +1332,7 @@ export type WarehouseUncheckedCreateWithoutAuditLogsInput = {
   name: string
   slug: string
   isActive?: boolean
+  supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   inventories?: Prisma.VariantInventoryUncheckedCreateNestedManyWithoutWarehouseInput
@@ -1038,6 +1341,8 @@ export type WarehouseUncheckedCreateWithoutAuditLogsInput = {
   purchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutWarehouseInput
   inventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutWarehouseInput
   stockMovements?: Prisma.StockMovementUncheckedCreateNestedManyWithoutWarehouseInput
+  posRegisters?: Prisma.PosRegisterUncheckedCreateNestedManyWithoutWarehouseInput
+  posSessions?: Prisma.PosSessionUncheckedCreateNestedManyWithoutWarehouseInput
 }
 
 export type WarehouseCreateOrConnectWithoutAuditLogsInput = {
@@ -1060,6 +1365,7 @@ export type WarehouseUpdateWithoutAuditLogsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   inventories?: Prisma.VariantInventoryUpdateManyWithoutWarehouseNestedInput
@@ -1068,6 +1374,8 @@ export type WarehouseUpdateWithoutAuditLogsInput = {
   purchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutWarehouseNestedInput
   inventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutWarehouseNestedInput
   stockMovements?: Prisma.StockMovementUpdateManyWithoutWarehouseNestedInput
+  posRegisters?: Prisma.PosRegisterUpdateManyWithoutWarehouseNestedInput
+  posSessions?: Prisma.PosSessionUpdateManyWithoutWarehouseNestedInput
   tenant?: Prisma.TenantUpdateOneRequiredWithoutWarehousesNestedInput
 }
 
@@ -1077,6 +1385,7 @@ export type WarehouseUncheckedUpdateWithoutAuditLogsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   inventories?: Prisma.VariantInventoryUncheckedUpdateManyWithoutWarehouseNestedInput
@@ -1085,12 +1394,15 @@ export type WarehouseUncheckedUpdateWithoutAuditLogsInput = {
   purchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutWarehouseNestedInput
   inventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutWarehouseNestedInput
   stockMovements?: Prisma.StockMovementUncheckedUpdateManyWithoutWarehouseNestedInput
+  posRegisters?: Prisma.PosRegisterUncheckedUpdateManyWithoutWarehouseNestedInput
+  posSessions?: Prisma.PosSessionUncheckedUpdateManyWithoutWarehouseNestedInput
 }
 
 export type WarehouseCreateWithoutInventoryCountsInput = {
   name: string
   slug: string
   isActive?: boolean
+  supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   inventories?: Prisma.VariantInventoryCreateNestedManyWithoutWarehouseInput
@@ -1099,6 +1411,8 @@ export type WarehouseCreateWithoutInventoryCountsInput = {
   purchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutWarehouseInput
   stockMovements?: Prisma.StockMovementCreateNestedManyWithoutWarehouseInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutWarehouseInput
+  posRegisters?: Prisma.PosRegisterCreateNestedManyWithoutWarehouseInput
+  posSessions?: Prisma.PosSessionCreateNestedManyWithoutWarehouseInput
   tenant: Prisma.TenantCreateNestedOneWithoutWarehousesInput
 }
 
@@ -1108,6 +1422,7 @@ export type WarehouseUncheckedCreateWithoutInventoryCountsInput = {
   name: string
   slug: string
   isActive?: boolean
+  supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   inventories?: Prisma.VariantInventoryUncheckedCreateNestedManyWithoutWarehouseInput
@@ -1116,6 +1431,8 @@ export type WarehouseUncheckedCreateWithoutInventoryCountsInput = {
   purchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutWarehouseInput
   stockMovements?: Prisma.StockMovementUncheckedCreateNestedManyWithoutWarehouseInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutWarehouseInput
+  posRegisters?: Prisma.PosRegisterUncheckedCreateNestedManyWithoutWarehouseInput
+  posSessions?: Prisma.PosSessionUncheckedCreateNestedManyWithoutWarehouseInput
 }
 
 export type WarehouseCreateOrConnectWithoutInventoryCountsInput = {
@@ -1138,6 +1455,7 @@ export type WarehouseUpdateWithoutInventoryCountsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   inventories?: Prisma.VariantInventoryUpdateManyWithoutWarehouseNestedInput
@@ -1146,6 +1464,8 @@ export type WarehouseUpdateWithoutInventoryCountsInput = {
   purchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutWarehouseNestedInput
   stockMovements?: Prisma.StockMovementUpdateManyWithoutWarehouseNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutWarehouseNestedInput
+  posRegisters?: Prisma.PosRegisterUpdateManyWithoutWarehouseNestedInput
+  posSessions?: Prisma.PosSessionUpdateManyWithoutWarehouseNestedInput
   tenant?: Prisma.TenantUpdateOneRequiredWithoutWarehousesNestedInput
 }
 
@@ -1155,6 +1475,7 @@ export type WarehouseUncheckedUpdateWithoutInventoryCountsInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   inventories?: Prisma.VariantInventoryUncheckedUpdateManyWithoutWarehouseNestedInput
@@ -1163,12 +1484,15 @@ export type WarehouseUncheckedUpdateWithoutInventoryCountsInput = {
   purchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutWarehouseNestedInput
   stockMovements?: Prisma.StockMovementUncheckedUpdateManyWithoutWarehouseNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutWarehouseNestedInput
+  posRegisters?: Prisma.PosRegisterUncheckedUpdateManyWithoutWarehouseNestedInput
+  posSessions?: Prisma.PosSessionUncheckedUpdateManyWithoutWarehouseNestedInput
 }
 
 export type WarehouseCreateWithoutPurchaseOrdersInput = {
   name: string
   slug: string
   isActive?: boolean
+  supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   inventories?: Prisma.VariantInventoryCreateNestedManyWithoutWarehouseInput
@@ -1177,6 +1501,8 @@ export type WarehouseCreateWithoutPurchaseOrdersInput = {
   inventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutWarehouseInput
   stockMovements?: Prisma.StockMovementCreateNestedManyWithoutWarehouseInput
   auditLogs?: Prisma.AuditLogCreateNestedManyWithoutWarehouseInput
+  posRegisters?: Prisma.PosRegisterCreateNestedManyWithoutWarehouseInput
+  posSessions?: Prisma.PosSessionCreateNestedManyWithoutWarehouseInput
   tenant: Prisma.TenantCreateNestedOneWithoutWarehousesInput
 }
 
@@ -1186,6 +1512,7 @@ export type WarehouseUncheckedCreateWithoutPurchaseOrdersInput = {
   name: string
   slug: string
   isActive?: boolean
+  supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
   inventories?: Prisma.VariantInventoryUncheckedCreateNestedManyWithoutWarehouseInput
@@ -1194,6 +1521,8 @@ export type WarehouseUncheckedCreateWithoutPurchaseOrdersInput = {
   inventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutWarehouseInput
   stockMovements?: Prisma.StockMovementUncheckedCreateNestedManyWithoutWarehouseInput
   auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutWarehouseInput
+  posRegisters?: Prisma.PosRegisterUncheckedCreateNestedManyWithoutWarehouseInput
+  posSessions?: Prisma.PosSessionUncheckedCreateNestedManyWithoutWarehouseInput
 }
 
 export type WarehouseCreateOrConnectWithoutPurchaseOrdersInput = {
@@ -1216,6 +1545,7 @@ export type WarehouseUpdateWithoutPurchaseOrdersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   inventories?: Prisma.VariantInventoryUpdateManyWithoutWarehouseNestedInput
@@ -1224,6 +1554,8 @@ export type WarehouseUpdateWithoutPurchaseOrdersInput = {
   inventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutWarehouseNestedInput
   stockMovements?: Prisma.StockMovementUpdateManyWithoutWarehouseNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutWarehouseNestedInput
+  posRegisters?: Prisma.PosRegisterUpdateManyWithoutWarehouseNestedInput
+  posSessions?: Prisma.PosSessionUpdateManyWithoutWarehouseNestedInput
   tenant?: Prisma.TenantUpdateOneRequiredWithoutWarehousesNestedInput
 }
 
@@ -1233,6 +1565,7 @@ export type WarehouseUncheckedUpdateWithoutPurchaseOrdersInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   inventories?: Prisma.VariantInventoryUncheckedUpdateManyWithoutWarehouseNestedInput
@@ -1241,6 +1574,8 @@ export type WarehouseUncheckedUpdateWithoutPurchaseOrdersInput = {
   inventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutWarehouseNestedInput
   stockMovements?: Prisma.StockMovementUncheckedUpdateManyWithoutWarehouseNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutWarehouseNestedInput
+  posRegisters?: Prisma.PosRegisterUncheckedUpdateManyWithoutWarehouseNestedInput
+  posSessions?: Prisma.PosSessionUncheckedUpdateManyWithoutWarehouseNestedInput
 }
 
 export type WarehouseCreateManyTenantInput = {
@@ -1248,6 +1583,7 @@ export type WarehouseCreateManyTenantInput = {
   name: string
   slug: string
   isActive?: boolean
+  supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
 }
@@ -1256,6 +1592,7 @@ export type WarehouseUpdateWithoutTenantInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   inventories?: Prisma.VariantInventoryUpdateManyWithoutWarehouseNestedInput
@@ -1265,6 +1602,8 @@ export type WarehouseUpdateWithoutTenantInput = {
   inventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutWarehouseNestedInput
   stockMovements?: Prisma.StockMovementUpdateManyWithoutWarehouseNestedInput
   auditLogs?: Prisma.AuditLogUpdateManyWithoutWarehouseNestedInput
+  posRegisters?: Prisma.PosRegisterUpdateManyWithoutWarehouseNestedInput
+  posSessions?: Prisma.PosSessionUpdateManyWithoutWarehouseNestedInput
 }
 
 export type WarehouseUncheckedUpdateWithoutTenantInput = {
@@ -1272,6 +1611,7 @@ export type WarehouseUncheckedUpdateWithoutTenantInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   inventories?: Prisma.VariantInventoryUncheckedUpdateManyWithoutWarehouseNestedInput
@@ -1281,6 +1621,8 @@ export type WarehouseUncheckedUpdateWithoutTenantInput = {
   inventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutWarehouseNestedInput
   stockMovements?: Prisma.StockMovementUncheckedUpdateManyWithoutWarehouseNestedInput
   auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutWarehouseNestedInput
+  posRegisters?: Prisma.PosRegisterUncheckedUpdateManyWithoutWarehouseNestedInput
+  posSessions?: Prisma.PosSessionUncheckedUpdateManyWithoutWarehouseNestedInput
 }
 
 export type WarehouseUncheckedUpdateManyWithoutTenantInput = {
@@ -1288,6 +1630,7 @@ export type WarehouseUncheckedUpdateManyWithoutTenantInput = {
   name?: Prisma.StringFieldUpdateOperationsInput | string
   slug?: Prisma.StringFieldUpdateOperationsInput | string
   isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
@@ -1305,6 +1648,8 @@ export type WarehouseCountOutputType = {
   inventoryCounts: number
   stockMovements: number
   auditLogs: number
+  posRegisters: number
+  posSessions: number
 }
 
 export type WarehouseCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1315,6 +1660,8 @@ export type WarehouseCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensi
   inventoryCounts?: boolean | WarehouseCountOutputTypeCountInventoryCountsArgs
   stockMovements?: boolean | WarehouseCountOutputTypeCountStockMovementsArgs
   auditLogs?: boolean | WarehouseCountOutputTypeCountAuditLogsArgs
+  posRegisters?: boolean | WarehouseCountOutputTypeCountPosRegistersArgs
+  posSessions?: boolean | WarehouseCountOutputTypeCountPosSessionsArgs
 }
 
 /**
@@ -1376,6 +1723,20 @@ export type WarehouseCountOutputTypeCountAuditLogsArgs<ExtArgs extends runtime.T
   where?: Prisma.AuditLogWhereInput
 }
 
+/**
+ * WarehouseCountOutputType without action
+ */
+export type WarehouseCountOutputTypeCountPosRegistersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PosRegisterWhereInput
+}
+
+/**
+ * WarehouseCountOutputType without action
+ */
+export type WarehouseCountOutputTypeCountPosSessionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PosSessionWhereInput
+}
+
 
 export type WarehouseSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1383,6 +1744,7 @@ export type WarehouseSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   name?: boolean
   slug?: boolean
   isActive?: boolean
+  supportsPos?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   inventories?: boolean | Prisma.Warehouse$inventoriesArgs<ExtArgs>
@@ -1392,6 +1754,8 @@ export type WarehouseSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   inventoryCounts?: boolean | Prisma.Warehouse$inventoryCountsArgs<ExtArgs>
   stockMovements?: boolean | Prisma.Warehouse$stockMovementsArgs<ExtArgs>
   auditLogs?: boolean | Prisma.Warehouse$auditLogsArgs<ExtArgs>
+  posRegisters?: boolean | Prisma.Warehouse$posRegistersArgs<ExtArgs>
+  posSessions?: boolean | Prisma.Warehouse$posSessionsArgs<ExtArgs>
   tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
   _count?: boolean | Prisma.WarehouseCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["warehouse"]>
@@ -1402,6 +1766,7 @@ export type WarehouseSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ext
   name?: boolean
   slug?: boolean
   isActive?: boolean
+  supportsPos?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
@@ -1413,6 +1778,7 @@ export type WarehouseSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ext
   name?: boolean
   slug?: boolean
   isActive?: boolean
+  supportsPos?: boolean
   createdAt?: boolean
   updatedAt?: boolean
   tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
@@ -1424,11 +1790,12 @@ export type WarehouseSelectScalar = {
   name?: boolean
   slug?: boolean
   isActive?: boolean
+  supportsPos?: boolean
   createdAt?: boolean
   updatedAt?: boolean
 }
 
-export type WarehouseOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "name" | "slug" | "isActive" | "createdAt" | "updatedAt", ExtArgs["result"]["warehouse"]>
+export type WarehouseOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "name" | "slug" | "isActive" | "supportsPos" | "createdAt" | "updatedAt", ExtArgs["result"]["warehouse"]>
 export type WarehouseInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   inventories?: boolean | Prisma.Warehouse$inventoriesArgs<ExtArgs>
   orders?: boolean | Prisma.Warehouse$ordersArgs<ExtArgs>
@@ -1437,6 +1804,8 @@ export type WarehouseInclude<ExtArgs extends runtime.Types.Extensions.InternalAr
   inventoryCounts?: boolean | Prisma.Warehouse$inventoryCountsArgs<ExtArgs>
   stockMovements?: boolean | Prisma.Warehouse$stockMovementsArgs<ExtArgs>
   auditLogs?: boolean | Prisma.Warehouse$auditLogsArgs<ExtArgs>
+  posRegisters?: boolean | Prisma.Warehouse$posRegistersArgs<ExtArgs>
+  posSessions?: boolean | Prisma.Warehouse$posSessionsArgs<ExtArgs>
   tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
   _count?: boolean | Prisma.WarehouseCountOutputTypeDefaultArgs<ExtArgs>
 }
@@ -1457,6 +1826,8 @@ export type $WarehousePayload<ExtArgs extends runtime.Types.Extensions.InternalA
     inventoryCounts: Prisma.$InventoryCountSessionPayload<ExtArgs>[]
     stockMovements: Prisma.$StockMovementPayload<ExtArgs>[]
     auditLogs: Prisma.$AuditLogPayload<ExtArgs>[]
+    posRegisters: Prisma.$PosRegisterPayload<ExtArgs>[]
+    posSessions: Prisma.$PosSessionPayload<ExtArgs>[]
     tenant: Prisma.$TenantPayload<ExtArgs>
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -1465,6 +1836,7 @@ export type $WarehousePayload<ExtArgs extends runtime.Types.Extensions.InternalA
     name: string
     slug: string
     isActive: boolean
+    supportsPos: boolean
     createdAt: Date
     updatedAt: Date
   }, ExtArgs["result"]["warehouse"]>
@@ -1868,6 +2240,8 @@ export interface Prisma__WarehouseClient<T, Null = never, ExtArgs extends runtim
   inventoryCounts<T extends Prisma.Warehouse$inventoryCountsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Warehouse$inventoryCountsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$InventoryCountSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   stockMovements<T extends Prisma.Warehouse$stockMovementsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Warehouse$stockMovementsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$StockMovementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   auditLogs<T extends Prisma.Warehouse$auditLogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Warehouse$auditLogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AuditLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  posRegisters<T extends Prisma.Warehouse$posRegistersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Warehouse$posRegistersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PosRegisterPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  posSessions<T extends Prisma.Warehouse$posSessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Warehouse$posSessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PosSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   tenant<T extends Prisma.TenantDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.TenantDefaultArgs<ExtArgs>>): Prisma.Prisma__TenantClient<runtime.Types.Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -1903,6 +2277,7 @@ export interface WarehouseFieldRefs {
   readonly name: Prisma.FieldRef<"Warehouse", 'String'>
   readonly slug: Prisma.FieldRef<"Warehouse", 'String'>
   readonly isActive: Prisma.FieldRef<"Warehouse", 'Boolean'>
+  readonly supportsPos: Prisma.FieldRef<"Warehouse", 'Boolean'>
   readonly createdAt: Prisma.FieldRef<"Warehouse", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"Warehouse", 'DateTime'>
 }
@@ -2471,6 +2846,54 @@ export type Warehouse$auditLogsArgs<ExtArgs extends runtime.Types.Extensions.Int
   take?: number
   skip?: number
   distinct?: Prisma.AuditLogScalarFieldEnum | Prisma.AuditLogScalarFieldEnum[]
+}
+
+/**
+ * Warehouse.posRegisters
+ */
+export type Warehouse$posRegistersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PosRegister
+   */
+  select?: Prisma.PosRegisterSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PosRegister
+   */
+  omit?: Prisma.PosRegisterOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PosRegisterInclude<ExtArgs> | null
+  where?: Prisma.PosRegisterWhereInput
+  orderBy?: Prisma.PosRegisterOrderByWithRelationInput | Prisma.PosRegisterOrderByWithRelationInput[]
+  cursor?: Prisma.PosRegisterWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PosRegisterScalarFieldEnum | Prisma.PosRegisterScalarFieldEnum[]
+}
+
+/**
+ * Warehouse.posSessions
+ */
+export type Warehouse$posSessionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PosSession
+   */
+  select?: Prisma.PosSessionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PosSession
+   */
+  omit?: Prisma.PosSessionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PosSessionInclude<ExtArgs> | null
+  where?: Prisma.PosSessionWhereInput
+  orderBy?: Prisma.PosSessionOrderByWithRelationInput | Prisma.PosSessionOrderByWithRelationInput[]
+  cursor?: Prisma.PosSessionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PosSessionScalarFieldEnum | Prisma.PosSessionScalarFieldEnum[]
 }
 
 /**

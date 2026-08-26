@@ -682,10 +682,6 @@ export type EnumInventoryCountStatusFieldUpdateOperationsInput = {
   set?: $Enums.InventoryCountStatus
 }
 
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null
-}
-
 export type InventoryCountSessionCreateNestedOneWithoutLinesInput = {
   create?: Prisma.XOR<Prisma.InventoryCountSessionCreateWithoutLinesInput, Prisma.InventoryCountSessionUncheckedCreateWithoutLinesInput>
   connectOrCreate?: Prisma.InventoryCountSessionCreateOrConnectWithoutLinesInput

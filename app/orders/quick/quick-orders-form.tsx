@@ -40,6 +40,11 @@ type QuickOrdersFormProps = {
   action: (formData: FormData) => void | Promise<void>;
   warehouses: WarehouseOption[];
   products: ProductOption[];
+  defaultSource?: OrderSource;
+  defaultWarehouseId?: number | null;
+  posSessionId?: number | null;
+  backHref?: string;
+  submitLabel?: string;
 };
 
 type OrderSource = "INSTAGRAM" | "STORE" | "WHOLESALE";
@@ -68,10 +73,19 @@ function createRow(productId: number, variantId: number, unitPrice: number): Qui
   };
 }
 
-export function QuickOrdersForm({ action, warehouses, products }: QuickOrdersFormProps) {
-  const [source, setSource] = useState<OrderSource>("INSTAGRAM");
+export function QuickOrdersForm({
+  action,
+  warehouses,
+  products,
+  defaultSource = "INSTAGRAM",
+  defaultWarehouseId = null,
+  posSessionId = null,
+  backHref = "/orders",
+  submitLabel = "Ruaj",
+}: QuickOrdersFormProps) {
+  const [source, setSource] = useState<OrderSource>(defaultSource);
   const [warehouseId, setWarehouseId] = useState(
-    warehouses[0] ? String(warehouses[0].id) : "",
+    defaultWarehouseId ? String(defaultWarehouseId) : warehouses[0] ? String(warehouses[0].id) : "",
   );
   const [rows, setRows] = useState<QuickOrderRow[]>([]);
   const [rowErrors, setRowErrors] = useState<Record<string, string>>({});
@@ -632,6 +646,7 @@ export function QuickOrdersForm({ action, warehouses, products }: QuickOrdersFor
       <input type="hidden" name="source" value={source} />
       <input type="hidden" name="warehouseId" value={warehouseId} />
       <input type="hidden" name="rows" value={serializedRows} />
+      {posSessionId ? <input type="hidden" name="posSessionId" value={posSessionId} /> : null}
 
       <div className="rounded-[28px] bg-white p-5">
         <div className="mb-4">
@@ -979,7 +994,7 @@ export function QuickOrdersForm({ action, warehouses, products }: QuickOrdersFor
 
       <div className="flex flex-col justify-end gap-3 sm:flex-row">
         <Link
-          href="/orders"
+          href={backHref}
           className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-slate-100 px-6 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-slate-600 transition hover:bg-slate-200"
         >
           Anulo
@@ -988,7 +1003,7 @@ export function QuickOrdersForm({ action, warehouses, products }: QuickOrdersFor
           type="submit"
           className="inline-flex items-center justify-center rounded-2xl bg-emerald-600 px-6 py-3 text-sm font-semibold uppercase tracking-[0.08em] text-white shadow-[0_10px_25px_rgba(5,150,105,0.24)] transition hover:bg-emerald-500"
         >
-          Ruaj
+          {submitLabel}
         </button>
       </div>
 

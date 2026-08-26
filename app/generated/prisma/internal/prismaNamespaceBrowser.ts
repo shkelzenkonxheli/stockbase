@@ -62,6 +62,8 @@ export const ModelName = {
   User: 'User',
   Session: 'Session',
   Tenant: 'Tenant',
+  PosRegister: 'PosRegister',
+  PosSession: 'PosSession',
   AuditLog: 'AuditLog',
   InventoryCountSession: 'InventoryCountSession',
   InventoryCountLine: 'InventoryCountLine',
@@ -148,6 +150,7 @@ export const WarehouseScalarFieldEnum = {
   name: 'name',
   slug: 'slug',
   isActive: 'isActive',
+  supportsPos: 'supportsPos',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
@@ -251,6 +254,42 @@ export const TenantScalarFieldEnum = {
 } as const
 
 export type TenantScalarFieldEnum = (typeof TenantScalarFieldEnum)[keyof typeof TenantScalarFieldEnum]
+
+
+export const PosRegisterScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  warehouseId: 'warehouseId',
+  name: 'name',
+  slug: 'slug',
+  isActive: 'isActive',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PosRegisterScalarFieldEnum = (typeof PosRegisterScalarFieldEnum)[keyof typeof PosRegisterScalarFieldEnum]
+
+
+export const PosSessionScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  registerId: 'registerId',
+  warehouseId: 'warehouseId',
+  openedById: 'openedById',
+  closedById: 'closedById',
+  status: 'status',
+  openingCash: 'openingCash',
+  openingNote: 'openingNote',
+  closingNote: 'closingNote',
+  openedAt: 'openedAt',
+  closedAt: 'closedAt',
+  expectedCash: 'expectedCash',
+  countedCash: 'countedCash',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type PosSessionScalarFieldEnum = (typeof PosSessionScalarFieldEnum)[keyof typeof PosSessionScalarFieldEnum]
 
 
 export const AuditLogScalarFieldEnum = {

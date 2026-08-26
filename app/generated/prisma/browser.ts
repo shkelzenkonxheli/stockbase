@@ -73,6 +73,16 @@ export type Session = Prisma.SessionModel
  */
 export type Tenant = Prisma.TenantModel
 /**
+ * Model PosRegister
+ * 
+ */
+export type PosRegister = Prisma.PosRegisterModel
+/**
+ * Model PosSession
+ * 
+ */
+export type PosSession = Prisma.PosSessionModel
+/**
  * Model AuditLog
  * 
  */

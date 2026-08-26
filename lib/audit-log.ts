@@ -22,6 +22,11 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   WAREHOUSE_CREATED: "Krijo depo",
   WAREHOUSE_UPDATED: "Perditeso depo",
   WAREHOUSE_DELETED: "Fshi depo",
+  POS_LOCATION_UPDATED: "Perditeso lokacion POS",
+  POS_REGISTER_CREATED: "Krijo register POS",
+  POS_REGISTER_UPDATED: "Perditeso register POS",
+  POS_SESSION_OPENED: "Hap register POS",
+  POS_SESSION_CLOSED: "Mbyll register POS",
 };
 
 export const AUDIT_ENTITY_LABELS: Record<string, string> = {
@@ -32,6 +37,8 @@ export const AUDIT_ENTITY_LABELS: Record<string, string> = {
   ORDER: "Porosi",
   PURCHASE_ORDER: "Purchase order",
   WAREHOUSE: "Depo",
+  POS_REGISTER: "Register POS",
+  POS_SESSION: "POS Session",
 };
 
 type AuditLogInput = {

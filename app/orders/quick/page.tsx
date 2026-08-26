@@ -17,6 +17,9 @@ export const metadata: Metadata = {
 type QuickOrdersPageProps = {
   searchParams?: Promise<{
     error?: string;
+    posSessionId?: string;
+    source?: string;
+    warehouseId?: string;
   }>;
 };
 
@@ -36,6 +39,8 @@ async function createQuickOrders(formData: FormData) {
     | undefined;
   const warehouseId = Number(formData.get("warehouseId"));
   const rowsRaw = formData.get("rows")?.toString();
+  const posSessionIdValue = Number(formData.get("posSessionId"));
+  const posSessionId = Number.isInteger(posSessionIdValue) && posSessionIdValue > 0 ? posSessionIdValue : null;
 
   if (!source || !warehouseId || !rowsRaw) {
     redirect("/orders/quick?error=validation");
@@ -109,6 +114,33 @@ async function createQuickOrders(formData: FormData) {
   }
 
   const result = await prisma.$transaction(async (tx) => {
+    let posSession:
+      | {
+          id: number;
+          warehouseId: number;
+        }
+      | null = null;
+
+    if (posSessionId) {
+      posSession = await tx.posSession.findFirst({
+        where: {
+          id: posSessionId,
+          tenantId,
+          status: "OPEN",
+          warehouseId,
+          ...(currentUser.role === "SUPER_ADMIN" ? {} : { openedById: currentUser.id }),
+        },
+        select: {
+          id: true,
+          warehouseId: true,
+        },
+      });
+
+      if (!posSession) {
+        return { ok: false as const, reason: "session" };
+      }
+    }
+
     const variants = await tx.variant.findMany({
       where: {
         tenantId,
@@ -163,6 +195,7 @@ async function createQuickOrders(formData: FormData) {
         quantity: totalQuantity,
         variantId: primaryVariantId,
         warehouseId,
+        posSessionId: posSession?.id ?? null,
       },
     });
 
@@ -214,6 +247,7 @@ async function createQuickOrders(formData: FormData) {
       metadata: {
         source,
         orderId: order.id,
+        posSessionId: posSession?.id ?? null,
         totalQuantity,
         rows: rows.map((row) => {
           const variant = variantsById.get(row.variantId);
@@ -231,6 +265,7 @@ async function createQuickOrders(formData: FormData) {
     return {
       ok: true as const,
       orderId: order.id,
+      posSessionId: posSession?.id ?? null,
       productIds: [...new Set(variants.map((variant) => variant.productId))],
     };
   });
@@ -247,6 +282,10 @@ async function createQuickOrders(formData: FormData) {
   revalidatePath("/orders");
   revalidatePath("/orders/new");
   revalidatePath("/orders/quick");
+  if (result.posSessionId) {
+    revalidatePath(`/pos/session/${result.posSessionId}`);
+    redirect(`/pos/session/${result.posSessionId}?sale=1`);
+  }
 
   redirect("/orders");
 }
@@ -259,6 +298,8 @@ function getErrorMessage(error?: string) {
       return "Nje nga variantet nuk ekziston me.";
     case "validation":
       return "Ploteso variantin dhe nje sasi valide per cdo rresht qe don te ruash.";
+    case "session":
+      return "POS session nuk ekziston me, eshte mbyllur ose nuk ke akses ne te.";
     default:
       return null;
   }
@@ -275,6 +316,42 @@ export default async function QuickOrdersPage({
 
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const errorMessage = getErrorMessage(resolvedSearchParams?.error);
+  const posSessionIdValue = Number(resolvedSearchParams?.posSessionId);
+  const posSessionId =
+    Number.isInteger(posSessionIdValue) && posSessionIdValue > 0 ? posSessionIdValue : null;
+  const sourceParam = resolvedSearchParams?.source;
+  const defaultSource =
+    sourceParam === "STORE" || sourceParam === "INSTAGRAM" || sourceParam === "WHOLESALE"
+      ? sourceParam
+      : "INSTAGRAM";
+  const warehouseIdParam = Number(resolvedSearchParams?.warehouseId);
+  const defaultWarehouseId =
+    Number.isInteger(warehouseIdParam) && warehouseIdParam > 0 ? warehouseIdParam : null;
+
+  const activePosSession = posSessionId
+    ? await prisma.posSession.findFirst({
+        where: {
+          id: posSessionId,
+          tenantId,
+          status: "OPEN",
+          ...(currentUser.role === "SUPER_ADMIN" ? {} : { openedById: currentUser.id }),
+        },
+        select: {
+          id: true,
+          warehouseId: true,
+          register: {
+            select: {
+              name: true,
+              warehouse: {
+                select: {
+                  name: true,
+                },
+              },
+            },
+          },
+        },
+      })
+    : null;
 
   const tenantSettings = await prisma.tenantSettings.findUnique({
     where: { tenantId },
@@ -365,6 +442,14 @@ export default async function QuickOrdersPage({
           />
         ) : null}
 
+        {activePosSession ? (
+          <FlashMessage
+            type="success"
+            text={`POS checkout aktiv: ${activePosSession.register.name} / ${activePosSession.register.warehouse.name}`}
+            className="mt-4 rounded-2xl px-4 py-3 text-sm shadow-sm"
+          />
+        ) : null}
+
         <QuickOrdersForm
           action={createQuickOrders}
           warehouses={warehouses.map((warehouse) => ({
@@ -395,6 +480,11 @@ export default async function QuickOrdersPage({
               ),
             ],
           }))}
+          defaultSource={activePosSession ? "STORE" : defaultSource}
+          defaultWarehouseId={activePosSession?.warehouseId ?? defaultWarehouseId}
+          posSessionId={activePosSession?.id ?? null}
+          backHref={activePosSession ? `/pos/session/${activePosSession.id}` : "/orders"}
+          submitLabel={activePosSession ? "Perfundo shitjen" : "Ruaj"}
         />
       </section>
     </main>
