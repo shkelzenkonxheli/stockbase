@@ -151,7 +151,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
   const selectedCategory = resolvedSearchParams?.category?.trim() || "";
   const selectedModel = resolvedSearchParams?.model?.trim() || "";
   const selectedWarehouse = resolvedSearchParams?.warehouse?.trim() || "";
-  const selectedStock = resolvedSearchParams?.stock?.trim() || "";
+  const selectedStock = resolvedSearchParams?.stock?.trim() || "in";
   const currentPage = Math.max(1, Number(resolvedSearchParams?.page) || 1);
   const skip = (currentPage - 1) * PAGE_SIZE;
   const currentListHref = buildProductsPageHref(

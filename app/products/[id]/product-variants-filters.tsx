@@ -191,10 +191,8 @@ export function ProductVariantsFilters({
             onChange={(event) => setStock(event.target.value)}
             className="w-full rounded-2xl border border-slate-300 bg-white py-3 pl-11 pr-4 text-sm font-medium text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-200"
           >
-            <option value="">Gjithe stoku</option>
             <option value="in">Ne stok</option>
             <option value="low">Stok i ulet</option>
-            <option value="out">Pa stok</option>
           </select>
         </div>
       </label>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useRouter } from "next/navigation";
 
 type RegisterOption = {
@@ -42,6 +42,11 @@ export function OpenRegisterForm({
   const [openingNote, setOpeningNote] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentTime, setCurrentTime] = useState<Date | null>(null);
+
+  useEffect(() => {
+    setCurrentTime(new Date());
+  }, []);
 
   const filteredRegisters = useMemo(() => {
     const activeLocationId = Number(locationId);
@@ -101,7 +106,9 @@ export function OpenRegisterForm({
         </div>
         <div className="rounded-2xl border border-slate-200 bg-slate-50/80 px-4 py-3 text-sm text-slate-600">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Tani</p>
-          <p className="mt-1 font-semibold text-slate-950">{formatDateTime(new Date())}</p>
+          <p className="mt-1 font-semibold text-slate-950">
+            {currentTime ? formatDateTime(currentTime) : "..."}
+          </p>
         </div>
       </div>
 

@@ -207,7 +207,9 @@ export default async function ProductDetailsPage({
 
   const selectedSize = resolvedSearchParams?.size?.trim() || "";
   const selectedColor = resolvedSearchParams?.color?.trim() || "";
-  const selectedStock = resolvedSearchParams?.stock?.trim() || "";
+  // Keep sold-out variants in the database for receiving and transfers, but do
+  // not show them in the normal variants list.
+  const selectedStock = resolvedSearchParams?.stock?.trim() || "in";
   const selectedWarehouse = resolvedSearchParams?.warehouse?.trim() || "";
   const returnTo = resolvedSearchParams?.returnTo?.trim() || "";
   const feedbackMessage = resolvedSearchParams?.feedback?.trim() || "";

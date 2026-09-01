@@ -4,6 +4,7 @@ import { notFound, redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { canAccessPosSession, formatMoney, isPosEnabled } from "@/lib/pos";
 import { prisma } from "@/lib/prisma";
+import { CashMovementPanel } from "./cash-movement-panel";
 import { CloseSessionPanel } from "./close-session-panel";
 
 type RouteProps = {
@@ -56,14 +57,15 @@ export default async function PosSessionPage({ params, searchParams }: RouteProp
 
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
 
-  const sessionOrders = await prisma.order.findMany({
-    where: {
-      tenantId: currentUser.tenant.id,
-      posSessionId: session.id,
-    },
-    orderBy: { createdAt: "desc" },
-    take: 12,
-    select: {
+  const [sessionOrders, orderMetrics, paymentTotals, cashMovementTotals, recentCashMovements] = await Promise.all([
+    prisma.order.findMany({
+      where: {
+        tenantId: currentUser.tenant.id,
+        posSessionId: session.id,
+      },
+      orderBy: { createdAt: "desc" },
+      take: 12,
+      select: {
       id: true,
       createdAt: true,
       source: true,
@@ -87,22 +89,49 @@ export default async function PosSessionPage({ params, searchParams }: RouteProp
           },
         },
       },
-    },
-  });
+      },
+    }),
+    prisma.order.aggregate({
+      where: { tenantId: currentUser.tenant.id, posSessionId: session.id },
+      _count: { id: true },
+      _sum: { quantity: true },
+    }),
+    prisma.posPayment.groupBy({
+      by: ["method"],
+      where: { tenantId: currentUser.tenant.id, posSessionId: session.id },
+      _sum: { amount: true },
+    }),
+    prisma.posCashMovement.groupBy({
+      by: ["type"],
+      where: { tenantId: currentUser.tenant.id, posSessionId: session.id },
+      _sum: { amount: true },
+    }),
+    prisma.posCashMovement.findMany({
+      where: { tenantId: currentUser.tenant.id, posSessionId: session.id },
+      orderBy: { createdAt: "desc" },
+      take: 8,
+      select: {
+        id: true,
+        type: true,
+        amount: true,
+        note: true,
+        createdAt: true,
+        createdBy: { select: { name: true } },
+      },
+    }),
+  ]);
 
-  const expectedCash = Number(session.expectedCash ?? session.openingCash);
+  const cashSales = Number(paymentTotals.find((payment) => payment.method === "CASH")?._sum.amount ?? 0);
+  const cardSales = Number(paymentTotals.find((payment) => payment.method === "CARD")?._sum.amount ?? 0);
+  const cashIn = Number(cashMovementTotals.find((movement) => movement.type === "CASH_IN")?._sum.amount ?? 0);
+  const cashOut = Number(cashMovementTotals.find((movement) => movement.type === "CASH_OUT")?._sum.amount ?? 0);
+  const expectedCash = session.status === "CLOSED" && session.expectedCash !== null
+    ? Number(session.expectedCash)
+    : Number(session.openingCash) + cashSales + cashIn - cashOut;
   const canClose = session.status === "OPEN";
-  const totalOrders = sessionOrders.length;
-  const totalUnits = sessionOrders.reduce(
-    (sum, order) => sum + order.items.reduce((itemSum, item) => itemSum + item.quantity, 0),
-    0,
-  );
-  const totalSales = sessionOrders.reduce(
-    (sum, order) =>
-      sum +
-      order.items.reduce((itemSum, item) => itemSum + Number(item.unitPrice) * item.quantity, 0),
-    0,
-  );
+  const totalOrders = orderMetrics._count.id;
+  const totalUnits = orderMetrics._sum.quantity ?? 0;
+  const totalSales = cashSales + cardSales;
 
   return (
     <main className="min-h-[calc(100vh-5rem)] bg-[linear-gradient(180deg,#f0fbf5_0%,#eff5f9_100%)] px-4 py-6 sm:px-6 lg:px-8">
@@ -130,12 +159,21 @@ export default async function PosSessionPage({ params, searchParams }: RouteProp
                   Registers
                 </Link>
               ) : null}
-              <Link
-                href={`/orders/quick?posSessionId=${session.id}&source=STORE&warehouseId=${session.register.warehouseId}`}
-                className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700"
-              >
-                New Sale
-              </Link>
+              {canClose ? (
+                <Link
+                  href={`/pos/session/${session.id}/checkout`}
+                  className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700"
+                >
+                  New Sale
+                </Link>
+              ) : (
+                <Link
+                  href="/pos/open"
+                  className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white"
+                >
+                  Open Register
+                </Link>
+              )}
             </div>
           </div>
 
@@ -174,6 +212,40 @@ export default async function PosSessionPage({ params, searchParams }: RouteProp
           canClose={canClose}
         />
 
+        <CashMovementPanel sessionId={session.id} canManage={canClose} />
+
+        <section className="rounded-[28px] border border-slate-200 bg-white/96 p-5 shadow-[0_20px_55px_rgba(15,23,42,0.08)] sm:p-6">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">Session report</p>
+              <h2 className="mt-2 text-2xl font-semibold text-slate-950">Raporti i arkës</h2>
+            </div>
+            <span className={`rounded-full px-3 py-1.5 text-xs font-semibold ${canClose ? "border border-emerald-200 bg-emerald-50 text-emerald-700" : "border border-slate-200 bg-slate-50 text-slate-600"}`}>
+              {canClose ? "Live" : "Mbyllur"}
+            </span>
+          </div>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-6">
+            {[
+              ["Opening", Number(session.openingCash), "slate"],
+              ["Cash sales", cashSales, "emerald"],
+              ["Card sales", cardSales, "sky"],
+              ["Cash in", cashIn, "emerald"],
+              ["Cash out", cashOut, "amber"],
+              ["Expected cash", expectedCash, "navy"],
+            ].map(([label, amount, tone]) => (
+              <div key={String(label)} className={`rounded-2xl border px-3 py-3 ${tone === "emerald" ? "border-emerald-200 bg-emerald-50/70" : tone === "amber" ? "border-amber-200 bg-amber-50/70" : tone === "sky" ? "border-sky-200 bg-sky-50/70" : tone === "navy" ? "border-slate-800 bg-slate-950 text-white" : "border-slate-200 bg-slate-50/70"}`}>
+                <p className={`text-[10px] font-semibold uppercase tracking-[0.13em] ${tone === "navy" ? "text-slate-400" : "text-slate-500"}`}>{label}</p>
+                <p className={`mt-1.5 text-base font-semibold ${tone === "navy" ? "text-white" : "text-slate-950"}`}>{formatMoney(Number(amount))}</p>
+              </div>
+            ))}
+          </div>
+          {!canClose && session.countedCash !== null ? (
+            <div className="mt-3 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm text-slate-700">
+              Cash i numeruar: <strong>{formatMoney(session.countedCash)}</strong> | Diferenca: <strong>{formatMoney(Number(session.countedCash) - expectedCash)}</strong>
+            </div>
+          ) : null}
+        </section>
+
         <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
           <div className="space-y-6">
             <section className="rounded-[28px] border border-slate-200 bg-white/96 p-5 shadow-[0_20px_55px_rgba(15,23,42,0.08)] sm:p-6">
@@ -187,12 +259,14 @@ export default async function PosSessionPage({ params, searchParams }: RouteProp
                     Ketu sheh sa u shit dhe cfare u shit nga ky register.
                   </p>
                 </div>
-                <Link
-                  href={`/orders/quick?posSessionId=${session.id}&source=STORE&warehouseId=${session.register.warehouseId}`}
-                  className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(15,23,42,0.16)]"
-                >
-                  Shto shitje
-                </Link>
+                {canClose ? (
+                  <Link
+                    href={`/pos/session/${session.id}/checkout`}
+                    className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(15,23,42,0.16)]"
+                  >
+                    Shto shitje
+                  </Link>
+                ) : null}
               </div>
 
               <div className="mt-5 grid gap-3 sm:grid-cols-3">
@@ -305,16 +379,22 @@ export default async function PosSessionPage({ params, searchParams }: RouteProp
           </div>
 
           <aside className="rounded-[28px] border border-slate-200 bg-slate-950 p-5 text-white shadow-[0_20px_55px_rgba(15,23,42,0.18)] sm:p-6">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300">
-              Next POS Phases
-            </p>
-            <ul className="mt-4 space-y-3 text-sm text-slate-200">
-              <li className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">Barcode scan ne checkout</li>
-              <li className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">Cart dhe line items</li>
-              <li className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">Cash / card / split payments</li>
-              <li className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">Close register dhe counted cash</li>
-              <li className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">Receipts, refunds dhe POS analytics</li>
-            </ul>
+            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300">Cash movements</p>
+            <h2 className="mt-2 text-xl font-semibold">Levizjet e fundit</h2>
+            <div className="mt-4 space-y-3">
+              {recentCashMovements.length === 0 ? (
+                <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-5 text-sm text-slate-300">Nuk ka cash in/out ne kete session.</div>
+              ) : recentCashMovements.map((movement) => (
+                <div key={movement.id} className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+                  <div className="flex items-center justify-between gap-3">
+                    <span className={`text-sm font-semibold ${movement.type === "CASH_IN" ? "text-emerald-300" : "text-amber-300"}`}>{movement.type === "CASH_IN" ? "Cash In" : "Cash Out"}</span>
+                    <span className="font-semibold text-white">{formatMoney(movement.amount)}</span>
+                  </div>
+                  <p className="mt-1 text-xs text-slate-400">{movement.createdBy.name} | {formatDateTime(movement.createdAt)}</p>
+                  {movement.note ? <p className="mt-1 text-xs text-slate-300">{movement.note}</p> : null}
+                </div>
+              ))}
+            </div>
           </aside>
         </section>
       </div>

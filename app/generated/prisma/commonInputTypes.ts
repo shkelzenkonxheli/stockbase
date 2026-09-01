@@ -426,6 +426,40 @@ export type DecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedDecimalNullableFilter<$PrismaModel>
 }
 
+export type EnumPosPaymentMethodFilter<$PrismaModel = never> = {
+  equals?: $Enums.PosPaymentMethod | Prisma.EnumPosPaymentMethodFieldRefInput<$PrismaModel>
+  in?: $Enums.PosPaymentMethod[] | Prisma.ListEnumPosPaymentMethodFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PosPaymentMethod[] | Prisma.ListEnumPosPaymentMethodFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPosPaymentMethodFilter<$PrismaModel> | $Enums.PosPaymentMethod
+}
+
+export type EnumPosPaymentMethodWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PosPaymentMethod | Prisma.EnumPosPaymentMethodFieldRefInput<$PrismaModel>
+  in?: $Enums.PosPaymentMethod[] | Prisma.ListEnumPosPaymentMethodFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PosPaymentMethod[] | Prisma.ListEnumPosPaymentMethodFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPosPaymentMethodWithAggregatesFilter<$PrismaModel> | $Enums.PosPaymentMethod
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPosPaymentMethodFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPosPaymentMethodFilter<$PrismaModel>
+}
+
+export type EnumPosCashMovementTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.PosCashMovementType | Prisma.EnumPosCashMovementTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.PosCashMovementType[] | Prisma.ListEnumPosCashMovementTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PosCashMovementType[] | Prisma.ListEnumPosCashMovementTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPosCashMovementTypeFilter<$PrismaModel> | $Enums.PosCashMovementType
+}
+
+export type EnumPosCashMovementTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PosCashMovementType | Prisma.EnumPosCashMovementTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.PosCashMovementType[] | Prisma.ListEnumPosCashMovementTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PosCashMovementType[] | Prisma.ListEnumPosCashMovementTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPosCashMovementTypeWithAggregatesFilter<$PrismaModel> | $Enums.PosCashMovementType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPosCashMovementTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPosCashMovementTypeFilter<$PrismaModel>
+}
+
 export type EnumInventoryCountStatusFilter<$PrismaModel = never> = {
   equals?: $Enums.InventoryCountStatus | Prisma.EnumInventoryCountStatusFieldRefInput<$PrismaModel>
   in?: $Enums.InventoryCountStatus[] | Prisma.ListEnumInventoryCountStatusFieldRefInput<$PrismaModel>
@@ -873,6 +907,40 @@ export type NestedDecimalNullableWithAggregatesFilter<$PrismaModel = never> = {
   _sum?: Prisma.NestedDecimalNullableFilter<$PrismaModel>
   _min?: Prisma.NestedDecimalNullableFilter<$PrismaModel>
   _max?: Prisma.NestedDecimalNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumPosPaymentMethodFilter<$PrismaModel = never> = {
+  equals?: $Enums.PosPaymentMethod | Prisma.EnumPosPaymentMethodFieldRefInput<$PrismaModel>
+  in?: $Enums.PosPaymentMethod[] | Prisma.ListEnumPosPaymentMethodFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PosPaymentMethod[] | Prisma.ListEnumPosPaymentMethodFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPosPaymentMethodFilter<$PrismaModel> | $Enums.PosPaymentMethod
+}
+
+export type NestedEnumPosPaymentMethodWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PosPaymentMethod | Prisma.EnumPosPaymentMethodFieldRefInput<$PrismaModel>
+  in?: $Enums.PosPaymentMethod[] | Prisma.ListEnumPosPaymentMethodFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PosPaymentMethod[] | Prisma.ListEnumPosPaymentMethodFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPosPaymentMethodWithAggregatesFilter<$PrismaModel> | $Enums.PosPaymentMethod
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPosPaymentMethodFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPosPaymentMethodFilter<$PrismaModel>
+}
+
+export type NestedEnumPosCashMovementTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.PosCashMovementType | Prisma.EnumPosCashMovementTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.PosCashMovementType[] | Prisma.ListEnumPosCashMovementTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PosCashMovementType[] | Prisma.ListEnumPosCashMovementTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPosCashMovementTypeFilter<$PrismaModel> | $Enums.PosCashMovementType
+}
+
+export type NestedEnumPosCashMovementTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PosCashMovementType | Prisma.EnumPosCashMovementTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.PosCashMovementType[] | Prisma.ListEnumPosCashMovementTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.PosCashMovementType[] | Prisma.ListEnumPosCashMovementTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumPosCashMovementTypeWithAggregatesFilter<$PrismaModel> | $Enums.PosCashMovementType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPosCashMovementTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPosCashMovementTypeFilter<$PrismaModel>
 }
 
 export type NestedEnumInventoryCountStatusFilter<$PrismaModel = never> = {

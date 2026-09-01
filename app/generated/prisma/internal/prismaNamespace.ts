@@ -397,6 +397,8 @@ export const ModelName = {
   Tenant: 'Tenant',
   PosRegister: 'PosRegister',
   PosSession: 'PosSession',
+  PosPayment: 'PosPayment',
+  PosCashMovement: 'PosCashMovement',
   AuditLog: 'AuditLog',
   InventoryCountSession: 'InventoryCountSession',
   InventoryCountLine: 'InventoryCountLine',
@@ -421,7 +423,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "product" | "category" | "variant" | "warehouse" | "variantInventory" | "stockMovement" | "order" | "orderItem" | "user" | "session" | "tenant" | "posRegister" | "posSession" | "auditLog" | "inventoryCountSession" | "inventoryCountLine" | "tenantMembership" | "subscription" | "tenantSettings" | "supplier" | "purchaseOrder" | "purchaseOrderItem"
+    modelProps: "product" | "category" | "variant" | "warehouse" | "variantInventory" | "stockMovement" | "order" | "orderItem" | "user" | "session" | "tenant" | "posRegister" | "posSession" | "posPayment" | "posCashMovement" | "auditLog" | "inventoryCountSession" | "inventoryCountLine" | "tenantMembership" | "subscription" | "tenantSettings" | "supplier" | "purchaseOrder" | "purchaseOrderItem"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1387,6 +1389,154 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    PosPayment: {
+      payload: Prisma.$PosPaymentPayload<ExtArgs>
+      fields: Prisma.PosPaymentFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PosPaymentFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosPaymentPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PosPaymentFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosPaymentPayload>
+        }
+        findFirst: {
+          args: Prisma.PosPaymentFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosPaymentPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PosPaymentFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosPaymentPayload>
+        }
+        findMany: {
+          args: Prisma.PosPaymentFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosPaymentPayload>[]
+        }
+        create: {
+          args: Prisma.PosPaymentCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosPaymentPayload>
+        }
+        createMany: {
+          args: Prisma.PosPaymentCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PosPaymentCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosPaymentPayload>[]
+        }
+        delete: {
+          args: Prisma.PosPaymentDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosPaymentPayload>
+        }
+        update: {
+          args: Prisma.PosPaymentUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosPaymentPayload>
+        }
+        deleteMany: {
+          args: Prisma.PosPaymentDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PosPaymentUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PosPaymentUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosPaymentPayload>[]
+        }
+        upsert: {
+          args: Prisma.PosPaymentUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosPaymentPayload>
+        }
+        aggregate: {
+          args: Prisma.PosPaymentAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePosPayment>
+        }
+        groupBy: {
+          args: Prisma.PosPaymentGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PosPaymentGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PosPaymentCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PosPaymentCountAggregateOutputType> | number
+        }
+      }
+    }
+    PosCashMovement: {
+      payload: Prisma.$PosCashMovementPayload<ExtArgs>
+      fields: Prisma.PosCashMovementFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.PosCashMovementFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosCashMovementPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.PosCashMovementFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosCashMovementPayload>
+        }
+        findFirst: {
+          args: Prisma.PosCashMovementFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosCashMovementPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.PosCashMovementFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosCashMovementPayload>
+        }
+        findMany: {
+          args: Prisma.PosCashMovementFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosCashMovementPayload>[]
+        }
+        create: {
+          args: Prisma.PosCashMovementCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosCashMovementPayload>
+        }
+        createMany: {
+          args: Prisma.PosCashMovementCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.PosCashMovementCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosCashMovementPayload>[]
+        }
+        delete: {
+          args: Prisma.PosCashMovementDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosCashMovementPayload>
+        }
+        update: {
+          args: Prisma.PosCashMovementUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosCashMovementPayload>
+        }
+        deleteMany: {
+          args: Prisma.PosCashMovementDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.PosCashMovementUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.PosCashMovementUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosCashMovementPayload>[]
+        }
+        upsert: {
+          args: Prisma.PosCashMovementUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$PosCashMovementPayload>
+        }
+        aggregate: {
+          args: Prisma.PosCashMovementAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregatePosCashMovement>
+        }
+        groupBy: {
+          args: Prisma.PosCashMovementGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PosCashMovementGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.PosCashMovementCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.PosCashMovementCountAggregateOutputType> | number
+        }
+      }
+    }
     AuditLog: {
       payload: Prisma.$AuditLogPayload<ExtArgs>
       fields: Prisma.AuditLogFieldRefs
@@ -2191,6 +2341,7 @@ export const OrderScalarFieldEnum = {
   quantity: 'quantity',
   variantId: 'variantId',
   warehouseId: 'warehouseId',
+  posSessionId: 'posSessionId',
   createdAt: 'createdAt',
   customerName: 'customerName',
   instagram: 'instagram',
@@ -2291,6 +2442,33 @@ export const PosSessionScalarFieldEnum = {
 } as const
 
 export type PosSessionScalarFieldEnum = (typeof PosSessionScalarFieldEnum)[keyof typeof PosSessionScalarFieldEnum]
+
+
+export const PosPaymentScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  posSessionId: 'posSessionId',
+  orderId: 'orderId',
+  method: 'method',
+  amount: 'amount',
+  createdAt: 'createdAt'
+} as const
+
+export type PosPaymentScalarFieldEnum = (typeof PosPaymentScalarFieldEnum)[keyof typeof PosPaymentScalarFieldEnum]
+
+
+export const PosCashMovementScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  posSessionId: 'posSessionId',
+  createdById: 'createdById',
+  type: 'type',
+  amount: 'amount',
+  note: 'note',
+  createdAt: 'createdAt'
+} as const
+
+export type PosCashMovementScalarFieldEnum = (typeof PosCashMovementScalarFieldEnum)[keyof typeof PosCashMovementScalarFieldEnum]
 
 
 export const AuditLogScalarFieldEnum = {
@@ -2668,6 +2846,34 @@ export type ListEnumPosSessionStatusFieldRefInput<$PrismaModel> = FieldRefInputT
 
 
 /**
+ * Reference to a field of type 'PosPaymentMethod'
+ */
+export type EnumPosPaymentMethodFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PosPaymentMethod'>
+    
+
+
+/**
+ * Reference to a field of type 'PosPaymentMethod[]'
+ */
+export type ListEnumPosPaymentMethodFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PosPaymentMethod[]'>
+    
+
+
+/**
+ * Reference to a field of type 'PosCashMovementType'
+ */
+export type EnumPosCashMovementTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PosCashMovementType'>
+    
+
+
+/**
+ * Reference to a field of type 'PosCashMovementType[]'
+ */
+export type ListEnumPosCashMovementTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PosCashMovementType[]'>
+    
+
+
+/**
  * Reference to a field of type 'InventoryCountStatus'
  */
 export type EnumInventoryCountStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'InventoryCountStatus'>
@@ -2830,6 +3036,8 @@ export type GlobalOmitConfig = {
   tenant?: Prisma.TenantOmit
   posRegister?: Prisma.PosRegisterOmit
   posSession?: Prisma.PosSessionOmit
+  posPayment?: Prisma.PosPaymentOmit
+  posCashMovement?: Prisma.PosCashMovementOmit
   auditLog?: Prisma.AuditLogOmit
   inventoryCountSession?: Prisma.InventoryCountSessionOmit
   inventoryCountLine?: Prisma.InventoryCountLineOmit

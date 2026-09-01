@@ -62,6 +62,7 @@ export default async function RootLayout({
   const headerStore = await headers();
   const pathname = headerStore.get("x-pathname") ?? "";
   const isPlatformRoute = pathname.startsWith("/platform");
+  const isPosRoute = pathname === "/pos" || pathname.startsWith("/pos/");
   const currentUser = await getCurrentUser();
   const hasAccess = currentUser ? hasTenantAccess(currentUser) : false;
   const tenantLabel = currentUser?.tenant?.businessName ?? currentUser?.tenant?.name ?? "StockBase";
@@ -113,6 +114,7 @@ export default async function RootLayout({
               {
                 href: "/pos",
                 label: "POS",
+                target: "_blank" as const,
                 icon: (
                   <svg
                     viewBox="0 0 24 24"
@@ -289,7 +291,7 @@ export default async function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} bg-[linear-gradient(180deg,#ebf8f0_0%,#eef4f7_100%)] text-slate-950 antialiased`}
       >
         <div className="min-h-screen">
-          {currentUser && hasAccess && !isPlatformRoute ? (
+          {currentUser && hasAccess && !isPlatformRoute && !isPosRoute ? (
             <div className="flex min-h-screen print:block">
               <aside className="hidden w-[224px] shrink-0 border-r border-emerald-200 bg-[linear-gradient(180deg,#dcf7e7_0%,#e9f8ef_46%,#edf3f8_100%)] px-4 py-5 xl:flex xl:flex-col print:hidden">
                 <Link href="/" className="flex items-center gap-3">

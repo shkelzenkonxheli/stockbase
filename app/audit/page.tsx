@@ -101,6 +101,7 @@ function formatReason(reason?: string) {
   }
 
   if (reason === "INCOMING_STOCK") return "Hyrje stoku";
+  if (reason === "POS_SALE") return "Shitje POS";
   if (reason === "CUSTOMER_RETURN") return "Kthim klienti";
   if (reason === "SUPPLIER_RETURN") return "Kthim te furnitori";
   if (reason === "TRANSFER") return "Transfer";

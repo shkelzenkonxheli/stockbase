@@ -107,6 +107,16 @@ export type PosRegister = Prisma.PosRegisterModel
  */
 export type PosSession = Prisma.PosSessionModel
 /**
+ * Model PosPayment
+ * 
+ */
+export type PosPayment = Prisma.PosPaymentModel
+/**
+ * Model PosCashMovement
+ * 
+ */
+export type PosCashMovement = Prisma.PosCashMovementModel
+/**
  * Model AuditLog
  * 
  */

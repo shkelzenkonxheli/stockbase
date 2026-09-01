@@ -80,6 +80,7 @@ export type InventoryCountStatus = (typeof InventoryCountStatus)[keyof typeof In
 
 export const StockMovementReason = {
   INCOMING_STOCK: 'INCOMING_STOCK',
+  POS_SALE: 'POS_SALE',
   CUSTOMER_RETURN: 'CUSTOMER_RETURN',
   SUPPLIER_RETURN: 'SUPPLIER_RETURN',
   TRANSFER: 'TRANSFER',
@@ -108,3 +109,19 @@ export const PosSessionStatus = {
 } as const
 
 export type PosSessionStatus = (typeof PosSessionStatus)[keyof typeof PosSessionStatus]
+
+
+export const PosPaymentMethod = {
+  CASH: 'CASH',
+  CARD: 'CARD'
+} as const
+
+export type PosPaymentMethod = (typeof PosPaymentMethod)[keyof typeof PosPaymentMethod]
+
+
+export const PosCashMovementType = {
+  CASH_IN: 'CASH_IN',
+  CASH_OUT: 'CASH_OUT'
+} as const
+
+export type PosCashMovementType = (typeof PosCashMovementType)[keyof typeof PosCashMovementType]

@@ -31,6 +31,7 @@ export type OrderAvgAggregateOutputType = {
   quantity: number | null
   variantId: number | null
   warehouseId: number | null
+  posSessionId: number | null
   tenantId: number | null
 }
 
@@ -39,6 +40,7 @@ export type OrderSumAggregateOutputType = {
   quantity: number | null
   variantId: number | null
   warehouseId: number | null
+  posSessionId: number | null
   tenantId: number | null
 }
 
@@ -48,6 +50,7 @@ export type OrderMinAggregateOutputType = {
   quantity: number | null
   variantId: number | null
   warehouseId: number | null
+  posSessionId: number | null
   createdAt: Date | null
   customerName: string | null
   instagram: string | null
@@ -64,6 +67,7 @@ export type OrderMaxAggregateOutputType = {
   quantity: number | null
   variantId: number | null
   warehouseId: number | null
+  posSessionId: number | null
   createdAt: Date | null
   customerName: string | null
   instagram: string | null
@@ -80,6 +84,7 @@ export type OrderCountAggregateOutputType = {
   quantity: number
   variantId: number
   warehouseId: number
+  posSessionId: number
   createdAt: number
   customerName: number
   instagram: number
@@ -97,6 +102,7 @@ export type OrderAvgAggregateInputType = {
   quantity?: true
   variantId?: true
   warehouseId?: true
+  posSessionId?: true
   tenantId?: true
 }
 
@@ -105,6 +111,7 @@ export type OrderSumAggregateInputType = {
   quantity?: true
   variantId?: true
   warehouseId?: true
+  posSessionId?: true
   tenantId?: true
 }
 
@@ -114,6 +121,7 @@ export type OrderMinAggregateInputType = {
   quantity?: true
   variantId?: true
   warehouseId?: true
+  posSessionId?: true
   createdAt?: true
   customerName?: true
   instagram?: true
@@ -130,6 +138,7 @@ export type OrderMaxAggregateInputType = {
   quantity?: true
   variantId?: true
   warehouseId?: true
+  posSessionId?: true
   createdAt?: true
   customerName?: true
   instagram?: true
@@ -146,6 +155,7 @@ export type OrderCountAggregateInputType = {
   quantity?: true
   variantId?: true
   warehouseId?: true
+  posSessionId?: true
   createdAt?: true
   customerName?: true
   instagram?: true
@@ -249,6 +259,7 @@ export type OrderGroupByOutputType = {
   quantity: number | null
   variantId: number | null
   warehouseId: number | null
+  posSessionId: number | null
   createdAt: Date
   customerName: string
   instagram: string | null
@@ -288,6 +299,7 @@ export type OrderWhereInput = {
   quantity?: Prisma.IntNullableFilter<"Order"> | number | null
   variantId?: Prisma.IntNullableFilter<"Order"> | number | null
   warehouseId?: Prisma.IntNullableFilter<"Order"> | number | null
+  posSessionId?: Prisma.IntNullableFilter<"Order"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   customerName?: Prisma.StringFilter<"Order"> | string
   instagram?: Prisma.StringNullableFilter<"Order"> | string | null
@@ -299,7 +311,9 @@ export type OrderWhereInput = {
   tenant?: Prisma.XOR<Prisma.TenantNullableScalarRelationFilter, Prisma.TenantWhereInput> | null
   variant?: Prisma.XOR<Prisma.VariantNullableScalarRelationFilter, Prisma.VariantWhereInput> | null
   warehouse?: Prisma.XOR<Prisma.WarehouseNullableScalarRelationFilter, Prisma.WarehouseWhereInput> | null
+  posSession?: Prisma.XOR<Prisma.PosSessionNullableScalarRelationFilter, Prisma.PosSessionWhereInput> | null
   items?: Prisma.OrderItemListRelationFilter
+  posPayments?: Prisma.PosPaymentListRelationFilter
 }
 
 export type OrderOrderByWithRelationInput = {
@@ -308,6 +322,7 @@ export type OrderOrderByWithRelationInput = {
   quantity?: Prisma.SortOrderInput | Prisma.SortOrder
   variantId?: Prisma.SortOrderInput | Prisma.SortOrder
   warehouseId?: Prisma.SortOrderInput | Prisma.SortOrder
+  posSessionId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   customerName?: Prisma.SortOrder
   instagram?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -319,7 +334,9 @@ export type OrderOrderByWithRelationInput = {
   tenant?: Prisma.TenantOrderByWithRelationInput
   variant?: Prisma.VariantOrderByWithRelationInput
   warehouse?: Prisma.WarehouseOrderByWithRelationInput
+  posSession?: Prisma.PosSessionOrderByWithRelationInput
   items?: Prisma.OrderItemOrderByRelationAggregateInput
+  posPayments?: Prisma.PosPaymentOrderByRelationAggregateInput
 }
 
 export type OrderWhereUniqueInput = Prisma.AtLeast<{
@@ -331,6 +348,7 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   quantity?: Prisma.IntNullableFilter<"Order"> | number | null
   variantId?: Prisma.IntNullableFilter<"Order"> | number | null
   warehouseId?: Prisma.IntNullableFilter<"Order"> | number | null
+  posSessionId?: Prisma.IntNullableFilter<"Order"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   customerName?: Prisma.StringFilter<"Order"> | string
   instagram?: Prisma.StringNullableFilter<"Order"> | string | null
@@ -342,7 +360,9 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   tenant?: Prisma.XOR<Prisma.TenantNullableScalarRelationFilter, Prisma.TenantWhereInput> | null
   variant?: Prisma.XOR<Prisma.VariantNullableScalarRelationFilter, Prisma.VariantWhereInput> | null
   warehouse?: Prisma.XOR<Prisma.WarehouseNullableScalarRelationFilter, Prisma.WarehouseWhereInput> | null
+  posSession?: Prisma.XOR<Prisma.PosSessionNullableScalarRelationFilter, Prisma.PosSessionWhereInput> | null
   items?: Prisma.OrderItemListRelationFilter
+  posPayments?: Prisma.PosPaymentListRelationFilter
 }, "id">
 
 export type OrderOrderByWithAggregationInput = {
@@ -351,6 +371,7 @@ export type OrderOrderByWithAggregationInput = {
   quantity?: Prisma.SortOrderInput | Prisma.SortOrder
   variantId?: Prisma.SortOrderInput | Prisma.SortOrder
   warehouseId?: Prisma.SortOrderInput | Prisma.SortOrder
+  posSessionId?: Prisma.SortOrderInput | Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   customerName?: Prisma.SortOrder
   instagram?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -375,6 +396,7 @@ export type OrderScalarWhereWithAggregatesInput = {
   quantity?: Prisma.IntNullableWithAggregatesFilter<"Order"> | number | null
   variantId?: Prisma.IntNullableWithAggregatesFilter<"Order"> | number | null
   warehouseId?: Prisma.IntNullableWithAggregatesFilter<"Order"> | number | null
+  posSessionId?: Prisma.IntNullableWithAggregatesFilter<"Order"> | number | null
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Order"> | Date | string
   customerName?: Prisma.StringWithAggregatesFilter<"Order"> | string
   instagram?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
@@ -398,7 +420,9 @@ export type OrderCreateInput = {
   tenant?: Prisma.TenantCreateNestedOneWithoutOrdersInput
   variant?: Prisma.VariantCreateNestedOneWithoutOrdersInput
   warehouse?: Prisma.WarehouseCreateNestedOneWithoutOrdersInput
+  posSession?: Prisma.PosSessionCreateNestedOneWithoutOrdersInput
   items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
+  posPayments?: Prisma.PosPaymentCreateNestedManyWithoutOrderInput
 }
 
 export type OrderUncheckedCreateInput = {
@@ -407,6 +431,7 @@ export type OrderUncheckedCreateInput = {
   quantity?: number | null
   variantId?: number | null
   warehouseId?: number | null
+  posSessionId?: number | null
   createdAt?: Date | string
   customerName: string
   instagram?: string | null
@@ -416,6 +441,7 @@ export type OrderUncheckedCreateInput = {
   source?: $Enums.OrderSource
   tenantId?: number | null
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
+  posPayments?: Prisma.PosPaymentUncheckedCreateNestedManyWithoutOrderInput
 }
 
 export type OrderUpdateInput = {
@@ -431,7 +457,9 @@ export type OrderUpdateInput = {
   tenant?: Prisma.TenantUpdateOneWithoutOrdersNestedInput
   variant?: Prisma.VariantUpdateOneWithoutOrdersNestedInput
   warehouse?: Prisma.WarehouseUpdateOneWithoutOrdersNestedInput
+  posSession?: Prisma.PosSessionUpdateOneWithoutOrdersNestedInput
   items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
+  posPayments?: Prisma.PosPaymentUpdateManyWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateInput = {
@@ -440,6 +468,7 @@ export type OrderUncheckedUpdateInput = {
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   variantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   warehouseId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  posSessionId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customerName?: Prisma.StringFieldUpdateOperationsInput | string
   instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -449,6 +478,7 @@ export type OrderUncheckedUpdateInput = {
   source?: Prisma.EnumOrderSourceFieldUpdateOperationsInput | $Enums.OrderSource
   tenantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
+  posPayments?: Prisma.PosPaymentUncheckedUpdateManyWithoutOrderNestedInput
 }
 
 export type OrderCreateManyInput = {
@@ -457,6 +487,7 @@ export type OrderCreateManyInput = {
   quantity?: number | null
   variantId?: number | null
   warehouseId?: number | null
+  posSessionId?: number | null
   createdAt?: Date | string
   customerName: string
   instagram?: string | null
@@ -485,6 +516,7 @@ export type OrderUncheckedUpdateManyInput = {
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   variantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   warehouseId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  posSessionId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customerName?: Prisma.StringFieldUpdateOperationsInput | string
   instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -511,6 +543,7 @@ export type OrderCountOrderByAggregateInput = {
   quantity?: Prisma.SortOrder
   variantId?: Prisma.SortOrder
   warehouseId?: Prisma.SortOrder
+  posSessionId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   customerName?: Prisma.SortOrder
   instagram?: Prisma.SortOrder
@@ -526,6 +559,7 @@ export type OrderAvgOrderByAggregateInput = {
   quantity?: Prisma.SortOrder
   variantId?: Prisma.SortOrder
   warehouseId?: Prisma.SortOrder
+  posSessionId?: Prisma.SortOrder
   tenantId?: Prisma.SortOrder
 }
 
@@ -535,6 +569,7 @@ export type OrderMaxOrderByAggregateInput = {
   quantity?: Prisma.SortOrder
   variantId?: Prisma.SortOrder
   warehouseId?: Prisma.SortOrder
+  posSessionId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   customerName?: Prisma.SortOrder
   instagram?: Prisma.SortOrder
@@ -551,6 +586,7 @@ export type OrderMinOrderByAggregateInput = {
   quantity?: Prisma.SortOrder
   variantId?: Prisma.SortOrder
   warehouseId?: Prisma.SortOrder
+  posSessionId?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   customerName?: Prisma.SortOrder
   instagram?: Prisma.SortOrder
@@ -566,6 +602,7 @@ export type OrderSumOrderByAggregateInput = {
   quantity?: Prisma.SortOrder
   variantId?: Prisma.SortOrder
   warehouseId?: Prisma.SortOrder
+  posSessionId?: Prisma.SortOrder
   tenantId?: Prisma.SortOrder
 }
 
@@ -722,6 +759,62 @@ export type OrderUncheckedUpdateManyWithoutTenantNestedInput = {
   deleteMany?: Prisma.OrderScalarWhereInput | Prisma.OrderScalarWhereInput[]
 }
 
+export type OrderCreateNestedManyWithoutPosSessionInput = {
+  create?: Prisma.XOR<Prisma.OrderCreateWithoutPosSessionInput, Prisma.OrderUncheckedCreateWithoutPosSessionInput> | Prisma.OrderCreateWithoutPosSessionInput[] | Prisma.OrderUncheckedCreateWithoutPosSessionInput[]
+  connectOrCreate?: Prisma.OrderCreateOrConnectWithoutPosSessionInput | Prisma.OrderCreateOrConnectWithoutPosSessionInput[]
+  createMany?: Prisma.OrderCreateManyPosSessionInputEnvelope
+  connect?: Prisma.OrderWhereUniqueInput | Prisma.OrderWhereUniqueInput[]
+}
+
+export type OrderUncheckedCreateNestedManyWithoutPosSessionInput = {
+  create?: Prisma.XOR<Prisma.OrderCreateWithoutPosSessionInput, Prisma.OrderUncheckedCreateWithoutPosSessionInput> | Prisma.OrderCreateWithoutPosSessionInput[] | Prisma.OrderUncheckedCreateWithoutPosSessionInput[]
+  connectOrCreate?: Prisma.OrderCreateOrConnectWithoutPosSessionInput | Prisma.OrderCreateOrConnectWithoutPosSessionInput[]
+  createMany?: Prisma.OrderCreateManyPosSessionInputEnvelope
+  connect?: Prisma.OrderWhereUniqueInput | Prisma.OrderWhereUniqueInput[]
+}
+
+export type OrderUpdateManyWithoutPosSessionNestedInput = {
+  create?: Prisma.XOR<Prisma.OrderCreateWithoutPosSessionInput, Prisma.OrderUncheckedCreateWithoutPosSessionInput> | Prisma.OrderCreateWithoutPosSessionInput[] | Prisma.OrderUncheckedCreateWithoutPosSessionInput[]
+  connectOrCreate?: Prisma.OrderCreateOrConnectWithoutPosSessionInput | Prisma.OrderCreateOrConnectWithoutPosSessionInput[]
+  upsert?: Prisma.OrderUpsertWithWhereUniqueWithoutPosSessionInput | Prisma.OrderUpsertWithWhereUniqueWithoutPosSessionInput[]
+  createMany?: Prisma.OrderCreateManyPosSessionInputEnvelope
+  set?: Prisma.OrderWhereUniqueInput | Prisma.OrderWhereUniqueInput[]
+  disconnect?: Prisma.OrderWhereUniqueInput | Prisma.OrderWhereUniqueInput[]
+  delete?: Prisma.OrderWhereUniqueInput | Prisma.OrderWhereUniqueInput[]
+  connect?: Prisma.OrderWhereUniqueInput | Prisma.OrderWhereUniqueInput[]
+  update?: Prisma.OrderUpdateWithWhereUniqueWithoutPosSessionInput | Prisma.OrderUpdateWithWhereUniqueWithoutPosSessionInput[]
+  updateMany?: Prisma.OrderUpdateManyWithWhereWithoutPosSessionInput | Prisma.OrderUpdateManyWithWhereWithoutPosSessionInput[]
+  deleteMany?: Prisma.OrderScalarWhereInput | Prisma.OrderScalarWhereInput[]
+}
+
+export type OrderUncheckedUpdateManyWithoutPosSessionNestedInput = {
+  create?: Prisma.XOR<Prisma.OrderCreateWithoutPosSessionInput, Prisma.OrderUncheckedCreateWithoutPosSessionInput> | Prisma.OrderCreateWithoutPosSessionInput[] | Prisma.OrderUncheckedCreateWithoutPosSessionInput[]
+  connectOrCreate?: Prisma.OrderCreateOrConnectWithoutPosSessionInput | Prisma.OrderCreateOrConnectWithoutPosSessionInput[]
+  upsert?: Prisma.OrderUpsertWithWhereUniqueWithoutPosSessionInput | Prisma.OrderUpsertWithWhereUniqueWithoutPosSessionInput[]
+  createMany?: Prisma.OrderCreateManyPosSessionInputEnvelope
+  set?: Prisma.OrderWhereUniqueInput | Prisma.OrderWhereUniqueInput[]
+  disconnect?: Prisma.OrderWhereUniqueInput | Prisma.OrderWhereUniqueInput[]
+  delete?: Prisma.OrderWhereUniqueInput | Prisma.OrderWhereUniqueInput[]
+  connect?: Prisma.OrderWhereUniqueInput | Prisma.OrderWhereUniqueInput[]
+  update?: Prisma.OrderUpdateWithWhereUniqueWithoutPosSessionInput | Prisma.OrderUpdateWithWhereUniqueWithoutPosSessionInput[]
+  updateMany?: Prisma.OrderUpdateManyWithWhereWithoutPosSessionInput | Prisma.OrderUpdateManyWithWhereWithoutPosSessionInput[]
+  deleteMany?: Prisma.OrderScalarWhereInput | Prisma.OrderScalarWhereInput[]
+}
+
+export type OrderCreateNestedOneWithoutPosPaymentsInput = {
+  create?: Prisma.XOR<Prisma.OrderCreateWithoutPosPaymentsInput, Prisma.OrderUncheckedCreateWithoutPosPaymentsInput>
+  connectOrCreate?: Prisma.OrderCreateOrConnectWithoutPosPaymentsInput
+  connect?: Prisma.OrderWhereUniqueInput
+}
+
+export type OrderUpdateOneRequiredWithoutPosPaymentsNestedInput = {
+  create?: Prisma.XOR<Prisma.OrderCreateWithoutPosPaymentsInput, Prisma.OrderUncheckedCreateWithoutPosPaymentsInput>
+  connectOrCreate?: Prisma.OrderCreateOrConnectWithoutPosPaymentsInput
+  upsert?: Prisma.OrderUpsertWithoutPosPaymentsInput
+  connect?: Prisma.OrderWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.OrderUpdateToOneWithWhereWithoutPosPaymentsInput, Prisma.OrderUpdateWithoutPosPaymentsInput>, Prisma.OrderUncheckedUpdateWithoutPosPaymentsInput>
+}
+
 export type OrderCreateWithoutVariantInput = {
   phone: string
   quantity?: number | null
@@ -734,7 +827,9 @@ export type OrderCreateWithoutVariantInput = {
   source?: $Enums.OrderSource
   tenant?: Prisma.TenantCreateNestedOneWithoutOrdersInput
   warehouse?: Prisma.WarehouseCreateNestedOneWithoutOrdersInput
+  posSession?: Prisma.PosSessionCreateNestedOneWithoutOrdersInput
   items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
+  posPayments?: Prisma.PosPaymentCreateNestedManyWithoutOrderInput
 }
 
 export type OrderUncheckedCreateWithoutVariantInput = {
@@ -742,6 +837,7 @@ export type OrderUncheckedCreateWithoutVariantInput = {
   phone: string
   quantity?: number | null
   warehouseId?: number | null
+  posSessionId?: number | null
   createdAt?: Date | string
   customerName: string
   instagram?: string | null
@@ -751,6 +847,7 @@ export type OrderUncheckedCreateWithoutVariantInput = {
   source?: $Enums.OrderSource
   tenantId?: number | null
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
+  posPayments?: Prisma.PosPaymentUncheckedCreateNestedManyWithoutOrderInput
 }
 
 export type OrderCreateOrConnectWithoutVariantInput = {
@@ -788,6 +885,7 @@ export type OrderScalarWhereInput = {
   quantity?: Prisma.IntNullableFilter<"Order"> | number | null
   variantId?: Prisma.IntNullableFilter<"Order"> | number | null
   warehouseId?: Prisma.IntNullableFilter<"Order"> | number | null
+  posSessionId?: Prisma.IntNullableFilter<"Order"> | number | null
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   customerName?: Prisma.StringFilter<"Order"> | string
   instagram?: Prisma.StringNullableFilter<"Order"> | string | null
@@ -810,7 +908,9 @@ export type OrderCreateWithoutWarehouseInput = {
   source?: $Enums.OrderSource
   tenant?: Prisma.TenantCreateNestedOneWithoutOrdersInput
   variant?: Prisma.VariantCreateNestedOneWithoutOrdersInput
+  posSession?: Prisma.PosSessionCreateNestedOneWithoutOrdersInput
   items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
+  posPayments?: Prisma.PosPaymentCreateNestedManyWithoutOrderInput
 }
 
 export type OrderUncheckedCreateWithoutWarehouseInput = {
@@ -818,6 +918,7 @@ export type OrderUncheckedCreateWithoutWarehouseInput = {
   phone: string
   quantity?: number | null
   variantId?: number | null
+  posSessionId?: number | null
   createdAt?: Date | string
   customerName: string
   instagram?: string | null
@@ -827,6 +928,7 @@ export type OrderUncheckedCreateWithoutWarehouseInput = {
   source?: $Enums.OrderSource
   tenantId?: number | null
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
+  posPayments?: Prisma.PosPaymentUncheckedCreateNestedManyWithoutOrderInput
 }
 
 export type OrderCreateOrConnectWithoutWarehouseInput = {
@@ -868,6 +970,8 @@ export type OrderCreateWithoutItemsInput = {
   tenant?: Prisma.TenantCreateNestedOneWithoutOrdersInput
   variant?: Prisma.VariantCreateNestedOneWithoutOrdersInput
   warehouse?: Prisma.WarehouseCreateNestedOneWithoutOrdersInput
+  posSession?: Prisma.PosSessionCreateNestedOneWithoutOrdersInput
+  posPayments?: Prisma.PosPaymentCreateNestedManyWithoutOrderInput
 }
 
 export type OrderUncheckedCreateWithoutItemsInput = {
@@ -876,6 +980,7 @@ export type OrderUncheckedCreateWithoutItemsInput = {
   quantity?: number | null
   variantId?: number | null
   warehouseId?: number | null
+  posSessionId?: number | null
   createdAt?: Date | string
   customerName: string
   instagram?: string | null
@@ -884,6 +989,7 @@ export type OrderUncheckedCreateWithoutItemsInput = {
   updatedAt?: Date | string
   source?: $Enums.OrderSource
   tenantId?: number | null
+  posPayments?: Prisma.PosPaymentUncheckedCreateNestedManyWithoutOrderInput
 }
 
 export type OrderCreateOrConnectWithoutItemsInput = {
@@ -915,6 +1021,8 @@ export type OrderUpdateWithoutItemsInput = {
   tenant?: Prisma.TenantUpdateOneWithoutOrdersNestedInput
   variant?: Prisma.VariantUpdateOneWithoutOrdersNestedInput
   warehouse?: Prisma.WarehouseUpdateOneWithoutOrdersNestedInput
+  posSession?: Prisma.PosSessionUpdateOneWithoutOrdersNestedInput
+  posPayments?: Prisma.PosPaymentUpdateManyWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateWithoutItemsInput = {
@@ -923,6 +1031,7 @@ export type OrderUncheckedUpdateWithoutItemsInput = {
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   variantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   warehouseId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  posSessionId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customerName?: Prisma.StringFieldUpdateOperationsInput | string
   instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -931,6 +1040,7 @@ export type OrderUncheckedUpdateWithoutItemsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   source?: Prisma.EnumOrderSourceFieldUpdateOperationsInput | $Enums.OrderSource
   tenantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  posPayments?: Prisma.PosPaymentUncheckedUpdateManyWithoutOrderNestedInput
 }
 
 export type OrderCreateWithoutTenantInput = {
@@ -945,7 +1055,9 @@ export type OrderCreateWithoutTenantInput = {
   source?: $Enums.OrderSource
   variant?: Prisma.VariantCreateNestedOneWithoutOrdersInput
   warehouse?: Prisma.WarehouseCreateNestedOneWithoutOrdersInput
+  posSession?: Prisma.PosSessionCreateNestedOneWithoutOrdersInput
   items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
+  posPayments?: Prisma.PosPaymentCreateNestedManyWithoutOrderInput
 }
 
 export type OrderUncheckedCreateWithoutTenantInput = {
@@ -954,6 +1066,7 @@ export type OrderUncheckedCreateWithoutTenantInput = {
   quantity?: number | null
   variantId?: number | null
   warehouseId?: number | null
+  posSessionId?: number | null
   createdAt?: Date | string
   customerName: string
   instagram?: string | null
@@ -962,6 +1075,7 @@ export type OrderUncheckedCreateWithoutTenantInput = {
   updatedAt?: Date | string
   source?: $Enums.OrderSource
   items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
+  posPayments?: Prisma.PosPaymentUncheckedCreateNestedManyWithoutOrderInput
 }
 
 export type OrderCreateOrConnectWithoutTenantInput = {
@@ -990,11 +1104,159 @@ export type OrderUpdateManyWithWhereWithoutTenantInput = {
   data: Prisma.XOR<Prisma.OrderUpdateManyMutationInput, Prisma.OrderUncheckedUpdateManyWithoutTenantInput>
 }
 
+export type OrderCreateWithoutPosSessionInput = {
+  phone: string
+  quantity?: number | null
+  createdAt?: Date | string
+  customerName: string
+  instagram?: string | null
+  notes?: string | null
+  status?: $Enums.OrderStatus
+  updatedAt?: Date | string
+  source?: $Enums.OrderSource
+  tenant?: Prisma.TenantCreateNestedOneWithoutOrdersInput
+  variant?: Prisma.VariantCreateNestedOneWithoutOrdersInput
+  warehouse?: Prisma.WarehouseCreateNestedOneWithoutOrdersInput
+  items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
+  posPayments?: Prisma.PosPaymentCreateNestedManyWithoutOrderInput
+}
+
+export type OrderUncheckedCreateWithoutPosSessionInput = {
+  id?: number
+  phone: string
+  quantity?: number | null
+  variantId?: number | null
+  warehouseId?: number | null
+  createdAt?: Date | string
+  customerName: string
+  instagram?: string | null
+  notes?: string | null
+  status?: $Enums.OrderStatus
+  updatedAt?: Date | string
+  source?: $Enums.OrderSource
+  tenantId?: number | null
+  items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
+  posPayments?: Prisma.PosPaymentUncheckedCreateNestedManyWithoutOrderInput
+}
+
+export type OrderCreateOrConnectWithoutPosSessionInput = {
+  where: Prisma.OrderWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrderCreateWithoutPosSessionInput, Prisma.OrderUncheckedCreateWithoutPosSessionInput>
+}
+
+export type OrderCreateManyPosSessionInputEnvelope = {
+  data: Prisma.OrderCreateManyPosSessionInput | Prisma.OrderCreateManyPosSessionInput[]
+  skipDuplicates?: boolean
+}
+
+export type OrderUpsertWithWhereUniqueWithoutPosSessionInput = {
+  where: Prisma.OrderWhereUniqueInput
+  update: Prisma.XOR<Prisma.OrderUpdateWithoutPosSessionInput, Prisma.OrderUncheckedUpdateWithoutPosSessionInput>
+  create: Prisma.XOR<Prisma.OrderCreateWithoutPosSessionInput, Prisma.OrderUncheckedCreateWithoutPosSessionInput>
+}
+
+export type OrderUpdateWithWhereUniqueWithoutPosSessionInput = {
+  where: Prisma.OrderWhereUniqueInput
+  data: Prisma.XOR<Prisma.OrderUpdateWithoutPosSessionInput, Prisma.OrderUncheckedUpdateWithoutPosSessionInput>
+}
+
+export type OrderUpdateManyWithWhereWithoutPosSessionInput = {
+  where: Prisma.OrderScalarWhereInput
+  data: Prisma.XOR<Prisma.OrderUpdateManyMutationInput, Prisma.OrderUncheckedUpdateManyWithoutPosSessionInput>
+}
+
+export type OrderCreateWithoutPosPaymentsInput = {
+  phone: string
+  quantity?: number | null
+  createdAt?: Date | string
+  customerName: string
+  instagram?: string | null
+  notes?: string | null
+  status?: $Enums.OrderStatus
+  updatedAt?: Date | string
+  source?: $Enums.OrderSource
+  tenant?: Prisma.TenantCreateNestedOneWithoutOrdersInput
+  variant?: Prisma.VariantCreateNestedOneWithoutOrdersInput
+  warehouse?: Prisma.WarehouseCreateNestedOneWithoutOrdersInput
+  posSession?: Prisma.PosSessionCreateNestedOneWithoutOrdersInput
+  items?: Prisma.OrderItemCreateNestedManyWithoutOrderInput
+}
+
+export type OrderUncheckedCreateWithoutPosPaymentsInput = {
+  id?: number
+  phone: string
+  quantity?: number | null
+  variantId?: number | null
+  warehouseId?: number | null
+  posSessionId?: number | null
+  createdAt?: Date | string
+  customerName: string
+  instagram?: string | null
+  notes?: string | null
+  status?: $Enums.OrderStatus
+  updatedAt?: Date | string
+  source?: $Enums.OrderSource
+  tenantId?: number | null
+  items?: Prisma.OrderItemUncheckedCreateNestedManyWithoutOrderInput
+}
+
+export type OrderCreateOrConnectWithoutPosPaymentsInput = {
+  where: Prisma.OrderWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrderCreateWithoutPosPaymentsInput, Prisma.OrderUncheckedCreateWithoutPosPaymentsInput>
+}
+
+export type OrderUpsertWithoutPosPaymentsInput = {
+  update: Prisma.XOR<Prisma.OrderUpdateWithoutPosPaymentsInput, Prisma.OrderUncheckedUpdateWithoutPosPaymentsInput>
+  create: Prisma.XOR<Prisma.OrderCreateWithoutPosPaymentsInput, Prisma.OrderUncheckedCreateWithoutPosPaymentsInput>
+  where?: Prisma.OrderWhereInput
+}
+
+export type OrderUpdateToOneWithWhereWithoutPosPaymentsInput = {
+  where?: Prisma.OrderWhereInput
+  data: Prisma.XOR<Prisma.OrderUpdateWithoutPosPaymentsInput, Prisma.OrderUncheckedUpdateWithoutPosPaymentsInput>
+}
+
+export type OrderUpdateWithoutPosPaymentsInput = {
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  customerName?: Prisma.StringFieldUpdateOperationsInput | string
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  source?: Prisma.EnumOrderSourceFieldUpdateOperationsInput | $Enums.OrderSource
+  tenant?: Prisma.TenantUpdateOneWithoutOrdersNestedInput
+  variant?: Prisma.VariantUpdateOneWithoutOrdersNestedInput
+  warehouse?: Prisma.WarehouseUpdateOneWithoutOrdersNestedInput
+  posSession?: Prisma.PosSessionUpdateOneWithoutOrdersNestedInput
+  items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
+}
+
+export type OrderUncheckedUpdateWithoutPosPaymentsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  variantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  warehouseId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  posSessionId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  customerName?: Prisma.StringFieldUpdateOperationsInput | string
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  source?: Prisma.EnumOrderSourceFieldUpdateOperationsInput | $Enums.OrderSource
+  tenantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
+}
+
 export type OrderCreateManyVariantInput = {
   id?: number
   phone: string
   quantity?: number | null
   warehouseId?: number | null
+  posSessionId?: number | null
   createdAt?: Date | string
   customerName: string
   instagram?: string | null
@@ -1017,7 +1279,9 @@ export type OrderUpdateWithoutVariantInput = {
   source?: Prisma.EnumOrderSourceFieldUpdateOperationsInput | $Enums.OrderSource
   tenant?: Prisma.TenantUpdateOneWithoutOrdersNestedInput
   warehouse?: Prisma.WarehouseUpdateOneWithoutOrdersNestedInput
+  posSession?: Prisma.PosSessionUpdateOneWithoutOrdersNestedInput
   items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
+  posPayments?: Prisma.PosPaymentUpdateManyWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateWithoutVariantInput = {
@@ -1025,6 +1289,7 @@ export type OrderUncheckedUpdateWithoutVariantInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   warehouseId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  posSessionId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customerName?: Prisma.StringFieldUpdateOperationsInput | string
   instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1034,6 +1299,7 @@ export type OrderUncheckedUpdateWithoutVariantInput = {
   source?: Prisma.EnumOrderSourceFieldUpdateOperationsInput | $Enums.OrderSource
   tenantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
+  posPayments?: Prisma.PosPaymentUncheckedUpdateManyWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateManyWithoutVariantInput = {
@@ -1041,6 +1307,7 @@ export type OrderUncheckedUpdateManyWithoutVariantInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   warehouseId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  posSessionId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customerName?: Prisma.StringFieldUpdateOperationsInput | string
   instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1056,6 +1323,7 @@ export type OrderCreateManyWarehouseInput = {
   phone: string
   quantity?: number | null
   variantId?: number | null
+  posSessionId?: number | null
   createdAt?: Date | string
   customerName: string
   instagram?: string | null
@@ -1078,7 +1346,9 @@ export type OrderUpdateWithoutWarehouseInput = {
   source?: Prisma.EnumOrderSourceFieldUpdateOperationsInput | $Enums.OrderSource
   tenant?: Prisma.TenantUpdateOneWithoutOrdersNestedInput
   variant?: Prisma.VariantUpdateOneWithoutOrdersNestedInput
+  posSession?: Prisma.PosSessionUpdateOneWithoutOrdersNestedInput
   items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
+  posPayments?: Prisma.PosPaymentUpdateManyWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateWithoutWarehouseInput = {
@@ -1086,6 +1356,7 @@ export type OrderUncheckedUpdateWithoutWarehouseInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   variantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  posSessionId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customerName?: Prisma.StringFieldUpdateOperationsInput | string
   instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1095,6 +1366,7 @@ export type OrderUncheckedUpdateWithoutWarehouseInput = {
   source?: Prisma.EnumOrderSourceFieldUpdateOperationsInput | $Enums.OrderSource
   tenantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
+  posPayments?: Prisma.PosPaymentUncheckedUpdateManyWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateManyWithoutWarehouseInput = {
@@ -1102,6 +1374,7 @@ export type OrderUncheckedUpdateManyWithoutWarehouseInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   variantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  posSessionId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customerName?: Prisma.StringFieldUpdateOperationsInput | string
   instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1118,6 +1391,7 @@ export type OrderCreateManyTenantInput = {
   quantity?: number | null
   variantId?: number | null
   warehouseId?: number | null
+  posSessionId?: number | null
   createdAt?: Date | string
   customerName: string
   instagram?: string | null
@@ -1139,7 +1413,9 @@ export type OrderUpdateWithoutTenantInput = {
   source?: Prisma.EnumOrderSourceFieldUpdateOperationsInput | $Enums.OrderSource
   variant?: Prisma.VariantUpdateOneWithoutOrdersNestedInput
   warehouse?: Prisma.WarehouseUpdateOneWithoutOrdersNestedInput
+  posSession?: Prisma.PosSessionUpdateOneWithoutOrdersNestedInput
   items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
+  posPayments?: Prisma.PosPaymentUpdateManyWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateWithoutTenantInput = {
@@ -1148,6 +1424,7 @@ export type OrderUncheckedUpdateWithoutTenantInput = {
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   variantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   warehouseId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  posSessionId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customerName?: Prisma.StringFieldUpdateOperationsInput | string
   instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1156,9 +1433,59 @@ export type OrderUncheckedUpdateWithoutTenantInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   source?: Prisma.EnumOrderSourceFieldUpdateOperationsInput | $Enums.OrderSource
   items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
+  posPayments?: Prisma.PosPaymentUncheckedUpdateManyWithoutOrderNestedInput
 }
 
 export type OrderUncheckedUpdateManyWithoutTenantInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  variantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  warehouseId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  posSessionId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  customerName?: Prisma.StringFieldUpdateOperationsInput | string
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  source?: Prisma.EnumOrderSourceFieldUpdateOperationsInput | $Enums.OrderSource
+}
+
+export type OrderCreateManyPosSessionInput = {
+  id?: number
+  phone: string
+  quantity?: number | null
+  variantId?: number | null
+  warehouseId?: number | null
+  createdAt?: Date | string
+  customerName: string
+  instagram?: string | null
+  notes?: string | null
+  status?: $Enums.OrderStatus
+  updatedAt?: Date | string
+  source?: $Enums.OrderSource
+  tenantId?: number | null
+}
+
+export type OrderUpdateWithoutPosSessionInput = {
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  customerName?: Prisma.StringFieldUpdateOperationsInput | string
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  source?: Prisma.EnumOrderSourceFieldUpdateOperationsInput | $Enums.OrderSource
+  tenant?: Prisma.TenantUpdateOneWithoutOrdersNestedInput
+  variant?: Prisma.VariantUpdateOneWithoutOrdersNestedInput
+  warehouse?: Prisma.WarehouseUpdateOneWithoutOrdersNestedInput
+  items?: Prisma.OrderItemUpdateManyWithoutOrderNestedInput
+  posPayments?: Prisma.PosPaymentUpdateManyWithoutOrderNestedInput
+}
+
+export type OrderUncheckedUpdateWithoutPosSessionInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
@@ -1171,6 +1498,25 @@ export type OrderUncheckedUpdateManyWithoutTenantInput = {
   status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   source?: Prisma.EnumOrderSourceFieldUpdateOperationsInput | $Enums.OrderSource
+  tenantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  items?: Prisma.OrderItemUncheckedUpdateManyWithoutOrderNestedInput
+  posPayments?: Prisma.PosPaymentUncheckedUpdateManyWithoutOrderNestedInput
+}
+
+export type OrderUncheckedUpdateManyWithoutPosSessionInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  phone?: Prisma.StringFieldUpdateOperationsInput | string
+  quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  variantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  warehouseId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  customerName?: Prisma.StringFieldUpdateOperationsInput | string
+  instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  notes?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  status?: Prisma.EnumOrderStatusFieldUpdateOperationsInput | $Enums.OrderStatus
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  source?: Prisma.EnumOrderSourceFieldUpdateOperationsInput | $Enums.OrderSource
+  tenantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
 }
 
 
@@ -1180,10 +1526,12 @@ export type OrderUncheckedUpdateManyWithoutTenantInput = {
 
 export type OrderCountOutputType = {
   items: number
+  posPayments: number
 }
 
 export type OrderCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   items?: boolean | OrderCountOutputTypeCountItemsArgs
+  posPayments?: boolean | OrderCountOutputTypeCountPosPaymentsArgs
 }
 
 /**
@@ -1203,6 +1551,13 @@ export type OrderCountOutputTypeCountItemsArgs<ExtArgs extends runtime.Types.Ext
   where?: Prisma.OrderItemWhereInput
 }
 
+/**
+ * OrderCountOutputType without action
+ */
+export type OrderCountOutputTypeCountPosPaymentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PosPaymentWhereInput
+}
+
 
 export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1210,6 +1565,7 @@ export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   quantity?: boolean
   variantId?: boolean
   warehouseId?: boolean
+  posSessionId?: boolean
   createdAt?: boolean
   customerName?: boolean
   instagram?: boolean
@@ -1221,7 +1577,9 @@ export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   tenant?: boolean | Prisma.Order$tenantArgs<ExtArgs>
   variant?: boolean | Prisma.Order$variantArgs<ExtArgs>
   warehouse?: boolean | Prisma.Order$warehouseArgs<ExtArgs>
+  posSession?: boolean | Prisma.Order$posSessionArgs<ExtArgs>
   items?: boolean | Prisma.Order$itemsArgs<ExtArgs>
+  posPayments?: boolean | Prisma.Order$posPaymentsArgs<ExtArgs>
   _count?: boolean | Prisma.OrderCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["order"]>
 
@@ -1231,6 +1589,7 @@ export type OrderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   quantity?: boolean
   variantId?: boolean
   warehouseId?: boolean
+  posSessionId?: boolean
   createdAt?: boolean
   customerName?: boolean
   instagram?: boolean
@@ -1242,6 +1601,7 @@ export type OrderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   tenant?: boolean | Prisma.Order$tenantArgs<ExtArgs>
   variant?: boolean | Prisma.Order$variantArgs<ExtArgs>
   warehouse?: boolean | Prisma.Order$warehouseArgs<ExtArgs>
+  posSession?: boolean | Prisma.Order$posSessionArgs<ExtArgs>
 }, ExtArgs["result"]["order"]>
 
 export type OrderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1250,6 +1610,7 @@ export type OrderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   quantity?: boolean
   variantId?: boolean
   warehouseId?: boolean
+  posSessionId?: boolean
   createdAt?: boolean
   customerName?: boolean
   instagram?: boolean
@@ -1261,6 +1622,7 @@ export type OrderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   tenant?: boolean | Prisma.Order$tenantArgs<ExtArgs>
   variant?: boolean | Prisma.Order$variantArgs<ExtArgs>
   warehouse?: boolean | Prisma.Order$warehouseArgs<ExtArgs>
+  posSession?: boolean | Prisma.Order$posSessionArgs<ExtArgs>
 }, ExtArgs["result"]["order"]>
 
 export type OrderSelectScalar = {
@@ -1269,6 +1631,7 @@ export type OrderSelectScalar = {
   quantity?: boolean
   variantId?: boolean
   warehouseId?: boolean
+  posSessionId?: boolean
   createdAt?: boolean
   customerName?: boolean
   instagram?: boolean
@@ -1279,23 +1642,27 @@ export type OrderSelectScalar = {
   tenantId?: boolean
 }
 
-export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "phone" | "quantity" | "variantId" | "warehouseId" | "createdAt" | "customerName" | "instagram" | "notes" | "status" | "updatedAt" | "source" | "tenantId", ExtArgs["result"]["order"]>
+export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "phone" | "quantity" | "variantId" | "warehouseId" | "posSessionId" | "createdAt" | "customerName" | "instagram" | "notes" | "status" | "updatedAt" | "source" | "tenantId", ExtArgs["result"]["order"]>
 export type OrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tenant?: boolean | Prisma.Order$tenantArgs<ExtArgs>
   variant?: boolean | Prisma.Order$variantArgs<ExtArgs>
   warehouse?: boolean | Prisma.Order$warehouseArgs<ExtArgs>
+  posSession?: boolean | Prisma.Order$posSessionArgs<ExtArgs>
   items?: boolean | Prisma.Order$itemsArgs<ExtArgs>
+  posPayments?: boolean | Prisma.Order$posPaymentsArgs<ExtArgs>
   _count?: boolean | Prisma.OrderCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type OrderIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tenant?: boolean | Prisma.Order$tenantArgs<ExtArgs>
   variant?: boolean | Prisma.Order$variantArgs<ExtArgs>
   warehouse?: boolean | Prisma.Order$warehouseArgs<ExtArgs>
+  posSession?: boolean | Prisma.Order$posSessionArgs<ExtArgs>
 }
 export type OrderIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tenant?: boolean | Prisma.Order$tenantArgs<ExtArgs>
   variant?: boolean | Prisma.Order$variantArgs<ExtArgs>
   warehouse?: boolean | Prisma.Order$warehouseArgs<ExtArgs>
+  posSession?: boolean | Prisma.Order$posSessionArgs<ExtArgs>
 }
 
 export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1304,7 +1671,9 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     tenant: Prisma.$TenantPayload<ExtArgs> | null
     variant: Prisma.$VariantPayload<ExtArgs> | null
     warehouse: Prisma.$WarehousePayload<ExtArgs> | null
+    posSession: Prisma.$PosSessionPayload<ExtArgs> | null
     items: Prisma.$OrderItemPayload<ExtArgs>[]
+    posPayments: Prisma.$PosPaymentPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -1312,6 +1681,7 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     quantity: number | null
     variantId: number | null
     warehouseId: number | null
+    posSessionId: number | null
     createdAt: Date
     customerName: string
     instagram: string | null
@@ -1717,7 +2087,9 @@ export interface Prisma__OrderClient<T, Null = never, ExtArgs extends runtime.Ty
   tenant<T extends Prisma.Order$tenantArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$tenantArgs<ExtArgs>>): Prisma.Prisma__TenantClient<runtime.Types.Result.GetResult<Prisma.$TenantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   variant<T extends Prisma.Order$variantArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$variantArgs<ExtArgs>>): Prisma.Prisma__VariantClient<runtime.Types.Result.GetResult<Prisma.$VariantPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   warehouse<T extends Prisma.Order$warehouseArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$warehouseArgs<ExtArgs>>): Prisma.Prisma__WarehouseClient<runtime.Types.Result.GetResult<Prisma.$WarehousePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  posSession<T extends Prisma.Order$posSessionArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$posSessionArgs<ExtArgs>>): Prisma.Prisma__PosSessionClient<runtime.Types.Result.GetResult<Prisma.$PosSessionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   items<T extends Prisma.Order$itemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$itemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrderItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  posPayments<T extends Prisma.Order$posPaymentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Order$posPaymentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PosPaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1752,6 +2124,7 @@ export interface OrderFieldRefs {
   readonly quantity: Prisma.FieldRef<"Order", 'Int'>
   readonly variantId: Prisma.FieldRef<"Order", 'Int'>
   readonly warehouseId: Prisma.FieldRef<"Order", 'Int'>
+  readonly posSessionId: Prisma.FieldRef<"Order", 'Int'>
   readonly createdAt: Prisma.FieldRef<"Order", 'DateTime'>
   readonly customerName: Prisma.FieldRef<"Order", 'String'>
   readonly instagram: Prisma.FieldRef<"Order", 'String'>
@@ -2218,6 +2591,25 @@ export type Order$warehouseArgs<ExtArgs extends runtime.Types.Extensions.Interna
 }
 
 /**
+ * Order.posSession
+ */
+export type Order$posSessionArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PosSession
+   */
+  select?: Prisma.PosSessionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PosSession
+   */
+  omit?: Prisma.PosSessionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PosSessionInclude<ExtArgs> | null
+  where?: Prisma.PosSessionWhereInput
+}
+
+/**
  * Order.items
  */
 export type Order$itemsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -2239,6 +2631,30 @@ export type Order$itemsArgs<ExtArgs extends runtime.Types.Extensions.InternalArg
   take?: number
   skip?: number
   distinct?: Prisma.OrderItemScalarFieldEnum | Prisma.OrderItemScalarFieldEnum[]
+}
+
+/**
+ * Order.posPayments
+ */
+export type Order$posPaymentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PosPayment
+   */
+  select?: Prisma.PosPaymentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PosPayment
+   */
+  omit?: Prisma.PosPaymentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PosPaymentInclude<ExtArgs> | null
+  where?: Prisma.PosPaymentWhereInput
+  orderBy?: Prisma.PosPaymentOrderByWithRelationInput | Prisma.PosPaymentOrderByWithRelationInput[]
+  cursor?: Prisma.PosPaymentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PosPaymentScalarFieldEnum | Prisma.PosPaymentScalarFieldEnum[]
 }
 
 /**

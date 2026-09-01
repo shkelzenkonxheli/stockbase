@@ -341,6 +341,9 @@ export type PosSessionWhereInput = {
   warehouse?: Prisma.XOR<Prisma.WarehouseScalarRelationFilter, Prisma.WarehouseWhereInput>
   openedBy?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   closedBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
+  orders?: Prisma.OrderListRelationFilter
+  payments?: Prisma.PosPaymentListRelationFilter
+  cashMovements?: Prisma.PosCashMovementListRelationFilter
 }
 
 export type PosSessionOrderByWithRelationInput = {
@@ -365,6 +368,9 @@ export type PosSessionOrderByWithRelationInput = {
   warehouse?: Prisma.WarehouseOrderByWithRelationInput
   openedBy?: Prisma.UserOrderByWithRelationInput
   closedBy?: Prisma.UserOrderByWithRelationInput
+  orders?: Prisma.OrderOrderByRelationAggregateInput
+  payments?: Prisma.PosPaymentOrderByRelationAggregateInput
+  cashMovements?: Prisma.PosCashMovementOrderByRelationAggregateInput
 }
 
 export type PosSessionWhereUniqueInput = Prisma.AtLeast<{
@@ -392,6 +398,9 @@ export type PosSessionWhereUniqueInput = Prisma.AtLeast<{
   warehouse?: Prisma.XOR<Prisma.WarehouseScalarRelationFilter, Prisma.WarehouseWhereInput>
   openedBy?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   closedBy?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
+  orders?: Prisma.OrderListRelationFilter
+  payments?: Prisma.PosPaymentListRelationFilter
+  cashMovements?: Prisma.PosCashMovementListRelationFilter
 }, "id">
 
 export type PosSessionOrderByWithAggregationInput = {
@@ -456,6 +465,9 @@ export type PosSessionCreateInput = {
   warehouse: Prisma.WarehouseCreateNestedOneWithoutPosSessionsInput
   openedBy: Prisma.UserCreateNestedOneWithoutOpenedPosSessionsInput
   closedBy?: Prisma.UserCreateNestedOneWithoutClosedPosSessionsInput
+  orders?: Prisma.OrderCreateNestedManyWithoutPosSessionInput
+  payments?: Prisma.PosPaymentCreateNestedManyWithoutPosSessionInput
+  cashMovements?: Prisma.PosCashMovementCreateNestedManyWithoutPosSessionInput
 }
 
 export type PosSessionUncheckedCreateInput = {
@@ -475,6 +487,9 @@ export type PosSessionUncheckedCreateInput = {
   countedCash?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutPosSessionInput
+  payments?: Prisma.PosPaymentUncheckedCreateNestedManyWithoutPosSessionInput
+  cashMovements?: Prisma.PosCashMovementUncheckedCreateNestedManyWithoutPosSessionInput
 }
 
 export type PosSessionUpdateInput = {
@@ -493,6 +508,9 @@ export type PosSessionUpdateInput = {
   warehouse?: Prisma.WarehouseUpdateOneRequiredWithoutPosSessionsNestedInput
   openedBy?: Prisma.UserUpdateOneRequiredWithoutOpenedPosSessionsNestedInput
   closedBy?: Prisma.UserUpdateOneWithoutClosedPosSessionsNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutPosSessionNestedInput
+  payments?: Prisma.PosPaymentUpdateManyWithoutPosSessionNestedInput
+  cashMovements?: Prisma.PosCashMovementUpdateManyWithoutPosSessionNestedInput
 }
 
 export type PosSessionUncheckedUpdateInput = {
@@ -512,6 +530,9 @@ export type PosSessionUncheckedUpdateInput = {
   countedCash?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutPosSessionNestedInput
+  payments?: Prisma.PosPaymentUncheckedUpdateManyWithoutPosSessionNestedInput
+  cashMovements?: Prisma.PosCashMovementUncheckedUpdateManyWithoutPosSessionNestedInput
 }
 
 export type PosSessionCreateManyInput = {
@@ -573,6 +594,11 @@ export type PosSessionListRelationFilter = {
 
 export type PosSessionOrderByRelationAggregateInput = {
   _count?: Prisma.SortOrder
+}
+
+export type PosSessionNullableScalarRelationFilter = {
+  is?: Prisma.PosSessionWhereInput | null
+  isNot?: Prisma.PosSessionWhereInput | null
 }
 
 export type PosSessionCountOrderByAggregateInput = {
@@ -656,6 +682,11 @@ export type PosSessionSumOrderByAggregateInput = {
   countedCash?: Prisma.SortOrder
 }
 
+export type PosSessionScalarRelationFilter = {
+  is?: Prisma.PosSessionWhereInput
+  isNot?: Prisma.PosSessionWhereInput
+}
+
 export type PosSessionCreateNestedManyWithoutWarehouseInput = {
   create?: Prisma.XOR<Prisma.PosSessionCreateWithoutWarehouseInput, Prisma.PosSessionUncheckedCreateWithoutWarehouseInput> | Prisma.PosSessionCreateWithoutWarehouseInput[] | Prisma.PosSessionUncheckedCreateWithoutWarehouseInput[]
   connectOrCreate?: Prisma.PosSessionCreateOrConnectWithoutWarehouseInput | Prisma.PosSessionCreateOrConnectWithoutWarehouseInput[]
@@ -696,6 +727,22 @@ export type PosSessionUncheckedUpdateManyWithoutWarehouseNestedInput = {
   update?: Prisma.PosSessionUpdateWithWhereUniqueWithoutWarehouseInput | Prisma.PosSessionUpdateWithWhereUniqueWithoutWarehouseInput[]
   updateMany?: Prisma.PosSessionUpdateManyWithWhereWithoutWarehouseInput | Prisma.PosSessionUpdateManyWithWhereWithoutWarehouseInput[]
   deleteMany?: Prisma.PosSessionScalarWhereInput | Prisma.PosSessionScalarWhereInput[]
+}
+
+export type PosSessionCreateNestedOneWithoutOrdersInput = {
+  create?: Prisma.XOR<Prisma.PosSessionCreateWithoutOrdersInput, Prisma.PosSessionUncheckedCreateWithoutOrdersInput>
+  connectOrCreate?: Prisma.PosSessionCreateOrConnectWithoutOrdersInput
+  connect?: Prisma.PosSessionWhereUniqueInput
+}
+
+export type PosSessionUpdateOneWithoutOrdersNestedInput = {
+  create?: Prisma.XOR<Prisma.PosSessionCreateWithoutOrdersInput, Prisma.PosSessionUncheckedCreateWithoutOrdersInput>
+  connectOrCreate?: Prisma.PosSessionCreateOrConnectWithoutOrdersInput
+  upsert?: Prisma.PosSessionUpsertWithoutOrdersInput
+  disconnect?: Prisma.PosSessionWhereInput | boolean
+  delete?: Prisma.PosSessionWhereInput | boolean
+  connect?: Prisma.PosSessionWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.PosSessionUpdateToOneWithWhereWithoutOrdersInput, Prisma.PosSessionUpdateWithoutOrdersInput>, Prisma.PosSessionUncheckedUpdateWithoutOrdersInput>
 }
 
 export type PosSessionCreateNestedManyWithoutOpenedByInput = {
@@ -882,6 +929,34 @@ export type NullableDecimalFieldUpdateOperationsInput = {
   divide?: runtime.Decimal | runtime.DecimalJsLike | number | string
 }
 
+export type PosSessionCreateNestedOneWithoutPaymentsInput = {
+  create?: Prisma.XOR<Prisma.PosSessionCreateWithoutPaymentsInput, Prisma.PosSessionUncheckedCreateWithoutPaymentsInput>
+  connectOrCreate?: Prisma.PosSessionCreateOrConnectWithoutPaymentsInput
+  connect?: Prisma.PosSessionWhereUniqueInput
+}
+
+export type PosSessionUpdateOneRequiredWithoutPaymentsNestedInput = {
+  create?: Prisma.XOR<Prisma.PosSessionCreateWithoutPaymentsInput, Prisma.PosSessionUncheckedCreateWithoutPaymentsInput>
+  connectOrCreate?: Prisma.PosSessionCreateOrConnectWithoutPaymentsInput
+  upsert?: Prisma.PosSessionUpsertWithoutPaymentsInput
+  connect?: Prisma.PosSessionWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.PosSessionUpdateToOneWithWhereWithoutPaymentsInput, Prisma.PosSessionUpdateWithoutPaymentsInput>, Prisma.PosSessionUncheckedUpdateWithoutPaymentsInput>
+}
+
+export type PosSessionCreateNestedOneWithoutCashMovementsInput = {
+  create?: Prisma.XOR<Prisma.PosSessionCreateWithoutCashMovementsInput, Prisma.PosSessionUncheckedCreateWithoutCashMovementsInput>
+  connectOrCreate?: Prisma.PosSessionCreateOrConnectWithoutCashMovementsInput
+  connect?: Prisma.PosSessionWhereUniqueInput
+}
+
+export type PosSessionUpdateOneRequiredWithoutCashMovementsNestedInput = {
+  create?: Prisma.XOR<Prisma.PosSessionCreateWithoutCashMovementsInput, Prisma.PosSessionUncheckedCreateWithoutCashMovementsInput>
+  connectOrCreate?: Prisma.PosSessionCreateOrConnectWithoutCashMovementsInput
+  upsert?: Prisma.PosSessionUpsertWithoutCashMovementsInput
+  connect?: Prisma.PosSessionWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.PosSessionUpdateToOneWithWhereWithoutCashMovementsInput, Prisma.PosSessionUpdateWithoutCashMovementsInput>, Prisma.PosSessionUncheckedUpdateWithoutCashMovementsInput>
+}
+
 export type PosSessionCreateWithoutWarehouseInput = {
   status?: $Enums.PosSessionStatus
   openingCash: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -897,6 +972,9 @@ export type PosSessionCreateWithoutWarehouseInput = {
   register: Prisma.PosRegisterCreateNestedOneWithoutSessionsInput
   openedBy: Prisma.UserCreateNestedOneWithoutOpenedPosSessionsInput
   closedBy?: Prisma.UserCreateNestedOneWithoutClosedPosSessionsInput
+  orders?: Prisma.OrderCreateNestedManyWithoutPosSessionInput
+  payments?: Prisma.PosPaymentCreateNestedManyWithoutPosSessionInput
+  cashMovements?: Prisma.PosCashMovementCreateNestedManyWithoutPosSessionInput
 }
 
 export type PosSessionUncheckedCreateWithoutWarehouseInput = {
@@ -915,6 +993,9 @@ export type PosSessionUncheckedCreateWithoutWarehouseInput = {
   countedCash?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutPosSessionInput
+  payments?: Prisma.PosPaymentUncheckedCreateNestedManyWithoutPosSessionInput
+  cashMovements?: Prisma.PosCashMovementUncheckedCreateNestedManyWithoutPosSessionInput
 }
 
 export type PosSessionCreateOrConnectWithoutWarehouseInput = {
@@ -965,6 +1046,104 @@ export type PosSessionScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"PosSession"> | Date | string
 }
 
+export type PosSessionCreateWithoutOrdersInput = {
+  status?: $Enums.PosSessionStatus
+  openingCash: runtime.Decimal | runtime.DecimalJsLike | number | string
+  openingNote?: string | null
+  closingNote?: string | null
+  openedAt?: Date | string
+  closedAt?: Date | string | null
+  expectedCash?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  countedCash?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  tenant: Prisma.TenantCreateNestedOneWithoutPosSessionsInput
+  register: Prisma.PosRegisterCreateNestedOneWithoutSessionsInput
+  warehouse: Prisma.WarehouseCreateNestedOneWithoutPosSessionsInput
+  openedBy: Prisma.UserCreateNestedOneWithoutOpenedPosSessionsInput
+  closedBy?: Prisma.UserCreateNestedOneWithoutClosedPosSessionsInput
+  payments?: Prisma.PosPaymentCreateNestedManyWithoutPosSessionInput
+  cashMovements?: Prisma.PosCashMovementCreateNestedManyWithoutPosSessionInput
+}
+
+export type PosSessionUncheckedCreateWithoutOrdersInput = {
+  id?: number
+  tenantId: number
+  registerId: number
+  warehouseId: number
+  openedById: number
+  closedById?: number | null
+  status?: $Enums.PosSessionStatus
+  openingCash: runtime.Decimal | runtime.DecimalJsLike | number | string
+  openingNote?: string | null
+  closingNote?: string | null
+  openedAt?: Date | string
+  closedAt?: Date | string | null
+  expectedCash?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  countedCash?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  payments?: Prisma.PosPaymentUncheckedCreateNestedManyWithoutPosSessionInput
+  cashMovements?: Prisma.PosCashMovementUncheckedCreateNestedManyWithoutPosSessionInput
+}
+
+export type PosSessionCreateOrConnectWithoutOrdersInput = {
+  where: Prisma.PosSessionWhereUniqueInput
+  create: Prisma.XOR<Prisma.PosSessionCreateWithoutOrdersInput, Prisma.PosSessionUncheckedCreateWithoutOrdersInput>
+}
+
+export type PosSessionUpsertWithoutOrdersInput = {
+  update: Prisma.XOR<Prisma.PosSessionUpdateWithoutOrdersInput, Prisma.PosSessionUncheckedUpdateWithoutOrdersInput>
+  create: Prisma.XOR<Prisma.PosSessionCreateWithoutOrdersInput, Prisma.PosSessionUncheckedCreateWithoutOrdersInput>
+  where?: Prisma.PosSessionWhereInput
+}
+
+export type PosSessionUpdateToOneWithWhereWithoutOrdersInput = {
+  where?: Prisma.PosSessionWhereInput
+  data: Prisma.XOR<Prisma.PosSessionUpdateWithoutOrdersInput, Prisma.PosSessionUncheckedUpdateWithoutOrdersInput>
+}
+
+export type PosSessionUpdateWithoutOrdersInput = {
+  status?: Prisma.EnumPosSessionStatusFieldUpdateOperationsInput | $Enums.PosSessionStatus
+  openingCash?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  openingNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  closingNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  expectedCash?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  countedCash?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutPosSessionsNestedInput
+  register?: Prisma.PosRegisterUpdateOneRequiredWithoutSessionsNestedInput
+  warehouse?: Prisma.WarehouseUpdateOneRequiredWithoutPosSessionsNestedInput
+  openedBy?: Prisma.UserUpdateOneRequiredWithoutOpenedPosSessionsNestedInput
+  closedBy?: Prisma.UserUpdateOneWithoutClosedPosSessionsNestedInput
+  payments?: Prisma.PosPaymentUpdateManyWithoutPosSessionNestedInput
+  cashMovements?: Prisma.PosCashMovementUpdateManyWithoutPosSessionNestedInput
+}
+
+export type PosSessionUncheckedUpdateWithoutOrdersInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  registerId?: Prisma.IntFieldUpdateOperationsInput | number
+  warehouseId?: Prisma.IntFieldUpdateOperationsInput | number
+  openedById?: Prisma.IntFieldUpdateOperationsInput | number
+  closedById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  status?: Prisma.EnumPosSessionStatusFieldUpdateOperationsInput | $Enums.PosSessionStatus
+  openingCash?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  openingNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  closingNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  expectedCash?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  countedCash?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  payments?: Prisma.PosPaymentUncheckedUpdateManyWithoutPosSessionNestedInput
+  cashMovements?: Prisma.PosCashMovementUncheckedUpdateManyWithoutPosSessionNestedInput
+}
+
 export type PosSessionCreateWithoutOpenedByInput = {
   status?: $Enums.PosSessionStatus
   openingCash: runtime.Decimal | runtime.DecimalJsLike | number | string
@@ -980,6 +1159,9 @@ export type PosSessionCreateWithoutOpenedByInput = {
   register: Prisma.PosRegisterCreateNestedOneWithoutSessionsInput
   warehouse: Prisma.WarehouseCreateNestedOneWithoutPosSessionsInput
   closedBy?: Prisma.UserCreateNestedOneWithoutClosedPosSessionsInput
+  orders?: Prisma.OrderCreateNestedManyWithoutPosSessionInput
+  payments?: Prisma.PosPaymentCreateNestedManyWithoutPosSessionInput
+  cashMovements?: Prisma.PosCashMovementCreateNestedManyWithoutPosSessionInput
 }
 
 export type PosSessionUncheckedCreateWithoutOpenedByInput = {
@@ -998,6 +1180,9 @@ export type PosSessionUncheckedCreateWithoutOpenedByInput = {
   countedCash?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutPosSessionInput
+  payments?: Prisma.PosPaymentUncheckedCreateNestedManyWithoutPosSessionInput
+  cashMovements?: Prisma.PosCashMovementUncheckedCreateNestedManyWithoutPosSessionInput
 }
 
 export type PosSessionCreateOrConnectWithoutOpenedByInput = {
@@ -1025,6 +1210,9 @@ export type PosSessionCreateWithoutClosedByInput = {
   register: Prisma.PosRegisterCreateNestedOneWithoutSessionsInput
   warehouse: Prisma.WarehouseCreateNestedOneWithoutPosSessionsInput
   openedBy: Prisma.UserCreateNestedOneWithoutOpenedPosSessionsInput
+  orders?: Prisma.OrderCreateNestedManyWithoutPosSessionInput
+  payments?: Prisma.PosPaymentCreateNestedManyWithoutPosSessionInput
+  cashMovements?: Prisma.PosCashMovementCreateNestedManyWithoutPosSessionInput
 }
 
 export type PosSessionUncheckedCreateWithoutClosedByInput = {
@@ -1043,6 +1231,9 @@ export type PosSessionUncheckedCreateWithoutClosedByInput = {
   countedCash?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutPosSessionInput
+  payments?: Prisma.PosPaymentUncheckedCreateNestedManyWithoutPosSessionInput
+  cashMovements?: Prisma.PosCashMovementUncheckedCreateNestedManyWithoutPosSessionInput
 }
 
 export type PosSessionCreateOrConnectWithoutClosedByInput = {
@@ -1102,6 +1293,9 @@ export type PosSessionCreateWithoutTenantInput = {
   warehouse: Prisma.WarehouseCreateNestedOneWithoutPosSessionsInput
   openedBy: Prisma.UserCreateNestedOneWithoutOpenedPosSessionsInput
   closedBy?: Prisma.UserCreateNestedOneWithoutClosedPosSessionsInput
+  orders?: Prisma.OrderCreateNestedManyWithoutPosSessionInput
+  payments?: Prisma.PosPaymentCreateNestedManyWithoutPosSessionInput
+  cashMovements?: Prisma.PosCashMovementCreateNestedManyWithoutPosSessionInput
 }
 
 export type PosSessionUncheckedCreateWithoutTenantInput = {
@@ -1120,6 +1314,9 @@ export type PosSessionUncheckedCreateWithoutTenantInput = {
   countedCash?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutPosSessionInput
+  payments?: Prisma.PosPaymentUncheckedCreateNestedManyWithoutPosSessionInput
+  cashMovements?: Prisma.PosCashMovementUncheckedCreateNestedManyWithoutPosSessionInput
 }
 
 export type PosSessionCreateOrConnectWithoutTenantInput = {
@@ -1163,6 +1360,9 @@ export type PosSessionCreateWithoutRegisterInput = {
   warehouse: Prisma.WarehouseCreateNestedOneWithoutPosSessionsInput
   openedBy: Prisma.UserCreateNestedOneWithoutOpenedPosSessionsInput
   closedBy?: Prisma.UserCreateNestedOneWithoutClosedPosSessionsInput
+  orders?: Prisma.OrderCreateNestedManyWithoutPosSessionInput
+  payments?: Prisma.PosPaymentCreateNestedManyWithoutPosSessionInput
+  cashMovements?: Prisma.PosCashMovementCreateNestedManyWithoutPosSessionInput
 }
 
 export type PosSessionUncheckedCreateWithoutRegisterInput = {
@@ -1181,6 +1381,9 @@ export type PosSessionUncheckedCreateWithoutRegisterInput = {
   countedCash?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Date | string
   updatedAt?: Date | string
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutPosSessionInput
+  payments?: Prisma.PosPaymentUncheckedCreateNestedManyWithoutPosSessionInput
+  cashMovements?: Prisma.PosCashMovementUncheckedCreateNestedManyWithoutPosSessionInput
 }
 
 export type PosSessionCreateOrConnectWithoutRegisterInput = {
@@ -1207,6 +1410,202 @@ export type PosSessionUpdateWithWhereUniqueWithoutRegisterInput = {
 export type PosSessionUpdateManyWithWhereWithoutRegisterInput = {
   where: Prisma.PosSessionScalarWhereInput
   data: Prisma.XOR<Prisma.PosSessionUpdateManyMutationInput, Prisma.PosSessionUncheckedUpdateManyWithoutRegisterInput>
+}
+
+export type PosSessionCreateWithoutPaymentsInput = {
+  status?: $Enums.PosSessionStatus
+  openingCash: runtime.Decimal | runtime.DecimalJsLike | number | string
+  openingNote?: string | null
+  closingNote?: string | null
+  openedAt?: Date | string
+  closedAt?: Date | string | null
+  expectedCash?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  countedCash?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  tenant: Prisma.TenantCreateNestedOneWithoutPosSessionsInput
+  register: Prisma.PosRegisterCreateNestedOneWithoutSessionsInput
+  warehouse: Prisma.WarehouseCreateNestedOneWithoutPosSessionsInput
+  openedBy: Prisma.UserCreateNestedOneWithoutOpenedPosSessionsInput
+  closedBy?: Prisma.UserCreateNestedOneWithoutClosedPosSessionsInput
+  orders?: Prisma.OrderCreateNestedManyWithoutPosSessionInput
+  cashMovements?: Prisma.PosCashMovementCreateNestedManyWithoutPosSessionInput
+}
+
+export type PosSessionUncheckedCreateWithoutPaymentsInput = {
+  id?: number
+  tenantId: number
+  registerId: number
+  warehouseId: number
+  openedById: number
+  closedById?: number | null
+  status?: $Enums.PosSessionStatus
+  openingCash: runtime.Decimal | runtime.DecimalJsLike | number | string
+  openingNote?: string | null
+  closingNote?: string | null
+  openedAt?: Date | string
+  closedAt?: Date | string | null
+  expectedCash?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  countedCash?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutPosSessionInput
+  cashMovements?: Prisma.PosCashMovementUncheckedCreateNestedManyWithoutPosSessionInput
+}
+
+export type PosSessionCreateOrConnectWithoutPaymentsInput = {
+  where: Prisma.PosSessionWhereUniqueInput
+  create: Prisma.XOR<Prisma.PosSessionCreateWithoutPaymentsInput, Prisma.PosSessionUncheckedCreateWithoutPaymentsInput>
+}
+
+export type PosSessionUpsertWithoutPaymentsInput = {
+  update: Prisma.XOR<Prisma.PosSessionUpdateWithoutPaymentsInput, Prisma.PosSessionUncheckedUpdateWithoutPaymentsInput>
+  create: Prisma.XOR<Prisma.PosSessionCreateWithoutPaymentsInput, Prisma.PosSessionUncheckedCreateWithoutPaymentsInput>
+  where?: Prisma.PosSessionWhereInput
+}
+
+export type PosSessionUpdateToOneWithWhereWithoutPaymentsInput = {
+  where?: Prisma.PosSessionWhereInput
+  data: Prisma.XOR<Prisma.PosSessionUpdateWithoutPaymentsInput, Prisma.PosSessionUncheckedUpdateWithoutPaymentsInput>
+}
+
+export type PosSessionUpdateWithoutPaymentsInput = {
+  status?: Prisma.EnumPosSessionStatusFieldUpdateOperationsInput | $Enums.PosSessionStatus
+  openingCash?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  openingNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  closingNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  expectedCash?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  countedCash?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutPosSessionsNestedInput
+  register?: Prisma.PosRegisterUpdateOneRequiredWithoutSessionsNestedInput
+  warehouse?: Prisma.WarehouseUpdateOneRequiredWithoutPosSessionsNestedInput
+  openedBy?: Prisma.UserUpdateOneRequiredWithoutOpenedPosSessionsNestedInput
+  closedBy?: Prisma.UserUpdateOneWithoutClosedPosSessionsNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutPosSessionNestedInput
+  cashMovements?: Prisma.PosCashMovementUpdateManyWithoutPosSessionNestedInput
+}
+
+export type PosSessionUncheckedUpdateWithoutPaymentsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  registerId?: Prisma.IntFieldUpdateOperationsInput | number
+  warehouseId?: Prisma.IntFieldUpdateOperationsInput | number
+  openedById?: Prisma.IntFieldUpdateOperationsInput | number
+  closedById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  status?: Prisma.EnumPosSessionStatusFieldUpdateOperationsInput | $Enums.PosSessionStatus
+  openingCash?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  openingNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  closingNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  expectedCash?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  countedCash?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutPosSessionNestedInput
+  cashMovements?: Prisma.PosCashMovementUncheckedUpdateManyWithoutPosSessionNestedInput
+}
+
+export type PosSessionCreateWithoutCashMovementsInput = {
+  status?: $Enums.PosSessionStatus
+  openingCash: runtime.Decimal | runtime.DecimalJsLike | number | string
+  openingNote?: string | null
+  closingNote?: string | null
+  openedAt?: Date | string
+  closedAt?: Date | string | null
+  expectedCash?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  countedCash?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  tenant: Prisma.TenantCreateNestedOneWithoutPosSessionsInput
+  register: Prisma.PosRegisterCreateNestedOneWithoutSessionsInput
+  warehouse: Prisma.WarehouseCreateNestedOneWithoutPosSessionsInput
+  openedBy: Prisma.UserCreateNestedOneWithoutOpenedPosSessionsInput
+  closedBy?: Prisma.UserCreateNestedOneWithoutClosedPosSessionsInput
+  orders?: Prisma.OrderCreateNestedManyWithoutPosSessionInput
+  payments?: Prisma.PosPaymentCreateNestedManyWithoutPosSessionInput
+}
+
+export type PosSessionUncheckedCreateWithoutCashMovementsInput = {
+  id?: number
+  tenantId: number
+  registerId: number
+  warehouseId: number
+  openedById: number
+  closedById?: number | null
+  status?: $Enums.PosSessionStatus
+  openingCash: runtime.Decimal | runtime.DecimalJsLike | number | string
+  openingNote?: string | null
+  closingNote?: string | null
+  openedAt?: Date | string
+  closedAt?: Date | string | null
+  expectedCash?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  countedCash?: runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutPosSessionInput
+  payments?: Prisma.PosPaymentUncheckedCreateNestedManyWithoutPosSessionInput
+}
+
+export type PosSessionCreateOrConnectWithoutCashMovementsInput = {
+  where: Prisma.PosSessionWhereUniqueInput
+  create: Prisma.XOR<Prisma.PosSessionCreateWithoutCashMovementsInput, Prisma.PosSessionUncheckedCreateWithoutCashMovementsInput>
+}
+
+export type PosSessionUpsertWithoutCashMovementsInput = {
+  update: Prisma.XOR<Prisma.PosSessionUpdateWithoutCashMovementsInput, Prisma.PosSessionUncheckedUpdateWithoutCashMovementsInput>
+  create: Prisma.XOR<Prisma.PosSessionCreateWithoutCashMovementsInput, Prisma.PosSessionUncheckedCreateWithoutCashMovementsInput>
+  where?: Prisma.PosSessionWhereInput
+}
+
+export type PosSessionUpdateToOneWithWhereWithoutCashMovementsInput = {
+  where?: Prisma.PosSessionWhereInput
+  data: Prisma.XOR<Prisma.PosSessionUpdateWithoutCashMovementsInput, Prisma.PosSessionUncheckedUpdateWithoutCashMovementsInput>
+}
+
+export type PosSessionUpdateWithoutCashMovementsInput = {
+  status?: Prisma.EnumPosSessionStatusFieldUpdateOperationsInput | $Enums.PosSessionStatus
+  openingCash?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  openingNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  closingNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  expectedCash?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  countedCash?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutPosSessionsNestedInput
+  register?: Prisma.PosRegisterUpdateOneRequiredWithoutSessionsNestedInput
+  warehouse?: Prisma.WarehouseUpdateOneRequiredWithoutPosSessionsNestedInput
+  openedBy?: Prisma.UserUpdateOneRequiredWithoutOpenedPosSessionsNestedInput
+  closedBy?: Prisma.UserUpdateOneWithoutClosedPosSessionsNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutPosSessionNestedInput
+  payments?: Prisma.PosPaymentUpdateManyWithoutPosSessionNestedInput
+}
+
+export type PosSessionUncheckedUpdateWithoutCashMovementsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  registerId?: Prisma.IntFieldUpdateOperationsInput | number
+  warehouseId?: Prisma.IntFieldUpdateOperationsInput | number
+  openedById?: Prisma.IntFieldUpdateOperationsInput | number
+  closedById?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  status?: Prisma.EnumPosSessionStatusFieldUpdateOperationsInput | $Enums.PosSessionStatus
+  openingCash?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  openingNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  closingNote?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  openedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  closedAt?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  expectedCash?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  countedCash?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutPosSessionNestedInput
+  payments?: Prisma.PosPaymentUncheckedUpdateManyWithoutPosSessionNestedInput
 }
 
 export type PosSessionCreateManyWarehouseInput = {
@@ -1242,6 +1641,9 @@ export type PosSessionUpdateWithoutWarehouseInput = {
   register?: Prisma.PosRegisterUpdateOneRequiredWithoutSessionsNestedInput
   openedBy?: Prisma.UserUpdateOneRequiredWithoutOpenedPosSessionsNestedInput
   closedBy?: Prisma.UserUpdateOneWithoutClosedPosSessionsNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutPosSessionNestedInput
+  payments?: Prisma.PosPaymentUpdateManyWithoutPosSessionNestedInput
+  cashMovements?: Prisma.PosCashMovementUpdateManyWithoutPosSessionNestedInput
 }
 
 export type PosSessionUncheckedUpdateWithoutWarehouseInput = {
@@ -1260,6 +1662,9 @@ export type PosSessionUncheckedUpdateWithoutWarehouseInput = {
   countedCash?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutPosSessionNestedInput
+  payments?: Prisma.PosPaymentUncheckedUpdateManyWithoutPosSessionNestedInput
+  cashMovements?: Prisma.PosCashMovementUncheckedUpdateManyWithoutPosSessionNestedInput
 }
 
 export type PosSessionUncheckedUpdateManyWithoutWarehouseInput = {
@@ -1331,6 +1736,9 @@ export type PosSessionUpdateWithoutOpenedByInput = {
   register?: Prisma.PosRegisterUpdateOneRequiredWithoutSessionsNestedInput
   warehouse?: Prisma.WarehouseUpdateOneRequiredWithoutPosSessionsNestedInput
   closedBy?: Prisma.UserUpdateOneWithoutClosedPosSessionsNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutPosSessionNestedInput
+  payments?: Prisma.PosPaymentUpdateManyWithoutPosSessionNestedInput
+  cashMovements?: Prisma.PosCashMovementUpdateManyWithoutPosSessionNestedInput
 }
 
 export type PosSessionUncheckedUpdateWithoutOpenedByInput = {
@@ -1349,6 +1757,9 @@ export type PosSessionUncheckedUpdateWithoutOpenedByInput = {
   countedCash?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutPosSessionNestedInput
+  payments?: Prisma.PosPaymentUncheckedUpdateManyWithoutPosSessionNestedInput
+  cashMovements?: Prisma.PosCashMovementUncheckedUpdateManyWithoutPosSessionNestedInput
 }
 
 export type PosSessionUncheckedUpdateManyWithoutOpenedByInput = {
@@ -1384,6 +1795,9 @@ export type PosSessionUpdateWithoutClosedByInput = {
   register?: Prisma.PosRegisterUpdateOneRequiredWithoutSessionsNestedInput
   warehouse?: Prisma.WarehouseUpdateOneRequiredWithoutPosSessionsNestedInput
   openedBy?: Prisma.UserUpdateOneRequiredWithoutOpenedPosSessionsNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutPosSessionNestedInput
+  payments?: Prisma.PosPaymentUpdateManyWithoutPosSessionNestedInput
+  cashMovements?: Prisma.PosCashMovementUpdateManyWithoutPosSessionNestedInput
 }
 
 export type PosSessionUncheckedUpdateWithoutClosedByInput = {
@@ -1402,6 +1816,9 @@ export type PosSessionUncheckedUpdateWithoutClosedByInput = {
   countedCash?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutPosSessionNestedInput
+  payments?: Prisma.PosPaymentUncheckedUpdateManyWithoutPosSessionNestedInput
+  cashMovements?: Prisma.PosCashMovementUncheckedUpdateManyWithoutPosSessionNestedInput
 }
 
 export type PosSessionUncheckedUpdateManyWithoutClosedByInput = {
@@ -1455,6 +1872,9 @@ export type PosSessionUpdateWithoutTenantInput = {
   warehouse?: Prisma.WarehouseUpdateOneRequiredWithoutPosSessionsNestedInput
   openedBy?: Prisma.UserUpdateOneRequiredWithoutOpenedPosSessionsNestedInput
   closedBy?: Prisma.UserUpdateOneWithoutClosedPosSessionsNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutPosSessionNestedInput
+  payments?: Prisma.PosPaymentUpdateManyWithoutPosSessionNestedInput
+  cashMovements?: Prisma.PosCashMovementUpdateManyWithoutPosSessionNestedInput
 }
 
 export type PosSessionUncheckedUpdateWithoutTenantInput = {
@@ -1473,6 +1893,9 @@ export type PosSessionUncheckedUpdateWithoutTenantInput = {
   countedCash?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutPosSessionNestedInput
+  payments?: Prisma.PosPaymentUncheckedUpdateManyWithoutPosSessionNestedInput
+  cashMovements?: Prisma.PosCashMovementUncheckedUpdateManyWithoutPosSessionNestedInput
 }
 
 export type PosSessionUncheckedUpdateManyWithoutTenantInput = {
@@ -1526,6 +1949,9 @@ export type PosSessionUpdateWithoutRegisterInput = {
   warehouse?: Prisma.WarehouseUpdateOneRequiredWithoutPosSessionsNestedInput
   openedBy?: Prisma.UserUpdateOneRequiredWithoutOpenedPosSessionsNestedInput
   closedBy?: Prisma.UserUpdateOneWithoutClosedPosSessionsNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutPosSessionNestedInput
+  payments?: Prisma.PosPaymentUpdateManyWithoutPosSessionNestedInput
+  cashMovements?: Prisma.PosCashMovementUpdateManyWithoutPosSessionNestedInput
 }
 
 export type PosSessionUncheckedUpdateWithoutRegisterInput = {
@@ -1544,6 +1970,9 @@ export type PosSessionUncheckedUpdateWithoutRegisterInput = {
   countedCash?: Prisma.NullableDecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutPosSessionNestedInput
+  payments?: Prisma.PosPaymentUncheckedUpdateManyWithoutPosSessionNestedInput
+  cashMovements?: Prisma.PosCashMovementUncheckedUpdateManyWithoutPosSessionNestedInput
 }
 
 export type PosSessionUncheckedUpdateManyWithoutRegisterInput = {
@@ -1564,6 +1993,53 @@ export type PosSessionUncheckedUpdateManyWithoutRegisterInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
+
+/**
+ * Count Type PosSessionCountOutputType
+ */
+
+export type PosSessionCountOutputType = {
+  orders: number
+  payments: number
+  cashMovements: number
+}
+
+export type PosSessionCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  orders?: boolean | PosSessionCountOutputTypeCountOrdersArgs
+  payments?: boolean | PosSessionCountOutputTypeCountPaymentsArgs
+  cashMovements?: boolean | PosSessionCountOutputTypeCountCashMovementsArgs
+}
+
+/**
+ * PosSessionCountOutputType without action
+ */
+export type PosSessionCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PosSessionCountOutputType
+   */
+  select?: Prisma.PosSessionCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * PosSessionCountOutputType without action
+ */
+export type PosSessionCountOutputTypeCountOrdersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.OrderWhereInput
+}
+
+/**
+ * PosSessionCountOutputType without action
+ */
+export type PosSessionCountOutputTypeCountPaymentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PosPaymentWhereInput
+}
+
+/**
+ * PosSessionCountOutputType without action
+ */
+export type PosSessionCountOutputTypeCountCashMovementsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.PosCashMovementWhereInput
+}
 
 
 export type PosSessionSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1588,6 +2064,10 @@ export type PosSessionSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   warehouse?: boolean | Prisma.WarehouseDefaultArgs<ExtArgs>
   openedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   closedBy?: boolean | Prisma.PosSession$closedByArgs<ExtArgs>
+  orders?: boolean | Prisma.PosSession$ordersArgs<ExtArgs>
+  payments?: boolean | Prisma.PosSession$paymentsArgs<ExtArgs>
+  cashMovements?: boolean | Prisma.PosSession$cashMovementsArgs<ExtArgs>
+  _count?: boolean | Prisma.PosSessionCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["posSession"]>
 
 export type PosSessionSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1664,6 +2144,10 @@ export type PosSessionInclude<ExtArgs extends runtime.Types.Extensions.InternalA
   warehouse?: boolean | Prisma.WarehouseDefaultArgs<ExtArgs>
   openedBy?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   closedBy?: boolean | Prisma.PosSession$closedByArgs<ExtArgs>
+  orders?: boolean | Prisma.PosSession$ordersArgs<ExtArgs>
+  payments?: boolean | Prisma.PosSession$paymentsArgs<ExtArgs>
+  cashMovements?: boolean | Prisma.PosSession$cashMovementsArgs<ExtArgs>
+  _count?: boolean | Prisma.PosSessionCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type PosSessionIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tenant?: boolean | Prisma.TenantDefaultArgs<ExtArgs>
@@ -1688,6 +2172,9 @@ export type $PosSessionPayload<ExtArgs extends runtime.Types.Extensions.Internal
     warehouse: Prisma.$WarehousePayload<ExtArgs>
     openedBy: Prisma.$UserPayload<ExtArgs>
     closedBy: Prisma.$UserPayload<ExtArgs> | null
+    orders: Prisma.$OrderPayload<ExtArgs>[]
+    payments: Prisma.$PosPaymentPayload<ExtArgs>[]
+    cashMovements: Prisma.$PosCashMovementPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
@@ -2105,6 +2592,9 @@ export interface Prisma__PosSessionClient<T, Null = never, ExtArgs extends runti
   warehouse<T extends Prisma.WarehouseDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WarehouseDefaultArgs<ExtArgs>>): Prisma.Prisma__WarehouseClient<runtime.Types.Result.GetResult<Prisma.$WarehousePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   openedBy<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   closedBy<T extends Prisma.PosSession$closedByArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PosSession$closedByArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  orders<T extends Prisma.PosSession$ordersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PosSession$ordersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  payments<T extends Prisma.PosSession$paymentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PosSession$paymentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PosPaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  cashMovements<T extends Prisma.PosSession$cashMovementsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.PosSession$cashMovementsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PosCashMovementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2567,6 +3057,78 @@ export type PosSession$closedByArgs<ExtArgs extends runtime.Types.Extensions.Int
    */
   include?: Prisma.UserInclude<ExtArgs> | null
   where?: Prisma.UserWhereInput
+}
+
+/**
+ * PosSession.orders
+ */
+export type PosSession$ordersArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the Order
+   */
+  select?: Prisma.OrderSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the Order
+   */
+  omit?: Prisma.OrderOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.OrderInclude<ExtArgs> | null
+  where?: Prisma.OrderWhereInput
+  orderBy?: Prisma.OrderOrderByWithRelationInput | Prisma.OrderOrderByWithRelationInput[]
+  cursor?: Prisma.OrderWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.OrderScalarFieldEnum | Prisma.OrderScalarFieldEnum[]
+}
+
+/**
+ * PosSession.payments
+ */
+export type PosSession$paymentsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PosPayment
+   */
+  select?: Prisma.PosPaymentSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PosPayment
+   */
+  omit?: Prisma.PosPaymentOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PosPaymentInclude<ExtArgs> | null
+  where?: Prisma.PosPaymentWhereInput
+  orderBy?: Prisma.PosPaymentOrderByWithRelationInput | Prisma.PosPaymentOrderByWithRelationInput[]
+  cursor?: Prisma.PosPaymentWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PosPaymentScalarFieldEnum | Prisma.PosPaymentScalarFieldEnum[]
+}
+
+/**
+ * PosSession.cashMovements
+ */
+export type PosSession$cashMovementsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the PosCashMovement
+   */
+  select?: Prisma.PosCashMovementSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the PosCashMovement
+   */
+  omit?: Prisma.PosCashMovementOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.PosCashMovementInclude<ExtArgs> | null
+  where?: Prisma.PosCashMovementWhereInput
+  orderBy?: Prisma.PosCashMovementOrderByWithRelationInput | Prisma.PosCashMovementOrderByWithRelationInput[]
+  cursor?: Prisma.PosCashMovementWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.PosCashMovementScalarFieldEnum | Prisma.PosCashMovementScalarFieldEnum[]
 }
 
 /**

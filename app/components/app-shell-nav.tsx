@@ -7,6 +7,7 @@ type NavItem = {
   href: string;
   label: string;
   icon: React.ReactNode;
+  target?: "_blank";
 };
 
 type AppShellNavProps = {
@@ -44,6 +45,8 @@ export function AppShellNav({
           <Link
             key={item.href}
             href={item.href}
+            target={item.target}
+            rel={item.target === "_blank" ? "noopener noreferrer" : undefined}
             onClick={(event) => {
               const details = event.currentTarget.closest("details");
               if (details) {

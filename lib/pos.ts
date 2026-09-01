@@ -580,7 +580,26 @@ export async function closePosSession(input: {
       throw new Error("Nuk ke leje ta mbyllesh kete session.");
     }
 
-    const expectedCash = Number(session.openingCash);
+    const [cashPayments, cashMovements] = await Promise.all([
+      tx.posPayment.aggregate({
+        where: {
+          tenantId: input.tenantId,
+          posSessionId: session.id,
+          method: "CASH",
+        },
+        _sum: {
+          amount: true,
+        },
+      }),
+      tx.posCashMovement.groupBy({
+        by: ["type"],
+        where: { tenantId: input.tenantId, posSessionId: session.id },
+        _sum: { amount: true },
+      }),
+    ]);
+    const cashIn = Number(cashMovements.find((movement) => movement.type === "CASH_IN")?._sum.amount ?? 0);
+    const cashOut = Number(cashMovements.find((movement) => movement.type === "CASH_OUT")?._sum.amount ?? 0);
+    const expectedCash = Number(session.openingCash) + Number(cashPayments._sum.amount ?? 0) + cashIn - cashOut;
     const countedCash = Number(input.countedCash.toFixed(2));
     const difference = Number((countedCash - expectedCash).toFixed(2));
 
@@ -615,6 +634,68 @@ export async function closePosSession(input: {
     });
 
     return updated;
+  });
+}
+
+export async function createPosCashMovement(input: {
+  tenantId: number;
+  sessionId: number;
+  userId: number;
+  userRole: UserRole;
+  type: "CASH_IN" | "CASH_OUT";
+  amount: number;
+  note?: string | null;
+}) {
+  if (!Number.isFinite(input.amount) || input.amount <= 0) {
+    throw new Error("Shuma duhet te jete me e madhe se 0.");
+  }
+
+  const note = input.note?.trim() || null;
+  if (note && note.length > 300) {
+    throw new Error("Shenimi mund te kete deri ne 300 karaktere.");
+  }
+
+  return prisma.$transaction(async (tx) => {
+    const session = await tx.posSession.findFirst({
+      where: { id: input.sessionId, tenantId: input.tenantId },
+      select: {
+        id: true,
+        status: true,
+        openedById: true,
+        warehouseId: true,
+        register: { select: { name: true } },
+      },
+    });
+
+    if (!session) throw new Error("POS session nuk u gjet.");
+    if (session.status !== "OPEN") throw new Error("Nuk mund te shtosh levizje ne nje session te mbyllur.");
+    if (input.userRole !== "SUPER_ADMIN" && session.openedById !== input.userId) {
+      throw new Error("Nuk ke leje per levizje cash ne kete session.");
+    }
+
+    const movement = await tx.posCashMovement.create({
+      data: {
+        tenantId: input.tenantId,
+        posSessionId: session.id,
+        createdById: input.userId,
+        type: input.type,
+        amount: new Prisma.Decimal(input.amount.toFixed(2)),
+        note,
+      },
+    });
+
+    await writeAuditLog(tx, {
+      tenantId: input.tenantId,
+      userId: input.userId,
+      action: input.type,
+      entityType: "POS_CASH_MOVEMENT",
+      entityId: movement.id,
+      entityLabel: session.register.name,
+      warehouseId: session.warehouseId,
+      metadata: { posSessionId: session.id, amount: Number(movement.amount), note },
+    });
+
+    return movement;
   });
 }
 

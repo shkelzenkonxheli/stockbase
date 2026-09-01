@@ -165,8 +165,9 @@ model Order {
     tenant       Tenant?     @relation(fields: [tenantId], references: [id])
     variant      Variant?    @relation(fields: [variantId], references: [id])
     warehouse    Warehouse?  @relation(fields: [warehouseId], references: [id], onDelete: SetNull)
-    posSession   PosSession? @relation(fields: [posSessionId], references: [id], onDelete: SetNull)
-    items        OrderItem[]
+  posSession   PosSession? @relation(fields: [posSessionId], references: [id], onDelete: SetNull)
+  items        OrderItem[]
+  posPayments  PosPayment[]
 
   @@index([tenantId])
   @@index([createdAt])
@@ -212,6 +213,7 @@ model User {
   createdPurchaseOrders PurchaseOrder[] @relation("PurchaseOrderCreatedBy")
   openedPosSessions PosSession[] @relation("PosSessionOpenedBy")
   closedPosSessions PosSession[] @relation("PosSessionClosedBy")
+  posCashMovements PosCashMovement[] @relation("PosCashMovementCreatedBy")
 }
 
 model Session {
@@ -253,6 +255,8 @@ model Tenant {
     inventoryCounts InventoryCountSession[]
     posRegisters   PosRegister[]
     posSessions    PosSession[]
+    posPayments    PosPayment[]
+    posCashMovements PosCashMovement[]
 
     @@index([status])
     @@index([catalogType])
@@ -301,6 +305,8 @@ model PosSession {
   openedBy       User             @relation("PosSessionOpenedBy", fields: [openedById], references: [id], onDelete: Restrict)
   closedBy       User?            @relation("PosSessionClosedBy", fields: [closedById], references: [id], onDelete: SetNull)
   orders         Order[]
+  payments       PosPayment[]
+  cashMovements  PosCashMovement[]
 
   @@index([tenantId])
   @@index([registerId])
@@ -310,6 +316,45 @@ model PosSession {
   @@index([status])
   @@index([openedAt])
   @@index([closedAt])
+}
+
+model PosPayment {
+  id           Int              @id @default(autoincrement())
+  tenantId     Int
+  posSessionId Int
+  orderId      Int
+  method       PosPaymentMethod
+  amount       Decimal          @db.Decimal(10, 2)
+  createdAt    DateTime         @default(now())
+  tenant       Tenant           @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  posSession   PosSession       @relation(fields: [posSessionId], references: [id], onDelete: Cascade)
+  order        Order            @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([posSessionId])
+  @@index([orderId])
+  @@index([method])
+  @@index([createdAt])
+}
+
+model PosCashMovement {
+  id           Int                 @id @default(autoincrement())
+  tenantId     Int
+  posSessionId Int
+  createdById  Int
+  type         PosCashMovementType
+  amount       Decimal             @db.Decimal(10, 2)
+  note         String?
+  createdAt    DateTime            @default(now())
+  tenant       Tenant              @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  posSession   PosSession          @relation(fields: [posSessionId], references: [id], onDelete: Cascade)
+  createdBy    User                @relation("PosCashMovementCreatedBy", fields: [createdById], references: [id], onDelete: Restrict)
+
+  @@index([tenantId])
+  @@index([posSessionId])
+  @@index([createdById])
+  @@index([type])
+  @@index([createdAt])
 }
 
 model AuditLog {
@@ -549,6 +594,7 @@ enum InventoryCountStatus {
 
 enum StockMovementReason {
   INCOMING_STOCK
+  POS_SALE
   CUSTOMER_RETURN
   SUPPLIER_RETURN
   TRANSFER
@@ -568,4 +614,14 @@ enum PurchaseOrderStatus {
 enum PosSessionStatus {
   OPEN
   CLOSED
+}
+
+enum PosPaymentMethod {
+  CASH
+  CARD
+}
+
+enum PosCashMovementType {
+  CASH_IN
+  CASH_OUT
 }

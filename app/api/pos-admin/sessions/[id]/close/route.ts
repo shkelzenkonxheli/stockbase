@@ -40,7 +40,7 @@ export async function POST(request: Request, context: RouteProps) {
     return NextResponse.json({
       ok: true,
       sessionId: session.id,
-      redirectTo: "/pos/open",
+      redirectTo: `/pos/session/${session.id}`,
     });
   } catch (error) {
     return NextResponse.json(

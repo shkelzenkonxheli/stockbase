@@ -64,6 +64,8 @@ export const ModelName = {
   Tenant: 'Tenant',
   PosRegister: 'PosRegister',
   PosSession: 'PosSession',
+  PosPayment: 'PosPayment',
+  PosCashMovement: 'PosCashMovement',
   AuditLog: 'AuditLog',
   InventoryCountSession: 'InventoryCountSession',
   InventoryCountLine: 'InventoryCountLine',
@@ -190,6 +192,7 @@ export const OrderScalarFieldEnum = {
   quantity: 'quantity',
   variantId: 'variantId',
   warehouseId: 'warehouseId',
+  posSessionId: 'posSessionId',
   createdAt: 'createdAt',
   customerName: 'customerName',
   instagram: 'instagram',
@@ -290,6 +293,33 @@ export const PosSessionScalarFieldEnum = {
 } as const
 
 export type PosSessionScalarFieldEnum = (typeof PosSessionScalarFieldEnum)[keyof typeof PosSessionScalarFieldEnum]
+
+
+export const PosPaymentScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  posSessionId: 'posSessionId',
+  orderId: 'orderId',
+  method: 'method',
+  amount: 'amount',
+  createdAt: 'createdAt'
+} as const
+
+export type PosPaymentScalarFieldEnum = (typeof PosPaymentScalarFieldEnum)[keyof typeof PosPaymentScalarFieldEnum]
+
+
+export const PosCashMovementScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  posSessionId: 'posSessionId',
+  createdById: 'createdById',
+  type: 'type',
+  amount: 'amount',
+  note: 'note',
+  createdAt: 'createdAt'
+} as const
+
+export type PosCashMovementScalarFieldEnum = (typeof PosCashMovementScalarFieldEnum)[keyof typeof PosCashMovementScalarFieldEnum]
 
 
 export const AuditLogScalarFieldEnum = {

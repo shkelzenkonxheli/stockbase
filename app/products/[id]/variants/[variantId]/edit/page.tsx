@@ -165,6 +165,8 @@ async function updateVariant(formData: FormData) {
   const reorderLevelValue = formData.get("reorderLevel")?.toString().trim() ?? "";
   const reorderLevel = reorderLevelValue === "" ? null : Number(reorderLevelValue);
   const price = formData.get("price")?.toString().trim();
+  const costPriceValue = formData.get("costPrice")?.toString().trim() ?? "";
+  const costPrice = costPriceValue === "" ? 0 : Number(costPriceValue);
   const locationCodeValue = formData.get("locationCode")?.toString().trim() ?? "";
   const locationCode = locationCodeValue ? locationCodeValue : null;
 
@@ -200,7 +202,9 @@ async function updateVariant(formData: FormData) {
     Number.isNaN(stock) ||
     stock < 0 ||
     (reorderLevel !== null && (!Number.isInteger(reorderLevel) || reorderLevel < 0)) ||
-    !price
+    !price ||
+    !Number.isFinite(costPrice) ||
+    costPrice < 0
   ) {
     return;
   }
@@ -337,6 +341,7 @@ async function updateVariant(formData: FormData) {
             },
             reorderLevel,
             price,
+            costPrice,
           },
         });
       } else {
@@ -354,10 +359,25 @@ async function updateVariant(formData: FormData) {
             stock,
             reorderLevel,
             price,
+            costPrice,
             locationCode,
           },
         });
       }
+
+      // A colorway shares one retail price across all of its sizes.
+      await tx.variant.updateMany({
+        where: {
+          productId,
+          color: {
+            equals: color,
+            mode: "insensitive",
+          },
+        },
+        data: {
+          price,
+        },
+      });
     });
   } catch (error) {
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
@@ -646,7 +666,7 @@ export default async function EditVariantPage({ params, searchParams }: EditVari
             ) : null}
           </div>
 
-          <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-5 sm:grid-cols-3">
             <div className="space-y-2">
               <label htmlFor="stock" className="block text-sm font-medium text-slate-800">
                 Stoku
@@ -663,7 +683,7 @@ export default async function EditVariantPage({ params, searchParams }: EditVari
 
             <div className="space-y-2">
               <label htmlFor="price" className="block text-sm font-medium text-slate-800">
-                Cmimi
+                Cmimi i shitjes
               </label>
               <input
                 id="price"
@@ -675,7 +695,26 @@ export default async function EditVariantPage({ params, searchParams }: EditVari
                 className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-200"
               />
             </div>
+
+            <div className="space-y-2">
+              <label htmlFor="costPrice" className="block text-sm font-medium text-slate-800">
+                Kosto blerese
+              </label>
+              <input
+                id="costPrice"
+                name="costPrice"
+                type="number"
+                min="0"
+                step="0.01"
+                defaultValue={Number(variant.costPrice).toFixed(2)}
+                className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-200"
+              />
+              <p className="text-xs text-slate-500">Per furnitor dhe fitim; nuk shfaqet ne POS.</p>
+            </div>
           </div>
+          <p className="-mt-2 text-xs text-emerald-700">
+            Cmimi i shitjes ruhet automatikisht per te gjithe numrat e kesaj ngjyre.
+          </p>
 
           <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
             <div className="space-y-2">
