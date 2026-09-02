@@ -3,7 +3,7 @@ import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { FlashMessage } from "@/app/components/flash-message";
-import { requireRole } from "@/lib/auth";
+import { requirePurchasesAccess } from "@/lib/purchases-access";
 import { calculatePurchaseOrderMetrics } from "@/lib/purchase-order-metrics";
 import { prisma } from "@/lib/prisma";
 import { SuppliersManager } from "./suppliers-manager";
@@ -24,7 +24,7 @@ type SuppliersPageProps = {
 async function createSupplier(formData: FormData) {
   "use server";
 
-  const currentUser = await requireRole(["SUPER_ADMIN"]);
+  const currentUser = await requirePurchasesAccess();
   const tenantId = currentUser.tenant?.id;
 
   const name = formData.get("name")?.toString().trim() ?? "";
@@ -70,7 +70,7 @@ async function createSupplier(formData: FormData) {
 async function updateSupplier(formData: FormData) {
   "use server";
 
-  const currentUser = await requireRole(["SUPER_ADMIN"]);
+  const currentUser = await requirePurchasesAccess();
   const tenantId = currentUser.tenant?.id;
   const supplierId = Number(formData.get("supplierId"));
 
@@ -120,7 +120,7 @@ async function updateSupplier(formData: FormData) {
 async function toggleSupplierStatus(formData: FormData) {
   "use server";
 
-  const currentUser = await requireRole(["SUPER_ADMIN"]);
+  const currentUser = await requirePurchasesAccess();
   const tenantId = currentUser.tenant?.id;
   const supplierId = Number(formData.get("supplierId"));
   const nextActive = formData.get("nextActive")?.toString() === "true";
@@ -173,7 +173,7 @@ function formatDate(value: Date) {
 }
 
 export default async function SuppliersPage({ searchParams }: SuppliersPageProps) {
-  const currentUser = await requireRole(["SUPER_ADMIN"]);
+  const currentUser = await requirePurchasesAccess();
   const tenantId = currentUser.tenant?.id;
 
   if (!tenantId) {

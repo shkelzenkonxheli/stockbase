@@ -19,7 +19,6 @@ import {
   getOrderListViewConfig,
   getProductListViewConfig,
   getCatalogTemplate,
-  getPosConfig,
   getWarehouseConfig,
   ORDER_LIST_FIELD_KEYS,
   parseCategoryFieldConfig,
@@ -288,8 +287,10 @@ async function updateTenantSettings(formData: FormData) {
       options: existingTenantConfig?.warehouse?.options ?? [],
     },
     pos: {
-      enabled: isTruthyField(formData.get("posEnabled")),
+      // POS access is an entitlement managed only from the platform console.
+      enabled: existingTenantConfig?.pos?.enabled ?? false,
     },
+    purchases: existingTenantConfig?.purchases,
     productListView: parseProductListViewConfig(
       formData.get("productListViewConfig"),
       currentProductListView,
@@ -569,7 +570,6 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
   const productListView = getProductListViewConfig(tenantCatalogConfig);
   const orderListView = getOrderListViewConfig(tenantCatalogConfig);
   const warehouseConfig = getWarehouseConfig(tenantCatalogConfig);
-  const posConfig = getPosConfig(tenantCatalogConfig);
   const catalogOptions = CATALOG_TYPES.map((type) => ({
     value: type,
     label: getCatalogTemplate(type).label,
@@ -712,24 +712,10 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
                         </div>
 
                         <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
-                          <div className="flex flex-wrap items-center justify-between gap-3">
-                            <div>
-                              <p className="text-sm font-semibold text-slate-950">POS Module</p>
-                              <p className="mt-1 text-sm text-slate-600">
-                                Aktivizo register-at dhe hapjen e session-eve POS per kete tenant.
-                              </p>
-                            </div>
-                            <label className="inline-flex items-center gap-2 text-sm font-medium text-slate-700">
-                              <input
-                                type="checkbox"
-                                name="posEnabled"
-                                value="true"
-                                defaultChecked={posConfig.enabled}
-                                className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-300"
-                              />
-                              Aktivizo POS
-                            </label>
-                          </div>
+                          <p className="text-sm font-semibold text-slate-950">POS Module</p>
+                          <p className="mt-1 text-sm text-slate-600">
+                            Leja per POS menaxhohet nga platforma. Kur aktivizohet, ketu mund te konfiguroni depot dhe register-at.
+                          </p>
                         </div>
                       </div>
                       <p className="mt-4 text-xs text-slate-500">

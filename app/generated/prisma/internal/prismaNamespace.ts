@@ -2342,6 +2342,10 @@ export const OrderScalarFieldEnum = {
   variantId: 'variantId',
   warehouseId: 'warehouseId',
   posSessionId: 'posSessionId',
+  subtotal: 'subtotal',
+  discountType: 'discountType',
+  discountValue: 'discountValue',
+  discountAmount: 'discountAmount',
   createdAt: 'createdAt',
   customerName: 'customerName',
   instagram: 'instagram',
@@ -2772,6 +2776,20 @@ export type EnumStockMovementReasonFieldRefInput<$PrismaModel> = FieldRefInputTy
  * Reference to a field of type 'StockMovementReason[]'
  */
 export type ListEnumStockMovementReasonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'StockMovementReason[]'>
+    
+
+
+/**
+ * Reference to a field of type 'PosDiscountType'
+ */
+export type EnumPosDiscountTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PosDiscountType'>
+    
+
+
+/**
+ * Reference to a field of type 'PosDiscountType[]'
+ */
+export type ListEnumPosDiscountTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PosDiscountType[]'>
     
 
 

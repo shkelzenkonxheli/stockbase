@@ -103,6 +103,9 @@ export type TenantCatalogConfig = {
   pos?: {
     enabled: boolean;
   };
+  purchases?: {
+    enabled: boolean;
+  };
   productListView?: ProductListViewConfig;
   orderListView?: OrderListViewConfig;
   labelPresets?: LabelPresetConfig[];
@@ -724,6 +727,12 @@ export function parseTenantCatalogConfig(value: unknown): TenantCatalogConfig | 
     };
   }
 
+  if (isRecord(value.purchases)) {
+    nextConfig.purchases = {
+      enabled: Boolean(value.purchases.enabled),
+    };
+  }
+
   if (Array.isArray(value.labelPresets)) {
     nextConfig.labelPresets = value.labelPresets
       .map((item) => sanitizeLabelPresetConfig(item))
@@ -915,5 +924,11 @@ export function getWarehouseConfig(tenantConfig?: TenantCatalogConfig | null) {
 export function getPosConfig(tenantConfig?: TenantCatalogConfig | null) {
   return {
     enabled: tenantConfig?.pos?.enabled ?? false,
+  };
+}
+
+export function getPurchasesConfig(tenantConfig?: TenantCatalogConfig | null) {
+  return {
+    enabled: tenantConfig?.purchases?.enabled ?? false,
   };
 }

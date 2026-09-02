@@ -119,6 +119,14 @@ export const PosPaymentMethod = {
 export type PosPaymentMethod = (typeof PosPaymentMethod)[keyof typeof PosPaymentMethod]
 
 
+export const PosDiscountType = {
+  PERCENT: 'PERCENT',
+  FIXED: 'FIXED'
+} as const
+
+export type PosDiscountType = (typeof PosDiscountType)[keyof typeof PosDiscountType]
+
+
 export const PosCashMovementType = {
   CASH_IN: 'CASH_IN',
   CASH_OUT: 'CASH_OUT'

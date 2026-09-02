@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { requireRole } from "@/lib/auth";
+import { requirePurchasesAccess } from "@/lib/purchases-access";
 import { calculatePurchaseOrderMetrics } from "@/lib/purchase-order-metrics";
 import { prisma } from "@/lib/prisma";
 import { PurchaseOrderPrintSheet } from "../../purchase-order-print-sheet";
@@ -45,7 +45,7 @@ function statusLabel(status: string) {
 }
 
 export default async function PurchaseOrderPrintPage({ params }: PurchaseOrderPrintPageProps) {
-  const currentUser = await requireRole(["SUPER_ADMIN"]);
+  const currentUser = await requirePurchasesAccess();
   const tenantId = currentUser.tenant?.id;
   const { id } = await params;
   const purchaseOrderId = Number(id);

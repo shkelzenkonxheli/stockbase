@@ -289,6 +289,13 @@ export type EnumStockMovementReasonWithAggregatesFilter<$PrismaModel = never> = 
   _max?: Prisma.NestedEnumStockMovementReasonFilter<$PrismaModel>
 }
 
+export type EnumPosDiscountTypeNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.PosDiscountType | Prisma.EnumPosDiscountTypeFieldRefInput<$PrismaModel> | null
+  in?: $Enums.PosDiscountType[] | Prisma.ListEnumPosDiscountTypeFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.PosDiscountType[] | Prisma.ListEnumPosDiscountTypeFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumPosDiscountTypeNullableFilter<$PrismaModel> | $Enums.PosDiscountType | null
+}
+
 export type EnumOrderStatusFilter<$PrismaModel = never> = {
   equals?: $Enums.OrderStatus | Prisma.EnumOrderStatusFieldRefInput<$PrismaModel>
   in?: $Enums.OrderStatus[] | Prisma.ListEnumOrderStatusFieldRefInput<$PrismaModel>
@@ -301,6 +308,16 @@ export type EnumOrderSourceFilter<$PrismaModel = never> = {
   in?: $Enums.OrderSource[] | Prisma.ListEnumOrderSourceFieldRefInput<$PrismaModel>
   notIn?: $Enums.OrderSource[] | Prisma.ListEnumOrderSourceFieldRefInput<$PrismaModel>
   not?: Prisma.NestedEnumOrderSourceFilter<$PrismaModel> | $Enums.OrderSource
+}
+
+export type EnumPosDiscountTypeNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PosDiscountType | Prisma.EnumPosDiscountTypeFieldRefInput<$PrismaModel> | null
+  in?: $Enums.PosDiscountType[] | Prisma.ListEnumPosDiscountTypeFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.PosDiscountType[] | Prisma.ListEnumPosDiscountTypeFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumPosDiscountTypeNullableWithAggregatesFilter<$PrismaModel> | $Enums.PosDiscountType | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPosDiscountTypeNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPosDiscountTypeNullableFilter<$PrismaModel>
 }
 
 export type EnumOrderStatusWithAggregatesFilter<$PrismaModel = never> = {
@@ -772,6 +789,13 @@ export type NestedEnumStockMovementReasonWithAggregatesFilter<$PrismaModel = nev
   _max?: Prisma.NestedEnumStockMovementReasonFilter<$PrismaModel>
 }
 
+export type NestedEnumPosDiscountTypeNullableFilter<$PrismaModel = never> = {
+  equals?: $Enums.PosDiscountType | Prisma.EnumPosDiscountTypeFieldRefInput<$PrismaModel> | null
+  in?: $Enums.PosDiscountType[] | Prisma.ListEnumPosDiscountTypeFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.PosDiscountType[] | Prisma.ListEnumPosDiscountTypeFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumPosDiscountTypeNullableFilter<$PrismaModel> | $Enums.PosDiscountType | null
+}
+
 export type NestedEnumOrderStatusFilter<$PrismaModel = never> = {
   equals?: $Enums.OrderStatus | Prisma.EnumOrderStatusFieldRefInput<$PrismaModel>
   in?: $Enums.OrderStatus[] | Prisma.ListEnumOrderStatusFieldRefInput<$PrismaModel>
@@ -784,6 +808,16 @@ export type NestedEnumOrderSourceFilter<$PrismaModel = never> = {
   in?: $Enums.OrderSource[] | Prisma.ListEnumOrderSourceFieldRefInput<$PrismaModel>
   notIn?: $Enums.OrderSource[] | Prisma.ListEnumOrderSourceFieldRefInput<$PrismaModel>
   not?: Prisma.NestedEnumOrderSourceFilter<$PrismaModel> | $Enums.OrderSource
+}
+
+export type NestedEnumPosDiscountTypeNullableWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.PosDiscountType | Prisma.EnumPosDiscountTypeFieldRefInput<$PrismaModel> | null
+  in?: $Enums.PosDiscountType[] | Prisma.ListEnumPosDiscountTypeFieldRefInput<$PrismaModel> | null
+  notIn?: $Enums.PosDiscountType[] | Prisma.ListEnumPosDiscountTypeFieldRefInput<$PrismaModel> | null
+  not?: Prisma.NestedEnumPosDiscountTypeNullableWithAggregatesFilter<$PrismaModel> | $Enums.PosDiscountType | null
+  _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumPosDiscountTypeNullableFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumPosDiscountTypeNullableFilter<$PrismaModel>
 }
 
 export type NestedEnumOrderStatusWithAggregatesFilter<$PrismaModel = never> = {

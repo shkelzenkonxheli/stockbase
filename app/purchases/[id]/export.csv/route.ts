@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireRole } from "@/lib/auth";
+import { requirePurchasesAccess } from "@/lib/purchases-access";
 import { calculatePurchaseOrderMetrics } from "@/lib/purchase-order-metrics";
 import { prisma } from "@/lib/prisma";
 
@@ -21,7 +21,7 @@ function formatDate(value: Date) {
 }
 
 export async function GET(_request: Request, { params }: RouteProps) {
-  const currentUser = await requireRole(["SUPER_ADMIN"]);
+  const currentUser = await requirePurchasesAccess();
   const tenantId = currentUser.tenant?.id;
   const { id } = await params;
   const purchaseOrderId = Number(id);

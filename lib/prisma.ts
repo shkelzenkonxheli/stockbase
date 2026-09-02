@@ -12,14 +12,17 @@ const adapter = new PrismaPg(new Pool({ connectionString }));
 
 const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
+  prismaSchemaVersion: string | undefined;
 };
 
-// In development, Prisma can remain cached across a schema migration. Recreate an
-// outdated client instead of keeping a delegate set that predates the current schema.
+// In development, Prisma can remain cached across a schema migration. Bump this
+// value with migrations so an outdated generated client is never reused.
+const prismaSchemaVersion = "20260902190251";
 const hasCurrentPosDelegates = Boolean(
   globalForPrisma.prisma &&
     "posPayment" in globalForPrisma.prisma &&
-    "posCashMovement" in globalForPrisma.prisma,
+    "posCashMovement" in globalForPrisma.prisma &&
+    globalForPrisma.prismaSchemaVersion === prismaSchemaVersion,
 );
 
 export const prisma =
@@ -29,4 +32,5 @@ export const prisma =
 
 if (process.env.NODE_ENV !== "production") {
   globalForPrisma.prisma = prisma;
+  globalForPrisma.prismaSchemaVersion = prismaSchemaVersion;
 }

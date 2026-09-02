@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createElement, type ReactElement } from "react";
 import type { DocumentProps } from "@react-pdf/renderer";
 import { renderToBuffer } from "@react-pdf/renderer";
-import { requireRole } from "@/lib/auth";
+import { requirePurchasesAccess } from "@/lib/purchases-access";
 import { calculatePurchaseOrderMetrics } from "@/lib/purchase-order-metrics";
 import { prisma } from "@/lib/prisma";
 import { PurchaseOrderPdfDocument } from "../../purchase-order-pdf-document";
@@ -43,7 +43,7 @@ function statusLabel(status: string) {
 }
 
 export async function GET(_request: Request, { params }: RouteProps) {
-  const currentUser = await requireRole(["SUPER_ADMIN"]);
+  const currentUser = await requirePurchasesAccess();
   const tenantId = currentUser.tenant?.id;
   const { id } = await params;
   const purchaseOrderId = Number(id);

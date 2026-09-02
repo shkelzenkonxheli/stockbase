@@ -6,7 +6,7 @@ import { headers } from "next/headers";
 import { logout } from "@/app/actions/auth";
 import { AppShellNav } from "@/app/components/app-shell-nav";
 import { getCurrentUser, hasRole, hasTenantAccess } from "@/lib/auth";
-import { getCatalogTemplate, getPosConfig } from "@/lib/product-taxonomy";
+import { getCatalogTemplate, getPosConfig, getPurchasesConfig } from "@/lib/product-taxonomy";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -70,6 +70,7 @@ export default async function RootLayout({
     ? getCatalogTemplate(currentUser.tenant.catalogType)
     : null;
   const posEnabled = currentUser?.tenant ? getPosConfig(currentUser.tenant.catalogConfig).enabled : false;
+  const purchasesEnabled = currentUser?.tenant ? getPurchasesConfig(currentUser.tenant.catalogConfig).enabled : false;
   const primaryColor = currentUser?.tenant?.primaryColor?.trim() || "#0f172a";
   const navItems = currentUser
     ? [
@@ -158,6 +159,7 @@ export default async function RootLayout({
                   </svg>
                 ),
               },
+              ...(purchasesEnabled ? [
               {
                 href: "/suppliers",
                 label: "Furnitoret",
@@ -187,6 +189,7 @@ export default async function RootLayout({
                   </svg>
                 ),
               },
+              ] : []),
               {
                 href: "/stock/count",
                 label: "Inventory Count",

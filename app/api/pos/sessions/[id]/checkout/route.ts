@@ -14,6 +14,8 @@ type CheckoutItem = {
   unitPrice: number | null;
 };
 
+type DiscountType = "PERCENT" | "FIXED";
+
 function parseItems(value: unknown): CheckoutItem[] | null {
   if (!Array.isArray(value) || value.length === 0) {
     return null;
@@ -66,9 +68,9 @@ export async function POST(request: Request, context: RouteProps) {
     return NextResponse.json({ error: "POS session invalid." }, { status: 400 });
   }
 
-  let payload: { items?: unknown; paymentMethod?: unknown; receivedCash?: unknown };
+  let payload: { items?: unknown; paymentMethod?: unknown; receivedCash?: unknown; discountType?: unknown; discountValue?: unknown };
   try {
-    payload = (await request.json()) as { items?: unknown; paymentMethod?: unknown; receivedCash?: unknown };
+    payload = (await request.json()) as { items?: unknown; paymentMethod?: unknown; receivedCash?: unknown; discountType?: unknown; discountValue?: unknown };
   } catch {
     return NextResponse.json({ error: "Payload nuk eshte valid." }, { status: 400 });
   }
@@ -78,8 +80,12 @@ export async function POST(request: Request, context: RouteProps) {
     ? payload.paymentMethod
     : null;
   const receivedCash = Number(payload.receivedCash ?? 0);
+  const discountType: DiscountType | null = payload.discountType === "PERCENT" || payload.discountType === "FIXED"
+    ? payload.discountType
+    : null;
+  const discountValue = Number(payload.discountValue ?? 0);
 
-  if (!items || !paymentMethod) {
+  if (!items || !paymentMethod || !Number.isFinite(discountValue) || discountValue < 0 || (discountValue > 0 && !discountType) || (discountType === "PERCENT" && discountValue > 100)) {
     return NextResponse.json({ error: "Cart-i dhe menyra e pageses jane te detyrueshme." }, { status: 400 });
   }
 
@@ -129,11 +135,16 @@ export async function POST(request: Request, context: RouteProps) {
       }
 
       const variantsById = new Map(variants.map((variant) => [variant.id, variant]));
-      const total = items.reduce((sum, item) => {
+      const subtotal = items.reduce((sum, item) => {
         const variant = variantsById.get(item.variantId);
         return sum + (item.unitPrice ?? Number(variant?.price ?? 0)) * item.quantity;
       }, 0);
-      const totalRounded = Number(total.toFixed(2));
+      const subtotalRounded = Number(subtotal.toFixed(2));
+      const discountAmount = discountType === "PERCENT"
+        ? Number((subtotalRounded * (discountValue / 100)).toFixed(2))
+        : Number(discountValue.toFixed(2));
+      if (discountAmount > subtotalRounded) throw new Error("DISCOUNT_INVALID");
+      const totalRounded = Number((subtotalRounded - discountAmount).toFixed(2));
 
       if (paymentMethod === "CASH" && (!Number.isFinite(receivedCash) || receivedCash < totalRounded)) {
         throw new Error("CASH_NOT_ENOUGH");
@@ -171,6 +182,10 @@ export async function POST(request: Request, context: RouteProps) {
           variantId: items[0]?.variantId ?? null,
           warehouseId: session.warehouseId,
           posSessionId: session.id,
+          subtotal: new Prisma.Decimal(subtotalRounded.toFixed(2)),
+          discountType,
+          discountValue: new Prisma.Decimal(discountValue.toFixed(2)),
+          discountAmount: new Prisma.Decimal(discountAmount.toFixed(2)),
           items: {
             create: items.map((item) => {
               const variant = variantsById.get(item.variantId)!;
@@ -219,12 +234,16 @@ export async function POST(request: Request, context: RouteProps) {
           registerName: session.register.name,
           paymentMethod,
           total: totalRounded,
+          subtotal: subtotalRounded,
+          discountType,
+          discountValue,
+          discountAmount,
           totalQuantity,
           items,
         },
       });
 
-      return { orderId: order.id, total: totalRounded };
+      return { orderId: order.id, subtotal: subtotalRounded, discountAmount, total: totalRounded };
     });
 
     return NextResponse.json({ ok: true, ...result });
@@ -240,6 +259,7 @@ export async function POST(request: Request, context: RouteProps) {
       VARIANT_NOT_FOUND: "Nje produkt ne cart nuk ekziston me.",
       STOCK_NOT_AVAILABLE: "Stoku nuk mjafton per nje nga produktet.",
       CASH_NOT_ENOUGH: "Shuma cash e pranuar nuk mjafton.",
+      DISCOUNT_INVALID: "Zbritja nuk mund te jete me e madhe se nentotali.",
     };
     return NextResponse.json({ error: errors[message] ?? "Checkout deshtoi." }, { status: 400 });
   }

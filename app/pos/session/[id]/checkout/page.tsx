@@ -30,12 +30,36 @@ export default async function PosCheckoutPage({ params }: RouteProps) {
 
   const [categories, productBrands] = await Promise.all([
     prisma.category.findMany({
-      where: { tenantId: currentUser.tenant.id, isActive: true },
+      where: {
+        tenantId: currentUser.tenant.id,
+        isActive: true,
+        products: {
+          some: {
+            variants: {
+              some: {
+                inventories: {
+                  some: { warehouseId: session.warehouseId, stock: { gt: 0 } },
+                },
+              },
+            },
+          },
+        },
+      },
       orderBy: { name: "asc" },
       select: { id: true, name: true },
     }),
     prisma.product.findMany({
-      where: { tenantId: currentUser.tenant.id, brand: { not: null } },
+      where: {
+        tenantId: currentUser.tenant.id,
+        brand: { not: null },
+        variants: {
+          some: {
+            inventories: {
+              some: { warehouseId: session.warehouseId, stock: { gt: 0 } },
+            },
+          },
+        },
+      },
       distinct: ["brand"],
       orderBy: { brand: "asc" },
       select: { brand: true },

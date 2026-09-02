@@ -71,6 +71,8 @@ export default async function PosSessionPage({ params, searchParams }: RouteProp
       source: true,
       customerName: true,
       quantity: true,
+      subtotal: true,
+      discountAmount: true,
       items: {
         select: {
           id: true,
@@ -177,25 +179,10 @@ export default async function PosSessionPage({ params, searchParams }: RouteProp
             </div>
           </div>
 
-          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <div className="rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Statusi</p>
-              <p className={`mt-1.5 font-semibold ${canClose ? "text-emerald-700" : "text-slate-700"}`}>
-                {session.status}
-              </p>
-            </div>
-            <div className="rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Opening cash</p>
-              <p className="mt-1.5 font-semibold text-slate-950">{formatMoney(session.openingCash)}</p>
-            </div>
-            <div className="rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Lokacioni</p>
-              <p className="mt-1.5 font-semibold text-slate-950">{session.register.warehouse.name}</p>
-            </div>
-            <div className="rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3">
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Cashier</p>
-              <p className="mt-1.5 font-semibold text-slate-950">{session.openedBy.name}</p>
-            </div>
+          <div className="mt-4 flex flex-wrap gap-2 text-sm">
+            <span className={`rounded-full px-3 py-1.5 font-semibold ${canClose ? "border border-emerald-200 bg-emerald-50 text-emerald-700" : "border border-slate-200 bg-slate-50 text-slate-600"}`}>{canClose ? "Session aktiv" : "Session i mbyllur"}</span>
+            <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-slate-600">{session.register.warehouse.name}</span>
+            <span className="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-slate-600">{session.openedBy.name}</span>
           </div>
         </section>
 
@@ -205,12 +192,12 @@ export default async function PosSessionPage({ params, searchParams }: RouteProp
           </div>
         ) : null}
 
-        <CloseSessionPanel
-          sessionId={session.id}
-          openingCash={Number(session.openingCash)}
-          expectedCash={expectedCash}
-          canClose={canClose}
-        />
+        {canClose ? (
+          <details className="group overflow-hidden rounded-[24px] border border-slate-200 bg-white/96 shadow-[0_14px_38px_rgba(15,23,42,0.07)]">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 text-sm font-semibold text-slate-900 marker:content-none sm:px-6"><span>Mbyll register-in</span><span className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs text-slate-500 transition group-open:rotate-45">+</span></summary>
+            <div className="border-t border-slate-100"><CloseSessionPanel sessionId={session.id} openingCash={Number(session.openingCash)} expectedCash={expectedCash} canClose={canClose} /></div>
+          </details>
+        ) : null}
 
         <CashMovementPanel sessionId={session.id} canManage={canClose} />
 
@@ -248,28 +235,10 @@ export default async function PosSessionPage({ params, searchParams }: RouteProp
 
         <section className="grid gap-6 xl:grid-cols-[1.2fr_0.8fr]">
           <div className="space-y-6">
-            <section className="rounded-[28px] border border-slate-200 bg-white/96 p-5 shadow-[0_20px_55px_rgba(15,23,42,0.08)] sm:p-6">
-              <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
-                <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
-                    Session Sales
-                  </p>
-                  <h2 className="mt-2 text-2xl font-semibold text-slate-950">Shitjet ne kete session</h2>
-                  <p className="mt-2 text-sm text-slate-600">
-                    Ketu sheh sa u shit dhe cfare u shit nga ky register.
-                  </p>
-                </div>
-                {canClose ? (
-                  <Link
-                    href={`/pos/session/${session.id}/checkout`}
-                    className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_14px_34px_rgba(15,23,42,0.16)]"
-                  >
-                    Shto shitje
-                  </Link>
-                ) : null}
-              </div>
-
-              <div className="mt-5 grid gap-3 sm:grid-cols-3">
+            <details className="group overflow-hidden rounded-[24px] border border-slate-200 bg-white/96 shadow-[0_14px_38px_rgba(15,23,42,0.07)]">
+              <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 marker:content-none sm:px-6"><div><p className="text-xs font-semibold uppercase tracking-[0.15em] text-emerald-700">Shitjet e session-it</p><p className="mt-1 text-sm text-slate-600">{totalOrders} porosi · {totalUnits} cope · {formatMoney(totalSales)}</p></div><span className="rounded-lg border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-semibold text-slate-500 transition group-open:rotate-45">+</span></summary>
+              <div className="border-t border-slate-100 p-5 sm:p-6">
+              <div className="grid gap-3 sm:grid-cols-3">
                 <div className="rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3">
                   <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">Orders</p>
                   <p className="mt-1.5 text-2xl font-semibold text-slate-950">{totalOrders}</p>
@@ -284,7 +253,7 @@ export default async function PosSessionPage({ params, searchParams }: RouteProp
                 </div>
               </div>
 
-              <div className="mt-5">
+              <div className="mt-4">
                 {sessionOrders.length === 0 ? (
                   <div className="rounded-[24px] border border-dashed border-slate-200 bg-slate-50 px-4 py-10 text-center text-sm text-slate-500">
                     Ende nuk ka shitje te lidhura me kete session.
@@ -292,10 +261,12 @@ export default async function PosSessionPage({ params, searchParams }: RouteProp
                 ) : (
                   <div className="space-y-3">
                     {sessionOrders.map((order) => {
-                      const orderTotal = order.items.reduce(
+                      const orderSubtotal = order.items.reduce(
                         (sum, item) => sum + Number(item.unitPrice) * item.quantity,
                         0,
                       );
+                      const orderDiscount = Number(order.discountAmount);
+                      const orderTotal = (Number(order.subtotal) > 0 ? Number(order.subtotal) : orderSubtotal) - orderDiscount;
 
                       return (
                         <div
@@ -319,6 +290,15 @@ export default async function PosSessionPage({ params, searchParams }: RouteProp
                               <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-emerald-700">
                                 {formatMoney(orderTotal)}
                               </span>
+                              {orderDiscount > 0 ? <span className="rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-amber-700">Zbritje -{formatMoney(orderDiscount)}</span> : null}
+                              <Link
+                                href={`/pos/sales/${order.id}/receipt`}
+                                target="_blank"
+                                rel="noreferrer"
+                                className="rounded-full border border-slate-300 bg-white px-3 py-1 text-slate-700 transition hover:border-emerald-300 hover:text-emerald-700"
+                              >
+                                Printo faturen
+                              </Link>
                             </div>
                           </div>
 
@@ -354,34 +334,13 @@ export default async function PosSessionPage({ params, searchParams }: RouteProp
                   </div>
                 )}
               </div>
-            </section>
-
-            <section className="rounded-[28px] border border-slate-200 bg-white/96 p-5 shadow-[0_20px_55px_rgba(15,23,42,0.08)] sm:p-6">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
-              Selling Screen Shell
-            </p>
-            <h2 className="mt-2 text-2xl font-semibold text-slate-950">Checkout surface gati per fazen tjeter</h2>
-            <div className="mt-5 grid gap-4 lg:grid-cols-3">
-              <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
-                <p className="font-semibold text-slate-950">Barcode sales</p>
-                <p className="mt-2 text-sm text-slate-600">Ketu do lidhet scanner, lookup dhe shtimi ne cart.</p>
               </div>
-              <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
-                <p className="font-semibold text-slate-950">Cart & payments</p>
-                <p className="mt-2 text-sm text-slate-600">Cash / card / discount / totals do shtohen mbi kete session aktiv.</p>
-              </div>
-              <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
-                <p className="font-semibold text-slate-950">Cash control</p>
-                <p className="mt-2 text-sm text-slate-600">Cash in/out, close register dhe closing report do varen nga ky foundation.</p>
-              </div>
-            </div>
-            </section>
+            </details>
           </div>
 
-          <aside className="rounded-[28px] border border-slate-200 bg-slate-950 p-5 text-white shadow-[0_20px_55px_rgba(15,23,42,0.18)] sm:p-6">
-            <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-300">Cash movements</p>
-            <h2 className="mt-2 text-xl font-semibold">Levizjet e fundit</h2>
-            <div className="mt-4 space-y-3">
+          <details className="group h-fit overflow-hidden rounded-[24px] border border-slate-800 bg-slate-950 text-white shadow-[0_14px_38px_rgba(15,23,42,0.16)]">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4 marker:content-none sm:px-6"><div><p className="text-xs font-semibold uppercase tracking-[0.15em] text-emerald-300">Levizjet cash</p><p className="mt-1 text-sm text-slate-300">{recentCashMovements.length} levizje te fundit</p></div><span className="rounded-lg border border-white/10 bg-white/5 px-2.5 py-1 text-xs font-semibold text-slate-300 transition group-open:rotate-45">+</span></summary>
+            <div className="space-y-3 border-t border-white/10 p-5 sm:p-6">
               {recentCashMovements.length === 0 ? (
                 <div className="rounded-2xl border border-white/10 bg-white/5 px-4 py-5 text-sm text-slate-300">Nuk ka cash in/out ne kete session.</div>
               ) : recentCashMovements.map((movement) => (
@@ -395,7 +354,7 @@ export default async function PosSessionPage({ params, searchParams }: RouteProp
                 </div>
               ))}
             </div>
-          </aside>
+          </details>
         </section>
       </div>
     </main>

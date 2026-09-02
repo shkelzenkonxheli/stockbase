@@ -3,7 +3,7 @@ import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { FlashMessage } from "@/app/components/flash-message";
-import { requireRole } from "@/lib/auth";
+import { requirePurchasesAccess } from "@/lib/purchases-access";
 import { writeAuditLog } from "@/lib/audit-log";
 import { buildVariantIdentityKey, getCategoryConfig } from "@/lib/product-taxonomy";
 import { calculatePurchaseOrderMetrics } from "@/lib/purchase-order-metrics";
@@ -195,7 +195,7 @@ function derivePurchaseOrderStatus(items: Array<{
 async function createPurchaseOrder(formData: FormData) {
   "use server";
 
-  const currentUser = await requireRole(["SUPER_ADMIN"]);
+  const currentUser = await requirePurchasesAccess();
   const tenantId = currentUser.tenant?.id;
 
   const supplierId = Number(formData.get("supplierId"));
@@ -554,7 +554,7 @@ async function createPurchaseOrder(formData: FormData) {
 async function updatePurchaseOrder(formData: FormData) {
   "use server";
 
-  const currentUser = await requireRole(["SUPER_ADMIN"]);
+  const currentUser = await requirePurchasesAccess();
   const tenantId = currentUser.tenant?.id;
   const purchaseOrderId = Number(formData.get("purchaseOrderId"));
   const supplierId = Number(formData.get("supplierId"));
@@ -729,7 +729,7 @@ async function updatePurchaseOrder(formData: FormData) {
 async function cancelPurchaseOrder(formData: FormData) {
   "use server";
 
-  const currentUser = await requireRole(["SUPER_ADMIN"]);
+  const currentUser = await requirePurchasesAccess();
   const tenantId = currentUser.tenant?.id;
   const purchaseOrderId = Number(formData.get("purchaseOrderId"));
 
@@ -792,7 +792,7 @@ async function cancelPurchaseOrder(formData: FormData) {
 async function receivePurchaseOrder(formData: FormData) {
   "use server";
 
-  const currentUser = await requireRole(["SUPER_ADMIN"]);
+  const currentUser = await requirePurchasesAccess();
   const tenantId = currentUser.tenant?.id;
   const purchaseOrderId = Number(formData.get("purchaseOrderId"));
   const receiveMode = formData.get("receiveMode")?.toString();
@@ -1297,7 +1297,7 @@ async function receivePurchaseOrder(formData: FormData) {
 async function returnPurchaseOrderToSupplier(formData: FormData) {
   "use server";
 
-  const currentUser = await requireRole(["SUPER_ADMIN"]);
+  const currentUser = await requirePurchasesAccess();
   const tenantId = currentUser.tenant?.id;
   const purchaseOrderId = Number(formData.get("purchaseOrderId"));
   const returnMode = formData.get("returnMode")?.toString();
@@ -1518,7 +1518,7 @@ const statusStyles: Record<string, string> = {
 };
 
 export default async function PurchasesPage({ searchParams }: PurchasesPageProps) {
-  const currentUser = await requireRole(["SUPER_ADMIN"]);
+  const currentUser = await requirePurchasesAccess();
   const tenantId = currentUser.tenant?.id;
 
   if (!tenantId) {

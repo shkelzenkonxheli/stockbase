@@ -32,6 +32,9 @@ export type OrderAvgAggregateOutputType = {
   variantId: number | null
   warehouseId: number | null
   posSessionId: number | null
+  subtotal: runtime.Decimal | null
+  discountValue: runtime.Decimal | null
+  discountAmount: runtime.Decimal | null
   tenantId: number | null
 }
 
@@ -41,6 +44,9 @@ export type OrderSumAggregateOutputType = {
   variantId: number | null
   warehouseId: number | null
   posSessionId: number | null
+  subtotal: runtime.Decimal | null
+  discountValue: runtime.Decimal | null
+  discountAmount: runtime.Decimal | null
   tenantId: number | null
 }
 
@@ -51,6 +57,10 @@ export type OrderMinAggregateOutputType = {
   variantId: number | null
   warehouseId: number | null
   posSessionId: number | null
+  subtotal: runtime.Decimal | null
+  discountType: $Enums.PosDiscountType | null
+  discountValue: runtime.Decimal | null
+  discountAmount: runtime.Decimal | null
   createdAt: Date | null
   customerName: string | null
   instagram: string | null
@@ -68,6 +78,10 @@ export type OrderMaxAggregateOutputType = {
   variantId: number | null
   warehouseId: number | null
   posSessionId: number | null
+  subtotal: runtime.Decimal | null
+  discountType: $Enums.PosDiscountType | null
+  discountValue: runtime.Decimal | null
+  discountAmount: runtime.Decimal | null
   createdAt: Date | null
   customerName: string | null
   instagram: string | null
@@ -85,6 +99,10 @@ export type OrderCountAggregateOutputType = {
   variantId: number
   warehouseId: number
   posSessionId: number
+  subtotal: number
+  discountType: number
+  discountValue: number
+  discountAmount: number
   createdAt: number
   customerName: number
   instagram: number
@@ -103,6 +121,9 @@ export type OrderAvgAggregateInputType = {
   variantId?: true
   warehouseId?: true
   posSessionId?: true
+  subtotal?: true
+  discountValue?: true
+  discountAmount?: true
   tenantId?: true
 }
 
@@ -112,6 +133,9 @@ export type OrderSumAggregateInputType = {
   variantId?: true
   warehouseId?: true
   posSessionId?: true
+  subtotal?: true
+  discountValue?: true
+  discountAmount?: true
   tenantId?: true
 }
 
@@ -122,6 +146,10 @@ export type OrderMinAggregateInputType = {
   variantId?: true
   warehouseId?: true
   posSessionId?: true
+  subtotal?: true
+  discountType?: true
+  discountValue?: true
+  discountAmount?: true
   createdAt?: true
   customerName?: true
   instagram?: true
@@ -139,6 +167,10 @@ export type OrderMaxAggregateInputType = {
   variantId?: true
   warehouseId?: true
   posSessionId?: true
+  subtotal?: true
+  discountType?: true
+  discountValue?: true
+  discountAmount?: true
   createdAt?: true
   customerName?: true
   instagram?: true
@@ -156,6 +188,10 @@ export type OrderCountAggregateInputType = {
   variantId?: true
   warehouseId?: true
   posSessionId?: true
+  subtotal?: true
+  discountType?: true
+  discountValue?: true
+  discountAmount?: true
   createdAt?: true
   customerName?: true
   instagram?: true
@@ -260,6 +296,10 @@ export type OrderGroupByOutputType = {
   variantId: number | null
   warehouseId: number | null
   posSessionId: number | null
+  subtotal: runtime.Decimal
+  discountType: $Enums.PosDiscountType | null
+  discountValue: runtime.Decimal
+  discountAmount: runtime.Decimal
   createdAt: Date
   customerName: string
   instagram: string | null
@@ -300,6 +340,10 @@ export type OrderWhereInput = {
   variantId?: Prisma.IntNullableFilter<"Order"> | number | null
   warehouseId?: Prisma.IntNullableFilter<"Order"> | number | null
   posSessionId?: Prisma.IntNullableFilter<"Order"> | number | null
+  subtotal?: Prisma.DecimalFilter<"Order"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: Prisma.EnumPosDiscountTypeNullableFilter<"Order"> | $Enums.PosDiscountType | null
+  discountValue?: Prisma.DecimalFilter<"Order"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFilter<"Order"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   customerName?: Prisma.StringFilter<"Order"> | string
   instagram?: Prisma.StringNullableFilter<"Order"> | string | null
@@ -323,6 +367,10 @@ export type OrderOrderByWithRelationInput = {
   variantId?: Prisma.SortOrderInput | Prisma.SortOrder
   warehouseId?: Prisma.SortOrderInput | Prisma.SortOrder
   posSessionId?: Prisma.SortOrderInput | Prisma.SortOrder
+  subtotal?: Prisma.SortOrder
+  discountType?: Prisma.SortOrderInput | Prisma.SortOrder
+  discountValue?: Prisma.SortOrder
+  discountAmount?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   customerName?: Prisma.SortOrder
   instagram?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -349,6 +397,10 @@ export type OrderWhereUniqueInput = Prisma.AtLeast<{
   variantId?: Prisma.IntNullableFilter<"Order"> | number | null
   warehouseId?: Prisma.IntNullableFilter<"Order"> | number | null
   posSessionId?: Prisma.IntNullableFilter<"Order"> | number | null
+  subtotal?: Prisma.DecimalFilter<"Order"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: Prisma.EnumPosDiscountTypeNullableFilter<"Order"> | $Enums.PosDiscountType | null
+  discountValue?: Prisma.DecimalFilter<"Order"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFilter<"Order"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   customerName?: Prisma.StringFilter<"Order"> | string
   instagram?: Prisma.StringNullableFilter<"Order"> | string | null
@@ -372,6 +424,10 @@ export type OrderOrderByWithAggregationInput = {
   variantId?: Prisma.SortOrderInput | Prisma.SortOrder
   warehouseId?: Prisma.SortOrderInput | Prisma.SortOrder
   posSessionId?: Prisma.SortOrderInput | Prisma.SortOrder
+  subtotal?: Prisma.SortOrder
+  discountType?: Prisma.SortOrderInput | Prisma.SortOrder
+  discountValue?: Prisma.SortOrder
+  discountAmount?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   customerName?: Prisma.SortOrder
   instagram?: Prisma.SortOrderInput | Prisma.SortOrder
@@ -397,6 +453,10 @@ export type OrderScalarWhereWithAggregatesInput = {
   variantId?: Prisma.IntNullableWithAggregatesFilter<"Order"> | number | null
   warehouseId?: Prisma.IntNullableWithAggregatesFilter<"Order"> | number | null
   posSessionId?: Prisma.IntNullableWithAggregatesFilter<"Order"> | number | null
+  subtotal?: Prisma.DecimalWithAggregatesFilter<"Order"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: Prisma.EnumPosDiscountTypeNullableWithAggregatesFilter<"Order"> | $Enums.PosDiscountType | null
+  discountValue?: Prisma.DecimalWithAggregatesFilter<"Order"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalWithAggregatesFilter<"Order"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"Order"> | Date | string
   customerName?: Prisma.StringWithAggregatesFilter<"Order"> | string
   instagram?: Prisma.StringNullableWithAggregatesFilter<"Order"> | string | null
@@ -410,6 +470,10 @@ export type OrderScalarWhereWithAggregatesInput = {
 export type OrderCreateInput = {
   phone: string
   quantity?: number | null
+  subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: $Enums.PosDiscountType | null
+  discountValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   customerName: string
   instagram?: string | null
@@ -432,6 +496,10 @@ export type OrderUncheckedCreateInput = {
   variantId?: number | null
   warehouseId?: number | null
   posSessionId?: number | null
+  subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: $Enums.PosDiscountType | null
+  discountValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   customerName: string
   instagram?: string | null
@@ -447,6 +515,10 @@ export type OrderUncheckedCreateInput = {
 export type OrderUpdateInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: Prisma.NullableEnumPosDiscountTypeFieldUpdateOperationsInput | $Enums.PosDiscountType | null
+  discountValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customerName?: Prisma.StringFieldUpdateOperationsInput | string
   instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -469,6 +541,10 @@ export type OrderUncheckedUpdateInput = {
   variantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   warehouseId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   posSessionId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: Prisma.NullableEnumPosDiscountTypeFieldUpdateOperationsInput | $Enums.PosDiscountType | null
+  discountValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customerName?: Prisma.StringFieldUpdateOperationsInput | string
   instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -488,6 +564,10 @@ export type OrderCreateManyInput = {
   variantId?: number | null
   warehouseId?: number | null
   posSessionId?: number | null
+  subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: $Enums.PosDiscountType | null
+  discountValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   customerName: string
   instagram?: string | null
@@ -501,6 +581,10 @@ export type OrderCreateManyInput = {
 export type OrderUpdateManyMutationInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: Prisma.NullableEnumPosDiscountTypeFieldUpdateOperationsInput | $Enums.PosDiscountType | null
+  discountValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customerName?: Prisma.StringFieldUpdateOperationsInput | string
   instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -517,6 +601,10 @@ export type OrderUncheckedUpdateManyInput = {
   variantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   warehouseId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   posSessionId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: Prisma.NullableEnumPosDiscountTypeFieldUpdateOperationsInput | $Enums.PosDiscountType | null
+  discountValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customerName?: Prisma.StringFieldUpdateOperationsInput | string
   instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -544,6 +632,10 @@ export type OrderCountOrderByAggregateInput = {
   variantId?: Prisma.SortOrder
   warehouseId?: Prisma.SortOrder
   posSessionId?: Prisma.SortOrder
+  subtotal?: Prisma.SortOrder
+  discountType?: Prisma.SortOrder
+  discountValue?: Prisma.SortOrder
+  discountAmount?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   customerName?: Prisma.SortOrder
   instagram?: Prisma.SortOrder
@@ -560,6 +652,9 @@ export type OrderAvgOrderByAggregateInput = {
   variantId?: Prisma.SortOrder
   warehouseId?: Prisma.SortOrder
   posSessionId?: Prisma.SortOrder
+  subtotal?: Prisma.SortOrder
+  discountValue?: Prisma.SortOrder
+  discountAmount?: Prisma.SortOrder
   tenantId?: Prisma.SortOrder
 }
 
@@ -570,6 +665,10 @@ export type OrderMaxOrderByAggregateInput = {
   variantId?: Prisma.SortOrder
   warehouseId?: Prisma.SortOrder
   posSessionId?: Prisma.SortOrder
+  subtotal?: Prisma.SortOrder
+  discountType?: Prisma.SortOrder
+  discountValue?: Prisma.SortOrder
+  discountAmount?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   customerName?: Prisma.SortOrder
   instagram?: Prisma.SortOrder
@@ -587,6 +686,10 @@ export type OrderMinOrderByAggregateInput = {
   variantId?: Prisma.SortOrder
   warehouseId?: Prisma.SortOrder
   posSessionId?: Prisma.SortOrder
+  subtotal?: Prisma.SortOrder
+  discountType?: Prisma.SortOrder
+  discountValue?: Prisma.SortOrder
+  discountAmount?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   customerName?: Prisma.SortOrder
   instagram?: Prisma.SortOrder
@@ -603,6 +706,9 @@ export type OrderSumOrderByAggregateInput = {
   variantId?: Prisma.SortOrder
   warehouseId?: Prisma.SortOrder
   posSessionId?: Prisma.SortOrder
+  subtotal?: Prisma.SortOrder
+  discountValue?: Prisma.SortOrder
+  discountAmount?: Prisma.SortOrder
   tenantId?: Prisma.SortOrder
 }
 
@@ -693,6 +799,10 @@ export type OrderUncheckedUpdateManyWithoutWarehouseNestedInput = {
   update?: Prisma.OrderUpdateWithWhereUniqueWithoutWarehouseInput | Prisma.OrderUpdateWithWhereUniqueWithoutWarehouseInput[]
   updateMany?: Prisma.OrderUpdateManyWithWhereWithoutWarehouseInput | Prisma.OrderUpdateManyWithWhereWithoutWarehouseInput[]
   deleteMany?: Prisma.OrderScalarWhereInput | Prisma.OrderScalarWhereInput[]
+}
+
+export type NullableEnumPosDiscountTypeFieldUpdateOperationsInput = {
+  set?: $Enums.PosDiscountType | null
 }
 
 export type EnumOrderStatusFieldUpdateOperationsInput = {
@@ -818,6 +928,10 @@ export type OrderUpdateOneRequiredWithoutPosPaymentsNestedInput = {
 export type OrderCreateWithoutVariantInput = {
   phone: string
   quantity?: number | null
+  subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: $Enums.PosDiscountType | null
+  discountValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   customerName: string
   instagram?: string | null
@@ -838,6 +952,10 @@ export type OrderUncheckedCreateWithoutVariantInput = {
   quantity?: number | null
   warehouseId?: number | null
   posSessionId?: number | null
+  subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: $Enums.PosDiscountType | null
+  discountValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   customerName: string
   instagram?: string | null
@@ -886,6 +1004,10 @@ export type OrderScalarWhereInput = {
   variantId?: Prisma.IntNullableFilter<"Order"> | number | null
   warehouseId?: Prisma.IntNullableFilter<"Order"> | number | null
   posSessionId?: Prisma.IntNullableFilter<"Order"> | number | null
+  subtotal?: Prisma.DecimalFilter<"Order"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: Prisma.EnumPosDiscountTypeNullableFilter<"Order"> | $Enums.PosDiscountType | null
+  discountValue?: Prisma.DecimalFilter<"Order"> | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFilter<"Order"> | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFilter<"Order"> | Date | string
   customerName?: Prisma.StringFilter<"Order"> | string
   instagram?: Prisma.StringNullableFilter<"Order"> | string | null
@@ -899,6 +1021,10 @@ export type OrderScalarWhereInput = {
 export type OrderCreateWithoutWarehouseInput = {
   phone: string
   quantity?: number | null
+  subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: $Enums.PosDiscountType | null
+  discountValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   customerName: string
   instagram?: string | null
@@ -919,6 +1045,10 @@ export type OrderUncheckedCreateWithoutWarehouseInput = {
   quantity?: number | null
   variantId?: number | null
   posSessionId?: number | null
+  subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: $Enums.PosDiscountType | null
+  discountValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   customerName: string
   instagram?: string | null
@@ -960,6 +1090,10 @@ export type OrderUpdateManyWithWhereWithoutWarehouseInput = {
 export type OrderCreateWithoutItemsInput = {
   phone: string
   quantity?: number | null
+  subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: $Enums.PosDiscountType | null
+  discountValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   customerName: string
   instagram?: string | null
@@ -981,6 +1115,10 @@ export type OrderUncheckedCreateWithoutItemsInput = {
   variantId?: number | null
   warehouseId?: number | null
   posSessionId?: number | null
+  subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: $Enums.PosDiscountType | null
+  discountValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   customerName: string
   instagram?: string | null
@@ -1011,6 +1149,10 @@ export type OrderUpdateToOneWithWhereWithoutItemsInput = {
 export type OrderUpdateWithoutItemsInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: Prisma.NullableEnumPosDiscountTypeFieldUpdateOperationsInput | $Enums.PosDiscountType | null
+  discountValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customerName?: Prisma.StringFieldUpdateOperationsInput | string
   instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1032,6 +1174,10 @@ export type OrderUncheckedUpdateWithoutItemsInput = {
   variantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   warehouseId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   posSessionId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: Prisma.NullableEnumPosDiscountTypeFieldUpdateOperationsInput | $Enums.PosDiscountType | null
+  discountValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customerName?: Prisma.StringFieldUpdateOperationsInput | string
   instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1046,6 +1192,10 @@ export type OrderUncheckedUpdateWithoutItemsInput = {
 export type OrderCreateWithoutTenantInput = {
   phone: string
   quantity?: number | null
+  subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: $Enums.PosDiscountType | null
+  discountValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   customerName: string
   instagram?: string | null
@@ -1067,6 +1217,10 @@ export type OrderUncheckedCreateWithoutTenantInput = {
   variantId?: number | null
   warehouseId?: number | null
   posSessionId?: number | null
+  subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: $Enums.PosDiscountType | null
+  discountValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   customerName: string
   instagram?: string | null
@@ -1107,6 +1261,10 @@ export type OrderUpdateManyWithWhereWithoutTenantInput = {
 export type OrderCreateWithoutPosSessionInput = {
   phone: string
   quantity?: number | null
+  subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: $Enums.PosDiscountType | null
+  discountValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   customerName: string
   instagram?: string | null
@@ -1127,6 +1285,10 @@ export type OrderUncheckedCreateWithoutPosSessionInput = {
   quantity?: number | null
   variantId?: number | null
   warehouseId?: number | null
+  subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: $Enums.PosDiscountType | null
+  discountValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   customerName: string
   instagram?: string | null
@@ -1168,6 +1330,10 @@ export type OrderUpdateManyWithWhereWithoutPosSessionInput = {
 export type OrderCreateWithoutPosPaymentsInput = {
   phone: string
   quantity?: number | null
+  subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: $Enums.PosDiscountType | null
+  discountValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   customerName: string
   instagram?: string | null
@@ -1189,6 +1355,10 @@ export type OrderUncheckedCreateWithoutPosPaymentsInput = {
   variantId?: number | null
   warehouseId?: number | null
   posSessionId?: number | null
+  subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: $Enums.PosDiscountType | null
+  discountValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   customerName: string
   instagram?: string | null
@@ -1219,6 +1389,10 @@ export type OrderUpdateToOneWithWhereWithoutPosPaymentsInput = {
 export type OrderUpdateWithoutPosPaymentsInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: Prisma.NullableEnumPosDiscountTypeFieldUpdateOperationsInput | $Enums.PosDiscountType | null
+  discountValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customerName?: Prisma.StringFieldUpdateOperationsInput | string
   instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1240,6 +1414,10 @@ export type OrderUncheckedUpdateWithoutPosPaymentsInput = {
   variantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   warehouseId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   posSessionId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: Prisma.NullableEnumPosDiscountTypeFieldUpdateOperationsInput | $Enums.PosDiscountType | null
+  discountValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customerName?: Prisma.StringFieldUpdateOperationsInput | string
   instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1257,6 +1435,10 @@ export type OrderCreateManyVariantInput = {
   quantity?: number | null
   warehouseId?: number | null
   posSessionId?: number | null
+  subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: $Enums.PosDiscountType | null
+  discountValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   customerName: string
   instagram?: string | null
@@ -1270,6 +1452,10 @@ export type OrderCreateManyVariantInput = {
 export type OrderUpdateWithoutVariantInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: Prisma.NullableEnumPosDiscountTypeFieldUpdateOperationsInput | $Enums.PosDiscountType | null
+  discountValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customerName?: Prisma.StringFieldUpdateOperationsInput | string
   instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1290,6 +1476,10 @@ export type OrderUncheckedUpdateWithoutVariantInput = {
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   warehouseId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   posSessionId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: Prisma.NullableEnumPosDiscountTypeFieldUpdateOperationsInput | $Enums.PosDiscountType | null
+  discountValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customerName?: Prisma.StringFieldUpdateOperationsInput | string
   instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1308,6 +1498,10 @@ export type OrderUncheckedUpdateManyWithoutVariantInput = {
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   warehouseId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   posSessionId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: Prisma.NullableEnumPosDiscountTypeFieldUpdateOperationsInput | $Enums.PosDiscountType | null
+  discountValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customerName?: Prisma.StringFieldUpdateOperationsInput | string
   instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1324,6 +1518,10 @@ export type OrderCreateManyWarehouseInput = {
   quantity?: number | null
   variantId?: number | null
   posSessionId?: number | null
+  subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: $Enums.PosDiscountType | null
+  discountValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   customerName: string
   instagram?: string | null
@@ -1337,6 +1535,10 @@ export type OrderCreateManyWarehouseInput = {
 export type OrderUpdateWithoutWarehouseInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: Prisma.NullableEnumPosDiscountTypeFieldUpdateOperationsInput | $Enums.PosDiscountType | null
+  discountValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customerName?: Prisma.StringFieldUpdateOperationsInput | string
   instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1357,6 +1559,10 @@ export type OrderUncheckedUpdateWithoutWarehouseInput = {
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   variantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   posSessionId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: Prisma.NullableEnumPosDiscountTypeFieldUpdateOperationsInput | $Enums.PosDiscountType | null
+  discountValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customerName?: Prisma.StringFieldUpdateOperationsInput | string
   instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1375,6 +1581,10 @@ export type OrderUncheckedUpdateManyWithoutWarehouseInput = {
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   variantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   posSessionId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: Prisma.NullableEnumPosDiscountTypeFieldUpdateOperationsInput | $Enums.PosDiscountType | null
+  discountValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customerName?: Prisma.StringFieldUpdateOperationsInput | string
   instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1392,6 +1602,10 @@ export type OrderCreateManyTenantInput = {
   variantId?: number | null
   warehouseId?: number | null
   posSessionId?: number | null
+  subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: $Enums.PosDiscountType | null
+  discountValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   customerName: string
   instagram?: string | null
@@ -1404,6 +1618,10 @@ export type OrderCreateManyTenantInput = {
 export type OrderUpdateWithoutTenantInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: Prisma.NullableEnumPosDiscountTypeFieldUpdateOperationsInput | $Enums.PosDiscountType | null
+  discountValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customerName?: Prisma.StringFieldUpdateOperationsInput | string
   instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1425,6 +1643,10 @@ export type OrderUncheckedUpdateWithoutTenantInput = {
   variantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   warehouseId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   posSessionId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: Prisma.NullableEnumPosDiscountTypeFieldUpdateOperationsInput | $Enums.PosDiscountType | null
+  discountValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customerName?: Prisma.StringFieldUpdateOperationsInput | string
   instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1443,6 +1665,10 @@ export type OrderUncheckedUpdateManyWithoutTenantInput = {
   variantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   warehouseId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   posSessionId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: Prisma.NullableEnumPosDiscountTypeFieldUpdateOperationsInput | $Enums.PosDiscountType | null
+  discountValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customerName?: Prisma.StringFieldUpdateOperationsInput | string
   instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1458,6 +1684,10 @@ export type OrderCreateManyPosSessionInput = {
   quantity?: number | null
   variantId?: number | null
   warehouseId?: number | null
+  subtotal?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: $Enums.PosDiscountType | null
+  discountValue?: runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Date | string
   customerName: string
   instagram?: string | null
@@ -1471,6 +1701,10 @@ export type OrderCreateManyPosSessionInput = {
 export type OrderUpdateWithoutPosSessionInput = {
   phone?: Prisma.StringFieldUpdateOperationsInput | string
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: Prisma.NullableEnumPosDiscountTypeFieldUpdateOperationsInput | $Enums.PosDiscountType | null
+  discountValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customerName?: Prisma.StringFieldUpdateOperationsInput | string
   instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1491,6 +1725,10 @@ export type OrderUncheckedUpdateWithoutPosSessionInput = {
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   variantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   warehouseId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: Prisma.NullableEnumPosDiscountTypeFieldUpdateOperationsInput | $Enums.PosDiscountType | null
+  discountValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customerName?: Prisma.StringFieldUpdateOperationsInput | string
   instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1509,6 +1747,10 @@ export type OrderUncheckedUpdateManyWithoutPosSessionInput = {
   quantity?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   variantId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
   warehouseId?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  subtotal?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountType?: Prisma.NullableEnumPosDiscountTypeFieldUpdateOperationsInput | $Enums.PosDiscountType | null
+  discountValue?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
+  discountAmount?: Prisma.DecimalFieldUpdateOperationsInput | runtime.Decimal | runtime.DecimalJsLike | number | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   customerName?: Prisma.StringFieldUpdateOperationsInput | string
   instagram?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
@@ -1566,6 +1808,10 @@ export type OrderSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   variantId?: boolean
   warehouseId?: boolean
   posSessionId?: boolean
+  subtotal?: boolean
+  discountType?: boolean
+  discountValue?: boolean
+  discountAmount?: boolean
   createdAt?: boolean
   customerName?: boolean
   instagram?: boolean
@@ -1590,6 +1836,10 @@ export type OrderSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   variantId?: boolean
   warehouseId?: boolean
   posSessionId?: boolean
+  subtotal?: boolean
+  discountType?: boolean
+  discountValue?: boolean
+  discountAmount?: boolean
   createdAt?: boolean
   customerName?: boolean
   instagram?: boolean
@@ -1611,6 +1861,10 @@ export type OrderSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensi
   variantId?: boolean
   warehouseId?: boolean
   posSessionId?: boolean
+  subtotal?: boolean
+  discountType?: boolean
+  discountValue?: boolean
+  discountAmount?: boolean
   createdAt?: boolean
   customerName?: boolean
   instagram?: boolean
@@ -1632,6 +1886,10 @@ export type OrderSelectScalar = {
   variantId?: boolean
   warehouseId?: boolean
   posSessionId?: boolean
+  subtotal?: boolean
+  discountType?: boolean
+  discountValue?: boolean
+  discountAmount?: boolean
   createdAt?: boolean
   customerName?: boolean
   instagram?: boolean
@@ -1642,7 +1900,7 @@ export type OrderSelectScalar = {
   tenantId?: boolean
 }
 
-export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "phone" | "quantity" | "variantId" | "warehouseId" | "posSessionId" | "createdAt" | "customerName" | "instagram" | "notes" | "status" | "updatedAt" | "source" | "tenantId", ExtArgs["result"]["order"]>
+export type OrderOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "phone" | "quantity" | "variantId" | "warehouseId" | "posSessionId" | "subtotal" | "discountType" | "discountValue" | "discountAmount" | "createdAt" | "customerName" | "instagram" | "notes" | "status" | "updatedAt" | "source" | "tenantId", ExtArgs["result"]["order"]>
 export type OrderInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   tenant?: boolean | Prisma.Order$tenantArgs<ExtArgs>
   variant?: boolean | Prisma.Order$variantArgs<ExtArgs>
@@ -1682,6 +1940,10 @@ export type $OrderPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs 
     variantId: number | null
     warehouseId: number | null
     posSessionId: number | null
+    subtotal: runtime.Decimal
+    discountType: $Enums.PosDiscountType | null
+    discountValue: runtime.Decimal
+    discountAmount: runtime.Decimal
     createdAt: Date
     customerName: string
     instagram: string | null
@@ -2125,6 +2387,10 @@ export interface OrderFieldRefs {
   readonly variantId: Prisma.FieldRef<"Order", 'Int'>
   readonly warehouseId: Prisma.FieldRef<"Order", 'Int'>
   readonly posSessionId: Prisma.FieldRef<"Order", 'Int'>
+  readonly subtotal: Prisma.FieldRef<"Order", 'Decimal'>
+  readonly discountType: Prisma.FieldRef<"Order", 'PosDiscountType'>
+  readonly discountValue: Prisma.FieldRef<"Order", 'Decimal'>
+  readonly discountAmount: Prisma.FieldRef<"Order", 'Decimal'>
   readonly createdAt: Prisma.FieldRef<"Order", 'DateTime'>
   readonly customerName: Prisma.FieldRef<"Order", 'String'>
   readonly instagram: Prisma.FieldRef<"Order", 'String'>

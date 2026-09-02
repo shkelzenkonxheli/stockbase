@@ -3,10 +3,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { FlashMessage } from "@/app/components/flash-message";
+import { ModuleAccessCheckbox } from "@/app/components/module-access-checkbox";
 import { requirePlatformAdmin } from "@/lib/auth";
 import { getPasswordPolicyHint, validatePasswordStrength } from "@/lib/password";
 import { prisma } from "@/lib/prisma";
-import { CATALOG_TYPES, getCatalogTemplate } from "@/lib/product-taxonomy";
+import { CATALOG_TYPES, getCatalogTemplate, getPosConfig, getPurchasesConfig, parseTenantCatalogConfig } from "@/lib/product-taxonomy";
 import { createTenantWorkspace } from "@/lib/tenants";
 
 function addDays(date: Date, days: number) {
@@ -57,6 +58,18 @@ function tenantStatusLabel(status: string | null | undefined) {
       return "Anuluar";
     default:
       return status ?? "-";
+  }
+}
+
+function planLabel(planCode: string | null | undefined) {
+  switch (planCode) {
+    case "cash_manual":
+    case "cash_manual_custom":
+      return "Abonim manual";
+    case "trial_manual":
+      return "Trial manual";
+    default:
+      return planCode ?? "-";
   }
 }
 
@@ -270,6 +283,69 @@ async function suspendTenant(formData: FormData) {
   redirect(`/platform/tenants?success=suspended&tenant=${tenantId}`);
 }
 
+async function setTenantPosAccess(formData: FormData) {
+  "use server";
+
+  await requirePlatformAdmin();
+
+  const tenantId = Number(formData.get("tenantId"));
+  const enabled = formData.get("enabled") === "true";
+  if (!Number.isInteger(tenantId) || tenantId <= 0) {
+    redirect("/platform/tenants");
+  }
+
+  const existingSettings = await prisma.tenantSettings.findUnique({
+    where: { tenantId },
+    select: { catalogConfig: true },
+  });
+  const existingConfig = parseTenantCatalogConfig(existingSettings?.catalogConfig);
+  const catalogConfig = {
+    ...existingConfig,
+    pos: { enabled },
+  };
+
+  await prisma.tenantSettings.upsert({
+    where: { tenantId },
+    create: { tenantId, catalogConfig },
+    update: { catalogConfig },
+  });
+
+  revalidatePath("/");
+  revalidatePath("/settings");
+  revalidatePath("/pos");
+  revalidatePath("/platform/tenants");
+  redirect(`/platform/tenants?success=pos-updated&tenant=${tenantId}`);
+}
+
+async function setTenantPurchasesAccess(formData: FormData) {
+  "use server";
+
+  await requirePlatformAdmin();
+
+  const tenantId = Number(formData.get("tenantId"));
+  const enabled = formData.get("enabled") === "true";
+  if (!Number.isInteger(tenantId) || tenantId <= 0) redirect("/platform/tenants");
+
+  const existingSettings = await prisma.tenantSettings.findUnique({
+    where: { tenantId },
+    select: { catalogConfig: true },
+  });
+  const existingConfig = parseTenantCatalogConfig(existingSettings?.catalogConfig);
+  const catalogConfig = { ...existingConfig, purchases: { enabled } };
+
+  await prisma.tenantSettings.upsert({
+    where: { tenantId },
+    create: { tenantId, catalogConfig },
+    update: { catalogConfig },
+  });
+
+  revalidatePath("/");
+  revalidatePath("/suppliers");
+  revalidatePath("/purchases");
+  revalidatePath("/platform/tenants");
+  redirect(`/platform/tenants?success=purchases-updated&tenant=${tenantId}`);
+}
+
 async function createTenant(formData: FormData) {
   "use server";
 
@@ -355,6 +431,12 @@ export default async function PlatformTenantsPage({
   const selectedTenant = Number.isFinite(selectedTenantId)
     ? tenants.find((tenant) => tenant.id === selectedTenantId) ?? null
     : null;
+  const selectedTenantPosEnabled = selectedTenant
+    ? getPosConfig(parseTenantCatalogConfig(selectedTenant.settings?.catalogConfig)).enabled
+    : false;
+  const selectedTenantPurchasesEnabled = selectedTenant
+    ? getPurchasesConfig(parseTenantCatalogConfig(selectedTenant.settings?.catalogConfig)).enabled
+    : false;
   const isCreateOpen = resolvedSearchParams?.create === "1";
   const createErrorMessage = getCreateErrorMessage(resolvedSearchParams?.error);
   const catalogOptions = CATALOG_TYPES.map((type) => ({
@@ -432,7 +514,7 @@ export default async function PlatformTenantsPage({
                       </span>
                     </td>
                     <td className="px-4 py-4 text-sm font-medium text-slate-700">
-                      {tenant.subscription?.planCode ?? "-"}
+                      {planLabel(tenant.subscription?.planCode)}
                     </td>
                     <td className="px-4 py-4 text-sm text-slate-700">
                       {formatDate(tenant.subscription?.currentPeriodEnd ?? null)}
@@ -482,7 +564,7 @@ export default async function PlatformTenantsPage({
                     </div>
                     <div className="rounded-2xl bg-white px-3 py-3">
                       <p className="text-[11px] uppercase tracking-[0.14em] text-slate-500">Plani</p>
-                      <p className="mt-1 font-medium text-slate-900">{tenant.subscription?.planCode ?? "-"}</p>
+                      <p className="mt-1 font-medium text-slate-900">{planLabel(tenant.subscription?.planCode)}</p>
                     </div>
                     <div className="rounded-2xl bg-white px-3 py-3">
                       <p className="text-[11px] uppercase tracking-[0.14em] text-slate-500">Aktiv deri</p>
@@ -534,7 +616,7 @@ export default async function PlatformTenantsPage({
                   </div>
                   <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
                     <p className="text-[11px] uppercase tracking-[0.14em] text-slate-500">Plani</p>
-                    <p className="mt-2 font-semibold text-slate-950">{selectedTenant.subscription?.planCode ?? "-"}</p>
+                    <p className="mt-2 font-semibold text-slate-950">{planLabel(selectedTenant.subscription?.planCode)}</p>
                   </div>
                   <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3">
                     <p className="text-[11px] uppercase tracking-[0.14em] text-slate-500">Trial deri</p>
@@ -558,6 +640,20 @@ export default async function PlatformTenantsPage({
                     <p className="mt-2 text-lg font-semibold text-slate-950">{selectedTenant._count.memberships}</p>
                   </div>
                 </div>
+
+                <section className="overflow-hidden rounded-[22px] border border-slate-200 bg-white">
+                  <div className="border-b border-slate-100 px-4 py-3"><p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Lejet e moduleve</p></div>
+                  <div className="divide-y divide-slate-100">
+                    <div className="flex items-center justify-between gap-4 px-4 py-3">
+                      <span className="text-sm font-semibold text-slate-900">POS Access</span>
+                      <ModuleAccessCheckbox action={setTenantPosAccess} tenantId={selectedTenant.id} enabled={selectedTenantPosEnabled} moduleName="POS Access" />
+                    </div>
+                    <div className="flex items-center justify-between gap-4 px-4 py-3">
+                      <span className="text-sm font-semibold text-slate-900">Suppliers & Purchases</span>
+                      <ModuleAccessCheckbox action={setTenantPurchasesAccess} tenantId={selectedTenant.id} enabled={selectedTenantPurchasesEnabled} moduleName="Suppliers & Purchases" />
+                    </div>
+                  </div>
+                </section>
 
                 <form action={activateTenantUntilDate} className="rounded-[24px] border border-slate-200 bg-slate-50/70 p-4">
                   <input type="hidden" name="tenantId" value={selectedTenant.id} />
