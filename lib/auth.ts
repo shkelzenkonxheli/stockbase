@@ -21,6 +21,7 @@ export type AuthTenant = {
   currency: string;
   language: string;
   catalogConfig: TenantCatalogConfig | null;
+  planCode: string | null;
   subscriptionStatus: "TRIALING" | "ACTIVE" | "PAST_DUE" | "CANCELED" | "EXPIRED" | null;
   trialEnd: Date | null;
   currentPeriodEnd: Date | null;
@@ -236,6 +237,7 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
           catalogConfig: parseTenantCatalogConfig(
             activeMembership.tenant.settings?.catalogConfig,
           ),
+          planCode: activeMembership.tenant.subscription?.planCode ?? null,
           subscriptionStatus: activeMembership.tenant.subscription?.status ?? null,
           trialEnd: activeMembership.tenant.subscription?.trialEnd ?? null,
           currentPeriodEnd: activeMembership.tenant.subscription?.currentPeriodEnd ?? null,

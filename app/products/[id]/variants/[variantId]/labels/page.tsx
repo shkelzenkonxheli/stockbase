@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import { notFound, redirect } from "next/navigation";
 import { FlashMessage } from "@/app/components/flash-message";
 import { UploadedImage } from "@/app/components/uploaded-image";
-import { requireRole } from "@/lib/auth";
+import { requireBarcodeAccess } from "@/lib/inventory-module-access";
 import { Code39Barcode, isCode39ValueSupported } from "@/lib/code39-barcode";
 import { parseTenantCatalogConfig, type TenantCatalogConfig } from "@/lib/product-taxonomy";
 import { prisma } from "@/lib/prisma";
@@ -125,7 +125,7 @@ function buildPresetHref(input: {
 async function saveLabelPreset(formData: FormData) {
   "use server";
 
-  const currentUser = await requireRole(["SUPER_ADMIN"]);
+  const currentUser = await requireBarcodeAccess(["SUPER_ADMIN"]);
   const tenantId = currentUser.tenant?.id;
   const productId = Number(formData.get("productId"));
   const variantId = Number(formData.get("variantId"));
@@ -195,7 +195,7 @@ async function saveLabelPreset(formData: FormData) {
 async function deleteLabelPreset(formData: FormData) {
   "use server";
 
-  const currentUser = await requireRole(["SUPER_ADMIN"]);
+  const currentUser = await requireBarcodeAccess(["SUPER_ADMIN"]);
   const tenantId = currentUser.tenant?.id;
   const productId = Number(formData.get("productId"));
   const variantId = Number(formData.get("variantId"));
@@ -441,7 +441,7 @@ export default async function VariantLabelsPage({
   params,
   searchParams,
 }: VariantLabelsPageProps) {
-  const currentUser = await requireRole(["SUPER_ADMIN"]);
+  const currentUser = await requireBarcodeAccess(["SUPER_ADMIN"]);
 
   const { id, variantId } = await params;
   const productId = Number(id);

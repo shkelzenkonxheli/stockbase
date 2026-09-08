@@ -6,6 +6,7 @@ export type BillingPlan = {
   description: string;
   monthlyPriceLabel: string;
   stripePriceEnvKey: string;
+  features: string[];
 };
 
 export const BILLING_PLANS: BillingPlan[] = [
@@ -15,6 +16,13 @@ export const BILLING_PLANS: BillingPlan[] = [
     description: "Per biznese te vogla qe duan inventar, porosi dhe raporte baze.",
     monthlyPriceLabel: "19 EUR / muaj",
     stripePriceEnvKey: "STRIPE_PRICE_STARTER_MONTHLY",
+    features: [
+      "Produkte, variante dhe stok baze",
+      "Porosi normale dhe Quick Orders",
+      "Import Excel/CSV dhe eksport baze",
+      "1 depo aktive",
+      "Raporte baze te inventarit",
+    ],
   },
   {
     code: "pro_monthly",
@@ -22,11 +30,35 @@ export const BILLING_PLANS: BillingPlan[] = [
     description: "Per tenant-e me kategori te avancuara, role dhe flukse me te plota.",
     monthlyPriceLabel: "39 EUR / muaj",
     stripePriceEnvKey: "STRIPE_PRICE_PRO_MONTHLY",
+    features: [
+      "Gjithcka nga Starter",
+      "Multi-warehouse dhe transfer stoku",
+      "Inventory Count dhe barcode workflow",
+      "Suppliers & Purchase Orders",
+      "POS si add-on i aprovuar nga platforma",
+    ],
   },
 ];
 
 export function getBillingPlan(code?: string | null) {
   return BILLING_PLANS.find((plan) => plan.code === code) ?? null;
+}
+
+export function getBillingPlanLabel(code?: string | null) {
+  const plan = getBillingPlan(code);
+  if (plan) {
+    return plan.name;
+  }
+
+  switch (code) {
+    case "trial_manual":
+      return "Trial";
+    case "cash_manual":
+    case "cash_manual_custom":
+      return "Abonim manual";
+    default:
+      return "Pa plan";
+  }
 }
 
 export function getStripePriceIdForPlan(code: BillingPlanCode) {

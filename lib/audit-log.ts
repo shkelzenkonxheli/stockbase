@@ -27,6 +27,11 @@ export const AUDIT_ACTION_LABELS: Record<string, string> = {
   POS_REGISTER_UPDATED: "Perditeso register POS",
   POS_SESSION_OPENED: "Hap register POS",
   POS_SESSION_CLOSED: "Mbyll register POS",
+  USER_CREATED: "Krijo user",
+  USER_UPDATED: "Perditeso user",
+  USER_PASSWORD_RESET: "Ndrysho password",
+  USER_REMOVED: "Largo user",
+  AUDIT_LOGS_DELETED: "Fshi hyrje audit",
 };
 
 export const AUDIT_ENTITY_LABELS: Record<string, string> = {
@@ -39,6 +44,8 @@ export const AUDIT_ENTITY_LABELS: Record<string, string> = {
   WAREHOUSE: "Depo",
   POS_REGISTER: "Register POS",
   POS_SESSION: "POS Session",
+  USER: "User",
+  AUDIT_LOG: "Audit Log",
 };
 
 type AuditLogInput = {

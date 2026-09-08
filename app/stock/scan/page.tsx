@@ -3,7 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { UploadedImage } from "@/app/components/uploaded-image";
 import { CameraBarcodeScanner } from "@/app/stock/scan/camera-barcode-scanner";
-import { requireRole } from "@/lib/auth";
+import { requireBarcodeAccess } from "@/lib/inventory-module-access";
 import { Code39Barcode, isCode39ValueSupported } from "@/lib/code39-barcode";
 import { prisma } from "@/lib/prisma";
 
@@ -18,7 +18,7 @@ type ScanPageProps = {
 };
 
 export default async function StockScanPage({ searchParams }: ScanPageProps) {
-  const currentUser = await requireRole(["SUPER_ADMIN", "SELLER", "WAREHOUSE"]);
+  const currentUser = await requireBarcodeAccess();
   const tenantId = currentUser.tenant?.id;
 
   if (!tenantId) {

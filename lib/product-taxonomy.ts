@@ -106,6 +106,15 @@ export type TenantCatalogConfig = {
   purchases?: {
     enabled: boolean;
   };
+  barcode?: {
+    enabled: boolean;
+  };
+  inventoryCount?: {
+    enabled: boolean;
+  };
+  multiWarehouse?: {
+    enabled: boolean;
+  };
   productListView?: ProductListViewConfig;
   orderListView?: OrderListViewConfig;
   labelPresets?: LabelPresetConfig[];
@@ -733,6 +742,24 @@ export function parseTenantCatalogConfig(value: unknown): TenantCatalogConfig | 
     };
   }
 
+  if (isRecord(value.barcode)) {
+    nextConfig.barcode = {
+      enabled: Boolean(value.barcode.enabled),
+    };
+  }
+
+  if (isRecord(value.inventoryCount)) {
+    nextConfig.inventoryCount = {
+      enabled: Boolean(value.inventoryCount.enabled),
+    };
+  }
+
+  if (isRecord(value.multiWarehouse)) {
+    nextConfig.multiWarehouse = {
+      enabled: Boolean(value.multiWarehouse.enabled),
+    };
+  }
+
   if (Array.isArray(value.labelPresets)) {
     nextConfig.labelPresets = value.labelPresets
       .map((item) => sanitizeLabelPresetConfig(item))
@@ -930,5 +957,23 @@ export function getPosConfig(tenantConfig?: TenantCatalogConfig | null) {
 export function getPurchasesConfig(tenantConfig?: TenantCatalogConfig | null) {
   return {
     enabled: tenantConfig?.purchases?.enabled ?? false,
+  };
+}
+
+export function getBarcodeConfig(tenantConfig?: TenantCatalogConfig | null) {
+  return {
+    enabled: tenantConfig?.barcode?.enabled ?? false,
+  };
+}
+
+export function getInventoryCountConfig(tenantConfig?: TenantCatalogConfig | null) {
+  return {
+    enabled: tenantConfig?.inventoryCount?.enabled ?? false,
+  };
+}
+
+export function getMultiWarehouseConfig(tenantConfig?: TenantCatalogConfig | null) {
+  return {
+    enabled: tenantConfig?.multiWarehouse?.enabled ?? false,
   };
 }

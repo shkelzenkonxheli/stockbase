@@ -1,10 +1,13 @@
 import type { Metadata } from "next";
 import { UploadedImage } from "@/app/components/uploaded-image";
+import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { requireRole } from "@/lib/auth";
 import {
   AUDIT_ACTION_LABELS,
   getAuditActionLabel,
   getAuditEntityLabel,
+  writeAuditLog,
 } from "@/lib/audit-log";
 import { prisma } from "@/lib/prisma";
 
@@ -16,6 +19,10 @@ type AuditPageProps = {
   searchParams?: Promise<{
     q?: string;
     action?: string;
+    userId?: string;
+    from?: string;
+    to?: string;
+    success?: string;
   }>;
 };
 
@@ -57,6 +64,10 @@ type AuditMetadata = {
   customers?: string[];
   sources?: string[];
   productId?: number;
+  email?: string;
+  role?: string;
+  beforeRole?: string;
+  afterRole?: string;
 };
 
 type ProductPreview = {
@@ -85,6 +96,124 @@ function formatMetadata(metadata: unknown) {
   } catch {
     return String(metadata);
   }
+}
+
+const METADATA_LABELS: Record<string, string> = {
+  email: "Email",
+  role: "Roli",
+  beforeRole: "Roli paraprak",
+  afterRole: "Roli i ri",
+  reason: "Arsyeja",
+  source: "Burimi",
+  status: "Statusi",
+  quantity: "Sasia",
+  totalQuantity: "Sasia totale",
+  itemCount: "Artikuj",
+  note: "Shenimi",
+  warehouseName: "Depoja",
+  registerName: "Register",
+  openingCash: "Cash fillestar",
+  expectedCash: "Cash i pritur",
+  countedCash: "Cash i numeruar",
+  difference: "Diferenca",
+  count: "Numri i hyrjeve",
+};
+
+function formatMetadataValue(value: unknown): string {
+  if (value === null || value === undefined || value === "") return "-";
+  if (typeof value === "boolean") return value ? "Po" : "Jo";
+  if (typeof value === "number") return String(value);
+  if (typeof value === "string") return value.replaceAll("_", " ");
+  if (Array.isArray(value)) return `${value.length} rreshta`;
+  if (typeof value === "object") {
+    const entries: string[] = Object.entries(value as Record<string, unknown>)
+      .filter(([, nestedValue]) => ["string", "number", "boolean"].includes(typeof nestedValue))
+      .slice(0, 3)
+      .map(([key, nestedValue]) => `${METADATA_LABELS[key] ?? key}: ${formatMetadataValue(nestedValue)}`);
+    return entries.join(" · ") || "Detaje te ruajtura";
+  }
+  return String(value);
+}
+
+function MetadataFacts({ metadata }: { metadata: AuditMetadata }) {
+  const entries = Object.entries(metadata as Record<string, unknown>)
+    .filter(([key]) => !["adjustments", "updates", "items", "rows", "changes"].includes(key))
+    .slice(0, 8);
+
+  if (entries.length === 0) return <span className="text-sm text-slate-400">Pa detaje shtese.</span>;
+
+  return (
+    <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
+      {entries.map(([key, value]) => (
+        <div key={key} className="rounded-xl bg-slate-50 px-3 py-2">
+          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500">
+            {METADATA_LABELS[key] ?? key.replace(/([A-Z])/g, " $1")}
+          </p>
+          <p className="mt-1 break-words text-sm font-semibold text-slate-900">{formatMetadataValue(value)}</p>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+function parseDateStart(value?: string) {
+  if (!value) return null;
+  const date = new Date(`${value}T00:00:00`);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function parseDateEnd(value?: string) {
+  if (!value) return null;
+  const date = new Date(`${value}T23:59:59.999`);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
+
+function buildAuditReturnUrl(formData: FormData, success?: string) {
+  const params = new URLSearchParams();
+  for (const key of ["q", "action", "userId", "from", "to"]) {
+    const value = formData.get(`return${key[0].toUpperCase()}${key.slice(1)}`)?.toString().trim();
+    if (value) params.set(key, value);
+  }
+  if (success) params.set("success", success);
+  return `/audit${params.size ? `?${params.toString()}` : ""}`;
+}
+
+async function deleteAuditLogs(formData: FormData) {
+  "use server";
+
+  const currentUser = await requireRole(["SUPER_ADMIN"]);
+  const tenantId = currentUser.tenant?.id;
+  const ids = [...new Set(formData.getAll("selectedLogIds").map((value) => Number(value)).filter((id) => Number.isInteger(id) && id > 0))];
+  if (!tenantId || ids.length === 0) redirect(buildAuditReturnUrl(formData));
+
+  await prisma.$transaction(async (tx) => {
+    const selectedLogs = await tx.auditLog.findMany({
+      where: { tenantId, id: { in: ids } },
+      select: { id: true },
+    });
+    if (selectedLogs.length === 0) return;
+
+    await tx.auditLog.deleteMany({ where: { tenantId, id: { in: selectedLogs.map((log) => log.id) } } });
+    await writeAuditLog(tx, {
+      tenantId,
+      userId: currentUser.id,
+      action: "AUDIT_LOGS_DELETED",
+      entityType: "AUDIT_LOG",
+      entityLabel: "Audit entries",
+      metadata: { count: selectedLogs.length },
+    });
+  });
+
+  revalidatePath("/audit");
+  redirect(buildAuditReturnUrl(formData, "deleted"));
+}
+
+async function deleteOneAuditLog(logId: number, formData: FormData) {
+  "use server";
+
+  formData.delete("selectedLogIds");
+  if (Number.isInteger(logId) && logId > 0) formData.set("selectedLogIds", String(logId));
+  await deleteAuditLogs(formData);
 }
 
 function formatWarehouseName(warehouseMap: Map<number, string>, warehouseId?: number) {
@@ -277,6 +406,27 @@ function DesktopRows({
   );
 }
 
+function UserAuditDetails({ metadata }: { metadata: AuditMetadata }) {
+  return (
+    <div className="grid gap-2 sm:grid-cols-3">
+      <div className="rounded-xl bg-slate-50 px-3 py-2">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Email</p>
+        <p className="mt-1 truncate text-sm font-semibold text-slate-900">{metadata.email ?? "-"}</p>
+      </div>
+      <div className="rounded-xl bg-blue-50 px-3 py-2">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-blue-500">Roli</p>
+        <p className="mt-1 text-sm font-semibold text-blue-900">{metadata.afterRole ?? metadata.role ?? "-"}</p>
+      </div>
+      <div className="rounded-xl bg-emerald-50 px-3 py-2">
+        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-500">Ndryshimi</p>
+        <p className="mt-1 text-sm font-semibold text-emerald-900">
+          {metadata.beforeRole ? `${metadata.beforeRole} -> ${metadata.afterRole ?? "-"}` : "U ruajt"}
+        </p>
+      </div>
+    </div>
+  );
+}
+
 function DesktopDetails({
   action,
   metadata,
@@ -293,6 +443,10 @@ function DesktopDetails({
   }
 
   const rows = metadata.adjustments ?? metadata.updates ?? metadata.items ?? metadata.rows ?? [];
+
+  if (action.startsWith("USER_")) {
+    return <UserAuditDetails metadata={metadata} />;
+  }
 
   if (action === "STOCK_TRANSFER_CREATED") {
     return (
@@ -433,11 +587,7 @@ function DesktopDetails({
     );
   }
 
-  return (
-    <pre className="overflow-x-auto rounded-2xl bg-slate-950 px-4 py-3 text-xs leading-6 text-slate-100">
-      {formatMetadata(metadata)}
-    </pre>
-  );
+  return <MetadataFacts metadata={metadata} />;
 }
 
 function ExpandIcon() {
@@ -474,6 +624,10 @@ function AuditSummary({
   }
 
   const rows = metadata.adjustments ?? metadata.updates ?? metadata.items ?? metadata.rows ?? [];
+
+  if (action.startsWith("USER_")) {
+    return <UserAuditDetails metadata={metadata} />;
+  }
 
   if (action === "STOCK_TRANSFER_CREATED") {
     return (
@@ -662,11 +816,7 @@ function AuditSummary({
     );
   }
 
-  return (
-    <pre className="mt-4 overflow-x-auto rounded-2xl bg-slate-950 px-4 py-3 text-xs leading-6 text-slate-100">
-      {formatMetadata(metadata)}
-    </pre>
-  );
+  return <div className="mt-3"><MetadataFacts metadata={metadata} /></div>;
 }
 
 export default async function AuditPage({ searchParams }: AuditPageProps) {
@@ -680,12 +830,27 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
   const resolvedSearchParams = searchParams ? await searchParams : undefined;
   const searchQuery = resolvedSearchParams?.q?.trim() || "";
   const selectedAction = resolvedSearchParams?.action?.trim() || "";
+  const selectedUserId = Number(resolvedSearchParams?.userId);
+  const from = resolvedSearchParams?.from?.trim() || "";
+  const to = resolvedSearchParams?.to?.trim() || "";
+  const fromDate = parseDateStart(from);
+  const toDate = parseDateEnd(to);
+  const hasFilters = Boolean(searchQuery || selectedAction || selectedUserId > 0 || fromDate || toDate);
 
-  const [logs, warehouses] = await Promise.all([
+  const [logs, warehouses, users] = await Promise.all([
     prisma.auditLog.findMany({
       where: {
         tenantId,
         ...(selectedAction ? { action: selectedAction } : {}),
+        ...(selectedUserId > 0 ? { userId: selectedUserId } : {}),
+        ...(fromDate || toDate
+          ? {
+              createdAt: {
+                ...(fromDate ? { gte: fromDate } : {}),
+                ...(toDate ? { lte: toDate } : {}),
+              },
+            }
+          : {}),
         ...(searchQuery
           ? {
               OR: [
@@ -712,11 +877,20 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
         },
       },
       orderBy: { createdAt: "desc" },
-      take: 100,
+      take: hasFilters ? 150 : 30,
     }),
     prisma.warehouse.findMany({
       where: { tenantId },
       select: { id: true, name: true },
+    }),
+    prisma.tenantMembership.findMany({
+      where: { tenantId },
+      orderBy: { user: { name: "asc" } },
+      select: {
+        user: {
+          select: { id: true, name: true, email: true },
+        },
+      },
     }),
   ]);
 
@@ -838,25 +1012,25 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
           </p>
         </section>
 
-        <section className="rounded-[30px] border border-slate-200 bg-white px-5 py-6 shadow-[0_18px_45px_rgba(15,23,42,0.06)] sm:px-6">
-          <form className="grid gap-4 md:grid-cols-[minmax(0,1fr)_220px_auto] md:items-end">
-            <label className="grid gap-2 text-sm font-medium text-slate-700">
+        <section className="rounded-[30px] border border-slate-200 bg-white px-5 py-4 shadow-[0_18px_45px_rgba(15,23,42,0.06)] sm:px-6">
+          <form className="flex items-end gap-4 overflow-x-auto pb-1">
+            <label className="grid min-w-0 w-[260px] shrink-0 gap-2 text-sm font-medium text-slate-700">
               Kerko
               <input
                 type="text"
                 name="q"
                 defaultValue={searchQuery}
                 placeholder="produkt, user, veprim..."
-                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-300"
+                className="min-w-0 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-300"
               />
             </label>
 
-            <label className="grid gap-2 text-sm font-medium text-slate-700">
+            <label className="grid min-w-0 w-[180px] shrink-0 gap-2 text-sm font-medium text-slate-700">
               Veprimi
               <select
                 name="action"
                 defaultValue={selectedAction}
-                className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-slate-300"
+                className="min-w-0 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-300"
               >
                 <option value="">Te gjitha</option>
                 {Object.entries(AUDIT_ACTION_LABELS).map(([value, label]) => (
@@ -867,16 +1041,42 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
               </select>
             </label>
 
-            <div className="flex gap-2">
+            <label className="grid min-w-0 w-[210px] shrink-0 gap-2 text-sm font-medium text-slate-700">
+              Useri
+              <select
+                name="userId"
+                defaultValue={selectedUserId > 0 ? String(selectedUserId) : ""}
+                className="min-w-0 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-300"
+              >
+                <option value="">Te gjithe userat</option>
+                {users.map((membership) => (
+                  <option key={membership.user.id} value={membership.user.id}>
+                    {membership.user.name} - {membership.user.email}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="grid min-w-0 w-[155px] shrink-0 gap-2 text-sm font-medium text-slate-700">
+              Nga data
+              <input type="date" name="from" defaultValue={from} className="min-w-0 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-300" />
+            </label>
+
+            <label className="grid min-w-0 w-[155px] shrink-0 gap-2 text-sm font-medium text-slate-700">
+              Deri me
+              <input type="date" name="to" defaultValue={to} className="min-w-0 w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-300" />
+            </label>
+
+            <div className="flex shrink-0 gap-2">
               <button
                 type="submit"
-                className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800"
+                className="inline-flex items-center justify-center rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
               >
                 Filtro
               </button>
               <a
                 href="/audit"
-                className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+                className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
               >
                 Reset
               </a>
@@ -885,9 +1085,25 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
         </section>
 
         <section className="rounded-[30px] border border-slate-200 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
-          <div className="border-b border-slate-100 px-5 py-4 text-sm text-slate-600 sm:px-6">
-            Po shfaqen <span className="font-semibold text-slate-950">{logs.length}</span> hyrje.
-          </div>
+          <form action={deleteAuditLogs}>
+            <input type="hidden" name="returnQ" value={searchQuery} />
+            <input type="hidden" name="returnAction" value={selectedAction} />
+            <input type="hidden" name="returnUserId" value={selectedUserId > 0 ? selectedUserId : ""} />
+            <input type="hidden" name="returnFrom" value={from} />
+            <input type="hidden" name="returnTo" value={to} />
+            <div className="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 px-5 py-4 text-sm text-slate-600 sm:px-6">
+              <p>
+                Po shfaqen <span className="font-semibold text-slate-950">{logs.length}</span> hyrje{hasFilters ? " per filtrat aktive" : " te fundit"}.
+              </p>
+              <button type="submit" className="inline-flex items-center justify-center rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-100">
+                Fshi te zgjedhurat
+              </button>
+            </div>
+            {resolvedSearchParams?.success === "deleted" ? (
+              <p className="mx-5 mt-4 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-800 sm:mx-6">
+                Hyrjet e zgjedhura u fshine.
+              </p>
+            ) : null}
 
           {logs.length === 0 ? (
             <div className="px-6 py-12 text-center text-sm text-slate-500">
@@ -916,6 +1132,7 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
                   return (
                     <details key={log.id} className="group px-5 py-3 sm:px-6">
                       <summary className="flex cursor-pointer list-none items-center justify-between gap-4 rounded-2xl px-1 py-2 text-left">
+                        <input type="checkbox" name="selectedLogIds" value={log.id} aria-label={`Zgjedh audit ${log.id}`} className="h-4 w-4 shrink-0 rounded border-slate-300 text-rose-600 focus:ring-rose-200" />
                         <div className="min-w-0">
                           <p className="truncate text-sm font-semibold text-slate-950">
                             {getAuditActionLabel(log.action)}
@@ -955,6 +1172,9 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
                           product={resolvedProduct}
                           variant={resolvedVariant}
                         />
+                        <button type="submit" formAction={deleteOneAuditLog.bind(null, log.id)} className="mt-3 rounded-xl border border-rose-200 bg-white px-3 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-50">
+                          Fshi kete hyrje
+                        </button>
                       </div>
                     </details>
                   );
@@ -963,7 +1183,8 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
 
               <div className="hidden lg:block">
                 <div className="divide-y divide-slate-100">
-                  <div className="grid grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_180px_48px] items-center gap-4 bg-slate-50 px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                  <div className="grid grid-cols-[32px_minmax(0,1.3fr)_minmax(0,1fr)_180px_48px] items-center gap-4 bg-slate-50 px-5 py-4 text-[11px] font-semibold uppercase tracking-[0.18em] text-slate-500">
+                    <span />
                     <span>Veprimi</span>
                     <span>Kush e beri</span>
                     <span>Koha</span>
@@ -988,7 +1209,8 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
 
                         return (
                           <details key={log.id} className="group">
-                            <summary className="grid cursor-pointer list-none grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)_180px_48px] items-center gap-4 px-5 py-4 text-left transition hover:bg-slate-50/70">
+                            <summary className="grid cursor-pointer list-none grid-cols-[32px_minmax(0,1.3fr)_minmax(0,1fr)_180px_48px] items-center gap-4 px-5 py-4 text-left transition hover:bg-slate-50/70">
+                              <input type="checkbox" name="selectedLogIds" value={log.id} aria-label={`Zgjedh audit ${log.id}`} className="h-4 w-4 rounded border-slate-300 text-rose-600 focus:ring-rose-200" />
                               <div className="min-w-0">
                                 <p className="truncate text-sm font-semibold text-slate-950">
                                   {getAuditActionLabel(log.action)}
@@ -1028,6 +1250,9 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
                                     warehouseName={log.warehouse?.name ?? null}
                                     warehouseMap={warehouseMap}
                                   />
+                                  <button type="submit" formAction={deleteOneAuditLog.bind(null, log.id)} className="mt-3 rounded-xl border border-rose-200 bg-white px-3 py-2 text-xs font-semibold text-rose-700 transition hover:bg-rose-50">
+                                    Fshi kete hyrje
+                                  </button>
                                 </div>
                               </div>
                             </div>
@@ -1038,6 +1263,7 @@ export default async function AuditPage({ searchParams }: AuditPageProps) {
               </div>
             </>
           )}
+          </form>
         </section>
       </div>
     </main>

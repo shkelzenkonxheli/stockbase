@@ -1,11 +1,14 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { ConfirmActionForm } from "@/app/components/confirm-action-form";
 import { FlashMessage } from "@/app/components/flash-message";
 import { prisma } from "@/lib/prisma";
 import { requireRole } from "@/lib/auth";
+import { writeAuditLog } from "@/lib/audit-log";
 import { getPasswordPolicyHint, hashPassword, validatePasswordStrength } from "@/lib/password";
+import { ROLE_PERMISSION_SUMMARIES } from "@/lib/role-permissions";
 import { AddUserModal } from "./add-user-modal";
 import { EditUserModal } from "./edit-user-modal";
 import { ResetPasswordModal } from "./reset-password-modal";
@@ -62,21 +65,34 @@ async function createUser(formData: FormData) {
 
   const passwordHash = await hashPassword(password);
 
-  await prisma.user.create({
-    data: {
-      name,
-      email,
-      passwordHash,
-      role,
-      memberships: {
-        create: {
-          tenantId,
-          role,
+  await prisma.$transaction(async (tx) => {
+    const created = await tx.user.create({
+      data: {
+        name,
+        email,
+        passwordHash,
+        role,
+        memberships: {
+          create: {
+            tenantId,
+            role,
+          },
         },
       },
-    },
+    });
+
+    await writeAuditLog(tx, {
+      tenantId,
+      userId: currentUser.id,
+      action: "USER_CREATED",
+      entityType: "USER",
+      entityId: created.id,
+      entityLabel: created.name,
+      metadata: { email: created.email, role },
+    });
   });
 
+  revalidatePath("/audit");
   redirect("/users?success=created");
 }
 
@@ -140,21 +156,38 @@ async function updateUser(formData: FormData) {
     redirect(`/users?error=self-role&edit=${userId}`);
   }
 
-  await prisma.user.update({
-    where: { id: userId },
-    data: {
-      name,
-      email,
-      role,
-      memberships: {
-        updateMany: {
-          where: { tenantId },
-          data: { role },
+  await prisma.$transaction(async (tx) => {
+    const updated = await tx.user.update({
+      where: { id: userId },
+      data: {
+        name,
+        email,
+        role,
+        memberships: {
+          updateMany: {
+            where: { tenantId },
+            data: { role },
+          },
         },
       },
-    },
+    });
+
+    await writeAuditLog(tx, {
+      tenantId,
+      userId: currentUser.id,
+      action: "USER_UPDATED",
+      entityType: "USER",
+      entityId: updated.id,
+      entityLabel: updated.name,
+      metadata: {
+        email: updated.email,
+        beforeRole: tenantMembership.role,
+        afterRole: role,
+      },
+    });
   });
 
+  revalidatePath("/audit");
   redirect("/users?success=updated");
 }
 
@@ -180,6 +213,8 @@ async function resetUserPassword(formData: FormData) {
     where: { id: userId },
     select: {
       id: true,
+      name: true,
+      email: true,
       memberships: {
         where: { tenantId },
         select: { id: true },
@@ -193,11 +228,23 @@ async function resetUserPassword(formData: FormData) {
 
   const passwordHash = await hashPassword(password);
 
-  await prisma.user.update({
-    where: { id: userId },
-    data: { passwordHash },
+  await prisma.$transaction(async (tx) => {
+    await tx.user.update({
+      where: { id: userId },
+      data: { passwordHash },
+    });
+    await writeAuditLog(tx, {
+      tenantId,
+      userId: currentUser.id,
+      action: "USER_PASSWORD_RESET",
+      entityType: "USER",
+      entityId: user.id,
+      entityLabel: user.name,
+      metadata: { email: user.email },
+    });
   });
 
+  revalidatePath("/audit");
   redirect("/users?success=password-reset");
 }
 
@@ -220,6 +267,8 @@ async function deleteUser(formData: FormData) {
     where: { id: userId },
     select: {
       id: true,
+      name: true,
+      email: true,
       memberships: {
         where: { tenantId },
         select: { id: true, role: true },
@@ -257,8 +306,19 @@ async function deleteUser(formData: FormData) {
         where: { id: userId },
       });
     }
+
+    await writeAuditLog(tx, {
+      tenantId,
+      userId: currentUser.id,
+      action: "USER_REMOVED",
+      entityType: "USER",
+      entityId: user.id,
+      entityLabel: user.name,
+      metadata: { email: user.email, role: tenantMembership.role },
+    });
   });
 
+  revalidatePath("/audit");
   redirect("/users?success=deleted");
 }
 
@@ -431,6 +491,25 @@ export default async function UsersPage({ searchParams }: UsersPageProps) {
               className="mx-4 mt-4 rounded-2xl px-4 py-3 text-sm sm:mx-5 lg:mx-6"
             />
           ) : null}
+
+          <details className="border-b border-slate-200 bg-slate-50/70 px-5 py-3 sm:px-6">
+            <summary className="cursor-pointer text-sm font-semibold text-slate-700">
+              Shiko lejet sipas rolit
+            </summary>
+            <div className="mt-3 grid gap-3 lg:grid-cols-3">
+              {ROLE_PERMISSION_SUMMARIES.map((role) => (
+                <article key={role.role} className="rounded-2xl border border-slate-200 bg-white p-4">
+                  <p className="text-sm font-semibold text-slate-950">{role.label}</p>
+                  <p className="mt-1 text-xs leading-5 text-slate-500">{role.description}</p>
+                  <ul className="mt-3 space-y-1 text-xs text-slate-700">
+                    {role.permissions.map((permission) => (
+                      <li key={permission}>• {permission}</li>
+                    ))}
+                  </ul>
+                </article>
+              ))}
+            </div>
+          </details>
 
           <div className="grid gap-4 p-4 sm:p-5 lg:hidden">
             {users.map((user) => (

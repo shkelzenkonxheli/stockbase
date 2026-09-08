@@ -2,7 +2,7 @@ import { NextResponse } from "next/server";
 import { createElement, type ReactElement } from "react";
 import type { DocumentProps } from "@react-pdf/renderer";
 import { renderToBuffer } from "@react-pdf/renderer";
-import { requireRole } from "@/lib/auth";
+import { requireInventoryCountAccess } from "@/lib/inventory-module-access";
 import { filterInventoryCountLines, normalizeInventoryCountFilter } from "@/lib/inventory-counts";
 import { prisma } from "@/lib/prisma";
 import { InventoryCountPdfDocument } from "../../inventory-count-pdf-document";
@@ -12,7 +12,7 @@ type RouteProps = {
 };
 
 export async function GET(request: Request, { params }: RouteProps) {
-  const currentUser = await requireRole(["SUPER_ADMIN"]);
+  const currentUser = await requireInventoryCountAccess();
   const tenantId = currentUser.tenant?.id;
   const { id } = await params;
   const sessionId = Number(id);

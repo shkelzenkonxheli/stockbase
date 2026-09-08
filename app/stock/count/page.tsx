@@ -3,7 +3,7 @@ import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { FlashMessage } from "@/app/components/flash-message";
-import { requireRole } from "@/lib/auth";
+import { requireInventoryCountAccess } from "@/lib/inventory-module-access";
 import { writeAuditLog } from "@/lib/audit-log";
 import { parseTenantCatalogConfig } from "@/lib/product-taxonomy";
 import { prisma } from "@/lib/prisma";
@@ -22,7 +22,7 @@ type InventoryCountPageProps = {
 async function createInventoryCount(formData: FormData) {
   "use server";
 
-  const currentUser = await requireRole(["SUPER_ADMIN"]);
+  const currentUser = await requireInventoryCountAccess();
   const tenantId = currentUser.tenant?.id;
   const warehouseId = Number(formData.get("warehouseId"));
   const note = formData.get("note")?.toString().trim() || null;
@@ -113,7 +113,7 @@ function getMessage(error?: string) {
 }
 
 export default async function InventoryCountPage({ searchParams }: InventoryCountPageProps) {
-  const currentUser = await requireRole(["SUPER_ADMIN"]);
+  const currentUser = await requireInventoryCountAccess();
   const tenantId = currentUser.tenant?.id;
 
   if (!tenantId) {

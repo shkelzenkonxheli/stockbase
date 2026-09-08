@@ -3,7 +3,7 @@ import type { Metadata } from "next";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { FlashMessage } from "@/app/components/flash-message";
-import { requireRole } from "@/lib/auth";
+import { requireMultiWarehouseAccess } from "@/lib/inventory-module-access";
 import { writeAuditLog } from "@/lib/audit-log";
 import { parseTenantCatalogConfig } from "@/lib/product-taxonomy";
 import { prisma } from "@/lib/prisma";
@@ -24,7 +24,7 @@ type TransferStockPageProps = {
 async function createTransfer(formData: FormData) {
   "use server";
 
-  const currentUser = await requireRole(["SUPER_ADMIN"]);
+  const currentUser = await requireMultiWarehouseAccess();
   const tenantId = currentUser.tenant?.id;
 
   const productId = Number(formData.get("productId"));
@@ -259,7 +259,7 @@ function getMessage(error?: string, success?: string) {
 export default async function TransferStockPage({
   searchParams,
 }: TransferStockPageProps) {
-  const currentUser = await requireRole(["SUPER_ADMIN"]);
+  const currentUser = await requireMultiWarehouseAccess();
   const tenantId = currentUser.tenant?.id;
   if (!tenantId) {
     redirect("/login");

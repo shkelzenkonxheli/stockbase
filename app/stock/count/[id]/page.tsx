@@ -5,7 +5,7 @@ import { notFound, redirect } from "next/navigation";
 import { FlashMessage } from "@/app/components/flash-message";
 import { BulkSelectToggle } from "./bulk-select-toggle";
 import { InventoryCountFilters } from "./inventory-count-filters";
-import { requireRole } from "@/lib/auth";
+import { requireInventoryCountAccess } from "@/lib/inventory-module-access";
 import {
   filterInventoryCountLines,
   formatInventoryDifference,
@@ -103,7 +103,7 @@ function buildCountReturnUrl(sessionId: number, formData: FormData, state?: { er
 async function saveCountDraft(formData: FormData) {
   "use server";
 
-  const currentUser = await requireRole(["SUPER_ADMIN"]);
+  const currentUser = await requireInventoryCountAccess();
   const tenantId = currentUser.tenant?.id;
   const sessionId = Number(formData.get("sessionId"));
   const lineIdsRaw = formData.get("lineIds")?.toString();
@@ -186,7 +186,7 @@ async function saveCountDraft(formData: FormData) {
 async function finalizeCount(formData: FormData) {
   "use server";
 
-  const currentUser = await requireRole(["SUPER_ADMIN"]);
+  const currentUser = await requireInventoryCountAccess();
   const tenantId = currentUser.tenant?.id;
   const sessionId = Number(formData.get("sessionId"));
   const lineIdsRaw = formData.get("allLineIds")?.toString();
@@ -344,7 +344,7 @@ async function finalizeCount(formData: FormData) {
 async function markSelectedAsCounted(formData: FormData) {
   "use server";
 
-  const currentUser = await requireRole(["SUPER_ADMIN"]);
+  const currentUser = await requireInventoryCountAccess();
   const tenantId = currentUser.tenant?.id;
   const sessionId = Number(formData.get("sessionId"));
   const selectedLineIds = parseSelectedLineIds(formData);
@@ -397,7 +397,7 @@ async function markSelectedAsCounted(formData: FormData) {
 async function clearSelectedCounted(formData: FormData) {
   "use server";
 
-  const currentUser = await requireRole(["SUPER_ADMIN"]);
+  const currentUser = await requireInventoryCountAccess();
   const tenantId = currentUser.tenant?.id;
   const sessionId = Number(formData.get("sessionId"));
   const selectedLineIds = parseSelectedLineIds(formData);
@@ -438,7 +438,7 @@ async function clearSelectedCounted(formData: FormData) {
 async function applyNoteToSelected(formData: FormData) {
   "use server";
 
-  const currentUser = await requireRole(["SUPER_ADMIN"]);
+  const currentUser = await requireInventoryCountAccess();
   const tenantId = currentUser.tenant?.id;
   const sessionId = Number(formData.get("sessionId"));
   const selectedLineIds = parseSelectedLineIds(formData);
@@ -479,7 +479,7 @@ export default async function InventoryCountDetailPage({
   params,
   searchParams,
 }: InventoryCountDetailPageProps) {
-  const currentUser = await requireRole(["SUPER_ADMIN"]);
+  const currentUser = await requireInventoryCountAccess();
   const tenantId = currentUser.tenant?.id;
   const { id } = await params;
   const sessionId = Number(id);

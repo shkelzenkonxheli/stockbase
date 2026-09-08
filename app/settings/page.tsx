@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { FlashMessage } from "@/app/components/flash-message";
@@ -291,6 +292,9 @@ async function updateTenantSettings(formData: FormData) {
       enabled: existingTenantConfig?.pos?.enabled ?? false,
     },
     purchases: existingTenantConfig?.purchases,
+    barcode: existingTenantConfig?.barcode,
+    inventoryCount: existingTenantConfig?.inventoryCount,
+    multiWarehouse: existingTenantConfig?.multiWarehouse,
     productListView: parseProductListViewConfig(
       formData.get("productListViewConfig"),
       currentProductListView,
@@ -724,9 +728,14 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
                     </section>
 
                     <section className="rounded-[24px] border border-slate-200 bg-white p-4 sm:p-5">
-                      <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
-                        Subscription
-                      </p>
+                      <div className="flex items-center justify-between gap-3">
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
+                          Subscription
+                        </p>
+                        <Link href="/billing" className="text-sm font-semibold text-emerald-700 transition hover:text-emerald-800">
+                          Menaxho billing
+                        </Link>
+                      </div>
                       <div className="mt-4 space-y-3 text-sm text-slate-600">
                         <p>
                           <span className="font-medium text-slate-900">Statusi:</span>{" "}

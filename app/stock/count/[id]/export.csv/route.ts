@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { requireRole } from "@/lib/auth";
+import { requireInventoryCountAccess } from "@/lib/inventory-module-access";
 import { filterInventoryCountLines, normalizeInventoryCountFilter } from "@/lib/inventory-counts";
 import { prisma } from "@/lib/prisma";
 
@@ -14,7 +14,7 @@ function escapeCsv(value: string | number | null | undefined) {
 }
 
 export async function GET(request: Request, { params }: RouteProps) {
-  const currentUser = await requireRole(["SUPER_ADMIN"]);
+  const currentUser = await requireInventoryCountAccess();
   const tenantId = currentUser.tenant?.id;
   const { id } = await params;
   const sessionId = Number(id);

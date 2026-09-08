@@ -1,7 +1,7 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { getCurrentUser, requireRole } from "@/lib/auth";
+import { getCurrentUser } from "@/lib/auth";
 import {
   getBillingAppUrl,
   getStripePriceIdForPlan,
@@ -52,13 +52,13 @@ export async function startCheckout(formData: FormData) {
   const tenant = currentUser?.tenant;
   const planCode = formData.get("planCode")?.toString().trim() as BillingPlanCode | undefined;
 
-  if (!currentUser || !tenant || !planCode) {
+  if (!currentUser || !tenant || currentUser.role !== "SUPER_ADMIN" || !planCode) {
     redirect("/login");
   }
 
   const priceId = getStripePriceIdForPlan(planCode);
   if (!priceId) {
-    redirect("/settings?error=billing-not-configured");
+    redirect("/billing?error=not-configured");
   }
 
   const customerId = await ensureStripeCustomer({
@@ -78,8 +78,8 @@ export async function startCheckout(formData: FormData) {
         quantity: 1,
       },
     ],
-    success_url: `${appUrl}/settings?success=billing-return`,
-    cancel_url: `${appUrl}/settings?error=billing-canceled`,
+    success_url: `${appUrl}/billing?success=checkout-return`,
+    cancel_url: `${appUrl}/billing?error=checkout-canceled`,
     metadata: {
       tenantId: String(tenant.id),
       planCode,
@@ -93,17 +93,17 @@ export async function startCheckout(formData: FormData) {
   });
 
   if (!session.url) {
-    redirect("/settings?error=billing-session");
+    redirect("/billing?error=checkout-session");
   }
 
   redirect(session.url);
 }
 
 export async function openBillingPortal() {
-  const currentUser = await requireRole(["SUPER_ADMIN"]);
-  const tenant = currentUser.tenant;
+  const currentUser = await getCurrentUser();
+  const tenant = currentUser?.tenant;
 
-  if (!tenant) {
+  if (!currentUser || !tenant || currentUser.role !== "SUPER_ADMIN") {
     redirect("/login");
   }
 
@@ -115,14 +115,14 @@ export async function openBillingPortal() {
   });
 
   if (!subscription?.providerCustomerId) {
-    redirect("/settings?error=billing-not-configured");
+    redirect("/billing?error=portal-unavailable");
   }
 
   const stripe = getStripeClient();
   const appUrl = getBillingAppUrl();
   const portal = await stripe.billingPortal.sessions.create({
     customer: subscription.providerCustomerId,
-    return_url: `${appUrl}/settings?success=portal-return`,
+    return_url: `${appUrl}/billing?success=portal-return`,
   });
 
   redirect(portal.url);

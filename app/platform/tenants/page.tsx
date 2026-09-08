@@ -7,7 +7,16 @@ import { ModuleAccessCheckbox } from "@/app/components/module-access-checkbox";
 import { requirePlatformAdmin } from "@/lib/auth";
 import { getPasswordPolicyHint, validatePasswordStrength } from "@/lib/password";
 import { prisma } from "@/lib/prisma";
-import { CATALOG_TYPES, getCatalogTemplate, getPosConfig, getPurchasesConfig, parseTenantCatalogConfig } from "@/lib/product-taxonomy";
+import {
+  CATALOG_TYPES,
+  getBarcodeConfig,
+  getCatalogTemplate,
+  getInventoryCountConfig,
+  getMultiWarehouseConfig,
+  getPosConfig,
+  getPurchasesConfig,
+  parseTenantCatalogConfig,
+} from "@/lib/product-taxonomy";
 import { createTenantWorkspace } from "@/lib/tenants";
 
 function addDays(date: Date, days: number) {
@@ -346,6 +355,94 @@ async function setTenantPurchasesAccess(formData: FormData) {
   redirect(`/platform/tenants?success=purchases-updated&tenant=${tenantId}`);
 }
 
+async function setTenantBarcodeAccess(formData: FormData) {
+  "use server";
+
+  await requirePlatformAdmin();
+  const tenantId = Number(formData.get("tenantId"));
+  const enabled = formData.get("enabled") === "true";
+  if (!Number.isInteger(tenantId) || tenantId <= 0) redirect("/platform/tenants");
+
+  const existingSettings = await prisma.tenantSettings.findUnique({
+    where: { tenantId },
+    select: { catalogConfig: true },
+  });
+  const catalogConfig = {
+    ...parseTenantCatalogConfig(existingSettings?.catalogConfig),
+    barcode: { enabled },
+  };
+
+  await prisma.tenantSettings.upsert({
+    where: { tenantId },
+    create: { tenantId, catalogConfig },
+    update: { catalogConfig },
+  });
+
+  revalidatePath("/");
+  revalidatePath("/stock/scan");
+  revalidatePath("/platform/tenants");
+  redirect(`/platform/tenants?success=barcode-updated&tenant=${tenantId}`);
+}
+
+async function setTenantInventoryCountAccess(formData: FormData) {
+  "use server";
+
+  await requirePlatformAdmin();
+  const tenantId = Number(formData.get("tenantId"));
+  const enabled = formData.get("enabled") === "true";
+  if (!Number.isInteger(tenantId) || tenantId <= 0) redirect("/platform/tenants");
+
+  const existingSettings = await prisma.tenantSettings.findUnique({
+    where: { tenantId },
+    select: { catalogConfig: true },
+  });
+  const catalogConfig = {
+    ...parseTenantCatalogConfig(existingSettings?.catalogConfig),
+    inventoryCount: { enabled },
+  };
+
+  await prisma.tenantSettings.upsert({
+    where: { tenantId },
+    create: { tenantId, catalogConfig },
+    update: { catalogConfig },
+  });
+
+  revalidatePath("/");
+  revalidatePath("/stock/count");
+  revalidatePath("/platform/tenants");
+  redirect(`/platform/tenants?success=inventory-count-updated&tenant=${tenantId}`);
+}
+
+async function setTenantMultiWarehouseAccess(formData: FormData) {
+  "use server";
+
+  await requirePlatformAdmin();
+  const tenantId = Number(formData.get("tenantId"));
+  const enabled = formData.get("enabled") === "true";
+  if (!Number.isInteger(tenantId) || tenantId <= 0) redirect("/platform/tenants");
+
+  const existingSettings = await prisma.tenantSettings.findUnique({
+    where: { tenantId },
+    select: { catalogConfig: true },
+  });
+  const catalogConfig = {
+    ...parseTenantCatalogConfig(existingSettings?.catalogConfig),
+    multiWarehouse: { enabled },
+  };
+
+  await prisma.tenantSettings.upsert({
+    where: { tenantId },
+    create: { tenantId, catalogConfig },
+    update: { catalogConfig },
+  });
+
+  revalidatePath("/");
+  revalidatePath("/settings");
+  revalidatePath("/stock/transfer");
+  revalidatePath("/platform/tenants");
+  redirect(`/platform/tenants?success=multi-warehouse-updated&tenant=${tenantId}`);
+}
+
 async function createTenant(formData: FormData) {
   "use server";
 
@@ -436,6 +533,15 @@ export default async function PlatformTenantsPage({
     : false;
   const selectedTenantPurchasesEnabled = selectedTenant
     ? getPurchasesConfig(parseTenantCatalogConfig(selectedTenant.settings?.catalogConfig)).enabled
+    : false;
+  const selectedTenantBarcodeEnabled = selectedTenant
+    ? getBarcodeConfig(parseTenantCatalogConfig(selectedTenant.settings?.catalogConfig)).enabled
+    : false;
+  const selectedTenantInventoryCountEnabled = selectedTenant
+    ? getInventoryCountConfig(parseTenantCatalogConfig(selectedTenant.settings?.catalogConfig)).enabled
+    : false;
+  const selectedTenantMultiWarehouseEnabled = selectedTenant
+    ? getMultiWarehouseConfig(parseTenantCatalogConfig(selectedTenant.settings?.catalogConfig)).enabled
     : false;
   const isCreateOpen = resolvedSearchParams?.create === "1";
   const createErrorMessage = getCreateErrorMessage(resolvedSearchParams?.error);
@@ -651,6 +757,18 @@ export default async function PlatformTenantsPage({
                     <div className="flex items-center justify-between gap-4 px-4 py-3">
                       <span className="text-sm font-semibold text-slate-900">Suppliers & Purchases</span>
                       <ModuleAccessCheckbox action={setTenantPurchasesAccess} tenantId={selectedTenant.id} enabled={selectedTenantPurchasesEnabled} moduleName="Suppliers & Purchases" />
+                    </div>
+                    <div className="flex items-center justify-between gap-4 px-4 py-3">
+                      <span className="text-sm font-semibold text-slate-900">Barcode Access</span>
+                      <ModuleAccessCheckbox action={setTenantBarcodeAccess} tenantId={selectedTenant.id} enabled={selectedTenantBarcodeEnabled} moduleName="Barcode Access" />
+                    </div>
+                    <div className="flex items-center justify-between gap-4 px-4 py-3">
+                      <span className="text-sm font-semibold text-slate-900">Inventory Count</span>
+                      <ModuleAccessCheckbox action={setTenantInventoryCountAccess} tenantId={selectedTenant.id} enabled={selectedTenantInventoryCountEnabled} moduleName="Inventory Count" />
+                    </div>
+                    <div className="flex items-center justify-between gap-4 px-4 py-3">
+                      <span className="text-sm font-semibold text-slate-900">Multi-warehouse</span>
+                      <ModuleAccessCheckbox action={setTenantMultiWarehouseAccess} tenantId={selectedTenant.id} enabled={selectedTenantMultiWarehouseEnabled} moduleName="Multi-warehouse" />
                     </div>
                   </div>
                 </section>

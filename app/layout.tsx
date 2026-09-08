@@ -6,7 +6,14 @@ import { headers } from "next/headers";
 import { logout } from "@/app/actions/auth";
 import { AppShellNav } from "@/app/components/app-shell-nav";
 import { getCurrentUser, hasRole, hasTenantAccess } from "@/lib/auth";
-import { getCatalogTemplate, getPosConfig, getPurchasesConfig } from "@/lib/product-taxonomy";
+import {
+  getBarcodeConfig,
+  getCatalogTemplate,
+  getInventoryCountConfig,
+  getMultiWarehouseConfig,
+  getPosConfig,
+  getPurchasesConfig,
+} from "@/lib/product-taxonomy";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -71,6 +78,9 @@ export default async function RootLayout({
     : null;
   const posEnabled = currentUser?.tenant ? getPosConfig(currentUser.tenant.catalogConfig).enabled : false;
   const purchasesEnabled = currentUser?.tenant ? getPurchasesConfig(currentUser.tenant.catalogConfig).enabled : false;
+  const barcodeEnabled = currentUser?.tenant ? getBarcodeConfig(currentUser.tenant.catalogConfig).enabled : false;
+  const inventoryCountEnabled = currentUser?.tenant ? getInventoryCountConfig(currentUser.tenant.catalogConfig).enabled : false;
+  const multiWarehouseEnabled = currentUser?.tenant ? getMultiWarehouseConfig(currentUser.tenant.catalogConfig).enabled : false;
   const primaryColor = currentUser?.tenant?.primaryColor?.trim() || "#0f172a";
   const navItems = currentUser
     ? [
@@ -144,7 +154,7 @@ export default async function RootLayout({
                   </svg>
                 ),
               },
-              {
+              ...(multiWarehouseEnabled ? [{
                 href: "/stock/transfer",
                 label: "Transfer",
                 icon: (
@@ -158,7 +168,7 @@ export default async function RootLayout({
                     <path d="m11 21-4-4 4-4" />
                   </svg>
                 ),
-              },
+              }] : []),
               ...(purchasesEnabled ? [
               {
                 href: "/suppliers",
@@ -190,7 +200,7 @@ export default async function RootLayout({
                 ),
               },
               ] : []),
-              {
+              ...(inventoryCountEnabled ? [{
                 href: "/stock/count",
                 label: "Inventory Count",
                 icon: (
@@ -202,8 +212,8 @@ export default async function RootLayout({
                     <path d="M4 7.5h.01M4 12h.01M4 16.5h.01" strokeLinecap="round" />
                   </svg>
                 ),
-              },
-              {
+              }] : []),
+              ...(barcodeEnabled ? [{
                 href: "/stock/scan",
                 label: "Scan Barcode",
                 icon: (
@@ -220,7 +230,7 @@ export default async function RootLayout({
                     <path d="M15 5v14" />
                   </svg>
                 ),
-              },
+              }] : []),
             ]
           : []),
         ...(hasRole(currentUser, ["SUPER_ADMIN"])
@@ -249,6 +259,19 @@ export default async function RootLayout({
                     className="h-4 w-4 fill-none stroke-current stroke-[1.8]"
                   >
                     <path d="M4 12h4l2-6 4 12 2-6h4" />
+                  </svg>
+                ),
+              },
+              {
+                href: "/billing",
+                label: "Billing",
+                icon: (
+                  <svg
+                    viewBox="0 0 24 24"
+                    className="h-4 w-4 fill-none stroke-current stroke-[1.8]"
+                  >
+                    <rect x="3.5" y="5" width="17" height="14" rx="2" />
+                    <path d="M3.5 10h17M7 15h3" />
                   </svg>
                 ),
               },
