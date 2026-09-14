@@ -405,6 +405,9 @@ export const ModelName = {
   TenantMembership: 'TenantMembership',
   Subscription: 'Subscription',
   TenantSettings: 'TenantSettings',
+  Catalog: 'Catalog',
+  CatalogProduct: 'CatalogProduct',
+  CatalogField: 'CatalogField',
   Supplier: 'Supplier',
   PurchaseOrder: 'PurchaseOrder',
   PurchaseOrderItem: 'PurchaseOrderItem'
@@ -423,7 +426,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "product" | "category" | "variant" | "warehouse" | "variantInventory" | "stockMovement" | "order" | "orderItem" | "user" | "session" | "tenant" | "posRegister" | "posSession" | "posPayment" | "posCashMovement" | "auditLog" | "inventoryCountSession" | "inventoryCountLine" | "tenantMembership" | "subscription" | "tenantSettings" | "supplier" | "purchaseOrder" | "purchaseOrderItem"
+    modelProps: "product" | "category" | "variant" | "warehouse" | "variantInventory" | "stockMovement" | "order" | "orderItem" | "user" | "session" | "tenant" | "posRegister" | "posSession" | "posPayment" | "posCashMovement" | "auditLog" | "inventoryCountSession" | "inventoryCountLine" | "tenantMembership" | "subscription" | "tenantSettings" | "catalog" | "catalogProduct" | "catalogField" | "supplier" | "purchaseOrder" | "purchaseOrderItem"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1981,6 +1984,228 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    Catalog: {
+      payload: Prisma.$CatalogPayload<ExtArgs>
+      fields: Prisma.CatalogFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CatalogFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CatalogPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CatalogFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CatalogPayload>
+        }
+        findFirst: {
+          args: Prisma.CatalogFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CatalogPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CatalogFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CatalogPayload>
+        }
+        findMany: {
+          args: Prisma.CatalogFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CatalogPayload>[]
+        }
+        create: {
+          args: Prisma.CatalogCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CatalogPayload>
+        }
+        createMany: {
+          args: Prisma.CatalogCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CatalogCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CatalogPayload>[]
+        }
+        delete: {
+          args: Prisma.CatalogDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CatalogPayload>
+        }
+        update: {
+          args: Prisma.CatalogUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CatalogPayload>
+        }
+        deleteMany: {
+          args: Prisma.CatalogDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CatalogUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CatalogUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CatalogPayload>[]
+        }
+        upsert: {
+          args: Prisma.CatalogUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CatalogPayload>
+        }
+        aggregate: {
+          args: Prisma.CatalogAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCatalog>
+        }
+        groupBy: {
+          args: Prisma.CatalogGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CatalogGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CatalogCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CatalogCountAggregateOutputType> | number
+        }
+      }
+    }
+    CatalogProduct: {
+      payload: Prisma.$CatalogProductPayload<ExtArgs>
+      fields: Prisma.CatalogProductFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CatalogProductFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CatalogProductPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CatalogProductFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CatalogProductPayload>
+        }
+        findFirst: {
+          args: Prisma.CatalogProductFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CatalogProductPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CatalogProductFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CatalogProductPayload>
+        }
+        findMany: {
+          args: Prisma.CatalogProductFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CatalogProductPayload>[]
+        }
+        create: {
+          args: Prisma.CatalogProductCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CatalogProductPayload>
+        }
+        createMany: {
+          args: Prisma.CatalogProductCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CatalogProductCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CatalogProductPayload>[]
+        }
+        delete: {
+          args: Prisma.CatalogProductDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CatalogProductPayload>
+        }
+        update: {
+          args: Prisma.CatalogProductUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CatalogProductPayload>
+        }
+        deleteMany: {
+          args: Prisma.CatalogProductDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CatalogProductUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CatalogProductUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CatalogProductPayload>[]
+        }
+        upsert: {
+          args: Prisma.CatalogProductUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CatalogProductPayload>
+        }
+        aggregate: {
+          args: Prisma.CatalogProductAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCatalogProduct>
+        }
+        groupBy: {
+          args: Prisma.CatalogProductGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CatalogProductGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CatalogProductCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CatalogProductCountAggregateOutputType> | number
+        }
+      }
+    }
+    CatalogField: {
+      payload: Prisma.$CatalogFieldPayload<ExtArgs>
+      fields: Prisma.CatalogFieldFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.CatalogFieldFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CatalogFieldPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.CatalogFieldFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CatalogFieldPayload>
+        }
+        findFirst: {
+          args: Prisma.CatalogFieldFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CatalogFieldPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.CatalogFieldFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CatalogFieldPayload>
+        }
+        findMany: {
+          args: Prisma.CatalogFieldFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CatalogFieldPayload>[]
+        }
+        create: {
+          args: Prisma.CatalogFieldCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CatalogFieldPayload>
+        }
+        createMany: {
+          args: Prisma.CatalogFieldCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.CatalogFieldCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CatalogFieldPayload>[]
+        }
+        delete: {
+          args: Prisma.CatalogFieldDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CatalogFieldPayload>
+        }
+        update: {
+          args: Prisma.CatalogFieldUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CatalogFieldPayload>
+        }
+        deleteMany: {
+          args: Prisma.CatalogFieldDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.CatalogFieldUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.CatalogFieldUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CatalogFieldPayload>[]
+        }
+        upsert: {
+          args: Prisma.CatalogFieldUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$CatalogFieldPayload>
+        }
+        aggregate: {
+          args: Prisma.CatalogFieldAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateCatalogField>
+        }
+        groupBy: {
+          args: Prisma.CatalogFieldGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CatalogFieldGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.CatalogFieldCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.CatalogFieldCountAggregateOutputType> | number
+        }
+      }
+    }
     Supplier: {
       payload: Prisma.$SupplierPayload<ExtArgs>
       fields: Prisma.SupplierFieldRefs
@@ -2570,6 +2795,47 @@ export const TenantSettingsScalarFieldEnum = {
 export type TenantSettingsScalarFieldEnum = (typeof TenantSettingsScalarFieldEnum)[keyof typeof TenantSettingsScalarFieldEnum]
 
 
+export const CatalogScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  name: 'name',
+  description: 'description',
+  status: 'status',
+  layout: 'layout',
+  style: 'style',
+  isPublic: 'isPublic',
+  publicSlug: 'publicSlug',
+  priceMode: 'priceMode',
+  stockMode: 'stockMode',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CatalogScalarFieldEnum = (typeof CatalogScalarFieldEnum)[keyof typeof CatalogScalarFieldEnum]
+
+
+export const CatalogProductScalarFieldEnum = {
+  id: 'id',
+  catalogId: 'catalogId',
+  productId: 'productId',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt'
+} as const
+
+export type CatalogProductScalarFieldEnum = (typeof CatalogProductScalarFieldEnum)[keyof typeof CatalogProductScalarFieldEnum]
+
+
+export const CatalogFieldScalarFieldEnum = {
+  id: 'id',
+  catalogId: 'catalogId',
+  fieldKey: 'fieldKey',
+  enabled: 'enabled',
+  sortOrder: 'sortOrder'
+} as const
+
+export type CatalogFieldScalarFieldEnum = (typeof CatalogFieldScalarFieldEnum)[keyof typeof CatalogFieldScalarFieldEnum]
+
+
 export const SupplierScalarFieldEnum = {
   id: 'id',
   tenantId: 'tenantId',
@@ -2920,6 +3186,76 @@ export type ListEnumSubscriptionStatusFieldRefInput<$PrismaModel> = FieldRefInpu
 
 
 /**
+ * Reference to a field of type 'CatalogStatus'
+ */
+export type EnumCatalogStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CatalogStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'CatalogStatus[]'
+ */
+export type ListEnumCatalogStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CatalogStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'CatalogLayout'
+ */
+export type EnumCatalogLayoutFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CatalogLayout'>
+    
+
+
+/**
+ * Reference to a field of type 'CatalogLayout[]'
+ */
+export type ListEnumCatalogLayoutFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CatalogLayout[]'>
+    
+
+
+/**
+ * Reference to a field of type 'CatalogStyle'
+ */
+export type EnumCatalogStyleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CatalogStyle'>
+    
+
+
+/**
+ * Reference to a field of type 'CatalogStyle[]'
+ */
+export type ListEnumCatalogStyleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CatalogStyle[]'>
+    
+
+
+/**
+ * Reference to a field of type 'CatalogPriceMode'
+ */
+export type EnumCatalogPriceModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CatalogPriceMode'>
+    
+
+
+/**
+ * Reference to a field of type 'CatalogPriceMode[]'
+ */
+export type ListEnumCatalogPriceModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CatalogPriceMode[]'>
+    
+
+
+/**
+ * Reference to a field of type 'CatalogStockMode'
+ */
+export type EnumCatalogStockModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CatalogStockMode'>
+    
+
+
+/**
+ * Reference to a field of type 'CatalogStockMode[]'
+ */
+export type ListEnumCatalogStockModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'CatalogStockMode[]'>
+    
+
+
+/**
  * Reference to a field of type 'PurchaseOrderStatus'
  */
 export type EnumPurchaseOrderStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'PurchaseOrderStatus'>
@@ -3062,6 +3398,9 @@ export type GlobalOmitConfig = {
   tenantMembership?: Prisma.TenantMembershipOmit
   subscription?: Prisma.SubscriptionOmit
   tenantSettings?: Prisma.TenantSettingsOmit
+  catalog?: Prisma.CatalogOmit
+  catalogProduct?: Prisma.CatalogProductOmit
+  catalogField?: Prisma.CatalogFieldOmit
   supplier?: Prisma.SupplierOmit
   purchaseOrder?: Prisma.PurchaseOrderOmit
   purchaseOrderItem?: Prisma.PurchaseOrderItemOmit

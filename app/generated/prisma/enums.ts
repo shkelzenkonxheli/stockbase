@@ -59,6 +59,50 @@ export const CatalogType = {
 export type CatalogType = (typeof CatalogType)[keyof typeof CatalogType]
 
 
+export const CatalogStatus = {
+  DRAFT: 'DRAFT',
+  ACTIVE: 'ACTIVE'
+} as const
+
+export type CatalogStatus = (typeof CatalogStatus)[keyof typeof CatalogStatus]
+
+
+export const CatalogLayout = {
+  TWO_COLUMNS: 'TWO_COLUMNS',
+  THREE_COLUMNS: 'THREE_COLUMNS',
+  FOUR_COLUMNS: 'FOUR_COLUMNS'
+} as const
+
+export type CatalogLayout = (typeof CatalogLayout)[keyof typeof CatalogLayout]
+
+
+export const CatalogStyle = {
+  MINIMAL: 'MINIMAL',
+  PREMIUM: 'PREMIUM',
+  WHOLESALE: 'WHOLESALE'
+} as const
+
+export type CatalogStyle = (typeof CatalogStyle)[keyof typeof CatalogStyle]
+
+
+export const CatalogPriceMode = {
+  RETAIL: 'RETAIL',
+  WHOLESALE: 'WHOLESALE',
+  HIDE: 'HIDE'
+} as const
+
+export type CatalogPriceMode = (typeof CatalogPriceMode)[keyof typeof CatalogPriceMode]
+
+
+export const CatalogStockMode = {
+  HIDE: 'HIDE',
+  EXACT: 'EXACT',
+  AVAILABILITY: 'AVAILABILITY'
+} as const
+
+export type CatalogStockMode = (typeof CatalogStockMode)[keyof typeof CatalogStockMode]
+
+
 export const SubscriptionStatus = {
   TRIALING: 'TRIALING',
   ACTIVE: 'ACTIVE',

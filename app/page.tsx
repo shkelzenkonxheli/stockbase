@@ -1,11 +1,13 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { getCurrentUser, hasRole, hasTenantAccess, isPlatformAdmin } from "@/lib/auth";
+import { LowStockModal } from "@/app/dashboard/low-stock-modal";
+import { RecentMovementsModal } from "@/app/dashboard/recent-movements-modal";
 import { getEffectiveReorderLevel, isLowStock } from "@/lib/inventory";
 import { prisma } from "@/lib/prisma";
-import { getCatalogTemplate } from "@/lib/product-taxonomy";
+import { getCatalogTemplate, getPosConfig, getPurchasesConfig } from "@/lib/product-taxonomy";
 
 const BUSINESS_TIME_ZONE = "Europe/Belgrade";
 
@@ -30,14 +32,14 @@ function ActionTile({ title, subtitle, href, accent, pill, icon, visible }: Acti
 
   const content = (
     <div
-      className={`group relative overflow-hidden rounded-[28px] px-5 py-6 text-white shadow-[0_16px_40px_rgba(15,23,42,0.16)] ${accent}`}
+      className="group relative flex h-full min-h-[148px] flex-col rounded-[22px] border border-slate-200 bg-white p-4 shadow-[0_10px_28px_rgba(15,23,42,0.05)] transition duration-200 hover:-translate-y-0.5 hover:border-emerald-200 hover:shadow-[0_16px_34px_rgba(15,23,42,0.10)]"
     >
-      <div className="mb-10 flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15 ring-1 ring-white/20">
+      <div className={`mb-4 flex h-10 w-10 items-center justify-center rounded-xl text-white shadow-sm ${accent}`}>
         {icon}
       </div>
-      <h2 className="text-2xl font-semibold tracking-tight">{title}</h2>
-      <p className="mt-3 max-w-[240px] text-sm leading-6 text-white/80">{subtitle}</p>
-      <span className="mt-5 inline-flex rounded-full bg-black/20 px-3 py-1 text-xs font-medium text-white/85 ring-1 ring-white/10">
+      <h2 className="text-base font-semibold tracking-tight text-slate-950">{title}</h2>
+      <p className="mt-1.5 max-w-[260px] text-sm leading-5 text-slate-500">{subtitle}</p>
+      <span className="mt-auto inline-flex w-fit rounded-full bg-slate-100 px-2.5 py-1 text-[11px] font-semibold text-slate-600">
         {pill}
       </span>
     </div>
@@ -441,11 +443,23 @@ export default async function Home() {
   const canManageOrders = hasRole(currentUser, ["SUPER_ADMIN", "SELLER", "WAREHOUSE"]);
   const canManageUsers = hasRole(currentUser, ["SUPER_ADMIN"]);
   const canViewReports = hasRole(currentUser, ["SUPER_ADMIN"]);
+  const posEnabled = getPosConfig(tenant.catalogConfig).enabled;
+  const purchasesEnabled = getPurchasesConfig(tenant.catalogConfig).enabled;
 
   const today = getDateStringInTimeZone(new Date(), BUSINESS_TIME_ZONE);
   const { start: dateFrom, end: dateTo } = getTimeZoneDayBounds(today, BUSINESS_TIME_ZONE);
 
-  const [totalProducts, totalStockValueData, ordersToday, recentMovements, lowStockVariants] =
+  const [
+    totalProducts,
+    totalStockValueData,
+    ordersToday,
+    recentMovements,
+    lowStockVariants,
+    completedTodayItems,
+    ordersNeedingAction,
+    posPaymentsToday,
+    openPurchaseOrders,
+  ] =
     await Promise.all([
       prisma.product.count({ where: { tenantId } }),
       prisma.variant.findMany({
@@ -463,7 +477,7 @@ export default async function Home() {
       }),
       prisma.stockMovement.findMany({
         where: { tenantId },
-        take: 4,
+        take: 8,
         orderBy: { createdAt: "desc" },
         select: {
           id: true,
@@ -508,6 +522,36 @@ export default async function Home() {
         },
         orderBy: [{ stock: "asc" }, { updatedAt: "asc" }],
       }),
+      prisma.orderItem.findMany({
+        where: {
+          order: {
+            tenantId,
+            status: { in: ["DONE", "PARTIALLY_RETURNED"] },
+            createdAt: { gte: dateFrom, lt: dateTo },
+          },
+        },
+        select: {
+          quantity: true,
+          returnedQuantity: true,
+          unitPrice: true,
+          unitCost: true,
+        },
+      }),
+      prisma.order.count({
+        where: { tenantId, status: { in: ["NEW", "READY"] } },
+      }),
+      posEnabled
+        ? prisma.posPayment.groupBy({
+            by: ["method"],
+            where: { tenantId, createdAt: { gte: dateFrom, lt: dateTo } },
+            _sum: { amount: true },
+          })
+        : Promise.resolve([]),
+      purchasesEnabled
+        ? prisma.purchaseOrder.count({
+            where: { tenantId, status: { in: ["ORDERED", "PARTIALLY_RECEIVED"] } },
+          })
+        : Promise.resolve(0),
     ]);
 
   const lowStockCount = totalStockValueData.filter((variant) =>
@@ -519,9 +563,54 @@ export default async function Home() {
     0,
   );
   const totalStockUnits = totalStockValueData.reduce((sum, variant) => sum + variant.stock, 0);
+  const todaySales = completedTodayItems.reduce(
+    (totals, item) => {
+      const soldQuantity = Math.max(0, item.quantity - item.returnedQuantity);
+      return {
+        units: totals.units + soldQuantity,
+        revenue: totals.revenue + Number(item.unitPrice) * soldQuantity,
+        cost: totals.cost + Number(item.unitCost) * soldQuantity,
+      };
+    },
+    { units: 0, revenue: 0, cost: 0 },
+  );
+  const grossProfit = todaySales.revenue - todaySales.cost;
+  const profitMargin = todaySales.revenue > 0 ? (grossProfit / todaySales.revenue) * 100 : 0;
+  const cashSales = Number(
+    posPaymentsToday.find((payment) => payment.method === "CASH")?._sum.amount ?? 0,
+  );
+  const cardSales = Number(
+    posPaymentsToday.find((payment) => payment.method === "CARD")?._sum.amount ?? 0,
+  );
   const lowStockItems = lowStockVariants
     .filter((variant) => isLowStock(variant.stock, variant.reorderLevel))
-    .slice(0, 6);
+    .map((variant) => {
+      const reorderLevel = getEffectiveReorderLevel(variant.reorderLevel);
+
+      return {
+        id: variant.id,
+        productId: variant.product.id,
+        productName: variant.product.name,
+        brand: variant.product.brand,
+        categoryName: variant.product.category.name,
+        color: variant.color,
+        size: variant.size,
+        sku: variant.sku,
+        stock: variant.stock,
+        reorderLevel,
+        missingUnits: Math.max(0, reorderLevel - variant.stock),
+      };
+    });
+  const recentMovementItems = recentMovements.map((movement) => ({
+    id: movement.id,
+    productName: movement.variant.product.name,
+    sku: movement.variant.sku,
+    size: movement.variant.size,
+    color: movement.variant.color,
+    quantity: movement.quantity,
+    reason: movement.reason,
+    createdAt: movement.createdAt.toISOString(),
+  }));
 
   const tiles: ActionTile[] = [
     {
@@ -552,7 +641,7 @@ export default async function Home() {
     },
     {
       title: "Porosite",
-      subtitle: "Ndiq porosite dhe shitjet e ditës për tenant-in aktiv.",
+      subtitle: "Ndiq porosite dhe shitjet e dites per tenant-in aktiv.",
       href: "/orders",
       accent: "bg-[linear-gradient(135deg,#f59e0b_0%,#fb923c_100%)]",
       pill: ordersToday > 0 ? `${ordersToday} porosi sot` : "Nuk ka porosi sot",
@@ -565,10 +654,10 @@ export default async function Home() {
     },
     {
       title: "Shto Porosi",
-      subtitle: "Krijo shitje dhe porosi të reja pa dalë nga paneli.",
+      subtitle: "Krijo shitje dhe porosi te reja pa dale nga paneli.",
       href: "/orders/create",
       accent: "bg-[linear-gradient(135deg,#db2777_0%,#f43f5e_100%)]",
-      pill: "Rrjedhë operative",
+      pill: "Rrjedhe operative",
       visible: canCreateOrders,
       icon: (
         <svg viewBox="0 0 24 24" className="h-6 w-6 fill-none stroke-current stroke-[1.8]">
@@ -578,7 +667,7 @@ export default async function Home() {
     },
     {
       title: "Hyrje Stoku",
-      subtitle: "Shto mallin që hyn në depo ose kthehet nga klienti.",
+      subtitle: "Shto mallin qe hyn ne depo ose kthehet nga klienti.",
       href: "/stock/incoming",
       accent: "bg-[linear-gradient(135deg,#7c3aed_0%,#9333ea_100%)]",
       pill: lowStockCount > 0 ? `${lowStockCount} variante me stok te ulet` : "Inventari ne gjendje te mire",
@@ -642,7 +731,7 @@ export default async function Home() {
     },
     {
       title: "Settings",
-      subtitle: "Konfiguro tenant-in, katalogun dhe parametrat bazë.",
+      subtitle: "Konfiguro tenant-in, katalogun dhe parametrat baze.",
       href: "/settings",
       accent: "bg-[linear-gradient(135deg,#0f172a_0%,#334155_100%)]",
       pill: tenant.catalogType,
@@ -659,20 +748,18 @@ export default async function Home() {
   return (
     <main className="px-4 py-6 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl space-y-7">
-        <section className="grid gap-5 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.75fr)]">
-          <div className="relative overflow-hidden rounded-[32px] bg-[#0b0b0b] px-7 py-8 text-white shadow-[0_24px_60px_rgba(15,23,42,0.18)]">
+        <section className="grid gap-4 xl:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.75fr)]">
+          <div className="relative overflow-hidden rounded-[30px] border border-emerald-100 bg-[linear-gradient(118deg,#061b1a_0%,#0c3831_58%,#0e5a4e_100%)] px-7 py-7 text-white shadow-[0_22px_52px_rgba(6,40,35,0.18)]">
             <div className="absolute right-6 top-6 h-28 w-28 rounded-full border border-white/10 bg-white/5" />
             <div className="absolute bottom-6 right-12 h-16 w-16 rounded-2xl border border-white/10 bg-white/5" />
             <div className="relative max-w-xl">
-              <p className="text-sm font-medium text-white/60">{tenantLabel}</p>
-              <h1 className="mt-3 text-4xl font-semibold tracking-tight">{catalogTemplate.label}</h1>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-200">Dashboard operativ</p>
+              <h1 className="mt-2 text-3xl font-semibold tracking-tight">Mire se erdhe, {currentUser.name}</h1>
               <p className="mt-4 text-sm leading-6 text-white/72">
-                Inventari i tenant-it aktiv është i përditësuar. Keni {ordersToday} porosi
-                të reja dhe {lowStockCount} variante që duan vëmendje.
+                Inventari i tenant-it aktiv eshte i perditesuar. Keni {ordersToday} porosi
+                te reja dhe {lowStockCount} variante qe duan vemendje.
               </p>
-              <p className="mt-3 text-xs uppercase tracking-[0.16em] text-white/50">
-                {catalogTemplate.variantFocus}
-              </p>
+              <p className="mt-3 text-xs uppercase tracking-[0.16em] text-white/50">{tenantLabel} / {catalogTemplate.label}</p>
               <div className="mt-6 flex flex-wrap gap-3">
                 <Link
                   href="/orders"
@@ -692,9 +779,9 @@ export default async function Home() {
             </div>
           </div>
 
-          <div className="rounded-[32px] border border-blue-100 bg-white px-6 py-7 shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
-            <p className="text-sm font-medium text-slate-500">Vlera totale e stokut</p>
-            <p className="mt-4 text-5xl font-semibold tracking-tight text-slate-950">
+          <div className="rounded-[30px] border border-slate-200 bg-white px-6 py-6 shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
+            <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">Vlera e stokut</p>
+            <p className="mt-3 text-4xl font-semibold tracking-tight text-slate-950">
               {currency}{" "}
               {totalStockValue.toLocaleString("en-US", {
                 minimumFractionDigits: 2,
@@ -702,209 +789,96 @@ export default async function Home() {
               })}
             </p>
             <p className="mt-4 inline-flex rounded-full bg-emerald-50 px-3 py-1 text-sm font-medium text-emerald-700">
-              {totalStockUnits.toLocaleString("sq-AL")} copë në stok
+              {totalStockUnits.toLocaleString("sq-AL")} cope ne stok
             </p>
           </div>
         </section>
 
-        {canManageInventory ? (
-          <section className="overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
-            <div className="flex flex-col gap-4 border-b border-slate-100 px-6 py-5 lg:flex-row lg:items-center lg:justify-between">
-              <div>
-                <h2 className="text-xl font-semibold tracking-tight text-slate-950">
-                  Low Stock / Reorder
-                </h2>
-                <p className="mt-1 text-sm text-slate-500">
-                  Variantet qe jane ne ose nen pragun e furnizimit.
-                </p>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <Link
-                  href="/products?stock=low"
-                  className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-2.5 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50"
-                >
-                  Shiko te gjitha
-                </Link>
-                <Link
-                  href="/stock/incoming"
-                  className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white transition hover:bg-slate-800"
-                >
-                  Shto hyrje stoku
-                </Link>
+        <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+          <Link href="/orders" className="rounded-[22px] border border-emerald-100 bg-emerald-50/70 p-5 shadow-[0_10px_26px_rgba(15,23,42,0.04)] transition hover:-translate-y-0.5 hover:bg-emerald-50">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-700">Shitjet sot</p>
+            <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{currency} {todaySales.revenue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+            <p className="mt-1 text-sm text-slate-500">{todaySales.units} artikuj te perfunduar</p>
+          </Link>
+          {canViewReports ? (
+            <Link href="/reports" className="rounded-[22px] border border-cyan-100 bg-cyan-50/60 p-5 shadow-[0_10px_26px_rgba(15,23,42,0.04)] transition hover:-translate-y-0.5 hover:bg-cyan-50">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-cyan-700">Fitimi bruto</p>
+              <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{currency} {grossProfit.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</p>
+              <p className="mt-1 text-sm text-slate-500">Marzha {profitMargin.toFixed(1)}%</p>
+            </Link>
+          ) : null}
+          <Link href="/orders" className="rounded-[22px] border border-amber-100 bg-amber-50/70 p-5 shadow-[0_10px_26px_rgba(15,23,42,0.04)] transition hover:-translate-y-0.5 hover:bg-amber-50">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-700">Per veprim</p>
+            <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{ordersNeedingAction}</p>
+            <p className="mt-1 text-sm text-slate-500">Porosi NEW ose READY</p>
+          </Link>
+          <Link href="/products?stock=low" className="rounded-[22px] border border-rose-100 bg-rose-50/60 p-5 shadow-[0_10px_26px_rgba(15,23,42,0.04)] transition hover:-translate-y-0.5 hover:bg-rose-50">
+            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-rose-700">Stok i ulet</p>
+            <p className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">{lowStockCount}</p>
+            <p className="mt-1 text-sm text-slate-500">Variante qe kerkojne furnizim</p>
+          </Link>
+        </section>
+
+        {(posEnabled || purchasesEnabled) ? (
+          <section className="grid gap-3 lg:grid-cols-[1.2fr_0.8fr]">
+            <div className="rounded-[22px] border border-slate-200 bg-white p-5 shadow-[0_10px_26px_rgba(15,23,42,0.04)]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Inventari</p>
+              <div className="mt-2 flex flex-wrap items-end gap-x-8 gap-y-3">
+                <div><p className="text-2xl font-semibold tracking-tight text-slate-950">{totalStockUnits.toLocaleString("sq-AL")}</p><p className="mt-1 text-sm text-slate-500">Njesi ne stok</p></div>
+                <div className="border-l border-slate-200 pl-6"><p className="text-2xl font-semibold text-slate-950">{totalProducts.toLocaleString("sq-AL")}</p><p className="mt-1 text-sm text-slate-500">Produkte aktive</p></div>
               </div>
             </div>
-
-            {lowStockItems.length === 0 ? (
-              <div className="px-6 py-14 text-center text-sm text-slate-500">
-                Nuk ka variante me stok te ulet per momentin.
-              </div>
-            ) : (
-              <>
-                <div className="hidden overflow-x-auto lg:block">
-                  <table className="min-w-full text-sm">
-                    <thead className="bg-slate-50/80 text-left">
-                      <tr className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-                        <th className="px-6 py-4">Produkti</th>
-                        <th className="px-6 py-4">Varianti</th>
-                        <th className="px-6 py-4">SKU</th>
-                        <th className="px-6 py-4 text-right">Stoku</th>
-                        <th className="px-6 py-4 text-right">Reorder</th>
-                        <th className="px-6 py-4 text-right">Mungojne</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100 bg-white">
-                      {lowStockItems.map((variant) => {
-                        const reorderLevel = getEffectiveReorderLevel(variant.reorderLevel);
-                        const missingUnits = Math.max(0, reorderLevel - variant.stock);
-
-                        return (
-                          <tr key={variant.id} className="hover:bg-slate-50/60">
-                            <td className="px-6 py-4">
-                              <Link
-                                href={`/products/${variant.product.id}`}
-                                className="font-medium text-slate-900 transition hover:text-slate-700"
-                              >
-                                {variant.product.brand
-                                  ? `${variant.product.brand} ${variant.product.name}`
-                                  : variant.product.name}
-                              </Link>
-                              <p className="mt-1 text-xs text-slate-500">{variant.product.category.name}</p>
-                            </td>
-                            <td className="px-6 py-4 text-slate-600">
-                              {variant.color} / {variant.size}
-                            </td>
-                            <td className="px-6 py-4 text-slate-600">{variant.sku ?? "-"}</td>
-                            <td className="px-6 py-4 text-right font-semibold text-amber-700">
-                              {variant.stock}
-                            </td>
-                            <td className="px-6 py-4 text-right text-slate-700">{reorderLevel}</td>
-                            <td className="px-6 py-4 text-right font-semibold text-rose-700">
-                              {missingUnits}
-                            </td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-
-                <div className="grid gap-3 p-4 lg:hidden">
-                  {lowStockItems.map((variant) => {
-                    const reorderLevel = getEffectiveReorderLevel(variant.reorderLevel);
-                    const missingUnits = Math.max(0, reorderLevel - variant.stock);
-
-                    return (
-                      <Link
-                        key={variant.id}
-                        href={`/products/${variant.product.id}`}
-                        className="rounded-[24px] border border-slate-200 bg-slate-50/70 p-4 transition hover:border-slate-300 hover:bg-white"
-                      >
-                        <p className="font-semibold text-slate-950">
-                          {variant.product.brand
-                            ? `${variant.product.brand} ${variant.product.name}`
-                            : variant.product.name}
-                        </p>
-                        <p className="mt-1 text-xs text-slate-500">{variant.product.category.name}</p>
-                        <p className="mt-3 text-sm text-slate-700">
-                          {variant.color} / {variant.size}
-                        </p>
-                        <div className="mt-3 flex flex-wrap gap-2 text-xs font-semibold">
-                          <span className="rounded-full bg-amber-50 px-3 py-1 text-amber-700">
-                            Stoku {variant.stock}
-                          </span>
-                          <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
-                            Reorder {reorderLevel}
-                          </span>
-                          <span className="rounded-full bg-rose-50 px-3 py-1 text-rose-700">
-                            Mungojne {missingUnits}
-                          </span>
-                        </div>
-                      </Link>
-                    );
-                  })}
-                </div>
-              </>
-            )}
+            <div className="rounded-[22px] border border-slate-800 bg-slate-950 p-5 text-white shadow-[0_10px_26px_rgba(15,23,42,0.12)]">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-300">Modulet operative</p>
+              {posEnabled ? <div className="mt-3 flex items-center justify-between gap-3 border-b border-white/10 pb-3"><div><p className="font-semibold">POS sot</p><p className="mt-1 text-xs text-white/55">Cash {currency} {cashSales.toFixed(2)} / Karte {currency} {cardSales.toFixed(2)}</p></div><Link href="/pos" className="rounded-lg bg-emerald-400 px-3 py-2 text-xs font-bold text-emerald-950">Hap POS</Link></div> : null}
+              {purchasesEnabled ? <div className={posEnabled ? "pt-3" : "mt-3"}><div className="flex items-center justify-between gap-3"><div><p className="font-semibold">Purchase orders</p><p className="mt-1 text-xs text-white/55">{openPurchaseOrders} ne pritje te pranimit</p></div><Link href="/purchases" className="rounded-lg border border-white/15 px-3 py-2 text-xs font-bold text-white">Shiko</Link></div></div> : null}
+            </div>
           </section>
         ) : null}
 
+        {canManageInventory ? (
+          <section className="flex flex-col gap-3 rounded-[22px] border border-slate-200 bg-white px-5 py-4 shadow-[0_10px_26px_rgba(15,23,42,0.04)] sm:flex-row sm:items-center sm:justify-between">
+            <div className="flex items-center gap-3">
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-rose-50 text-rose-600">
+                <svg viewBox="0 0 24 24" className="h-5 w-5 fill-none stroke-current stroke-[2]"><path d="M12 9v4" /><path d="M12 17h.01" /><path d="m10.3 4.5-7 12.1A2 2 0 0 0 5 19.5h14a2 2 0 0 0 1.7-2.9l-7-12.1a2 2 0 0 0-3.4 0Z" /></svg>
+              </span>
+              <div>
+                <p className="font-semibold text-slate-950">Low stock / Reorder</p>
+                <p className="mt-0.5 text-sm text-slate-500">Shiko variantet qe kerkojne furnizim.</p>
+              </div>
+            </div>
+            <LowStockModal items={lowStockItems} />
+          </section>
+        ) : null}
         <section>
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-2xl font-semibold tracking-tight text-slate-950">
-              Veprimet kryesore
-            </h2>
+            <div>
+              <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Shkurtore</p>
+              <h2 className="mt-1 text-xl font-semibold tracking-tight text-slate-950">Veprimet kryesore</h2>
+            </div>
             <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-400">
-              Tenant context
+              Qasje e shpejte
             </p>
           </div>
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-3">
+          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             {tiles.map((tile) => (
               <ActionTile key={tile.title} {...tile} />
             ))}
           </div>
         </section>
 
-        <section className="overflow-hidden rounded-[30px] border border-slate-200 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.06)]">
-          <div className="flex items-center justify-between border-b border-slate-100 px-6 py-5">
+        <section className="flex flex-col gap-3 rounded-[22px] border border-slate-200 bg-white px-5 py-4 shadow-[0_10px_26px_rgba(15,23,42,0.04)] sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-3">
+            <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-sky-50 text-sky-600">
+              <svg viewBox="0 0 24 24" className="h-5 w-5 fill-none stroke-current stroke-[2]"><path d="M12 6v6l4 2" /><circle cx="12" cy="12" r="8" /></svg>
+            </span>
             <div>
-              <h2 className="text-xl font-semibold tracking-tight text-slate-950">
-                Levizjet e fundit
-              </h2>
-              <p className="mt-1 text-sm text-slate-500">
-                Hyrjet më të fundit të stokut për tenant-in aktiv
-              </p>
+              <p className="font-semibold text-slate-950">Levizjet e fundit</p>
+              <p className="mt-0.5 text-sm text-slate-500">Hyrjet, kthimet dhe transferet e fundit te stokut.</p>
             </div>
           </div>
-
-          {recentMovements.length === 0 ? (
-            <div className="px-6 py-14 text-center text-sm text-slate-500">
-              Nuk ka ende levizje stoku te regjistruara.
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full text-sm">
-                <thead className="bg-slate-50/80 text-left">
-                  <tr className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-                    <th className="px-6 py-4">Produkti</th>
-                    <th className="px-6 py-4">Varianti</th>
-                    <th className="px-6 py-4 text-right">Sasia</th>
-                    <th className="px-6 py-4">Data</th>
-                    <th className="px-6 py-4">Arsyeja</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 bg-white">
-                  {recentMovements.map((movement) => (
-                    <tr key={movement.id} className="hover:bg-slate-50/60">
-                      <td className="px-6 py-4">
-                        <p className="font-medium text-slate-900">{movement.variant.product.name}</p>
-                        <p className="mt-1 text-xs text-slate-500">
-                          SKU {movement.variant.sku || "-"}
-                        </p>
-                      </td>
-                      <td className="px-6 py-4 text-slate-600">
-                        {movement.variant.size || "-"} / {movement.variant.color}
-                      </td>
-                      <td className="px-6 py-4 text-right font-semibold text-emerald-600">
-                        +{movement.quantity}
-                      </td>
-                      <td className="px-6 py-4 text-slate-600">
-                        {new Intl.DateTimeFormat("sq-AL", {
-                          day: "2-digit",
-                          month: "short",
-                          year: "numeric",
-                        }).format(movement.createdAt)}
-                      </td>
-                      <td className="px-6 py-4 text-slate-600">
-                        {movement.reason === "CUSTOMER_RETURN" ? "Kthim klienti" : "Hyrje stoku"}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </section>
-      </div>
+          <RecentMovementsModal movements={recentMovementItems} />
+        </section>      </div>
     </main>
   );
 }

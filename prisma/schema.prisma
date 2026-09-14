@@ -20,6 +20,7 @@ model Product {
   tenant     Tenant?   @relation(fields: [tenantId], references: [id])
   variants   Variant[]
   purchaseOrderItems PurchaseOrderItem[]
+  catalogProducts CatalogProduct[]
 
   @@index([tenantId])
   @@index([createdAt])
@@ -261,6 +262,7 @@ model Tenant {
     posSessions    PosSession[]
     posPayments    PosPayment[]
     posCashMovements PosCashMovement[]
+    catalogs       Catalog[]
 
     @@index([status])
     @@index([catalogType])
@@ -474,6 +476,55 @@ model TenantSettings {
   tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
 }
 
+model Catalog {
+  id          Int             @id @default(autoincrement())
+  tenantId    Int
+  name        String
+  description String?
+  status      CatalogStatus   @default(DRAFT)
+  layout      CatalogLayout   @default(THREE_COLUMNS)
+  style       CatalogStyle    @default(MINIMAL)
+  isPublic    Boolean         @default(false)
+  publicSlug  String?         @unique
+  priceMode   CatalogPriceMode @default(RETAIL)
+  stockMode   CatalogStockMode @default(HIDE)
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+  tenant      Tenant          @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  products    CatalogProduct[]
+  fields      CatalogField[]
+
+  @@index([tenantId])
+  @@index([tenantId, status])
+  @@index([tenantId, updatedAt])
+}
+
+model CatalogProduct {
+  id        Int      @id @default(autoincrement())
+  catalogId Int
+  productId Int
+  sortOrder Int      @default(0)
+  createdAt DateTime @default(now())
+  catalog   Catalog  @relation(fields: [catalogId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([catalogId, productId])
+  @@index([catalogId, sortOrder])
+  @@index([productId])
+}
+
+model CatalogField {
+  id        Int      @id @default(autoincrement())
+  catalogId Int
+  fieldKey  String
+  enabled   Boolean  @default(true)
+  sortOrder Int      @default(0)
+  catalog   Catalog  @relation(fields: [catalogId], references: [id], onDelete: Cascade)
+
+  @@unique([catalogId, fieldKey])
+  @@index([catalogId, sortOrder])
+}
+
 model Supplier {
   id        Int      @id @default(autoincrement())
   tenantId   Int
@@ -581,6 +632,35 @@ enum CatalogType {
   ELECTRONICS
   HOME_GOODS
   DECOR
+}
+
+enum CatalogStatus {
+  DRAFT
+  ACTIVE
+}
+
+enum CatalogLayout {
+  TWO_COLUMNS
+  THREE_COLUMNS
+  FOUR_COLUMNS
+}
+
+enum CatalogStyle {
+  MINIMAL
+  PREMIUM
+  WHOLESALE
+}
+
+enum CatalogPriceMode {
+  RETAIL
+  WHOLESALE
+  HIDE
+}
+
+enum CatalogStockMode {
+  HIDE
+  EXACT
+  AVAILABILITY
 }
 
 enum SubscriptionStatus {

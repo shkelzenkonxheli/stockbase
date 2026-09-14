@@ -123,6 +123,21 @@ export type Subscription = Prisma.SubscriptionModel
  */
 export type TenantSettings = Prisma.TenantSettingsModel
 /**
+ * Model Catalog
+ * 
+ */
+export type Catalog = Prisma.CatalogModel
+/**
+ * Model CatalogProduct
+ * 
+ */
+export type CatalogProduct = Prisma.CatalogProductModel
+/**
+ * Model CatalogField
+ * 
+ */
+export type CatalogField = Prisma.CatalogFieldModel
+/**
  * Model Supplier
  * 
  */

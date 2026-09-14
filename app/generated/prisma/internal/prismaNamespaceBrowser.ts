@@ -72,6 +72,9 @@ export const ModelName = {
   TenantMembership: 'TenantMembership',
   Subscription: 'Subscription',
   TenantSettings: 'TenantSettings',
+  Catalog: 'Catalog',
+  CatalogProduct: 'CatalogProduct',
+  CatalogField: 'CatalogField',
   Supplier: 'Supplier',
   PurchaseOrder: 'PurchaseOrder',
   PurchaseOrderItem: 'PurchaseOrderItem'
@@ -419,6 +422,47 @@ export const TenantSettingsScalarFieldEnum = {
 } as const
 
 export type TenantSettingsScalarFieldEnum = (typeof TenantSettingsScalarFieldEnum)[keyof typeof TenantSettingsScalarFieldEnum]
+
+
+export const CatalogScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  name: 'name',
+  description: 'description',
+  status: 'status',
+  layout: 'layout',
+  style: 'style',
+  isPublic: 'isPublic',
+  publicSlug: 'publicSlug',
+  priceMode: 'priceMode',
+  stockMode: 'stockMode',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type CatalogScalarFieldEnum = (typeof CatalogScalarFieldEnum)[keyof typeof CatalogScalarFieldEnum]
+
+
+export const CatalogProductScalarFieldEnum = {
+  id: 'id',
+  catalogId: 'catalogId',
+  productId: 'productId',
+  sortOrder: 'sortOrder',
+  createdAt: 'createdAt'
+} as const
+
+export type CatalogProductScalarFieldEnum = (typeof CatalogProductScalarFieldEnum)[keyof typeof CatalogProductScalarFieldEnum]
+
+
+export const CatalogFieldScalarFieldEnum = {
+  id: 'id',
+  catalogId: 'catalogId',
+  fieldKey: 'fieldKey',
+  enabled: 'enabled',
+  sortOrder: 'sortOrder'
+} as const
+
+export type CatalogFieldScalarFieldEnum = (typeof CatalogFieldScalarFieldEnum)[keyof typeof CatalogFieldScalarFieldEnum]
 
 
 export const SupplierScalarFieldEnum = {
