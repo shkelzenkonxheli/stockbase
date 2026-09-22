@@ -15,6 +15,7 @@ import {
   getMultiWarehouseConfig,
   getPosConfig,
   getPurchasesConfig,
+  getSocialMediaConfig,
   parseTenantCatalogConfig,
 } from "@/lib/product-taxonomy";
 import { createTenantWorkspace } from "@/lib/tenants";
@@ -355,6 +356,49 @@ async function setTenantPurchasesAccess(formData: FormData) {
   redirect(`/platform/tenants?success=purchases-updated&tenant=${tenantId}`);
 }
 
+async function setTenantSocialMediaAccess(formData: FormData) {
+  "use server";
+
+  await requirePlatformAdmin();
+
+  const tenantId = Number(formData.get("tenantId"));
+  const enabled = formData.get("enabled") === "true";
+  if (!Number.isInteger(tenantId) || tenantId <= 0) redirect("/platform/tenants");
+
+  const existingSettings = await prisma.tenantSettings.findUnique({
+    where: { tenantId },
+    select: { catalogConfig: true },
+  });
+  const catalogConfig = {
+    ...parseTenantCatalogConfig(existingSettings?.catalogConfig),
+    socialMedia: { enabled },
+  };
+
+  await prisma.tenantSettings.upsert({
+    where: { tenantId },
+    create: { tenantId, catalogConfig },
+    update: { catalogConfig },
+  });
+
+  revalidatePath("/");
+  revalidatePath("/social");
+  revalidatePath("/platform/tenants");
+  redirect(`/platform/tenants?success=social-media-updated&tenant=${tenantId}`);
+}
+
+async function setTenantAiProductAssistantAccess(formData: FormData) {
+  "use server";
+  await requirePlatformAdmin();
+  const tenantId = Number(formData.get("tenantId"));
+  const enabled = formData.get("enabled") === "true";
+  if (!Number.isInteger(tenantId) || tenantId <= 0) redirect("/platform/tenants");
+  const settings = await prisma.tenantSettings.findUnique({ where: { tenantId }, select: { catalogConfig: true } });
+  const catalogConfig = { ...parseTenantCatalogConfig(settings?.catalogConfig), aiProductAssistant: { enabled } };
+  await prisma.tenantSettings.upsert({ where: { tenantId }, create: { tenantId, catalogConfig }, update: { catalogConfig } });
+  revalidatePath("/products/new"); revalidatePath("/platform/tenants");
+  redirect(`/platform/tenants?success=ai-product-assistant-updated&tenant=${tenantId}`);
+}
+
 async function setTenantBarcodeAccess(formData: FormData) {
   "use server";
 
@@ -542,6 +586,12 @@ export default async function PlatformTenantsPage({
     : false;
   const selectedTenantMultiWarehouseEnabled = selectedTenant
     ? getMultiWarehouseConfig(parseTenantCatalogConfig(selectedTenant.settings?.catalogConfig)).enabled
+    : false;
+  const selectedTenantSocialMediaEnabled = selectedTenant
+    ? getSocialMediaConfig(parseTenantCatalogConfig(selectedTenant.settings?.catalogConfig)).enabled
+    : false;
+  const selectedTenantAiProductAssistantEnabled = selectedTenant
+    ? Boolean(parseTenantCatalogConfig(selectedTenant.settings?.catalogConfig)?.aiProductAssistant?.enabled)
     : false;
   const isCreateOpen = resolvedSearchParams?.create === "1";
   const createErrorMessage = getCreateErrorMessage(resolvedSearchParams?.error);
@@ -769,6 +819,14 @@ export default async function PlatformTenantsPage({
                     <div className="flex items-center justify-between gap-4 px-4 py-3">
                       <span className="text-sm font-semibold text-slate-900">Multi-warehouse</span>
                       <ModuleAccessCheckbox action={setTenantMultiWarehouseAccess} tenantId={selectedTenant.id} enabled={selectedTenantMultiWarehouseEnabled} moduleName="Multi-warehouse" />
+                    </div>
+                    <div className="flex items-center justify-between gap-4 px-4 py-3">
+                      <span className="text-sm font-semibold text-slate-900">Social Media</span>
+                      <ModuleAccessCheckbox action={setTenantSocialMediaAccess} tenantId={selectedTenant.id} enabled={selectedTenantSocialMediaEnabled} moduleName="Social Media" />
+                    </div>
+                    <div className="flex items-center justify-between gap-4 px-4 py-3">
+                      <span className="text-sm font-semibold text-slate-900">AI Product Assistant</span>
+                      <ModuleAccessCheckbox action={setTenantAiProductAssistantAccess} tenantId={selectedTenant.id} enabled={selectedTenantAiProductAssistantEnabled} moduleName="AI Product Assistant" />
                     </div>
                   </div>
                 </section>

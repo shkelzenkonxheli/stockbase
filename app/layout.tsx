@@ -13,6 +13,7 @@ import {
   getMultiWarehouseConfig,
   getPosConfig,
   getPurchasesConfig,
+  getSocialMediaConfig,
 } from "@/lib/product-taxonomy";
 import "./globals.css";
 
@@ -81,6 +82,7 @@ export default async function RootLayout({
   const barcodeEnabled = currentUser?.tenant ? getBarcodeConfig(currentUser.tenant.catalogConfig).enabled : false;
   const inventoryCountEnabled = currentUser?.tenant ? getInventoryCountConfig(currentUser.tenant.catalogConfig).enabled : false;
   const multiWarehouseEnabled = currentUser?.tenant ? getMultiWarehouseConfig(currentUser.tenant.catalogConfig).enabled : false;
+  const socialMediaEnabled = currentUser?.tenant ? getSocialMediaConfig(currentUser.tenant.catalogConfig).enabled : false;
   const primaryColor = currentUser?.tenant?.primaryColor?.trim() || "#0f172a";
   const navItems = currentUser
     ? [
@@ -249,6 +251,17 @@ export default async function RootLayout({
           : []),
         ...(hasRole(currentUser, ["SUPER_ADMIN"])
           ? [
+              ...(socialMediaEnabled ? [{
+                href: "/social",
+                label: "Social Media",
+                icon: (
+                  <svg viewBox="0 0 24 24" className="h-4 w-4 fill-none stroke-current stroke-[1.8]">
+                    <rect x="4" y="4" width="16" height="16" rx="4" />
+                    <circle cx="12" cy="12" r="3.5" />
+                    <path d="M17.5 6.8h.01" strokeLinecap="round" />
+                  </svg>
+                ),
+              }] : []),
               {
                 href: "/reports",
                 label: "Raportet",

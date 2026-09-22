@@ -115,6 +115,16 @@ export type TenantCatalogConfig = {
   multiWarehouse?: {
     enabled: boolean;
   };
+  socialMedia?: {
+    enabled: boolean;
+    instagram?: {
+      accountId: string;
+      username: string | null;
+      encryptedAccessToken: string;
+      connectedAt: string;
+    };
+  };
+  aiProductAssistant?: { enabled: boolean };
   productListView?: ProductListViewConfig;
   orderListView?: OrderListViewConfig;
   labelPresets?: LabelPresetConfig[];
@@ -760,6 +770,30 @@ export function parseTenantCatalogConfig(value: unknown): TenantCatalogConfig | 
     };
   }
 
+  if (isRecord(value.socialMedia)) {
+    const instagram = isRecord(value.socialMedia.instagram)
+      && typeof value.socialMedia.instagram.accountId === "string"
+      && typeof value.socialMedia.instagram.encryptedAccessToken === "string"
+      && typeof value.socialMedia.instagram.connectedAt === "string"
+      ? {
+          accountId: value.socialMedia.instagram.accountId,
+          username: typeof value.socialMedia.instagram.username === "string"
+            ? value.socialMedia.instagram.username
+            : null,
+          encryptedAccessToken: value.socialMedia.instagram.encryptedAccessToken,
+          connectedAt: value.socialMedia.instagram.connectedAt,
+        }
+      : undefined;
+    nextConfig.socialMedia = {
+      enabled: Boolean(value.socialMedia.enabled),
+      ...(instagram ? { instagram } : {}),
+    };
+  }
+
+  if (isRecord(value.aiProductAssistant)) {
+    nextConfig.aiProductAssistant = { enabled: Boolean(value.aiProductAssistant.enabled) };
+  }
+
   if (Array.isArray(value.labelPresets)) {
     nextConfig.labelPresets = value.labelPresets
       .map((item) => sanitizeLabelPresetConfig(item))
@@ -976,4 +1010,14 @@ export function getMultiWarehouseConfig(tenantConfig?: TenantCatalogConfig | nul
   return {
     enabled: tenantConfig?.multiWarehouse?.enabled ?? false,
   };
+}
+
+export function getSocialMediaConfig(tenantConfig?: TenantCatalogConfig | null) {
+  return {
+    enabled: tenantConfig?.socialMedia?.enabled ?? false,
+  };
+}
+
+export function getAiProductAssistantConfig(tenantConfig?: TenantCatalogConfig | null) {
+  return { enabled: tenantConfig?.aiProductAssistant?.enabled ?? false };
 }

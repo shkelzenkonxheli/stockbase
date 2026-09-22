@@ -147,6 +147,11 @@ export type Subscription = Prisma.SubscriptionModel
  */
 export type TenantSettings = Prisma.TenantSettingsModel
 /**
+ * Model SocialPublication
+ * 
+ */
+export type SocialPublication = Prisma.SocialPublicationModel
+/**
  * Model Catalog
  * 
  */

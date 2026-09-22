@@ -74,6 +74,7 @@ model Variant {
   inventoryCountLines InventoryCountLine[]
   stockMovements StockMovement[]
   purchaseOrderItems PurchaseOrderItem[]
+  socialPublications SocialPublication[]
   product        Product         @relation(fields: [productId], references: [id], onDelete: Cascade)
   tenant         Tenant?         @relation(fields: [tenantId], references: [id])
 
@@ -219,6 +220,7 @@ model User {
   openedPosSessions PosSession[] @relation("PosSessionOpenedBy")
   closedPosSessions PosSession[] @relation("PosSessionClosedBy")
   posCashMovements PosCashMovement[] @relation("PosCashMovementCreatedBy")
+  socialPublications SocialPublication[]
 }
 
 model Session {
@@ -262,6 +264,7 @@ model Tenant {
     posSessions    PosSession[]
     posPayments    PosPayment[]
     posCashMovements PosCashMovement[]
+    socialPublications SocialPublication[]
     catalogs       Catalog[]
 
     @@index([status])
@@ -474,6 +477,29 @@ model TenantSettings {
   createdAt    DateTime @default(now())
   updatedAt    DateTime @updatedAt
   tenant       Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+}
+
+model SocialPublication {
+  id               Int      @id @default(autoincrement())
+  tenantId         Int
+  createdById      Int?
+  variantId        Int?
+  imageUrl         String
+  caption          String   @default("")
+  type             String
+  status           String   @default("SCHEDULED")
+  scheduledAt      DateTime
+  publishedAt      DateTime?
+  instagramMediaId String?
+  errorMessage     String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  tenant           Tenant   @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  createdBy        User?    @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  variant          Variant? @relation(fields: [variantId], references: [id], onDelete: SetNull)
+
+  @@index([tenantId, status, scheduledAt])
+  @@index([status, scheduledAt])
 }
 
 model Catalog {

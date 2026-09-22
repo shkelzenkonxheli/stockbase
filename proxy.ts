@@ -21,6 +21,7 @@ export function proxy(request: NextRequest) {
   }
 
   if (
+    pathname.startsWith("/catalog/") ||
     publicPaths.some((path) =>
       path === "/" ? pathname === "/" : pathname.startsWith(path),
     )

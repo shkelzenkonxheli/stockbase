@@ -1,0 +1,1875 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = {
+  darkMode: "class",
+  theme: {
+    extend: {
+      "colors": {
+        "on-secondary-fixed-variant": "#005137",
+        "surface-container-lowest": "#ffffff",
+        "on-secondary-fixed": "#002114",
+        "surface-tint": "#565e74",
+        "inverse-primary": "#bec6e0",
+        "tertiary-fixed-dim": "#bfc6d9",
+        "primary": "#000000",
+        "on-primary": "#ffffff",
+        "on-tertiary-fixed-variant": "#3f4756",
+        "on-background": "#0b1c30",
+        "primary-container": "#131b2e",
+        "primary-fixed-dim": "#bec6e0",
+        "tertiary-fixed": "#dbe2f5",
+        "surface-variant": "#d3e4fe",
+        "tertiary-container": "#141c29",
+        "on-tertiary": "#ffffff",
+        "surface-dim": "#cbdbf5",
+        "error": "#ba1a1a",
+        "on-secondary-container": "#00714e",
+        "inverse-on-surface": "#eaf1ff",
+        "secondary-container": "#82f5c1",
+        "surface-container-low": "#eff4ff",
+        "surface-container-highest": "#d3e4fe",
+        "on-primary-fixed": "#131b2e",
+        "secondary": "#006c4a",
+        "secondary-fixed-dim": "#68dba9",
+        "on-surface": "#0b1c30",
+        "outline": "#76777d",
+        "on-primary-fixed-variant": "#3f465c",
+        "surface-container": "#e5eeff",
+        "surface-bright": "#f8f9ff",
+        "on-primary-container": "#7c839b",
+        "inverse-surface": "#213145",
+        "surface": "#f8f9ff",
+        "background": "#f8f9ff",
+        "secondary-fixed": "#85f8c4",
+        "on-error-container": "#93000a",
+        "on-tertiary-container": "#7c8495",
+        "on-surface-variant": "#45464d",
+        "outline-variant": "#c6c6cd",
+        "surface-container-high": "#dce9ff",
+        "tertiary": "#000000",
+        "on-secondary": "#ffffff",
+        "on-tertiary-fixed": "#141c29",
+        "error-container": "#ffdad6",
+        "on-error": "#ffffff",
+        "primary-fixed": "#dae2fd"
+      },
+      "borderRadius": {
+        "DEFAULT": "0.125rem",
+        "lg": "0.25rem",
+        "xl": "0.5rem",
+        "full": "0.75rem"
+      },
+      "spacing": {
+        "gutter-md": "1.5rem",
+        "gutter-lg": "2rem",
+        "space-md": "1rem",
+        "margin-md": "1.5rem",
+        "space-xl": "2.5rem",
+        "margin": "1rem",
+        "margin-lg": "2.5rem",
+        "space-sm": "0.5rem",
+        "space-lg": "1.5rem",
+        "gutter": "1rem",
+        "space-xs": "0.25rem"
+      },
+      "fontFamily": {
+        "label-sm": [
+          "Inter"
+        ],
+        "headline-md": [
+          "Plus Jakarta Sans"
+        ],
+        "headline-xl": [
+          "Plus Jakarta Sans"
+        ],
+        "headline-sm": [
+          "Plus Jakarta Sans"
+        ],
+        "headline-lg-mobile": [
+          "Plus Jakarta Sans"
+        ],
+        "body-sm": [
+          "Inter"
+        ],
+        "headline-xl-mobile": [
+          "Plus Jakarta Sans"
+        ],
+        "headline-lg": [
+          "Plus Jakarta Sans"
+        ],
+        "label-lg": [
+          "Inter"
+        ],
+        "body-md": [
+          "Inter"
+        ],
+        "label-md": [
+          "Inter"
+        ],
+        "body-lg": [
+          "Inter"
+        ]
+      },
+      "fontSize": {
+        "label-sm": [
+          "10px",
+          {
+            "lineHeight": "12px",
+            "letterSpacing": "0.04em",
+            "fontWeight": "600"
+          }
+        ],
+        "headline-md": [
+          "20px",
+          {
+            "lineHeight": "28px",
+            "letterSpacing": "-0.015em",
+            "fontWeight": "600"
+          }
+        ],
+        "headline-xl": [
+          "36px",
+          {
+            "lineHeight": "44px",
+            "letterSpacing": "-0.025em",
+            "fontWeight": "700"
+          }
+        ],
+        "headline-sm": [
+          "16px",
+          {
+            "lineHeight": "24px",
+            "letterSpacing": "-0.01em",
+            "fontWeight": "600"
+          }
+        ],
+        "headline-lg-mobile": [
+          "22px",
+          {
+            "lineHeight": "30px",
+            "letterSpacing": "-0.015em",
+            "fontWeight": "600"
+          }
+        ],
+        "body-sm": [
+          "12px",
+          {
+            "lineHeight": "16px",
+            "fontWeight": "400"
+          }
+        ],
+        "headline-xl-mobile": [
+          "28px",
+          {
+            "lineHeight": "36px",
+            "letterSpacing": "-0.02em",
+            "fontWeight": "700"
+          }
+        ],
+        "headline-lg": [
+          "28px",
+          {
+            "lineHeight": "36px",
+            "letterSpacing": "-0.02em",
+            "fontWeight": "700"
+          }
+        ],
+        "label-lg": [
+          "14px",
+          {
+            "lineHeight": "20px",
+            "fontWeight": "500"
+          }
+        ],
+        "body-md": [
+          "14px",
+          {
+            "lineHeight": "20px",
+            "fontWeight": "400"
+          }
+        ],
+        "label-md": [
+          "12px",
+          {
+            "lineHeight": "16px",
+            "letterSpacing": "0.02em",
+            "fontWeight": "600"
+          }
+        ],
+        "body-lg": [
+          "16px",
+          {
+            "lineHeight": "24px",
+            "fontWeight": "400"
+          }
+        ]
+      }
+    }
+  }
+}</script></head><body class="bg-background font-body-md text-on-surface antialiased"><header class="fixed top-0 left-0 right-0 z-50 bg-surface-container-lowest/85 backdrop-blur-xl shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="h-20 max-w-7xl mx-auto px-gutter-lg flex items-center justify-between gap-space-md"><div class="flex items-center gap-space-md shrink-0"><img alt="StockBase Logo" class="h-8 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCiuOF_dKjTZ71zWiGFTcalwmS7jGsZ1UNVK22IO2__O-DbhvfoufRCU1tOQA-ic85w5KPXCxGL0AielqvUuTg0Hlt3n-sI_l5jchHk4rA2cIZrf2IxZtt8lDriOVPaf0i2rTK8AlYCDbf3oA3vS8ErGyuaCFnTb5SDmL9chdyTJ2bTpkJ9rfDUJlz-6xYarMWZ0h-43gz9eY38jiqdelqSObJsoXfyKHxSLT9ox6CQEu9v3fyxLyM"/><span class="font-headline-sm text-headline-sm text-on-surface tracking-tight">StockBase</span></div><nav class="hidden lg:flex items-center gap-space-lg" data-active-classes="text-on-surface font-label-lg font-semibold"><a aria-current="page" class="transition-colors text-on-surface font-label-lg font-semibold" data-path="product" href="#">Product</a><a class="font-label-lg text-label-lg text-on-surface-variant hover:text-on-surface transition-colors" data-path="solutions" href="#">Solutions</a><a class="font-label-lg text-label-lg text-on-surface-variant hover:text-on-surface transition-colors" data-path="features" href="#">Features</a><a class="font-label-lg text-label-lg text-on-surface-variant hover:text-on-surface transition-colors" data-path="pricing" href="#">Pricing</a><a class="font-label-lg text-label-lg text-on-surface-variant hover:text-on-surface transition-colors" data-path="resources" href="#">Resources</a></nav><div class="flex items-center gap-space-sm"><a class="hidden sm:inline-flex items-center justify-center font-label-lg text-label-lg text-on-surface-variant hover:text-on-surface px-space-sm py-space-xs transition-colors" data-path="login" href="#">Log in</a><a class="hidden md:inline-flex items-center justify-center font-label-lg text-label-lg text-on-surface bg-surface-container-lowest hover:bg-surface-container-low px-space-md py-space-xs rounded-lg shadow-[0_1px_3px_0_rgba(15,23,42,0.04)] transition-colors" data-path="book-a-demo" href="#">Book a Demo</a><a class="inline-flex items-center justify-center font-label-lg text-label-lg text-on-secondary bg-secondary hover:bg-on-secondary-fixed-variant px-space-md py-space-xs rounded-lg transition-colors shadow-[0_1px_3px_0_rgba(15,23,42,0.08)]" data-path="start-free-trial" href="#">Start Free Trial</a><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center shrink-0 ml-space-xs"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="w-full pt-20 bg-background"><div class="flex flex-col w-full">
+<!-- ========================================================================= -->
+<!-- 1. HERO SECTION                                                           -->
+<!-- ========================================================================= -->
+<section class="relative w-full bg-surface-container-lowest overflow-hidden">
+<!-- Ambient radial backdrop glows -->
+<div class="absolute -top-32 -left-32 w-[540px] h-[540px] bg-secondary-container/20 rounded-full blur-3xl pointer-events-none"></div>
+<div class="absolute top-48 -right-24 w-[480px] h-[480px] bg-surface-container-highest/60 rounded-full blur-3xl pointer-events-none"></div>
+<div class="max-w-7xl mx-auto px-gutter-lg pt-space-xl pb-space-xl flex flex-col items-center text-center relative z-10">
+<!-- Launch Pill Badge -->
+<div class="inline-flex items-center gap-space-xs px-space-md py-space-xs rounded-full bg-surface-container-low shadow-sm mb-space-md">
+<span class="w-2 h-2 rounded-full bg-secondary animate-ping"></span>
+<span class="font-label-sm text-label-sm text-secondary tracking-widest uppercase font-semibold">NEW • Multi-Location Inventory &amp; POS 3.0</span>
+</div>
+<!-- Main Headline -->
+<h1 class="font-headline-xl text-headline-xl sm:text-[44px] sm:leading-[52px] md:text-[54px] md:leading-[62px] text-on-surface max-w-4xl tracking-tight">
+        Inventory, orders and sales. <br class="hidden sm:inline"/>
+<span class="text-secondary">One powerful platform.</span>
+</h1>
+<!-- Subtitle -->
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-2xl mt-space-md leading-relaxed">
+        StockBase brings products, inventory, warehouses, purchases, orders and point of sale into one simple platform built for growing businesses.
+      </p>
+<!-- CTAs -->
+<div class="flex flex-col sm:flex-row items-center gap-space-sm mt-space-lg w-full sm:w-auto">
+<a class="w-full sm:w-auto inline-flex items-center justify-center gap-space-xs font-label-lg text-label-lg text-on-secondary bg-secondary hover:bg-on-secondary-fixed-variant px-space-xl py-3 rounded-lg shadow-md transition-all transform hover:-translate-y-0.5" href="#">
+<span>Start Free Trial</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</a>
+<a class="w-full sm:w-auto inline-flex items-center justify-center gap-space-xs font-label-lg text-label-lg text-on-surface bg-surface-container-lowest hover:bg-surface-container-low px-space-lg py-3 rounded-lg shadow-sm transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">play_circle</span>
+<span>Book a Demo</span>
+</a>
+</div>
+<!-- Trust Indicator -->
+<div class="flex flex-wrap items-center justify-center gap-x-space-md gap-y-space-xs mt-space-md text-on-surface-variant">
+<span class="font-label-md text-label-md flex items-center gap-1">
+<span class="material-symbols-outlined text-secondary text-[16px]">check_circle</span> 14-day free trial
+        </span>
+<span class="text-outline-variant">•</span>
+<span class="font-label-md text-label-md flex items-center gap-1">
+<span class="material-symbols-outlined text-secondary text-[16px]">credit_card_off</span> No credit card required
+        </span>
+<span class="text-outline-variant">•</span>
+<span class="font-label-md text-label-md flex items-center gap-1">
+<span class="material-symbols-outlined text-secondary text-[16px]">verified_user</span> GDPR compliant &amp; EU hosted
+        </span>
+</div>
+<!-- HERO BROWSER MOCKUP -->
+<div class="w-full mt-space-xl relative">
+<!-- Floating Interactive Chips -->
+<div class="hidden lg:flex items-center gap-space-xs bg-surface-container-lowest text-on-surface px-space-md py-space-xs rounded-full shadow-xl absolute -top-4 left-8 z-30 animate-bounce">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary"></span>
+<span class="font-label-sm text-label-sm">Order #1042 completed • 2m ago</span>
+<span class="font-label-sm text-label-sm text-secondary font-bold">+840 DKK</span>
+</div>
+<div class="hidden lg:flex items-center gap-space-xs bg-primary-container text-on-primary px-space-md py-space-xs rounded-full shadow-xl absolute top-28 -right-4 z-30">
+<span class="material-symbols-outlined text-secondary text-[18px]">sync</span>
+<span class="font-label-sm text-label-sm">Stock +120 (Cph Central)</span>
+<span class="text-on-primary-container text-label-sm font-mono">11:42</span>
+</div>
+<div class="hidden lg:flex items-center gap-space-xs bg-surface-container-lowest text-on-surface px-space-md py-space-xs rounded-full shadow-xl absolute -bottom-4 left-16 z-30">
+<span class="w-2 h-2 rounded-full bg-error"></span>
+<span class="font-label-sm text-label-sm font-semibold">Low stock alert: 4 items</span>
+<span class="font-label-sm text-label-sm text-error bg-error-container/60 px-1.5 py-0.5 rounded">Action required</span>
+</div>
+<!-- Browser Shell Window -->
+<div class="w-full bg-primary-container rounded-xl shadow-2xl overflow-hidden text-left">
+<!-- Window Header Bar -->
+<div class="bg-primary flex items-center justify-between px-space-md py- space-sm">
+<div class="flex items-center gap-1.5">
+<span class="w-3 h-3 rounded-full bg-error/80 inline-block"></span>
+<span class="w-3 h-3 rounded-full bg-surface-variant/80 inline-block"></span>
+<span class="w-3 h-3 rounded-full bg-secondary inline-block"></span>
+</div>
+<div class="bg-primary-container/80 text-on-primary-container font-mono text-label-sm px-space-lg py-1 rounded-md max-w-sm w-full text-center truncate">
+              https://app.stockbase.io/org/nordic-retail/inventory
+            </div>
+<div class="flex items-center gap-2 text-on-primary-container">
+<span class="material-symbols-outlined text-[16px]">refresh</span>
+<span class="material-symbols-outlined text-[16px]">fullscreen</span>
+</div>
+</div>
+<!-- App Workspace Layout -->
+<div class="bg-surface p-space-md sm:p-space-lg">
+<!-- App Topbar in Mockup -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm pb-space-md bg-surface-container-lowest px-space-md py-space-sm rounded-lg shadow-sm mb-space-md">
+<div class="flex items-center gap-space-md">
+<span class="font-headline-sm text-headline-sm text-on-surface">Operations Overview</span>
+<span class="px-space-sm py-0.5 rounded-full bg-secondary-container/40 text-on-secondary-fixed-variant font-label-sm text-label-sm">Live Sync • 4 Warehouses</span>
+</div>
+<div class="flex items-center gap-space-xs">
+<span class="font-label-sm text-label-sm text-on-surface-variant">Currency:</span>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold bg-surface-container-low px-2 py-1 rounded">DKK (kr.)</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant ml-2">Today:</span>
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">17 Oct 2025</span>
+</div>
+</div>
+<!-- KPI Cards Grid -->
+<div class="grid grid-cols-2 lg:grid-cols-4 gap-space-sm mb-space-md">
+<!-- KPI 1 -->
+<div class="bg-surface-container-lowest p-space-md rounded-lg shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Total Inventory Value</span>
+<span class="material-symbols-outlined text-secondary text-[20px]">account_balance_wallet</span>
+</div>
+<div class="mt-space-sm">
+<div class="font-headline-md text-headline-md text-on-surface font-bold">1,842,500 DKK</div>
+<div class="font-label-sm text-label-sm text-secondary mt-1 flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[14px]">trending_up</span> +8.4% vs last mo.
+                  </div>
+</div>
+</div>
+<!-- KPI 2 -->
+<div class="bg-surface-container-lowest p-space-md rounded-lg shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Active Orders</span>
+<span class="material-symbols-outlined text-surface-tint text-[20px]">shopping_bag</span>
+</div>
+<div class="mt-space-sm">
+<div class="font-headline-md text-headline-md text-on-surface font-bold">48 Orders</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant mt-1 flex items-center gap-0.5">
+<span class="text-secondary font-semibold">32 ready</span> to dispatch
+                  </div>
+</div>
+</div>
+<!-- KPI 3 -->
+<div class="bg-surface-container-lowest p-space-md rounded-lg shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Low Stock Alerts</span>
+<span class="material-symbols-outlined text-error text-[20px]">notification_important</span>
+</div>
+<div class="mt-space-sm">
+<div class="font-headline-md text-headline-md text-error font-bold">4 SKUs</div>
+<div class="font-label-sm text-label-sm text-error mt-1 flex items-center gap-0.5">
+                    Reorder suggested today
+                  </div>
+</div>
+</div>
+<!-- KPI 4 -->
+<div class="bg-surface-container-lowest p-space-md rounded-lg shadow-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase">Today's Sales (POS + Web)</span>
+<span class="material-symbols-outlined text-secondary text-[20px]">payments</span>
+</div>
+<div class="mt-space-sm">
+<div class="font-headline-md text-headline-md text-on-surface font-bold">38,420 DKK</div>
+<div class="font-label-sm text-label-sm text-secondary mt-1 flex items-center gap-0.5">
+<span class="material-symbols-outlined text-[14px]">arrow_upward</span> 114 transactions
+                  </div>
+</div>
+</div>
+</div>
+<!-- Dashboard Split Row: Sales Velocity Chart + Orders Table -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-space-md">
+<!-- Left Chart (1 col) -->
+<div class="bg-surface-container-lowest p-space-md rounded-lg shadow-sm flex flex-col">
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Weekly Velocity</span>
+<span class="font-label-sm text-label-sm text-secondary bg-secondary-container/40 px-2 py-0.5 rounded">Target met</span>
+</div>
+<!-- Mini Inline SVG Chart -->
+<div class="flex-1 flex items-end justify-between pt-4 pb-2 px-2 h-36">
+<div class="flex flex-col items-center gap-1.5 h-full justify-end w-8">
+<div class="w-full bg-surface-container-high rounded-t" style="height: 45%;"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Mon</span>
+</div>
+<div class="flex flex-col items-center gap-1.5 h-full justify-end w-8">
+<div class="w-full bg-surface-container-high rounded-t" style="height: 60%;"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Tue</span>
+</div>
+<div class="flex flex-col items-center gap-1.5 h-full justify-end w-8">
+<div class="w-full bg-surface-container-high rounded-t" style="height: 52%;"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Wed</span>
+</div>
+<div class="flex flex-col items-center gap-1.5 h-full justify-end w-8">
+<div class="w-full bg-secondary/80 rounded-t" style="height: 78%;"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Thu</span>
+</div>
+<div class="flex flex-col items-center gap-1.5 h-full justify-end w-8">
+<div class="w-full bg-secondary rounded-t" style="height: 94%;"></div>
+<span class="font-label-sm text-label-sm text-secondary font-bold">Fri</span>
+</div>
+<div class="flex flex-col items-center gap-1.5 h-full justify-end w-8">
+<div class="w-full bg-surface-container-high rounded-t" style="height: 82%;"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Sat</span>
+</div>
+<div class="flex flex-col items-center gap-1.5 h-full justify-end w-8">
+<div class="w-full bg-surface-container-high rounded-t" style="height: 38%;"></div>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Sun</span>
+</div>
+</div>
+<div class="pt-2 flex justify-between font-label-sm text-label-sm text-on-surface-variant">
+<span>Weekly Avg: 24,100 DKK</span>
+<span class="text-secondary font-medium">Top day: Friday</span>
+</div>
+</div>
+<!-- Right Orders Table (2 cols) -->
+<div class="lg:col-span-2 bg-surface-container-lowest p-space-md rounded-lg shadow-sm overflow-x-auto">
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-md text-label-md text-on-surface font-semibold">Recent Omnichannel Orders</span>
+<span class="font-label-sm text-label-sm text-secondary cursor-pointer hover:underline">View All 48 →</span>
+</div>
+<table class="w-full text-left text-body-sm font-body-sm">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant font-label-sm text-label-sm uppercase">
+<th class="py-2 px-3">Order</th>
+<th class="py-2 px-3">Channel</th>
+<th class="py-2 px-3">Customer</th>
+<th class="py-2 px-3">Fulfillment Hub</th>
+<th class="py-2 px-3">Amount</th>
+<th class="py-2 px-3 text-right">Status</th>
+</tr>
+</thead>
+<tbody>
+<tr class="hover:bg-surface-container-low/60 transition-colors">
+<td class="py-2.5 px-3 font-mono font-semibold text-on-surface">#ORD-9921</td>
+<td class="py-2.5 px-3">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm bg-surface-container px-2 py-0.5 rounded text-on-surface">
+<span class="material-symbols-outlined text-[12px]">point_of_sale</span> POS • Strøget
+                        </span>
+</td>
+<td class="py-2.5 px-3 font-medium text-on-surface">Frederik M.</td>
+<td class="py-2.5 px-3 text-on-surface-variant">Cph Retail Store</td>
+<td class="py-2.5 px-3 font-semibold text-on-surface">1,776 DKK</td>
+<td class="py-2.5 px-3 text-right">
+<span class="font-label-sm text-label-sm bg-secondary-container/50 text-on-secondary-fixed-variant px-2 py-0.5 rounded font-semibold">Completed</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/60 transition-colors">
+<td class="py-2.5 px-3 font-mono font-semibold text-on-surface">#ORD-9920</td>
+<td class="py-2.5 px-3">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm bg-surface-container px-2 py-0.5 rounded text-on-surface">
+<span class="material-symbols-outlined text-[12px]">storefront</span> B2B Wholesale
+                        </span>
+</td>
+<td class="py-2.5 px-3 font-medium text-on-surface">Aarhus Design ApS</td>
+<td class="py-2.5 px-3 text-on-surface-variant">Taastrup Central DC</td>
+<td class="py-2.5 px-3 font-semibold text-on-surface">14,280 DKK</td>
+<td class="py-2.5 px-3 text-right">
+<span class="font-label-sm text-label-sm bg-surface-variant text-on-surface px-2 py-0.5 rounded font-semibold">Ready to Pack</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/60 transition-colors">
+<td class="py-2.5 px-3 font-mono font-semibold text-on-surface">#ORD-9919</td>
+<td class="py-2.5 px-3">
+<span class="inline-flex items-center gap-1 font-label-sm text-label-sm bg-surface-container px-2 py-0.5 rounded text-on-surface">
+<span class="material-symbols-outlined text-[12px]">globe</span> Online Shop
+                        </span>
+</td>
+<td class="py-2.5 px-3 font-medium text-on-surface">Camilla V.</td>
+<td class="py-2.5 px-3 text-on-surface-variant">Taastrup Central DC</td>
+<td class="py-2.5 px-3 font-semibold text-on-surface">620 DKK</td>
+<td class="py-2.5 px-3 text-right">
+<span class="font-label-sm text-label-sm bg-secondary-container/50 text-on-secondary-fixed-variant px-2 py-0.5 rounded font-semibold">Dispatched</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 2. PRODUCT VALUE OVERVIEW (Bento Grid)                                    -->
+<!-- ========================================================================= -->
+<section class="w-full bg-surface-container-low py-space-xl">
+<div class="max-w-7xl mx-auto px-gutter-lg">
+<div class="text-center max-w-3xl mx-auto mb-space-xl">
+<span class="font-label-sm text-label-sm uppercase tracking-widest text-secondary font-semibold">Unified Commerce Stack</span>
+<h2 class="font-headline-xl text-headline-xl text-on-surface mt-space-xs">
+          Everything your business needs to manage stock and sales
+        </h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-space-sm">
+          Eliminate disconnected spreadsheets, delayed syncs, and manual inventory errors with purpose-built operational modules.
+        </p>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-space-md">
+<!-- Bento 1: Large Inventory Card (2 cols) -->
+<div class="md:col-span-2 bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between group hover:shadow-md transition-shadow">
+<div>
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-semibold">Inventory Engine</span>
+<span class="material-symbols-outlined text-secondary text-[24px]">inventory_2</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Real-Time Multi-Location Inventory</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">
+              Synchronize stock levels across e-commerce, warehouses, and physical storefronts with zero lag.
+            </p>
+</div>
+<!-- Rich UI Mockup Snippet inside Bento -->
+<div class="mt-space-md bg-surface-container-low p-space-sm rounded-lg">
+<div class="flex items-center justify-between text-label-sm font-label-sm text-on-surface-variant pb-2">
+<span>SKU: NW-204-M • Forest Green / M</span>
+<span class="text-secondary font-semibold">Available: 42</span>
+</div>
+<div class="w-full bg-surface-container-high rounded-full h-2">
+<div class="bg-secondary h-2 rounded-full" style="width: 78%"></div>
+</div>
+<div class="flex items-center justify-between text-label-sm font-label-sm text-on-surface-variant pt-2">
+<span>Stock on Hand: 48</span>
+<span>Reserved: 6</span>
+<span>Reorder Pt: 15</span>
+</div>
+</div>
+</div>
+<!-- Bento 2: Cloud POS -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between group hover:shadow-md transition-shadow">
+<div>
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-semibold">Retail</span>
+<span class="material-symbols-outlined text-secondary text-[24px]">point_of_sale</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Next-Gen Cloud POS</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">
+              Lightning fast cash registers with split billing, MobilePay, barcode scanning, and instant cloud sync.
+            </p>
+</div>
+<div class="mt-space-md bg-primary text-on-primary p-space-sm rounded-lg">
+<div class="flex justify-between items-center text-label-sm">
+<span class="text-on-primary-container">Cart #0092</span>
+<span class="text-secondary font-bold">1,776.00 DKK</span>
+</div>
+<div class="mt-2 flex gap-1">
+<span class="flex-1 bg-surface-container-lowest/10 text-center py-1 text-label-sm rounded">Card</span>
+<span class="flex-1 bg-secondary text-on-secondary text-center py-1 text-label-sm rounded font-semibold">Pay</span>
+</div>
+</div>
+</div>
+<!-- Bento 3: Barcode Scanning -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between group hover:shadow-md transition-shadow">
+<div>
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-semibold">Speed</span>
+<span class="material-symbols-outlined text-secondary text-[24px]">barcode_scanner</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Barcode &amp; EAN-13</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">
+              Use iOS/Android cameras or industrial hardware guns. 0.2-second instant item lookup.
+            </p>
+</div>
+<div class="mt-space-md bg-surface-container-low p-space-sm rounded-lg flex items-center gap-space-sm">
+<span class="font-mono text-headline-sm font-bold text-on-surface tracking-widest">||| | ||| |||| |</span>
+<div class="font-label-sm text-label-sm text-on-surface-variant">5701234567890<br/><span class="text-secondary">Found: 1 SKU</span></div>
+</div>
+</div>
+<!-- Bento 4: Warehouse Transfers -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between group hover:shadow-md transition-shadow">
+<div>
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-semibold">Logistics</span>
+<span class="material-symbols-outlined text-secondary text-[24px]">local_shipping</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Warehouse Transfers</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">
+              Manage in-transit goods, receiving confirmations, and branch requisitions effortlessly.
+            </p>
+</div>
+<div class="mt-space-md flex items-center justify-between bg-surface-container-low p-space-sm rounded-lg text-label-sm">
+<span class="font-semibold text-on-surface">Hub 01</span>
+<span class="material-symbols-outlined text-secondary text-[18px]">trending_flat</span>
+<span class="bg-secondary-container text-on-secondary-fixed-variant px-1.5 py-0.5 rounded font-mono">24 pcs</span>
+<span class="material-symbols-outlined text-secondary text-[18px]">trending_flat</span>
+<span class="font-semibold text-on-surface">Store Cph</span>
+</div>
+</div>
+<!-- Bento 5: Purchase Orders (2 cols) -->
+<div class="md:col-span-2 bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between group hover:shadow-md transition-shadow">
+<div>
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-semibold">Procurement</span>
+<span class="material-symbols-outlined text-secondary text-[24px]">receipt_long</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Purchases &amp; Supplier Management</h3>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">
+              Automate purchase orders based on reorder points, track supplier lead times, and land costs into unit margins.
+            </p>
+</div>
+<div class="mt-space-md grid grid-cols-3 gap-space-xs text-center">
+<div class="bg-surface-container-low p-2 rounded">
+<span class="block font-label-sm text-label-sm text-on-surface-variant">PO #PO-9024</span>
+<span class="font-bold text-on-surface text-label-md">Acme Textiles</span>
+</div>
+<div class="bg-surface-container-low p-2 rounded">
+<span class="block font-label-sm text-label-sm text-on-surface-variant">Status</span>
+<span class="font-bold text-secondary text-label-md">180/200 Recv</span>
+</div>
+<div class="bg-surface-container-low p-2 rounded">
+<span class="block font-label-sm text-label-sm text-on-surface-variant">Lead Time</span>
+<span class="font-bold text-on-surface text-label-md">4 Days Left</span>
+</div>
+</div>
+</div>
+<!-- Bento 6: Reporting & BI -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between group hover:shadow-md transition-shadow">
+<div>
+<div class="flex items-center justify-between mb-space-sm">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-secondary font-semibold">Intelligence</span>
+<span class="material-symbols-outlined text-secondary text-[24px]">insights</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Stock Turnover &amp; BI</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">
+              Know your highest margin SKUs, identify dead stock, and forecast inventory runout.
+            </p>
+</div>
+<div class="mt-space-md bg-surface-container-low p-space-sm rounded-lg flex items-center justify-between">
+<span class="font-label-sm text-label-sm text-on-surface">Turnover Velocity</span>
+<span class="font-headline-sm text-headline-sm text-secondary font-bold">4.2x / yr</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 3. INVENTORY MANAGEMENT SHOWCASE                                          -->
+<!-- ========================================================================= -->
+<section class="w-full bg-surface-container-lowest py-space-xl">
+<div class="max-w-7xl mx-auto px-gutter-lg">
+<div class="flex flex-col lg:flex-row lg:items-end justify-between mb-space-lg gap-space-md">
+<div class="max-w-2xl">
+<span class="font-label-sm text-label-sm uppercase tracking-widest text-secondary font-semibold">Master Catalog</span>
+<h2 class="font-headline-xl text-headline-xl text-on-surface mt-space-xs">
+            Know exactly what's in stock
+          </h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-space-xs">
+            Deep variant tracking, categorized attributes, real-time status across physical and digital channels.
+          </p>
+</div>
+<div class="flex items-center gap-space-xs">
+<span class="px-space-md py-1.5 bg-surface-container-low rounded-lg font-label-sm text-label-sm text-on-surface flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-secondary">tune</span> Multi-variant matrix
+          </span>
+<span class="px-space-md py-1.5 bg-surface-container-low rounded-lg font-label-sm text-label-sm text-on-surface flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-secondary">qr_code_2</span> Custom attributes &amp; barcodes
+          </span>
+<span class="px-space-md py-1.5 bg-surface-container-low rounded-lg font-label-sm text-label-sm text-on-surface flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px] text-secondary">shield</span> Safety stock alerts
+          </span>
+</div>
+</div>
+<!-- High-Fidelity Desktop Table View -->
+<div class="w-full bg-surface-container-lowest rounded-xl shadow-lg overflow-hidden">
+<!-- Action bar -->
+<div class="bg-surface-container-low px-space-md py-space-sm flex flex-wrap items-center justify-between gap-space-sm">
+<div class="flex items-center gap-space-sm flex-1 max-w-md">
+<div class="relative w-full">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant absolute left-3 top-2.5">search</span>
+<input class="w-full pl-9 pr-3 py-1.5 bg-surface-container-lowest rounded-md text-body-sm text-on-surface placeholder:text-on-surface-variant focus:outline-none" placeholder="Filter by product name, SKU or barcode..." readonly="" type="text" value="Nordic Wool"/>
+</div>
+</div>
+<div class="flex items-center gap-space-xs">
+<button class="bg-surface-container-lowest px-space-sm py-1.5 rounded-md font-label-sm text-label-sm text-on-surface flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[16px]">filter_list</span> All Categories
+            </button>
+<button class="bg-surface-container-lowest px-space-sm py-1.5 rounded-md font-label-sm text-label-sm text-on-surface flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[16px]">location_on</span> All Locations
+            </button>
+<button class="bg-secondary text-on-secondary px-space-md py-1.5 rounded-md font-label-sm text-label-sm flex items-center gap-1 font-semibold shadow-sm">
+<span class="material-symbols-outlined text-[16px]">add</span> Add Item
+            </button>
+</div>
+</div>
+<!-- Inventory Grid -->
+<div class="overflow-x-auto">
+<table class="w-full text-left font-body-sm text-body-sm">
+<thead>
+<tr class="bg-surface text-on-surface-variant font-label-sm text-label-sm uppercase">
+<th class="py-3 px-4">Product Name &amp; Variant</th>
+<th class="py-3 px-4">SKU / Barcode</th>
+<th class="py-3 px-4">Category</th>
+<th class="py-3 px-4 text-center">On Hand</th>
+<th class="py-3 px-4 text-center">Reserved</th>
+<th class="py-3 px-4 text-center">Available</th>
+<th class="py-3 px-4 text-center">Reorder Pt</th>
+<th class="py-3 px-4">Primary Warehouse</th>
+<th class="py-3 px-4 text-right">Status</th>
+</tr>
+</thead>
+<tbody>
+<!-- Row 1 -->
+<tr class="hover:bg-surface-container-low/40 transition-colors">
+<td class="py-3.5 px-4">
+<div class="font-medium text-on-surface">Nordic Wool Overshirt</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Forest Green / M</div>
+</td>
+<td class="py-3.5 px-4 font-mono text-label-sm text-on-surface">
+<div>NW-204-M</div>
+<div class="text-on-surface-variant">5701827361921</div>
+</td>
+<td class="py-3.5 px-4">
+<span class="bg-surface-container px-2 py-0.5 rounded font-label-sm text-label-sm text-on-surface">Apparel</span>
+</td>
+<td class="py-3.5 px-4 text-center font-bold text-on-surface">48</td>
+<td class="py-3.5 px-4 text-center text-on-surface-variant">6</td>
+<td class="py-3.5 px-4 text-center font-bold text-secondary">42</td>
+<td class="py-3.5 px-4 text-center text-on-surface-variant">15</td>
+<td class="py-3.5 px-4 text-on-surface">Taastrup Central (A-14)</td>
+<td class="py-3.5 px-4 text-right">
+<span class="font-label-sm text-label-sm bg-secondary-container/50 text-on-secondary-fixed-variant px-2.5 py-1 rounded font-semibold">In Stock</span>
+</td>
+</tr>
+<!-- Row 2 -->
+<tr class="hover:bg-surface-container-low/40 transition-colors">
+<td class="py-3.5 px-4">
+<div class="font-medium text-on-surface">Nordic Wool Overshirt</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Forest Green / L</div>
+</td>
+<td class="py-3.5 px-4 font-mono text-label-sm text-on-surface">
+<div>NW-204-L</div>
+<div class="text-on-surface-variant">5701827361938</div>
+</td>
+<td class="py-3.5 px-4">
+<span class="bg-surface-container px-2 py-0.5 rounded font-label-sm text-label-sm text-on-surface">Apparel</span>
+</td>
+<td class="py-3.5 px-4 text-center font-bold text-on-surface">18</td>
+<td class="py-3.5 px-4 text-center text-on-surface-variant">2</td>
+<td class="py-3.5 px-4 text-center font-bold text-secondary">16</td>
+<td class="py-3.5 px-4 text-center text-on-surface-variant">15</td>
+<td class="py-3.5 px-4 text-on-surface">Taastrup Central (A-14)</td>
+<td class="py-3.5 px-4 text-right">
+<span class="font-label-sm text-label-sm bg-secondary-container/50 text-on-secondary-fixed-variant px-2.5 py-1 rounded font-semibold">In Stock</span>
+</td>
+</tr>
+<!-- Row 3 -->
+<tr class="hover:bg-surface-container-low/40 transition-colors">
+<td class="py-3.5 px-4">
+<div class="font-medium text-on-surface">Nordic Wool Overshirt</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Charcoal Grey / S</div>
+</td>
+<td class="py-3.5 px-4 font-mono text-label-sm text-on-surface">
+<div>NW-204-S-CG</div>
+<div class="text-on-surface-variant">5701827361907</div>
+</td>
+<td class="py-3.5 px-4">
+<span class="bg-surface-container px-2 py-0.5 rounded font-label-sm text-label-sm text-on-surface">Apparel</span>
+</td>
+<td class="py-3.5 px-4 text-center font-bold text-on-surface">4</td>
+<td class="py-3.5 px-4 text-center text-on-surface-variant">1</td>
+<td class="py-3.5 px-4 text-center font-bold text-error">3</td>
+<td class="py-3.5 px-4 text-center text-on-surface-variant">10</td>
+<td class="py-3.5 px-4 text-on-surface">Strøget Retail Backroom</td>
+<td class="py-3.5 px-4 text-right">
+<span class="font-label-sm text-label-sm bg-error-container text-on-error-container px-2.5 py-1 rounded font-semibold">Low Stock</span>
+</td>
+</tr>
+<!-- Row 4 -->
+<tr class="hover:bg-surface-container-low/40 transition-colors">
+<td class="py-3.5 px-4">
+<div class="font-medium text-on-surface">Merino Base Knit</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Oatmeal / M</div>
+</td>
+<td class="py-3.5 px-4 font-mono text-label-sm text-on-surface">
+<div>MB-108-M</div>
+<div class="text-on-surface-variant">5701827361952</div>
+</td>
+<td class="py-3.5 px-4">
+<span class="bg-surface-container px-2 py-0.5 rounded font-label-sm text-label-sm text-on-surface">Apparel</span>
+</td>
+<td class="py-3.5 px-4 text-center font-bold text-on-surface">62</td>
+<td class="py-3.5 px-4 text-center text-on-surface-variant">8</td>
+<td class="py-3.5 px-4 text-center font-bold text-secondary">54</td>
+<td class="py-3.5 px-4 text-center text-on-surface-variant">20</td>
+<td class="py-3.5 px-4 text-on-surface">Taastrup Central (B-02)</td>
+<td class="py-3.5 px-4 text-right">
+<span class="font-label-sm text-label-sm bg-secondary-container/50 text-on-secondary-fixed-variant px-2.5 py-1 rounded font-semibold">In Stock</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="bg-surface-container-low px-space-md py-space-sm flex items-center justify-between text-label-sm font-label-sm text-on-surface-variant">
+<span>Showing 4 of 1,248 catalog variations</span>
+<div class="flex items-center gap-2">
+<span class="cursor-pointer hover:text-on-surface">Previous</span>
+<span class="px-2 py-0.5 bg-surface-container-lowest rounded font-semibold text-on-surface shadow-sm">1</span>
+<span class="cursor-pointer hover:text-on-surface">2</span>
+<span class="cursor-pointer hover:text-on-surface">Next</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 4. MULTI-WAREHOUSE & TRANSFERS (Dark Section)                             -->
+<!-- ========================================================================= -->
+<section class="w-full bg-primary-container text-on-primary py-space-xl relative overflow-hidden">
+<div class="max-w-7xl mx-auto px-gutter-lg relative z-10">
+<div class="text-center max-w-3xl mx-auto mb-space-xl">
+<span class="font-label-sm text-label-sm uppercase tracking-widest text-secondary font-semibold">Logistics &amp; Routing</span>
+<h2 class="font-headline-xl text-headline-xl text-on-primary mt-space-xs">
+          Your inventory. Across every location.
+        </h2>
+<p class="font-body-md text-body-md text-on-primary-container mt-space-sm">
+          Keep tabs on physical hubs, pop-ups, and in-transit pallets with automatic route reconciliation and zero lost units.
+        </p>
+</div>
+<!-- Visual Transfer Diagram -->
+<div class="bg-tertiary-container/80 p-space-lg rounded-xl shadow-2xl mb-space-lg">
+<div class="flex flex-col lg:flex-row items-center justify-between gap-space-md">
+<!-- Origin -->
+<div class="flex-1 bg-primary-container p-space-md rounded-lg w-full text-center lg:text-left">
+<div class="flex items-center justify-center lg:justify-start gap-space-xs text-secondary mb-1">
+<span class="material-symbols-outlined text-[18px]">warehouse</span>
+<span class="font-label-sm text-label-sm uppercase font-semibold">Origin Hub</span>
+</div>
+<div class="font-headline-sm text-headline-sm text-on-primary">Main Hub (Taastrup DC)</div>
+<p class="font-body-sm text-body-sm text-on-primary-container mt-0.5">Automated distribution warehouse</p>
+<div class="mt-space-sm inline-block bg-surface-container-highest/20 text-secondary px-space-sm py-0.5 rounded font-mono text-label-sm">
+              Stock: 420 units
+            </div>
+</div>
+<!-- Transit Connector -->
+<div class="flex-1 flex flex-col items-center px-space-sm text-center w-full">
+<div class="flex items-center gap-space-xs text-secondary font-label-sm text-label-sm mb-1">
+<span class="material-symbols-outlined text-[16px] animate-pulse">local_shipping</span>
+<span class="font-semibold">Transfer Order #TR-883</span>
+</div>
+<div class="w-full flex items-center gap-2">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<div class="flex-1 h-0.5 bg-secondary-container/40 relative">
+<div class="absolute inset-0 bg-secondary w-2/3"></div>
+</div>
+<span class="w-2 h-2 rounded-full bg-secondary-container"></span>
+</div>
+<div class="mt-2 font-mono text-label-sm text-on-primary bg-secondary/20 px-2 py-0.5 rounded">
+              24 units in transit • Est: 14:00 Today
+            </div>
+</div>
+<!-- Destination -->
+<div class="flex-1 bg-primary-container p-space-md rounded-lg w-full text-center lg:text-left">
+<div class="flex items-center justify-center lg:justify-start gap-space-xs text-secondary mb-1">
+<span class="material-symbols-outlined text-[18px]">storefront</span>
+<span class="font-label-sm text-label-sm uppercase font-semibold">Destination Store</span>
+</div>
+<div class="font-headline-sm text-headline-sm text-on-primary">Store Copenhagen (Strøget Retail)</div>
+<p class="font-body-sm text-body-sm text-on-primary-container mt-0.5">Flagship physical store</p>
+<div class="mt-space-sm inline-block bg-surface-container-highest/20 text-secondary px-space-sm py-0.5 rounded font-mono text-label-sm">
+              Current: 84 units (+24 incoming)
+            </div>
+</div>
+</div>
+</div>
+<!-- Multi-Location Breakdown Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-md">
+<div class="bg-primary-container p-space-md rounded-lg flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest/20 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined">warehouse</span>
+</div>
+<div>
+<div class="font-label-md text-label-md font-semibold text-on-primary">Taastrup Central DC</div>
+<div class="font-label-sm text-label-sm text-on-primary-container">420 units on hand</div>
+</div>
+</div>
+<div class="flex items-center gap-1 text-secondary font-label-sm">
+<span class="w-2 h-2 rounded-full bg-secondary animate-ping"></span>
+<span>Live Sync</span>
+</div>
+</div>
+<div class="bg-primary-container p-space-md rounded-lg flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest/20 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined">store</span>
+</div>
+<div>
+<div class="font-label-md text-label-md font-semibold text-on-primary">Strøget Copenhagen Store</div>
+<div class="font-label-sm text-label-sm text-on-primary-container">84 units on hand</div>
+</div>
+</div>
+<div class="flex items-center gap-1 text-secondary font-label-sm">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span>Live Sync</span>
+</div>
+</div>
+<div class="bg-primary-container p-space-md rounded-lg flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-lg bg-surface-container-highest/20 flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined">store</span>
+</div>
+<div>
+<div class="font-label-md text-label-md font-semibold text-on-primary">Aarhus Store &amp; Showroom</div>
+<div class="font-label-sm text-label-sm text-on-primary-container">45 units on hand</div>
+</div>
+</div>
+<div class="flex items-center gap-1 text-secondary font-label-sm">
+<span class="w-2 h-2 rounded-full bg-secondary"></span>
+<span>Live Sync</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 5. BARCODE WORKFLOW ('Scan. Find. Update.')                               -->
+<!-- ========================================================================= -->
+<section class="w-full bg-surface-container-lowest py-space-xl">
+<div class="max-w-7xl mx-auto px-gutter-lg">
+<div class="text-center max-w-3xl mx-auto mb-space-xl">
+<span class="font-label-sm text-label-sm uppercase tracking-widest text-secondary font-semibold">Optical Speed</span>
+<h2 class="font-headline-xl text-headline-xl text-on-surface mt-space-xs">
+          Scan. Find. Update.
+        </h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-space-sm">
+          Turn smartphone cameras or enterprise scanners into high-precision inventory tools. Auto-fills item details in under 0.2 seconds.
+        </p>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-space-xl items-center">
+<!-- Left: Phone Barcode Viewport -->
+<div class="flex justify-center">
+<div class="w-full max-w-sm bg-primary rounded-[2.5rem] p-4 shadow-2xl relative overflow-hidden">
+<!-- Camera viewfinder UI -->
+<div class="bg-primary-container rounded-[2rem] p-space-md h-96 flex flex-col justify-between relative overflow-hidden">
+<div class="flex items-center justify-between text-on-primary">
+<span class="material-symbols-outlined text-[20px]">flash_on</span>
+<span class="font-label-sm text-label-sm font-mono bg-surface-container-highest/20 px-2 py-0.5 rounded">SCANNER ACTIVE</span>
+<span class="material-symbols-outlined text-[20px]">close</span>
+</div>
+<!-- Reticle / Laser Line -->
+<div class="relative my-auto flex flex-col items-center">
+<div class="w-64 h-32 rounded-xl relative flex items-center justify-center">
+<!-- Reticle corners -->
+<div class="absolute top-0 left-0 w-5 h-5 border-t-2 border-l-2 border-secondary"></div>
+<div class="absolute top-0 right-0 w-5 h-5 border-t-2 border-r-2 border-secondary"></div>
+<div class="absolute bottom-0 left-0 w-5 h-5 border-b-2 border-l-2 border-secondary"></div>
+<div class="absolute bottom-0 right-0 w-5 h-5 border-b-2 border-r-2 border-secondary"></div>
+<!-- Barcode Graphic Mock -->
+<div class="font-mono text-[26px] tracking-widest text-on-primary select-none opacity-80">
+                    |||| | || |||| |
+                  </div>
+<!-- Laser Line -->
+<div class="absolute w-full h-0.5 bg-secondary shadow-[0_0_12px_#10b981] animate-pulse"></div>
+</div>
+<div class="mt-2 font-mono text-label-sm text-secondary font-bold">EAN-13: 5701827361921 MATCHED</div>
+</div>
+<div class="bg-primary/80 backdrop-blur p-space-xs rounded-xl text-center">
+<p class="font-label-sm text-label-sm text-on-primary-container">Point camera at SKU barcode or batch sticker</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Right: Live Desktop Auto-Fill Result -->
+<div class="space-y-space-md">
+<div class="bg-surface-container-low p-space-lg rounded-xl shadow-md">
+<div class="flex items-center justify-between mb-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="w-2.5 h-2.5 rounded-full bg-secondary"></span>
+<span class="font-label-sm text-label-sm uppercase font-semibold text-secondary">Instant Match (0.18s)</span>
+</div>
+<span class="font-mono text-label-sm text-on-surface-variant">EAN-13: 5701827361921</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface">Nordic Wool Overshirt - Forest Green / M</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">SKU: NW-204-M • Location: Aisle 3, Shelf B • Unit Cost: 320 DKK</p>
+<div class="grid grid-cols-2 sm:grid-cols-4 gap-space-xs mt-space-md">
+<button class="bg-secondary text-on-secondary py-2.5 px-3 rounded-lg font-label-sm text-label-sm font-semibold flex items-center justify-center gap-1 shadow-sm hover:bg-on-secondary-fixed-variant transition-colors">
+<span class="material-symbols-outlined text-[16px]">add_box</span> Receive +
+              </button>
+<button class="bg-surface-container-lowest text-on-surface py-2.5 px-3 rounded-lg font-label-sm text-label-sm font-semibold flex items-center justify-center gap-1 shadow-sm hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[16px]">edit</span> Quick Adjust
+              </button>
+<button class="bg-surface-container-lowest text-on-surface py-2.5 px-3 rounded-lg font-label-sm text-label-sm font-semibold flex items-center justify-center gap-1 shadow-sm hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[16px]">shopping_cart</span> Add to POS
+              </button>
+<button class="bg-surface-container-lowest text-on-surface py-2.5 px-3 rounded-lg font-label-sm text-label-sm font-semibold flex items-center justify-center gap-1 shadow-sm hover:bg-surface-container transition-colors">
+<span class="material-symbols-outlined text-[16px]">checklist</span> Count
+              </button>
+</div>
+</div>
+<!-- 4 Key Scanner Capabilities -->
+<div class="grid grid-cols-2 gap-space-sm">
+<div class="p-space-sm bg-surface-container-lowest rounded-lg shadow-sm flex items-start gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[20px] shrink-0">inbox</span>
+<div>
+<span class="font-label-md text-label-md font-semibold text-on-surface block">Receiving Shipments</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Check in incoming boxes item by item without typing.</span>
+</div>
+</div>
+<div class="p-space-sm bg-surface-container-lowest rounded-lg shadow-sm flex items-start gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[20px] shrink-0">cached</span>
+<div>
+<span class="font-label-md text-label-md font-semibold text-on-surface block">Rapid Cycle Counting</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Verify high-volume racks in minutes on mobile.</span>
+</div>
+</div>
+<div class="p-space-sm bg-surface-container-lowest rounded-lg shadow-sm flex items-start gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[20px] shrink-0">find_in_page</span>
+<div>
+<span class="font-label-md text-label-md font-semibold text-on-surface block">Instant Lookup</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Locate items for walk-in retail shoppers in seconds.</span>
+</div>
+</div>
+<div class="p-space-sm bg-surface-container-lowest rounded-lg shadow-sm flex items-start gap-space-xs">
+<span class="material-symbols-outlined text-secondary text-[20px] shrink-0">point_of_sale</span>
+<div>
+<span class="font-label-md text-label-md font-semibold text-on-surface block">Cashier Checkout</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Integrates with Bluetooth laser guns on POS.</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 6. PURCHASES & SUPPLIERS                                                  -->
+<!-- ========================================================================= -->
+<section class="w-full bg-surface-container-low py-space-xl">
+<div class="max-w-7xl mx-auto px-gutter-lg">
+<div class="text-center max-w-3xl mx-auto mb-space-xl">
+<span class="font-label-sm text-label-sm uppercase tracking-widest text-secondary font-semibold">Procurement Control</span>
+<h2 class="font-headline-xl text-headline-xl text-on-surface mt-space-xs">
+          From supplier to stock
+        </h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-space-sm">
+          Streamline supplier orders, land costs into profit margins, and manage partial deliveries with complete financial accuracy.
+        </p>
+</div>
+<!-- Visual Flow Cards -->
+<div class="grid grid-cols-1 md:grid-cols-4 gap-space-sm mb-space-lg">
+<div class="bg-surface-container-lowest p-space-md rounded-lg shadow-sm">
+<span class="font-label-sm text-label-sm text-secondary font-semibold uppercase">Step 01</span>
+<div class="font-headline-sm text-headline-sm text-on-surface mt-1">Supplier PO Draft</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">PO #PO-9024 created for Acme Textiles Ltd.</p>
+</div>
+<div class="bg-surface-container-lowest p-space-md rounded-lg shadow-sm">
+<span class="font-label-sm text-label-sm text-secondary font-semibold uppercase">Step 02</span>
+<div class="font-headline-sm text-headline-sm text-on-surface mt-1">Automated Dispatch</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Direct PDF &amp; EDI notification to factory.</p>
+</div>
+<div class="bg-surface-container-lowest p-space-md rounded-lg shadow-sm">
+<span class="font-label-sm text-label-sm text-secondary font-semibold uppercase">Step 03</span>
+<div class="font-headline-sm text-headline-sm text-on-surface mt-1">Partial Receiving</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">180/200 units verified &amp; placed on shelf.</p>
+</div>
+<div class="bg-surface-container-lowest p-space-md rounded-lg shadow-sm">
+<span class="font-label-sm text-label-sm text-secondary font-semibold uppercase">Step 04</span>
+<div class="font-headline-sm text-headline-sm text-on-surface mt-1">Valuation Update</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Balance sheet &amp; COGS recalculate instantly.</p>
+</div>
+</div>
+<!-- PO Modal / Panel Preview -->
+<div class="bg-surface-container-lowest rounded-xl shadow-lg p-space-lg max-w-4xl mx-auto">
+<div class="flex flex-wrap items-center justify-between gap-space-sm pb-space-sm mb-space-md bg-surface p-space-sm rounded-lg">
+<div>
+<div class="font-headline-sm text-headline-sm text-on-surface">Purchase Order: #PO-9024</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Vendor: Acme Textiles Ltd. (Porto, Portugal) • Lead Time: 7 Days</div>
+</div>
+<div class="flex items-center gap-space-xs">
+<span class="font-label-sm text-label-sm bg-secondary-container/50 text-on-secondary-fixed-variant px-2.5 py-1 rounded font-semibold">Partially Received (90%)</span>
+</div>
+</div>
+<div class="grid grid-cols-1 sm:grid-cols-3 gap-space-md mb-space-md text-label-sm font-label-sm">
+<div class="bg-surface-container-low p-space-sm rounded">
+<span class="text-on-surface-variant block">Destination</span>
+<span class="font-semibold text-on-surface">Taastrup Central DC (Warehouse A)</span>
+</div>
+<div class="bg-surface-container-low p-space-sm rounded">
+<span class="text-on-surface-variant block">Expected Arrival</span>
+<span class="font-semibold text-on-surface">Oct 20, 2025 (On Track)</span>
+</div>
+<div class="bg-surface-container-low p-space-sm rounded">
+<span class="text-on-surface-variant block">Payment Terms</span>
+<span class="font-semibold text-on-surface">Net 30 Days (EUR / DKK)</span>
+</div>
+</div>
+<!-- Line items -->
+<div class="overflow-x-auto">
+<table class="w-full text-left font-body-sm text-body-sm">
+<thead class="bg-surface-container-low text-on-surface-variant font-label-sm uppercase">
+<tr>
+<th class="py-2 px-3">Item</th>
+<th class="py-2 px-3 text-center">Ordered</th>
+<th class="py-2 px-3 text-center">Received</th>
+<th class="py-2 px-3 text-right">Unit Cost</th>
+<th class="py-2 px-3 text-right">Total</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td class="py-2.5 px-3 font-medium text-on-surface">Nordic Wool Overshirt - Forest Green / M</td>
+<td class="py-2.5 px-3 text-center">100</td>
+<td class="py-2.5 px-3 text-center text-secondary font-bold">100</td>
+<td class="py-2.5 px-3 text-right">320.00 DKK</td>
+<td class="py-2.5 px-3 text-right font-semibold">32,000.00 DKK</td>
+</tr>
+<tr>
+<td class="py-2.5 px-3 font-medium text-on-surface">Nordic Wool Overshirt - Forest Green / L</td>
+<td class="py-2.5 px-3 text-center">100</td>
+<td class="py-2.5 px-3 text-center text-secondary font-bold">80</td>
+<td class="py-2.5 px-3 text-right">320.00 DKK</td>
+<td class="py-2.5 px-3 text-right font-semibold">25,600.00 DKK</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="mt-space-md pt-space-sm flex flex-col sm:flex-row justify-between items-center text-label-sm">
+<span class="text-on-surface-variant">Landed costs (freight, customs VAT 25%) included in valuation.</span>
+<div class="font-headline-sm text-headline-sm text-on-surface font-bold">
+            Total Landed Value: <span class="text-secondary">72,000.00 DKK</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 7. SALES ORDERS                                                           -->
+<!-- ========================================================================= -->
+<section class="w-full bg-surface-container-lowest py-space-xl">
+<div class="max-w-7xl mx-auto px-gutter-lg">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between mb-space-xl gap-space-md">
+<div class="max-w-2xl">
+<span class="font-label-sm text-label-sm uppercase tracking-widest text-secondary font-semibold">Omnichannel Order Hub</span>
+<h2 class="font-headline-xl text-headline-xl text-on-surface mt-space-xs">
+            Orders without the chaos
+          </h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-space-xs">
+            Combine phone orders, B2B wholesale portals, in-store checkout, and webshop sync into one single processing stream.
+          </p>
+</div>
+<div class="flex flex-wrap gap-2">
+<span class="bg-surface-container px-3 py-1.5 rounded-full font-label-sm text-label-sm text-on-surface">E-commerce API</span>
+<span class="bg-surface-container px-3 py-1.5 rounded-full font-label-sm text-label-sm text-on-surface">B2B Portal</span>
+<span class="bg-surface-container px-3 py-1.5 rounded-full font-label-sm text-label-sm text-on-surface">Store POS</span>
+<span class="bg-surface-container px-3 py-1.5 rounded-full font-label-sm text-label-sm text-on-surface">Phone Orders</span>
+</div>
+</div>
+<!-- Unified Orders Table Preview -->
+<div class="bg-surface-container-lowest rounded-xl shadow-lg overflow-hidden">
+<div class="p-space-md bg-surface-container-low flex items-center justify-between">
+<div class="flex items-center gap-space-sm">
+<span class="font-headline-sm text-headline-sm text-on-surface">Active Fulfillment Queue</span>
+<span class="bg-secondary text-on-secondary text-label-sm font-semibold px-2 py-0.5 rounded-full">32 to pack</span>
+</div>
+<button class="bg-primary text-on-primary px-space-md py-1.5 rounded-md font-label-sm text-label-sm flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[16px]">print</span> Print Pick Lists
+          </button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left font-body-sm text-body-sm">
+<thead class="bg-surface text-on-surface-variant font-label-sm uppercase">
+<tr>
+<th class="py-3 px-4">Order ID</th>
+<th class="py-3 px-4">Customer</th>
+<th class="py-3 px-4">Origin Channel</th>
+<th class="py-3 px-4">Items</th>
+<th class="py-3 px-4">Fulfillment Hub</th>
+<th class="py-3 px-4">Total</th>
+<th class="py-3 px-4 text-right">Status</th>
+</tr>
+</thead>
+<tbody>
+<tr class="hover:bg-surface-container-low/40 transition-colors">
+<td class="py-3.5 px-4 font-mono font-bold text-on-surface">#ORD-9922</td>
+<td class="py-3.5 px-4">
+<div class="font-medium text-on-surface">Helena Lindqvist</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">helena@lindqvist.dk</div>
+</td>
+<td class="py-3.5 px-4">
+<span class="font-label-sm text-label-sm bg-surface-container px-2 py-0.5 rounded">Shopify EU</span>
+</td>
+<td class="py-3.5 px-4">3 items</td>
+<td class="py-3.5 px-4 text-on-surface-variant">Taastrup DC</td>
+<td class="py-3.5 px-4 font-semibold text-on-surface">2,420 DKK</td>
+<td class="py-3.5 px-4 text-right">
+<span class="font-label-sm text-label-sm bg-secondary-container/50 text-on-secondary-fixed-variant px-2.5 py-1 rounded font-semibold">Ready to Pack</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/40 transition-colors">
+<td class="py-3.5 px-4 font-mono font-bold text-on-surface">#ORD-9921</td>
+<td class="py-3.5 px-4">
+<div class="font-medium text-on-surface">Frederik M.</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Walk-in POS</div>
+</td>
+<td class="py-3.5 px-4">
+<span class="font-label-sm text-label-sm bg-surface-container px-2 py-0.5 rounded">Store POS</span>
+</td>
+<td class="py-3.5 px-4">2 items</td>
+<td class="py-3.5 px-4 text-on-surface-variant">Strøget Store</td>
+<td class="py-3.5 px-4 font-semibold text-on-surface">1,776 DKK</td>
+<td class="py-3.5 px-4 text-right">
+<span class="font-label-sm text-label-sm bg-secondary-container/50 text-on-secondary-fixed-variant px-2.5 py-1 rounded font-semibold">Completed</span>
+</td>
+</tr>
+<tr class="hover:bg-surface-container-low/40 transition-colors">
+<td class="py-3.5 px-4 font-mono font-bold text-on-surface">#ORD-9920</td>
+<td class="py-3.5 px-4">
+<div class="font-medium text-on-surface">Aarhus Design ApS</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Wholesale Account</div>
+</td>
+<td class="py-3.5 px-4">
+<span class="font-label-sm text-label-sm bg-surface-container px-2 py-0.5 rounded">B2B Portal</span>
+</td>
+<td class="py-3.5 px-4">24 items</td>
+<td class="py-3.5 px-4 text-on-surface-variant">Taastrup DC</td>
+<td class="py-3.5 px-4 font-semibold text-on-surface">14,280 DKK</td>
+<td class="py-3.5 px-4 text-right">
+<span class="font-label-sm text-label-sm bg-surface-variant text-on-surface px-2.5 py-1 rounded font-semibold">Awaiting Dispatch</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 8. POINT OF SALE (POS) SHOWCASE (Dark Section)                            -->
+<!-- ========================================================================= -->
+<section class="w-full bg-primary-container text-on-primary py-space-xl relative">
+<div class="max-w-7xl mx-auto px-gutter-lg">
+<div class="text-center max-w-3xl mx-auto mb-space-xl">
+<span class="font-label-sm text-label-sm uppercase tracking-widest text-secondary font-semibold">Retail Terminal</span>
+<h2 class="font-headline-xl text-headline-xl text-on-primary mt-space-xs">
+          From stockroom to checkout
+        </h2>
+<p class="font-body-md text-body-md text-on-primary-container mt-space-sm">
+          Run your brick-and-mortar retail with an intuitive touch POS designed for Scandinavian retail workflows.
+        </p>
+</div>
+<!-- Large POS Interface Mockup -->
+<div class="bg-primary rounded-2xl shadow-2xl p-space-md sm:p-space-lg">
+<!-- POS Topbar -->
+<div class="flex flex-wrap items-center justify-between pb-space-md mb-space-md gap-space-sm">
+<div class="flex items-center gap-space-sm">
+<div class="w-3 h-3 rounded-full bg-secondary"></div>
+<span class="font-headline-sm text-headline-sm text-on-primary">StockBase POS • Register #1</span>
+<span class="bg-surface-container-highest/20 text-on-primary-container text-label-sm px-2 py-0.5 rounded">Store: Strøget (Cph)</span>
+</div>
+<div class="flex items-center gap-space-md text-label-sm text-on-primary-container">
+<span>Cashier: <strong class="text-on-primary">Anna K.</strong></span>
+<span class="bg-secondary text-on-secondary px-2 py-0.5 rounded font-mono text-label-sm">Offline Sync Ready</span>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-md">
+<!-- Left: Catalog Tiles (7 cols) -->
+<div class="lg:col-span-7 flex flex-col justify-between">
+<!-- Category Tabs -->
+<div class="flex items-center gap-space-xs overflow-x-auto pb-space-xs mb-space-sm">
+<button class="bg-secondary text-on-secondary px-space-md py-1.5 rounded-lg font-label-sm font-semibold text-label-sm whitespace-nowrap">All Items</button>
+<button class="bg-surface-container-highest/20 text-on-primary hover:bg-surface-container-highest/30 px-space-md py-1.5 rounded-lg font-label-sm text-label-sm whitespace-nowrap">Apparel</button>
+<button class="bg-surface-container-highest/20 text-on-primary hover:bg-surface-container-highest/30 px-space-md py-1.5 rounded-lg font-label-sm text-label-sm whitespace-nowrap">Accessories</button>
+<button class="bg-surface-container-highest/20 text-on-primary hover:bg-surface-container-highest/30 px-space-md py-1.5 rounded-lg font-label-sm text-label-sm whitespace-nowrap">Footwear</button>
+</div>
+<!-- Product Grid -->
+<div class="grid grid-cols-2 sm:grid-cols-3 gap-space-sm">
+<!-- Item 1 -->
+<div class="bg-surface-container-highest/10 p-space-sm rounded-xl cursor-pointer hover:bg-surface-container-highest/20 transition-all flex flex-col justify-between">
+<div>
+<div class="font-label-md text-label-md text-on-primary font-semibold">Nordic Overshirt</div>
+<div class="font-label-sm text-label-sm text-on-primary-container">Forest Green / M</div>
+</div>
+<div class="mt-space-md flex items-center justify-between">
+<span class="font-headline-sm text-headline-sm text-secondary font-bold">890 DKK</span>
+<span class="text-label-sm font-mono text-on-primary-container">42 left</span>
+</div>
+</div>
+<!-- Item 2 -->
+<div class="bg-surface-container-highest/10 p-space-sm rounded-xl cursor-pointer hover:bg-surface-container-highest/20 transition-all flex flex-col justify-between">
+<div>
+<div class="font-label-md text-label-md text-on-primary font-semibold">Merino Crewneck</div>
+<div class="font-label-sm text-label-sm text-on-primary-container">Charcoal / L</div>
+</div>
+<div class="mt-space-md flex items-center justify-between">
+<span class="font-headline-sm text-headline-sm text-secondary font-bold">740 DKK</span>
+<span class="text-label-sm font-mono text-on-primary-container">18 left</span>
+</div>
+</div>
+<!-- Item 3 -->
+<div class="bg-surface-container-highest/10 p-space-sm rounded-xl cursor-pointer hover:bg-surface-container-highest/20 transition-all flex flex-col justify-between">
+<div>
+<div class="font-label-md text-label-md text-on-primary font-semibold">Waxed Canvas Tote</div>
+<div class="font-label-sm text-label-sm text-on-primary-container">Sandstone / One Size</div>
+</div>
+<div class="mt-space-md flex items-center justify-between">
+<span class="font-headline-sm text-headline-sm text-secondary font-bold">296 DKK</span>
+<span class="text-label-sm font-mono text-on-primary-container">65 left</span>
+</div>
+</div>
+<!-- Item 4 -->
+<div class="bg-surface-container-highest/10 p-space-sm rounded-xl cursor-pointer hover:bg-surface-container-highest/20 transition-all flex flex-col justify-between">
+<div>
+<div class="font-label-md text-label-md text-on-primary font-semibold">Raw Selvedge Denim</div>
+<div class="font-label-sm text-label-sm text-on-primary-container">Indigo / 32x32</div>
+</div>
+<div class="mt-space-md flex items-center justify-between">
+<span class="font-headline-sm text-headline-sm text-secondary font-bold">1,150 DKK</span>
+<span class="text-label-sm font-mono text-on-primary-container">12 left</span>
+</div>
+</div>
+<!-- Item 5 -->
+<div class="bg-surface-container-highest/10 p-space-sm rounded-xl cursor-pointer hover:bg-surface-container-highest/20 transition-all flex flex-col justify-between">
+<div>
+<div class="font-label-md text-label-md text-on-primary font-semibold">Ribbed Beanie</div>
+<div class="font-label-sm text-label-sm text-on-primary-container">Rust Wool</div>
+</div>
+<div class="mt-space-md flex items-center justify-between">
+<span class="font-headline-sm text-headline-sm text-secondary font-bold">220 DKK</span>
+<span class="text-label-sm font-mono text-on-primary-container">34 left</span>
+</div>
+</div>
+<!-- Item 6 (Barcode Scan trigger) -->
+<div class="bg-surface-container-highest/5 p-space-sm rounded-xl border border-dashed border-outline-variant/30 flex flex-col items-center justify-center text-center cursor-pointer hover:bg-surface-container-highest/10">
+<span class="material-symbols-outlined text-secondary text-[28px]">barcode_scanner</span>
+<span class="font-label-sm text-label-sm text-on-primary mt-1">Scan Barcode Gun</span>
+</div>
+</div>
+</div>
+<!-- Right: Active Cart Ticket & Payment (5 cols) -->
+<div class="lg:col-span-5 bg-surface-container-lowest text-on-surface rounded-xl p-space-md flex flex-col justify-between shadow-xl">
+<div>
+<div class="flex items-center justify-between pb-space-sm mb-space-sm">
+<div>
+<span class="font-headline-sm text-headline-sm font-bold">Current Sale</span>
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Customer: Frederik M. (Loyalty #4012)</span>
+</div>
+<button class="text-error font-label-sm text-label-sm hover:underline">Clear</button>
+</div>
+<!-- Cart List -->
+<div class="space-y-space-xs">
+<div class="flex items-center justify-between py-1">
+<div>
+<div class="font-label-md text-label-md font-semibold">Merino Crewneck (x2)</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Charcoal / L</div>
+</div>
+<span class="font-label-md text-label-md font-bold">1,480.00 DKK</span>
+</div>
+<div class="flex items-center justify-between py-1">
+<div>
+<div class="font-label-md text-label-md font-semibold">Waxed Canvas Tote (x1)</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Sandstone</div>
+</div>
+<span class="font-label-md text-label-md font-bold">296.00 DKK</span>
+</div>
+</div>
+</div>
+<!-- Receipt Breakdown & Buttons -->
+<div class="mt-space-lg pt-space-sm">
+<div class="flex justify-between text-body-sm text-on-surface-variant mb-1">
+<span>Subtotal (excl. VAT)</span>
+<span>1,480.00 DKK</span>
+</div>
+<div class="flex justify-between text-body-sm text-on-surface-variant mb-space-sm">
+<span>Danish VAT (25%)</span>
+<span>296.00 DKK</span>
+</div>
+<div class="flex justify-between font-headline-md text-headline-md font-bold text-on-surface mb-space-md">
+<span>Total Due</span>
+<span class="text-secondary">1,776.00 DKK</span>
+</div>
+<!-- Quick Payment Grid -->
+<div class="grid grid-cols-2 gap-space-xs mb-space-xs">
+<button class="bg-secondary text-on-secondary py-3 rounded-lg font-label-md text-label-md font-semibold flex items-center justify-center gap-1 shadow-sm hover:bg-on-secondary-fixed-variant transition-colors">
+<span class="material-symbols-outlined text-[18px]">credit_card</span> Card Payment
+                </button>
+<button class="bg-primary text-on-primary py-3 rounded-lg font-label-md text-label-md font-semibold flex items-center justify-center gap-1 shadow-sm hover:bg-surface-container-highest/20 transition-colors">
+<span class="material-symbols-outlined text-[18px]">contactless</span> MobilePay
+                </button>
+</div>
+<div class="grid grid-cols-2 gap-space-xs">
+<button class="bg-surface-container-low text-on-surface py-2 rounded-lg font-label-sm text-label-sm font-medium hover:bg-surface-container transition-colors">Cash</button>
+<button class="bg-surface-container-low text-on-surface py-2 rounded-lg font-label-sm text-label-sm font-medium hover:bg-surface-container transition-colors">Split Bill</button>
+</div>
+</div>
+</div>
+</div>
+<!-- POS Value Badges -->
+<div class="mt-space-lg pt-space-md grid grid-cols-2 md:grid-cols-4 gap-space-sm text-on-primary-container font-label-sm text-label-sm">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[18px]">cloud_sync</span> Offline local caching
+          </div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[18px]">qr_code_scanner</span> Barcode scanner ready
+          </div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[18px]">inventory</span> Instant inventory deduction
+          </div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary text-[18px]">assignment_return</span> Hassle-free omnichannel returns
+          </div>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 9. PHYSICAL INVENTORY COUNT ('Count stock without spreadsheets')           -->
+<!-- ========================================================================= -->
+<section class="w-full bg-surface-container-lowest py-space-xl">
+<div class="max-w-7xl mx-auto px-gutter-lg">
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-space-xl items-center">
+<div>
+<span class="font-label-sm text-label-sm uppercase tracking-widest text-secondary font-semibold">Audit Precision</span>
+<h2 class="font-headline-xl text-headline-xl text-on-surface mt-space-xs">
+            Count stock without spreadsheets
+          </h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-space-md">
+            Perform cycle counts, blind stock takes, and partial rack audits right from your smartphone. Spot discrepancies instantly before they hit your financials.
+          </p>
+<div class="space-y-space-md mt-space-lg">
+<div class="flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-secondary text-[24px] shrink-0">speed</span>
+<div>
+<span class="font-headline-sm text-headline-sm text-on-surface">Haptic Audio Counting</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Continuous rapid-beep confirmation lets floor teams audit shelves without looking back at screens.</p>
+</div>
+</div>
+<div class="flex items-start gap-space-sm">
+<span class="material-symbols-outlined text-secondary text-[24px] shrink-0">history_edu</span>
+<div>
+<span class="font-headline-sm text-headline-sm text-on-surface">Automatic Audit Logs</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Every adjustment is time-stamped with employee ID and reason codes for seamless tax compliance.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Reconciliation Comparison Card -->
+<div class="bg-surface-container-low p-space-lg rounded-xl shadow-lg">
+<div class="flex items-center justify-between pb-space-sm mb-space-md">
+<span class="font-label-md text-label-md font-bold text-on-surface">Active Count Session #ST-412</span>
+<span class="bg-secondary-container/60 text-on-secondary-fixed-variant px-2.5 py-0.5 rounded font-label-sm font-semibold">Zone: Aisle 3</span>
+</div>
+<div class="bg-surface-container-lowest p-space-md rounded-lg shadow-sm mb-space-md">
+<div class="font-label-sm text-label-sm text-on-surface-variant">Target SKU: NW-204-M (Nordic Wool Overshirt)</div>
+<div class="grid grid-cols-3 gap-space-sm mt-space-sm text-center">
+<div class="bg-surface-container-low p-space-sm rounded">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Expected</span>
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface">120 units</span>
+</div>
+<div class="bg-surface-container-low p-space-sm rounded">
+<span class="font-label-sm text-label-sm text-on-surface-variant block">Counted</span>
+<span class="font-headline-sm text-headline-sm font-bold text-on-surface">117 units</span>
+</div>
+<div class="bg-error-container/40 p-space-sm rounded">
+<span class="font-label-sm text-label-sm text-on-error-container block">Variance</span>
+<span class="font-headline-sm text-headline-sm font-bold text-error">-3 (-2.5%)</span>
+</div>
+</div>
+<div class="mt-space-md flex items-center justify-between text-label-sm">
+<span class="text-on-surface-variant">Discrepancy Reason: Damaged in transit</span>
+<span class="text-error font-semibold">-960 DKK adjustment</span>
+</div>
+</div>
+<div class="flex gap-space-sm">
+<button class="flex-1 bg-secondary text-on-secondary py-2.5 rounded-lg font-label-md text-label-md font-semibold hover:bg-on-secondary-fixed-variant transition-colors shadow-sm">
+              Approve Stock Adjustment
+            </button>
+<button class="bg-surface-container-lowest text-on-surface px-space-md py-2.5 rounded-lg font-label-md text-label-md hover:bg-surface-container transition-colors shadow-sm">
+              Recount
+            </button>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 10. CATALOG BUILDER ('Turn your inventory into a sales catalog')          -->
+<!-- ========================================================================= -->
+<section class="w-full bg-surface-container-low py-space-xl">
+<div class="max-w-7xl mx-auto px-gutter-lg">
+<div class="text-center max-w-3xl mx-auto mb-space-xl">
+<span class="font-label-sm text-label-sm uppercase tracking-widest text-secondary font-semibold">Wholesale Growth</span>
+<h2 class="font-headline-xl text-headline-xl text-on-surface mt-space-xs">
+          Turn your inventory into a sales catalog
+        </h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-space-sm">
+          Convert live inventory data into branded wholesale lookbooks, tier-priced PDF catalogs, and password-protected order portals in one click.
+        </p>
+</div>
+<div class="bg-surface-container-lowest rounded-2xl shadow-xl p-space-lg max-w-5xl mx-auto">
+<div class="flex flex-col md:flex-row items-center justify-between pb-space-md mb-space-lg gap-space-md">
+<div>
+<div class="font-headline-sm text-headline-sm text-on-surface">B2B Wholesale Lookbook • Autumn / Winter 2025</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Live URL: b2b.stockbase.io/nordic-apparel • Tier: Platinum Retailers (35% margin)</div>
+</div>
+<div class="flex items-center gap-space-xs">
+<button class="bg-surface-container-low text-on-surface px-space-md py-1.5 rounded-md font-label-sm text-label-sm flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[16px]">picture_as_pdf</span> Export PDF
+            </button>
+<button class="bg-secondary text-on-secondary px-space-md py-1.5 rounded-md font-label-sm text-label-sm font-semibold flex items-center gap-1 shadow-sm">
+<span class="material-symbols-outlined text-[16px]">share</span> Share Order Link
+            </button>
+</div>
+</div>
+<!-- Catalog Items Mini Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-md">
+<!-- Catalog Card 1 -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex flex-col justify-between">
+<div class="h-40 bg-surface-container-high rounded-lg mb-space-sm flex items-center justify-center text-on-surface-variant">
+<img class="w-full h-full object-cover rounded-lg" data-alt="Minimalist studio photograph of an emerald green wool overshirt folded cleanly on concrete background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCFGDISKGN6gfGf4Rp6e4S60_xfd1HTrVep7-WiTiPw2HB4oFdHBihThCO9Adyna-fi03OuY8RAZeGUAXAJ6nouTImwzpVHF8njh2D3C9pKmm1YqxBpa9wA7OkC3QnH1-qIbuKM_DtB--BDr2_bklhwyfdp0dZ0_lqyYJFyVwWtxo_TbJCaS3ahYyoMmkpWAoRPhrJm5AkjMF9lUTOLN3Lc94aeT2jx_ZmVXrHqhkYtYffPBX5_ndQ"/>
+</div>
+<div>
+<span class="font-label-sm text-label-sm text-secondary font-bold">NW-204-SERIES</span>
+<div class="font-headline-sm text-headline-sm text-on-surface">Nordic Wool Overshirt</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant mt-0.5">Min Order: 10 units • Available: 120</div>
+<div class="mt-space-sm flex items-center justify-between">
+<span class="font-label-sm text-label-sm line-through text-on-surface-variant">RRP: 890 DKK</span>
+<span class="font-headline-sm text-headline-sm text-secondary font-bold">Wholesale: 420 DKK</span>
+</div>
+</div>
+</div>
+<!-- Catalog Card 2 -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex flex-col justify-between">
+<div class="h-40 bg-surface-container-high rounded-lg mb-space-sm flex items-center justify-center text-on-surface-variant">
+<img class="w-full h-full object-cover rounded-lg" data-alt="High-end studio product shot of a grey merino wool knit sweater placed on minimalist wooden block" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBlR8SdF3lXpAigZJpfQG0UyBHpZyR2SBhFRpKqsprjIagG94VjBeXQt71N-atK5IK5NYVm4IZ22KrhpAaUY7NiMLIdm6PY-QUa9Oct-SzYq6INKN6fjjWxqZhPV53BBUOiWV1rQmZv-xsJUR3cPx1pY-NnWCs6e8jGG2OyBvpxu38cTn5P4ZGVEFssduAR79i-Cj7w2SMM6Yqz9X1tvgmYx7IEyOP2QF9pQjbISCPOgt5rGCEFcaQ"/>
+</div>
+<div>
+<span class="font-label-sm text-label-sm text-secondary font-bold">MB-108-SERIES</span>
+<div class="font-headline-sm text-headline-sm text-on-surface">Merino Base Knit</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant mt-0.5">Min Order: 5 units • Available: 62</div>
+<div class="mt-space-sm flex items-center justify-between">
+<span class="font-label-sm text-label-sm line-through text-on-surface-variant">RRP: 740 DKK</span>
+<span class="font-headline-sm text-headline-sm text-secondary font-bold">Wholesale: 340 DKK</span>
+</div>
+</div>
+</div>
+<!-- Catalog Card 3 -->
+<div class="bg-surface-container-low rounded-xl p-space-md flex flex-col justify-between">
+<div class="h-40 bg-surface-container-high rounded-lg mb-space-sm flex items-center justify-center text-on-surface-variant">
+<img class="w-full h-full object-cover rounded-lg" data-alt="Editorial photograph of an artisan waxed canvas tote bag in sandstone color on neutral tabletop" src="https://lh3.googleusercontent.com/aida-public/AB6AXuB_JkMtubbEwQztxYzmLVdLx0nAibj9iOeb6Euz4d2H7QtQyoVKzzHLRYepz3shKD25yylKIXlKECBdxhbhUUc7V09Hv-etTSEp0aBawhle62RvPPQF72L5Wt-icsNBw68F3fU1S3AfaRCacfve2KMV08GmRF0OcpALk_7I3qno9p9Ls8761VulCNS_YLkDL3OegLax65T70fY0DUavMWpy6CIdVqG2QXn4J9kQ4p87BVP__74eddE"/>
+</div>
+<div>
+<span class="font-label-sm text-label-sm text-secondary font-bold">WC-990-SAND</span>
+<div class="font-headline-sm text-headline-sm text-on-surface">Waxed Canvas Tote</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant mt-0.5">Min Order: 10 units • Available: 65</div>
+<div class="mt-space-sm flex items-center justify-between">
+<span class="font-label-sm text-label-sm line-through text-on-surface-variant">RRP: 296 DKK</span>
+<span class="font-headline-sm text-headline-sm text-secondary font-bold">Wholesale: 140 DKK</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 11. CUSTOMIZABLE FOR GROWING BUSINESSES                                   -->
+<!-- ========================================================================= -->
+<section class="w-full bg-surface-container-lowest py-space-xl">
+<div class="max-w-7xl mx-auto px-gutter-lg">
+<div class="text-center max-w-3xl mx-auto mb-space-xl">
+<span class="font-label-sm text-label-sm uppercase tracking-widest text-secondary font-semibold">Adaptable Core</span>
+<h2 class="font-headline-xl text-headline-xl text-on-surface mt-space-xs">
+          StockBase adapts to your business
+        </h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-space-sm">
+          Configure custom attributes, batch tracking, or serialization without writing a single line of custom code.
+        </p>
+</div>
+<!-- Industry Pills -->
+<div class="flex flex-wrap items-center justify-center gap-space-xs mb-space-lg">
+<span class="px-space-md py-2 bg-secondary text-on-secondary rounded-full font-label-md text-label-md font-semibold cursor-pointer shadow-sm">Fashion &amp; Apparel</span>
+<span class="px-space-md py-2 bg-surface-container-low text-on-surface hover:bg-surface-container rounded-full font-label-md text-label-md cursor-pointer transition-colors">Electronics &amp; Hardware</span>
+<span class="px-space-md py-2 bg-surface-container-low text-on-surface hover:bg-surface-container rounded-full font-label-md text-label-md cursor-pointer transition-colors">Home &amp; Living</span>
+<span class="px-space-md py-2 bg-surface-container-low text-on-surface hover:bg-surface-container rounded-full font-label-md text-label-md cursor-pointer transition-colors">Food &amp; Beverage</span>
+<span class="px-space-md py-2 bg-surface-container-low text-on-surface hover:bg-surface-container rounded-full font-label-md text-label-md cursor-pointer transition-colors">Wholesale Distribution</span>
+</div>
+<!-- Attribute Configurator Preview -->
+<div class="bg-surface-container-low p-space-lg rounded-xl max-w-4xl mx-auto shadow-sm">
+<div class="font-headline-sm text-headline-sm text-on-surface mb-space-sm">Dynamic Custom Field Setup</div>
+<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-space-sm">
+<div class="bg-surface-container-lowest p-space-sm rounded-lg shadow-sm">
+<span class="font-label-sm text-label-sm text-secondary font-semibold uppercase">Color &amp; Size Matrix</span>
+<div class="font-label-md text-label-md text-on-surface mt-1">Multi-variant options</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Auto-generates SKU combinations.</p>
+</div>
+<div class="bg-surface-container-lowest p-space-sm rounded-lg shadow-sm">
+<span class="font-label-sm text-label-sm text-secondary font-semibold uppercase">Batch &amp; Lot Codes</span>
+<div class="font-label-md text-label-md text-on-surface mt-1">FIFO / FEFO control</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Track factory production runs.</p>
+</div>
+<div class="bg-surface-container-lowest p-space-sm rounded-lg shadow-sm">
+<span class="font-label-sm text-label-sm text-secondary font-semibold uppercase">Serial Numbers</span>
+<div class="font-label-md text-label-md text-on-surface mt-1">Unique item tracking</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Warranty &amp; return verification.</p>
+</div>
+<div class="bg-surface-container-lowest p-space-sm rounded-lg shadow-sm">
+<span class="font-label-sm text-label-sm text-secondary font-semibold uppercase">Expiry Tracking</span>
+<div class="font-label-md text-label-md text-on-surface mt-1">Perishable alerts</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Automated shelf-life countdown.</p>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 12. ONE CONNECTED WORKFLOW (Horizontal Timeline)                          -->
+<!-- ========================================================================= -->
+<section class="w-full bg-primary-container text-on-primary py-space-xl">
+<div class="max-w-7xl mx-auto px-gutter-lg">
+<div class="text-center max-w-3xl mx-auto mb-space-xl">
+<span class="font-label-sm text-label-sm uppercase tracking-widest text-secondary font-semibold">End-to-End Orchestration</span>
+<h2 class="font-headline-xl text-headline-xl text-on-primary mt-space-xs">
+          One connected workflow
+        </h2>
+<p class="font-body-md text-body-md text-on-primary-container mt-space-sm">
+          Watch your stock move friction-free through every operational milestone without duplicate data entry.
+        </p>
+</div>
+<!-- Horizontal Pipeline -->
+<div class="grid grid-cols-1 md:grid-cols-6 gap-space-sm text-center">
+<!-- Node 1 -->
+<div class="bg-primary p-space-md rounded-xl flex flex-col items-center">
+<span class="w-10 h-10 rounded-full bg-surface-container-highest/20 text-secondary flex items-center justify-center font-bold mb-space-xs">1</span>
+<span class="font-label-md text-label-md text-on-primary font-semibold">Supplier</span>
+<p class="font-body-sm text-body-sm text-on-primary-container mt-1">Purchase orders &amp; lead times</p>
+</div>
+<!-- Node 2 -->
+<div class="bg-primary p-space-md rounded-xl flex flex-col items-center">
+<span class="w-10 h-10 rounded-full bg-surface-container-highest/20 text-secondary flex items-center justify-center font-bold mb-space-xs">2</span>
+<span class="font-label-md text-label-md text-on-primary font-semibold">Receiving</span>
+<p class="font-body-sm text-body-sm text-on-primary-container mt-1">Barcode dock check-in</p>
+</div>
+<!-- Node 3 -->
+<div class="bg-primary p-space-md rounded-xl flex flex-col items-center">
+<span class="w-10 h-10 rounded-full bg-surface-container-highest/20 text-secondary flex items-center justify-center font-bold mb-space-xs">3</span>
+<span class="font-label-md text-label-md text-on-primary font-semibold">Warehouse</span>
+<p class="font-body-sm text-body-sm text-on-primary-container mt-1">Multi-hub transfers</p>
+</div>
+<!-- Node 4 -->
+<div class="bg-primary p-space-md rounded-xl flex flex-col items-center">
+<span class="w-10 h-10 rounded-full bg-surface-container-highest/20 text-secondary flex items-center justify-center font-bold mb-space-xs">4</span>
+<span class="font-label-md text-label-md text-on-primary font-semibold">Orders &amp; POS</span>
+<p class="font-body-sm text-body-sm text-on-primary-container mt-1">Checkout &amp; dispatch</p>
+</div>
+<!-- Node 5 -->
+<div class="bg-primary p-space-md rounded-xl flex flex-col items-center">
+<span class="w-10 h-10 rounded-full bg-surface-container-highest/20 text-secondary flex items-center justify-center font-bold mb-space-xs">5</span>
+<span class="font-label-md text-label-md text-on-primary font-semibold">Customer</span>
+<p class="font-body-sm text-body-sm text-on-primary-container mt-1">Tracking &amp; invoices</p>
+</div>
+<!-- Node 6 -->
+<div class="bg-primary p-space-md rounded-xl flex flex-col items-center">
+<span class="w-10 h-10 rounded-full bg-surface-container-highest/20 text-secondary flex items-center justify-center font-bold mb-space-xs">6</span>
+<span class="font-label-md text-label-md text-on-primary font-semibold">Analytics</span>
+<p class="font-body-sm text-body-sm text-on-primary-container mt-1">Live COGS &amp; taxes</p>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 13. REPORTING & BUSINESS INTELLIGENCE                                     -->
+<!-- ========================================================================= -->
+<section class="w-full bg-surface-container-lowest py-space-xl">
+<div class="max-w-7xl mx-auto px-gutter-lg">
+<div class="flex flex-col lg:flex-row lg:items-end justify-between mb-space-xl gap-space-md">
+<div class="max-w-2xl">
+<span class="font-label-sm text-label-sm uppercase tracking-widest text-secondary font-semibold">Financial Visibility</span>
+<h2 class="font-headline-xl text-headline-xl text-on-surface mt-space-xs">
+            See what's happening in your business
+          </h2>
+<p class="font-body-lg text-body-lg text-on-surface-variant mt-space-xs">
+            Actionable data on inventory turnover, product margins, and stockouts so you make informed purchasing decisions.
+          </p>
+</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant bg-surface-container-low px-space-md py-space-xs rounded-lg">
+          Updated: <strong class="text-on-surface">5 mins ago</strong> • Currency: DKK
+        </div>
+</div>
+<!-- Analytical BI Grid -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-md">
+<!-- BI Card 1 -->
+<div class="bg-surface-container-low p-space-md rounded-xl shadow-sm">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">Turnover Velocity</span>
+<div class="font-headline-xl text-headline-xl text-secondary font-bold mt-1">4.2x</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">+0.6x compared to European retail average</p>
+<div class="mt-space-md pt-space-xs">
+<span class="font-label-sm text-label-sm text-on-surface font-semibold">Days Sales of Inventory (DSI): 86 days</span>
+</div>
+</div>
+<!-- BI Card 2 -->
+<div class="bg-surface-container-low p-space-md rounded-xl shadow-sm">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">Dead Stock Alert</span>
+<div class="font-headline-xl text-headline-xl text-on-surface font-bold mt-1">24,180 DKK</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">2 items with zero velocity in 90+ days</p>
+<div class="mt-space-md pt-space-xs">
+<span class="font-label-sm text-label-sm text-secondary font-semibold hover:underline cursor-pointer">Generate flash discount bundle →</span>
+</div>
+</div>
+<!-- BI Card 3 -->
+<div class="bg-surface-container-low p-space-md rounded-xl shadow-sm">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant font-semibold">Reorder Forecast</span>
+<div class="font-headline-xl text-headline-xl text-error font-bold mt-1">14 Days</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Until NW-204-M reaches stockout</p>
+<div class="mt-space-md pt-space-xs">
+<span class="font-label-sm text-label-sm text-secondary font-semibold hover:underline cursor-pointer">Create Purchase Order now →</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 14. MULTI-DEVICE ECOSYSTEM                                                -->
+<!-- ========================================================================= -->
+<section class="w-full bg-surface-container-low py-space-xl">
+<div class="max-w-7xl mx-auto px-gutter-lg">
+<div class="text-center max-w-3xl mx-auto mb-space-xl">
+<span class="font-label-sm text-label-sm uppercase tracking-widest text-secondary font-semibold">Any Device, Anywhere</span>
+<h2 class="font-headline-xl text-headline-xl text-on-surface mt-space-xs">
+          Work wherever your business happens
+        </h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-space-sm">
+          From the boardroom on a MacBook, to the store counter on an iPad, to the warehouse forklift on an iPhone.
+        </p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-md">
+<!-- Device 1 -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm text-center flex flex-col items-center">
+<div class="w-14 h-14 rounded-2xl bg-surface-container-low flex items-center justify-center text-secondary mb-space-sm">
+<span class="material-symbols-outlined text-[32px]">laptop_mac</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Desktop &amp; Web App</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Full purchasing, catalog configuration, multi-location replenishment and CFO reporting.</p>
+</div>
+<!-- Device 2 -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm text-center flex flex-col items-center">
+<div class="w-14 h-14 rounded-2xl bg-surface-container-low flex items-center justify-center text-secondary mb-space-sm">
+<span class="material-symbols-outlined text-[32px]">tablet_mac</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Tablet POS Register</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Touch-optimized cashier workspace, split payments, barcode gun integration and digital receipts.</p>
+</div>
+<!-- Device 3 -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm text-center flex flex-col items-center">
+<div class="w-14 h-14 rounded-2xl bg-surface-container-low flex items-center justify-center text-secondary mb-space-sm">
+<span class="material-symbols-outlined text-[32px]">phone_iphone</span>
+</div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Handheld Scanner App</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mt-1">Continuous camera scanning, rapid cycle count audits, and delivery truck check-in.</p>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 15. MODULAR SYSTEM                                                        -->
+<!-- ========================================================================= -->
+<section class="w-full bg-surface-container-lowest py-space-xl">
+<div class="max-w-7xl mx-auto px-gutter-lg">
+<div class="text-center max-w-3xl mx-auto mb-space-xl">
+<span class="font-label-sm text-label-sm uppercase tracking-widest text-secondary font-semibold">Modular Flexibility</span>
+<h2 class="font-headline-xl text-headline-xl text-on-surface mt-space-xs">
+          Toggle only what you need
+        </h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-space-sm">
+          No bloated software. Activate modules as your enterprise expands across channels and countries.
+        </p>
+</div>
+<div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-space-sm">
+<div class="bg-surface-container-low p-space-sm rounded-lg text-center flex flex-col items-center">
+<span class="material-symbols-outlined text-secondary text-[24px] mb-1">inventory_2</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Inventory</span>
+<span class="text-secondary font-label-sm text-label-sm font-semibold mt-1">Core Active</span>
+</div>
+<div class="bg-surface-container-low p-space-sm rounded-lg text-center flex flex-col items-center">
+<span class="material-symbols-outlined text-secondary text-[24px] mb-1">warehouse</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Warehouses</span>
+<span class="text-secondary font-label-sm text-label-sm font-semibold mt-1">Multi-Hub</span>
+</div>
+<div class="bg-surface-container-low p-space-sm rounded-lg text-center flex flex-col items-center">
+<span class="material-symbols-outlined text-secondary text-[24px] mb-1">currency_exchange</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Multi-Currency</span>
+<span class="text-secondary font-label-sm text-label-sm font-semibold mt-1">EUR/DKK/SEK</span>
+</div>
+<div class="bg-surface-container-low p-space-sm rounded-lg text-center flex flex-col items-center">
+<span class="material-symbols-outlined text-secondary text-[24px] mb-1">point_of_sale</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Cloud POS</span>
+<span class="text-secondary font-label-sm text-label-sm font-semibold mt-1">Active</span>
+</div>
+<div class="bg-surface-container-low p-space-sm rounded-lg text-center flex flex-col items-center">
+<span class="material-symbols-outlined text-secondary text-[24px] mb-1">storefront</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">B2B Portal</span>
+<span class="text-secondary font-label-sm text-label-sm font-semibold mt-1">Enabled</span>
+</div>
+<div class="bg-surface-container-low p-space-sm rounded-lg text-center flex flex-col items-center">
+<span class="material-symbols-outlined text-secondary text-[24px] mb-1">qr_code_scanner</span>
+<span class="font-label-md text-label-md text-on-surface font-semibold">Barcode Gun</span>
+<span class="text-secondary font-label-sm text-label-sm font-semibold mt-1">Enabled</span>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 16. CUSTOMER TESTIMONIALS & TRUST                                         -->
+<!-- ========================================================================= -->
+<section class="w-full bg-surface-container-low py-space-xl">
+<div class="max-w-7xl mx-auto px-gutter-lg">
+<div class="text-center max-w-3xl mx-auto mb-space-xl">
+<span class="font-label-sm text-label-sm uppercase tracking-widest text-secondary font-semibold">Social Proof</span>
+<h2 class="font-headline-xl text-headline-xl text-on-surface mt-space-xs">
+          Trusted by European retail innovators
+        </h2>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-space-md">
+<!-- Testimonial 1 -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between">
+<p class="font-body-md text-body-md text-on-surface italic">
+            “StockBase eliminated our warehouse stockout blind spots across 4 Copenhagen retail locations. Our inventory count speed went up 300%.”
+          </p>
+<div class="mt-space-md pt-space-sm flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center font-bold text-on-surface">ML</div>
+<div>
+<div class="font-label-md text-label-md font-bold text-on-surface">Mads Lind</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Operations Director, Nordic Goods</div>
+</div>
+</div>
+</div>
+<!-- Testimonial 2 -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between">
+<p class="font-body-md text-body-md text-on-surface italic">
+            “The POS and live warehouse transfer tracking work without hiccups. We onboarded our seasonal store staff in under 20 minutes.”
+          </p>
+<div class="mt-space-md pt-space-sm flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center font-bold text-on-surface">SH</div>
+<div>
+<div class="font-label-md text-label-md font-bold text-on-surface">Signe Holm</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Founder, Holm Ceramics ApS</div>
+</div>
+</div>
+</div>
+<!-- Testimonial 3 -->
+<div class="bg-surface-container-lowest p-space-lg rounded-xl shadow-sm flex flex-col justify-between">
+<p class="font-body-md text-body-md text-on-surface italic">
+            “Moving off antiquated legacy ERP onto StockBase was seamless. Our supplier POs and Shopify orders sync automatically every second.”
+          </p>
+<div class="mt-space-md pt-space-sm flex items-center gap-space-sm">
+<div class="w-10 h-10 rounded-full bg-surface-container-highest flex items-center justify-center font-bold text-on-surface">JE</div>
+<div>
+<div class="font-label-md text-label-md font-bold text-on-surface">Jens Eriksen</div>
+<div class="font-label-sm text-label-sm text-on-surface-variant">Supply Chain Lead, Scandic Distribution</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- ========================================================================= -->
+<!-- 17. HIGH-CONVERSION FINAL CTA                                             -->
+<!-- ========================================================================= -->
+<section class="w-full bg-primary-container text-on-primary py-space-xl relative overflow-hidden">
+<div class="max-w-5xl mx-auto px-gutter-lg text-center relative z-10">
+<span class="font-label-sm text-label-sm uppercase tracking-widest text-secondary font-semibold">Immediate Operations Upgrade</span>
+<h2 class="font-headline-xl text-headline-xl sm:text-[42px] sm:leading-[50px] text-on-primary mt-space-sm max-w-2xl mx-auto">
+        Ready to take control of your inventory?
+      </h2>
+<p class="font-body-lg text-body-lg text-on-primary-container max-w-xl mx-auto mt-space-md leading-relaxed">
+        Start your 14-day risk-free trial today. Full enterprise functionality, instant data import, and live within 48 hours.
+      </p>
+<div class="flex flex-col sm:flex-row items-center justify-center gap-space-sm mt-space-lg">
+<a class="w-full sm:w-auto inline-flex items-center justify-center gap-space-xs font-label-lg text-label-lg text-on-secondary bg-secondary hover:bg-on-secondary-fixed-variant px-space-xl py-3 rounded-lg shadow-lg transition-all transform hover:-translate-y-0.5" href="#">
+<span>Start Free Trial</span>
+<span class="material-symbols-outlined text-[18px]">arrow_forward</span>
+</a>
+<a class="w-full sm:w-auto inline-flex items-center justify-center gap-space-xs font-label-lg text-label-lg text-on-primary bg-surface-container-highest/20 hover:bg-surface-container-highest/30 px-space-lg py-3 rounded-lg transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">calendar_today</span>
+<span>Schedule 1-on-1 Demo</span>
+</a>
+</div>
+<div class="flex flex-wrap items-center justify-center gap-space-md text-on-primary-container font-label-sm text-label-sm mt-space-lg">
+<span>✓ Live in under 48 hours</span>
+<span>✓ Dedicated Nordic support</span>
+<span>✓ Free CSV &amp; ERP data migration</span>
+</div>
+</div>
+</section>
+</div></main><footer class="w-full bg-surface-container-lowest shadow-[0_-1px_8px_rgba(0,0,0,0.02)]"><div class="max-w-7xl mx-auto px-gutter-lg py-space-xl"><div class="grid grid-cols-2 md:grid-cols-6 gap-gutter-lg mb-space-xl"><div class="col-span-2 space-y-space-md pr-space-md"><div class="flex items-center gap-space-sm"><img alt="StockBase Logo" class="h-7 w-auto object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCiuOF_dKjTZ71zWiGFTcalwmS7jGsZ1UNVK22IO2__O-DbhvfoufRCU1tOQA-ic85w5KPXCxGL0AielqvUuTg0Hlt3n-sI_l5jchHk4rA2cIZrf2IxZtt8lDriOVPaf0i2rTK8AlYCDbf3oA3vS8ErGyuaCFnTb5SDmL9chdyTJ2bTpkJ9rfDUJlz-6xYarMWZ0h-43gz9eY38jiqdelqSObJsoXfyKHxSLT9ox6CQEu9v3fyxLyM"/><span class="font-headline-sm text-headline-sm text-on-surface tracking-tight">StockBase</span></div><p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">Architectural-grade inventory intelligence and point-of-sale infrastructure built for European enterprise operators, supply chain directors, and retail networks.</p><div class="inline-flex items-center gap-space-xs px-space-sm py-space-xs rounded-full bg-secondary-container/40"><span class="w-2 h-2 rounded-full bg-secondary animate-pulse"></span><span class="font-label-sm text-label-sm text-on-secondary-fixed-variant uppercase tracking-wider">Systems Operational</span></div></div><div class="col-span-1 space-y-space-sm"><span class="font-label-md text-label-md text-on-surface uppercase tracking-wider block">Product</span><ul class="space-y-space-xs"><li class="leading-none"><a class="font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-colors" data-path="inventory" href="#">Inventory</a></li><li class="leading-none"><a class="font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-colors" data-path="orders" href="#">Orders</a></li><li class="leading-none"><a class="font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-colors" data-path="purchases" href="#">Purchases</a></li><li class="leading-none"><a class="font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-colors" data-path="pos" href="#">POS</a></li><li class="leading-none"><a class="font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-colors" data-path="barcode" href="#">Barcode</a></li><li class="leading-none"><a class="font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-colors" data-path="catalog" href="#">Catalog</a></li></ul></div><div class="col-span-1 space-y-space-sm"><span class="font-label-md text-label-md text-on-surface uppercase tracking-wider block">Company</span><ul class="space-y-space-xs"><li class="leading-none"><a class="font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-colors" data-path="about" href="#">About</a></li><li class="leading-none"><a class="font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-colors" data-path="contact" href="#">Contact</a></li></ul></div><div class="col-span-1 space-y-space-sm"><span class="font-label-md text-label-md text-on-surface uppercase tracking-wider block">Resources</span><ul class="space-y-space-xs"><li class="leading-none"><a class="font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-colors" data-path="help" href="#">Help</a></li><li class="leading-none"><a class="font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-colors" data-path="documentation" href="#">Documentation</a></li><li class="leading-none"><a class="font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-colors" data-path="api" href="#">API</a></li></ul></div><div class="col-span-1 space-y-space-sm"><span class="font-label-md text-label-md text-on-surface uppercase tracking-wider block">Legal</span><ul class="space-y-space-xs"><li class="leading-none"><a class="font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-colors" data-path="privacy" href="#">Privacy</a></li><li class="leading-none"><a class="font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-colors" data-path="terms" href="#">Terms</a></li><li class="leading-none"><a class="font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-colors" data-path="security" href="#">Security</a></li></ul></div></div><div class="pt-space-lg flex flex-col sm:flex-row items-center justify-between gap-space-md"><p class="font-body-sm text-body-sm text-on-surface-variant">© 2025 StockBase Technologies SE. Built in Europe. All rights reserved.</p><div class="flex items-center gap-space-lg"><a class="font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="privacy" href="#">Privacy Statement</a><a class="font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="terms" href="#">Terms of Service</a><a class="font-body-sm text-body-sm text-on-surface-variant hover:text-on-surface transition-colors" data-path="security" href="#">Security Standards</a></div></div></div></footer></body></html>

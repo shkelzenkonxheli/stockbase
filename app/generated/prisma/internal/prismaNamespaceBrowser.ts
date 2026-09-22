@@ -72,6 +72,7 @@ export const ModelName = {
   TenantMembership: 'TenantMembership',
   Subscription: 'Subscription',
   TenantSettings: 'TenantSettings',
+  SocialPublication: 'SocialPublication',
   Catalog: 'Catalog',
   CatalogProduct: 'CatalogProduct',
   CatalogField: 'CatalogField',
@@ -422,6 +423,26 @@ export const TenantSettingsScalarFieldEnum = {
 } as const
 
 export type TenantSettingsScalarFieldEnum = (typeof TenantSettingsScalarFieldEnum)[keyof typeof TenantSettingsScalarFieldEnum]
+
+
+export const SocialPublicationScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  createdById: 'createdById',
+  variantId: 'variantId',
+  imageUrl: 'imageUrl',
+  caption: 'caption',
+  type: 'type',
+  status: 'status',
+  scheduledAt: 'scheduledAt',
+  publishedAt: 'publishedAt',
+  instagramMediaId: 'instagramMediaId',
+  errorMessage: 'errorMessage',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SocialPublicationScalarFieldEnum = (typeof SocialPublicationScalarFieldEnum)[keyof typeof SocialPublicationScalarFieldEnum]
 
 
 export const CatalogScalarFieldEnum = {

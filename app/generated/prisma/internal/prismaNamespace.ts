@@ -405,6 +405,7 @@ export const ModelName = {
   TenantMembership: 'TenantMembership',
   Subscription: 'Subscription',
   TenantSettings: 'TenantSettings',
+  SocialPublication: 'SocialPublication',
   Catalog: 'Catalog',
   CatalogProduct: 'CatalogProduct',
   CatalogField: 'CatalogField',
@@ -426,7 +427,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "product" | "category" | "variant" | "warehouse" | "variantInventory" | "stockMovement" | "order" | "orderItem" | "user" | "session" | "tenant" | "posRegister" | "posSession" | "posPayment" | "posCashMovement" | "auditLog" | "inventoryCountSession" | "inventoryCountLine" | "tenantMembership" | "subscription" | "tenantSettings" | "catalog" | "catalogProduct" | "catalogField" | "supplier" | "purchaseOrder" | "purchaseOrderItem"
+    modelProps: "product" | "category" | "variant" | "warehouse" | "variantInventory" | "stockMovement" | "order" | "orderItem" | "user" | "session" | "tenant" | "posRegister" | "posSession" | "posPayment" | "posCashMovement" | "auditLog" | "inventoryCountSession" | "inventoryCountLine" | "tenantMembership" | "subscription" | "tenantSettings" | "socialPublication" | "catalog" | "catalogProduct" | "catalogField" | "supplier" | "purchaseOrder" | "purchaseOrderItem"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1984,6 +1985,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    SocialPublication: {
+      payload: Prisma.$SocialPublicationPayload<ExtArgs>
+      fields: Prisma.SocialPublicationFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SocialPublicationFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SocialPublicationPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SocialPublicationFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SocialPublicationPayload>
+        }
+        findFirst: {
+          args: Prisma.SocialPublicationFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SocialPublicationPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SocialPublicationFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SocialPublicationPayload>
+        }
+        findMany: {
+          args: Prisma.SocialPublicationFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SocialPublicationPayload>[]
+        }
+        create: {
+          args: Prisma.SocialPublicationCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SocialPublicationPayload>
+        }
+        createMany: {
+          args: Prisma.SocialPublicationCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SocialPublicationCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SocialPublicationPayload>[]
+        }
+        delete: {
+          args: Prisma.SocialPublicationDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SocialPublicationPayload>
+        }
+        update: {
+          args: Prisma.SocialPublicationUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SocialPublicationPayload>
+        }
+        deleteMany: {
+          args: Prisma.SocialPublicationDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SocialPublicationUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SocialPublicationUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SocialPublicationPayload>[]
+        }
+        upsert: {
+          args: Prisma.SocialPublicationUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SocialPublicationPayload>
+        }
+        aggregate: {
+          args: Prisma.SocialPublicationAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSocialPublication>
+        }
+        groupBy: {
+          args: Prisma.SocialPublicationGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SocialPublicationGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SocialPublicationCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SocialPublicationCountAggregateOutputType> | number
+        }
+      }
+    }
     Catalog: {
       payload: Prisma.$CatalogPayload<ExtArgs>
       fields: Prisma.CatalogFieldRefs
@@ -2795,6 +2870,26 @@ export const TenantSettingsScalarFieldEnum = {
 export type TenantSettingsScalarFieldEnum = (typeof TenantSettingsScalarFieldEnum)[keyof typeof TenantSettingsScalarFieldEnum]
 
 
+export const SocialPublicationScalarFieldEnum = {
+  id: 'id',
+  tenantId: 'tenantId',
+  createdById: 'createdById',
+  variantId: 'variantId',
+  imageUrl: 'imageUrl',
+  caption: 'caption',
+  type: 'type',
+  status: 'status',
+  scheduledAt: 'scheduledAt',
+  publishedAt: 'publishedAt',
+  instagramMediaId: 'instagramMediaId',
+  errorMessage: 'errorMessage',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SocialPublicationScalarFieldEnum = (typeof SocialPublicationScalarFieldEnum)[keyof typeof SocialPublicationScalarFieldEnum]
+
+
 export const CatalogScalarFieldEnum = {
   id: 'id',
   tenantId: 'tenantId',
@@ -3398,6 +3493,7 @@ export type GlobalOmitConfig = {
   tenantMembership?: Prisma.TenantMembershipOmit
   subscription?: Prisma.SubscriptionOmit
   tenantSettings?: Prisma.TenantSettingsOmit
+  socialPublication?: Prisma.SocialPublicationOmit
   catalog?: Prisma.CatalogOmit
   catalogProduct?: Prisma.CatalogProductOmit
   catalogField?: Prisma.CatalogFieldOmit

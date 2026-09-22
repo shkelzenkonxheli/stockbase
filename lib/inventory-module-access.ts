@@ -4,6 +4,7 @@ import {
   getBarcodeConfig,
   getInventoryCountConfig,
   getMultiWarehouseConfig,
+  getSocialMediaConfig,
   type TenantCatalogConfig,
 } from "@/lib/product-taxonomy";
 
@@ -17,6 +18,10 @@ export function isInventoryCountEnabled(config?: TenantCatalogConfig | null) {
 
 export function isMultiWarehouseEnabled(config?: TenantCatalogConfig | null) {
   return getMultiWarehouseConfig(config).enabled;
+}
+
+export function isSocialMediaEnabled(config?: TenantCatalogConfig | null) {
+  return getSocialMediaConfig(config).enabled;
 }
 
 export async function requireBarcodeAccess(
@@ -40,6 +45,14 @@ export async function requireInventoryCountAccess() {
 export async function requireMultiWarehouseAccess() {
   const currentUser = await requireRole(["SUPER_ADMIN"]);
   if (!currentUser.tenant || !isMultiWarehouseEnabled(currentUser.tenant.catalogConfig)) {
+    redirect("/");
+  }
+  return currentUser;
+}
+
+export async function requireSocialMediaAccess() {
+  const currentUser = await requireRole(["SUPER_ADMIN"]);
+  if (!currentUser.tenant || !isSocialMediaEnabled(currentUser.tenant.catalogConfig)) {
     redirect("/");
   }
   return currentUser;

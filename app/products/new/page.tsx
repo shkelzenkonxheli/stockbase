@@ -3,6 +3,7 @@ import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { FlashMessage } from "@/app/components/flash-message";
+import { ProductAiAssistant } from "@/app/products/product-ai-assistant";
 import { requireRole } from "@/lib/auth";
 import { ensureTenantCategories } from "@/lib/categories";
 import { prisma } from "@/lib/prisma";
@@ -11,6 +12,7 @@ import {
   getCategoryDescription,
   getCatalogAwareCategoryConfig,
   getCatalogTemplate,
+  getAiProductAssistantConfig,
   getWarehouseConfig,
   parseCategoryFieldConfig,
 } from "@/lib/product-taxonomy";
@@ -127,8 +129,9 @@ export default async function NewProductPage({
         )
       : null;
   const warehouseConfig = getWarehouseConfig(currentUser.tenant?.catalogConfig);
+  const aiProductAssistantEnabled = getAiProductAssistantConfig(currentUser.tenant?.catalogConfig).enabled;
   const warehouses =
-    currentUser.tenant?.id && warehouseConfig.enabled
+    currentUser.tenant?.id && (warehouseConfig.enabled || aiProductAssistantEnabled)
       ? await getTenantWarehouses(currentUser.tenant.id, currentUser.tenant.catalogConfig)
       : [];
 
@@ -162,6 +165,16 @@ export default async function NewProductPage({
               className="mt-6 rounded-2xl px-4 py-3 text-sm shadow-sm"
             />
           ) : null}
+
+          {aiProductAssistantEnabled ? <div className="mt-7"><ProductAiAssistant
+            categories={categories.map((category) => ({
+              id: category.id,
+              name: category.name,
+              sizeLabel: getCatalogAwareCategoryConfig(currentUser.tenant?.catalogType, category.name, currentUser.tenant?.catalogConfig, parseCategoryFieldConfig(category.config)).sizeLabel,
+              isFootwear: ["patika", "kepuce", "sandale"].includes(category.name.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase()),
+            }))}
+            warehouses={warehouses.filter((warehouse) => warehouse.id > 0).map((warehouse) => ({ id: warehouse.id, name: warehouse.name }))}
+          /></div> : null}
 
           <form action={createProduct} className="mt-8 space-y-5">
             <div className="space-y-2">

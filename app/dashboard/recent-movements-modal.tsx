@@ -11,7 +11,7 @@ type RecentMovement = {
   color: string | null;
   quantity: number;
   reason: string;
-  createdAt: string;
+  createdAtLabel: string;
 };
 
 function getReasonLabel(reason: string) {
@@ -70,7 +70,7 @@ export function RecentMovementsModal({ movements }: { movements: RecentMovement[
                       <tr key={movement.id} className="transition hover:bg-slate-50">
                         <td className="px-4 py-3"><p className="font-semibold text-slate-900">{movement.productName}</p><p className="mt-0.5 text-xs text-slate-500">SKU {movement.sku ?? "-"}</p></td>
                         <td className="px-4 py-3 text-slate-600">{movement.size ?? "-"} / {movement.color ?? "-"}</td>
-                        <td className="hidden px-4 py-3 text-slate-600 sm:table-cell">{new Intl.DateTimeFormat("sq-AL", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }).format(new Date(movement.createdAt))}</td>
+                        <td className="hidden px-4 py-3 text-slate-600 sm:table-cell">{movement.createdAtLabel}</td>
                         <td className={`px-4 py-3 text-right font-semibold ${movement.quantity >= 0 ? "text-emerald-700" : "text-rose-700"}`}>{movement.quantity >= 0 ? "+" : ""}{movement.quantity}</td>
                         <td className="hidden px-4 py-3 text-slate-600 md:table-cell">{getReasonLabel(movement.reason)}</td>
                       </tr>

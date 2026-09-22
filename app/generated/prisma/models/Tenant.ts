@@ -250,6 +250,7 @@ export type TenantWhereInput = {
   posSessions?: Prisma.PosSessionListRelationFilter
   posPayments?: Prisma.PosPaymentListRelationFilter
   posCashMovements?: Prisma.PosCashMovementListRelationFilter
+  socialPublications?: Prisma.SocialPublicationListRelationFilter
   catalogs?: Prisma.CatalogListRelationFilter
 }
 
@@ -279,6 +280,7 @@ export type TenantOrderByWithRelationInput = {
   posSessions?: Prisma.PosSessionOrderByRelationAggregateInput
   posPayments?: Prisma.PosPaymentOrderByRelationAggregateInput
   posCashMovements?: Prisma.PosCashMovementOrderByRelationAggregateInput
+  socialPublications?: Prisma.SocialPublicationOrderByRelationAggregateInput
   catalogs?: Prisma.CatalogOrderByRelationAggregateInput
 }
 
@@ -311,6 +313,7 @@ export type TenantWhereUniqueInput = Prisma.AtLeast<{
   posSessions?: Prisma.PosSessionListRelationFilter
   posPayments?: Prisma.PosPaymentListRelationFilter
   posCashMovements?: Prisma.PosCashMovementListRelationFilter
+  socialPublications?: Prisma.SocialPublicationListRelationFilter
   catalogs?: Prisma.CatalogListRelationFilter
 }, "id" | "slug">
 
@@ -367,6 +370,7 @@ export type TenantCreateInput = {
   posSessions?: Prisma.PosSessionCreateNestedManyWithoutTenantInput
   posPayments?: Prisma.PosPaymentCreateNestedManyWithoutTenantInput
   posCashMovements?: Prisma.PosCashMovementCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationCreateNestedManyWithoutTenantInput
   catalogs?: Prisma.CatalogCreateNestedManyWithoutTenantInput
 }
 
@@ -396,6 +400,7 @@ export type TenantUncheckedCreateInput = {
   posSessions?: Prisma.PosSessionUncheckedCreateNestedManyWithoutTenantInput
   posPayments?: Prisma.PosPaymentUncheckedCreateNestedManyWithoutTenantInput
   posCashMovements?: Prisma.PosCashMovementUncheckedCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationUncheckedCreateNestedManyWithoutTenantInput
   catalogs?: Prisma.CatalogUncheckedCreateNestedManyWithoutTenantInput
 }
 
@@ -424,6 +429,7 @@ export type TenantUpdateInput = {
   posSessions?: Prisma.PosSessionUpdateManyWithoutTenantNestedInput
   posPayments?: Prisma.PosPaymentUpdateManyWithoutTenantNestedInput
   posCashMovements?: Prisma.PosCashMovementUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUpdateManyWithoutTenantNestedInput
   catalogs?: Prisma.CatalogUpdateManyWithoutTenantNestedInput
 }
 
@@ -453,6 +459,7 @@ export type TenantUncheckedUpdateInput = {
   posSessions?: Prisma.PosSessionUncheckedUpdateManyWithoutTenantNestedInput
   posPayments?: Prisma.PosPaymentUncheckedUpdateManyWithoutTenantNestedInput
   posCashMovements?: Prisma.PosCashMovementUncheckedUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUncheckedUpdateManyWithoutTenantNestedInput
   catalogs?: Prisma.CatalogUncheckedUpdateManyWithoutTenantNestedInput
 }
 
@@ -773,6 +780,20 @@ export type TenantUpdateOneRequiredWithoutSettingsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutSettingsInput, Prisma.TenantUpdateWithoutSettingsInput>, Prisma.TenantUncheckedUpdateWithoutSettingsInput>
 }
 
+export type TenantCreateNestedOneWithoutSocialPublicationsInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutSocialPublicationsInput, Prisma.TenantUncheckedCreateWithoutSocialPublicationsInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutSocialPublicationsInput
+  connect?: Prisma.TenantWhereUniqueInput
+}
+
+export type TenantUpdateOneRequiredWithoutSocialPublicationsNestedInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutSocialPublicationsInput, Prisma.TenantUncheckedCreateWithoutSocialPublicationsInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutSocialPublicationsInput
+  upsert?: Prisma.TenantUpsertWithoutSocialPublicationsInput
+  connect?: Prisma.TenantWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutSocialPublicationsInput, Prisma.TenantUpdateWithoutSocialPublicationsInput>, Prisma.TenantUncheckedUpdateWithoutSocialPublicationsInput>
+}
+
 export type TenantCreateNestedOneWithoutCatalogsInput = {
   create?: Prisma.XOR<Prisma.TenantCreateWithoutCatalogsInput, Prisma.TenantUncheckedCreateWithoutCatalogsInput>
   connectOrCreate?: Prisma.TenantCreateOrConnectWithoutCatalogsInput
@@ -839,6 +860,7 @@ export type TenantCreateWithoutProductsInput = {
   posSessions?: Prisma.PosSessionCreateNestedManyWithoutTenantInput
   posPayments?: Prisma.PosPaymentCreateNestedManyWithoutTenantInput
   posCashMovements?: Prisma.PosCashMovementCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationCreateNestedManyWithoutTenantInput
   catalogs?: Prisma.CatalogCreateNestedManyWithoutTenantInput
 }
 
@@ -867,6 +889,7 @@ export type TenantUncheckedCreateWithoutProductsInput = {
   posSessions?: Prisma.PosSessionUncheckedCreateNestedManyWithoutTenantInput
   posPayments?: Prisma.PosPaymentUncheckedCreateNestedManyWithoutTenantInput
   posCashMovements?: Prisma.PosCashMovementUncheckedCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationUncheckedCreateNestedManyWithoutTenantInput
   catalogs?: Prisma.CatalogUncheckedCreateNestedManyWithoutTenantInput
 }
 
@@ -910,6 +933,7 @@ export type TenantUpdateWithoutProductsInput = {
   posSessions?: Prisma.PosSessionUpdateManyWithoutTenantNestedInput
   posPayments?: Prisma.PosPaymentUpdateManyWithoutTenantNestedInput
   posCashMovements?: Prisma.PosCashMovementUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUpdateManyWithoutTenantNestedInput
   catalogs?: Prisma.CatalogUpdateManyWithoutTenantNestedInput
 }
 
@@ -938,6 +962,7 @@ export type TenantUncheckedUpdateWithoutProductsInput = {
   posSessions?: Prisma.PosSessionUncheckedUpdateManyWithoutTenantNestedInput
   posPayments?: Prisma.PosPaymentUncheckedUpdateManyWithoutTenantNestedInput
   posCashMovements?: Prisma.PosCashMovementUncheckedUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUncheckedUpdateManyWithoutTenantNestedInput
   catalogs?: Prisma.CatalogUncheckedUpdateManyWithoutTenantNestedInput
 }
 
@@ -965,6 +990,7 @@ export type TenantCreateWithoutCategoriesInput = {
   posSessions?: Prisma.PosSessionCreateNestedManyWithoutTenantInput
   posPayments?: Prisma.PosPaymentCreateNestedManyWithoutTenantInput
   posCashMovements?: Prisma.PosCashMovementCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationCreateNestedManyWithoutTenantInput
   catalogs?: Prisma.CatalogCreateNestedManyWithoutTenantInput
 }
 
@@ -993,6 +1019,7 @@ export type TenantUncheckedCreateWithoutCategoriesInput = {
   posSessions?: Prisma.PosSessionUncheckedCreateNestedManyWithoutTenantInput
   posPayments?: Prisma.PosPaymentUncheckedCreateNestedManyWithoutTenantInput
   posCashMovements?: Prisma.PosCashMovementUncheckedCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationUncheckedCreateNestedManyWithoutTenantInput
   catalogs?: Prisma.CatalogUncheckedCreateNestedManyWithoutTenantInput
 }
 
@@ -1036,6 +1063,7 @@ export type TenantUpdateWithoutCategoriesInput = {
   posSessions?: Prisma.PosSessionUpdateManyWithoutTenantNestedInput
   posPayments?: Prisma.PosPaymentUpdateManyWithoutTenantNestedInput
   posCashMovements?: Prisma.PosCashMovementUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUpdateManyWithoutTenantNestedInput
   catalogs?: Prisma.CatalogUpdateManyWithoutTenantNestedInput
 }
 
@@ -1064,6 +1092,7 @@ export type TenantUncheckedUpdateWithoutCategoriesInput = {
   posSessions?: Prisma.PosSessionUncheckedUpdateManyWithoutTenantNestedInput
   posPayments?: Prisma.PosPaymentUncheckedUpdateManyWithoutTenantNestedInput
   posCashMovements?: Prisma.PosCashMovementUncheckedUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUncheckedUpdateManyWithoutTenantNestedInput
   catalogs?: Prisma.CatalogUncheckedUpdateManyWithoutTenantNestedInput
 }
 
@@ -1091,6 +1120,7 @@ export type TenantCreateWithoutVariantsInput = {
   posSessions?: Prisma.PosSessionCreateNestedManyWithoutTenantInput
   posPayments?: Prisma.PosPaymentCreateNestedManyWithoutTenantInput
   posCashMovements?: Prisma.PosCashMovementCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationCreateNestedManyWithoutTenantInput
   catalogs?: Prisma.CatalogCreateNestedManyWithoutTenantInput
 }
 
@@ -1119,6 +1149,7 @@ export type TenantUncheckedCreateWithoutVariantsInput = {
   posSessions?: Prisma.PosSessionUncheckedCreateNestedManyWithoutTenantInput
   posPayments?: Prisma.PosPaymentUncheckedCreateNestedManyWithoutTenantInput
   posCashMovements?: Prisma.PosCashMovementUncheckedCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationUncheckedCreateNestedManyWithoutTenantInput
   catalogs?: Prisma.CatalogUncheckedCreateNestedManyWithoutTenantInput
 }
 
@@ -1162,6 +1193,7 @@ export type TenantUpdateWithoutVariantsInput = {
   posSessions?: Prisma.PosSessionUpdateManyWithoutTenantNestedInput
   posPayments?: Prisma.PosPaymentUpdateManyWithoutTenantNestedInput
   posCashMovements?: Prisma.PosCashMovementUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUpdateManyWithoutTenantNestedInput
   catalogs?: Prisma.CatalogUpdateManyWithoutTenantNestedInput
 }
 
@@ -1190,6 +1222,7 @@ export type TenantUncheckedUpdateWithoutVariantsInput = {
   posSessions?: Prisma.PosSessionUncheckedUpdateManyWithoutTenantNestedInput
   posPayments?: Prisma.PosPaymentUncheckedUpdateManyWithoutTenantNestedInput
   posCashMovements?: Prisma.PosCashMovementUncheckedUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUncheckedUpdateManyWithoutTenantNestedInput
   catalogs?: Prisma.CatalogUncheckedUpdateManyWithoutTenantNestedInput
 }
 
@@ -1217,6 +1250,7 @@ export type TenantCreateWithoutWarehousesInput = {
   posSessions?: Prisma.PosSessionCreateNestedManyWithoutTenantInput
   posPayments?: Prisma.PosPaymentCreateNestedManyWithoutTenantInput
   posCashMovements?: Prisma.PosCashMovementCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationCreateNestedManyWithoutTenantInput
   catalogs?: Prisma.CatalogCreateNestedManyWithoutTenantInput
 }
 
@@ -1245,6 +1279,7 @@ export type TenantUncheckedCreateWithoutWarehousesInput = {
   posSessions?: Prisma.PosSessionUncheckedCreateNestedManyWithoutTenantInput
   posPayments?: Prisma.PosPaymentUncheckedCreateNestedManyWithoutTenantInput
   posCashMovements?: Prisma.PosCashMovementUncheckedCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationUncheckedCreateNestedManyWithoutTenantInput
   catalogs?: Prisma.CatalogUncheckedCreateNestedManyWithoutTenantInput
 }
 
@@ -1288,6 +1323,7 @@ export type TenantUpdateWithoutWarehousesInput = {
   posSessions?: Prisma.PosSessionUpdateManyWithoutTenantNestedInput
   posPayments?: Prisma.PosPaymentUpdateManyWithoutTenantNestedInput
   posCashMovements?: Prisma.PosCashMovementUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUpdateManyWithoutTenantNestedInput
   catalogs?: Prisma.CatalogUpdateManyWithoutTenantNestedInput
 }
 
@@ -1316,6 +1352,7 @@ export type TenantUncheckedUpdateWithoutWarehousesInput = {
   posSessions?: Prisma.PosSessionUncheckedUpdateManyWithoutTenantNestedInput
   posPayments?: Prisma.PosPaymentUncheckedUpdateManyWithoutTenantNestedInput
   posCashMovements?: Prisma.PosCashMovementUncheckedUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUncheckedUpdateManyWithoutTenantNestedInput
   catalogs?: Prisma.CatalogUncheckedUpdateManyWithoutTenantNestedInput
 }
 
@@ -1343,6 +1380,7 @@ export type TenantCreateWithoutStockMovementsInput = {
   posSessions?: Prisma.PosSessionCreateNestedManyWithoutTenantInput
   posPayments?: Prisma.PosPaymentCreateNestedManyWithoutTenantInput
   posCashMovements?: Prisma.PosCashMovementCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationCreateNestedManyWithoutTenantInput
   catalogs?: Prisma.CatalogCreateNestedManyWithoutTenantInput
 }
 
@@ -1371,6 +1409,7 @@ export type TenantUncheckedCreateWithoutStockMovementsInput = {
   posSessions?: Prisma.PosSessionUncheckedCreateNestedManyWithoutTenantInput
   posPayments?: Prisma.PosPaymentUncheckedCreateNestedManyWithoutTenantInput
   posCashMovements?: Prisma.PosCashMovementUncheckedCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationUncheckedCreateNestedManyWithoutTenantInput
   catalogs?: Prisma.CatalogUncheckedCreateNestedManyWithoutTenantInput
 }
 
@@ -1414,6 +1453,7 @@ export type TenantUpdateWithoutStockMovementsInput = {
   posSessions?: Prisma.PosSessionUpdateManyWithoutTenantNestedInput
   posPayments?: Prisma.PosPaymentUpdateManyWithoutTenantNestedInput
   posCashMovements?: Prisma.PosCashMovementUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUpdateManyWithoutTenantNestedInput
   catalogs?: Prisma.CatalogUpdateManyWithoutTenantNestedInput
 }
 
@@ -1442,6 +1482,7 @@ export type TenantUncheckedUpdateWithoutStockMovementsInput = {
   posSessions?: Prisma.PosSessionUncheckedUpdateManyWithoutTenantNestedInput
   posPayments?: Prisma.PosPaymentUncheckedUpdateManyWithoutTenantNestedInput
   posCashMovements?: Prisma.PosCashMovementUncheckedUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUncheckedUpdateManyWithoutTenantNestedInput
   catalogs?: Prisma.CatalogUncheckedUpdateManyWithoutTenantNestedInput
 }
 
@@ -1469,6 +1510,7 @@ export type TenantCreateWithoutOrdersInput = {
   posSessions?: Prisma.PosSessionCreateNestedManyWithoutTenantInput
   posPayments?: Prisma.PosPaymentCreateNestedManyWithoutTenantInput
   posCashMovements?: Prisma.PosCashMovementCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationCreateNestedManyWithoutTenantInput
   catalogs?: Prisma.CatalogCreateNestedManyWithoutTenantInput
 }
 
@@ -1497,6 +1539,7 @@ export type TenantUncheckedCreateWithoutOrdersInput = {
   posSessions?: Prisma.PosSessionUncheckedCreateNestedManyWithoutTenantInput
   posPayments?: Prisma.PosPaymentUncheckedCreateNestedManyWithoutTenantInput
   posCashMovements?: Prisma.PosCashMovementUncheckedCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationUncheckedCreateNestedManyWithoutTenantInput
   catalogs?: Prisma.CatalogUncheckedCreateNestedManyWithoutTenantInput
 }
 
@@ -1540,6 +1583,7 @@ export type TenantUpdateWithoutOrdersInput = {
   posSessions?: Prisma.PosSessionUpdateManyWithoutTenantNestedInput
   posPayments?: Prisma.PosPaymentUpdateManyWithoutTenantNestedInput
   posCashMovements?: Prisma.PosCashMovementUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUpdateManyWithoutTenantNestedInput
   catalogs?: Prisma.CatalogUpdateManyWithoutTenantNestedInput
 }
 
@@ -1568,6 +1612,7 @@ export type TenantUncheckedUpdateWithoutOrdersInput = {
   posSessions?: Prisma.PosSessionUncheckedUpdateManyWithoutTenantNestedInput
   posPayments?: Prisma.PosPaymentUncheckedUpdateManyWithoutTenantNestedInput
   posCashMovements?: Prisma.PosCashMovementUncheckedUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUncheckedUpdateManyWithoutTenantNestedInput
   catalogs?: Prisma.CatalogUncheckedUpdateManyWithoutTenantNestedInput
 }
 
@@ -1595,6 +1640,7 @@ export type TenantCreateWithoutSessionsInput = {
   posSessions?: Prisma.PosSessionCreateNestedManyWithoutTenantInput
   posPayments?: Prisma.PosPaymentCreateNestedManyWithoutTenantInput
   posCashMovements?: Prisma.PosCashMovementCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationCreateNestedManyWithoutTenantInput
   catalogs?: Prisma.CatalogCreateNestedManyWithoutTenantInput
 }
 
@@ -1623,6 +1669,7 @@ export type TenantUncheckedCreateWithoutSessionsInput = {
   posSessions?: Prisma.PosSessionUncheckedCreateNestedManyWithoutTenantInput
   posPayments?: Prisma.PosPaymentUncheckedCreateNestedManyWithoutTenantInput
   posCashMovements?: Prisma.PosCashMovementUncheckedCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationUncheckedCreateNestedManyWithoutTenantInput
   catalogs?: Prisma.CatalogUncheckedCreateNestedManyWithoutTenantInput
 }
 
@@ -1666,6 +1713,7 @@ export type TenantUpdateWithoutSessionsInput = {
   posSessions?: Prisma.PosSessionUpdateManyWithoutTenantNestedInput
   posPayments?: Prisma.PosPaymentUpdateManyWithoutTenantNestedInput
   posCashMovements?: Prisma.PosCashMovementUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUpdateManyWithoutTenantNestedInput
   catalogs?: Prisma.CatalogUpdateManyWithoutTenantNestedInput
 }
 
@@ -1694,6 +1742,7 @@ export type TenantUncheckedUpdateWithoutSessionsInput = {
   posSessions?: Prisma.PosSessionUncheckedUpdateManyWithoutTenantNestedInput
   posPayments?: Prisma.PosPaymentUncheckedUpdateManyWithoutTenantNestedInput
   posCashMovements?: Prisma.PosCashMovementUncheckedUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUncheckedUpdateManyWithoutTenantNestedInput
   catalogs?: Prisma.CatalogUncheckedUpdateManyWithoutTenantNestedInput
 }
 
@@ -1721,6 +1770,7 @@ export type TenantCreateWithoutPosRegistersInput = {
   posSessions?: Prisma.PosSessionCreateNestedManyWithoutTenantInput
   posPayments?: Prisma.PosPaymentCreateNestedManyWithoutTenantInput
   posCashMovements?: Prisma.PosCashMovementCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationCreateNestedManyWithoutTenantInput
   catalogs?: Prisma.CatalogCreateNestedManyWithoutTenantInput
 }
 
@@ -1749,6 +1799,7 @@ export type TenantUncheckedCreateWithoutPosRegistersInput = {
   posSessions?: Prisma.PosSessionUncheckedCreateNestedManyWithoutTenantInput
   posPayments?: Prisma.PosPaymentUncheckedCreateNestedManyWithoutTenantInput
   posCashMovements?: Prisma.PosCashMovementUncheckedCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationUncheckedCreateNestedManyWithoutTenantInput
   catalogs?: Prisma.CatalogUncheckedCreateNestedManyWithoutTenantInput
 }
 
@@ -1792,6 +1843,7 @@ export type TenantUpdateWithoutPosRegistersInput = {
   posSessions?: Prisma.PosSessionUpdateManyWithoutTenantNestedInput
   posPayments?: Prisma.PosPaymentUpdateManyWithoutTenantNestedInput
   posCashMovements?: Prisma.PosCashMovementUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUpdateManyWithoutTenantNestedInput
   catalogs?: Prisma.CatalogUpdateManyWithoutTenantNestedInput
 }
 
@@ -1820,6 +1872,7 @@ export type TenantUncheckedUpdateWithoutPosRegistersInput = {
   posSessions?: Prisma.PosSessionUncheckedUpdateManyWithoutTenantNestedInput
   posPayments?: Prisma.PosPaymentUncheckedUpdateManyWithoutTenantNestedInput
   posCashMovements?: Prisma.PosCashMovementUncheckedUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUncheckedUpdateManyWithoutTenantNestedInput
   catalogs?: Prisma.CatalogUncheckedUpdateManyWithoutTenantNestedInput
 }
 
@@ -1847,6 +1900,7 @@ export type TenantCreateWithoutPosSessionsInput = {
   posRegisters?: Prisma.PosRegisterCreateNestedManyWithoutTenantInput
   posPayments?: Prisma.PosPaymentCreateNestedManyWithoutTenantInput
   posCashMovements?: Prisma.PosCashMovementCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationCreateNestedManyWithoutTenantInput
   catalogs?: Prisma.CatalogCreateNestedManyWithoutTenantInput
 }
 
@@ -1875,6 +1929,7 @@ export type TenantUncheckedCreateWithoutPosSessionsInput = {
   posRegisters?: Prisma.PosRegisterUncheckedCreateNestedManyWithoutTenantInput
   posPayments?: Prisma.PosPaymentUncheckedCreateNestedManyWithoutTenantInput
   posCashMovements?: Prisma.PosCashMovementUncheckedCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationUncheckedCreateNestedManyWithoutTenantInput
   catalogs?: Prisma.CatalogUncheckedCreateNestedManyWithoutTenantInput
 }
 
@@ -1918,6 +1973,7 @@ export type TenantUpdateWithoutPosSessionsInput = {
   posRegisters?: Prisma.PosRegisterUpdateManyWithoutTenantNestedInput
   posPayments?: Prisma.PosPaymentUpdateManyWithoutTenantNestedInput
   posCashMovements?: Prisma.PosCashMovementUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUpdateManyWithoutTenantNestedInput
   catalogs?: Prisma.CatalogUpdateManyWithoutTenantNestedInput
 }
 
@@ -1946,6 +2002,7 @@ export type TenantUncheckedUpdateWithoutPosSessionsInput = {
   posRegisters?: Prisma.PosRegisterUncheckedUpdateManyWithoutTenantNestedInput
   posPayments?: Prisma.PosPaymentUncheckedUpdateManyWithoutTenantNestedInput
   posCashMovements?: Prisma.PosCashMovementUncheckedUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUncheckedUpdateManyWithoutTenantNestedInput
   catalogs?: Prisma.CatalogUncheckedUpdateManyWithoutTenantNestedInput
 }
 
@@ -1973,6 +2030,7 @@ export type TenantCreateWithoutPosPaymentsInput = {
   posRegisters?: Prisma.PosRegisterCreateNestedManyWithoutTenantInput
   posSessions?: Prisma.PosSessionCreateNestedManyWithoutTenantInput
   posCashMovements?: Prisma.PosCashMovementCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationCreateNestedManyWithoutTenantInput
   catalogs?: Prisma.CatalogCreateNestedManyWithoutTenantInput
 }
 
@@ -2001,6 +2059,7 @@ export type TenantUncheckedCreateWithoutPosPaymentsInput = {
   posRegisters?: Prisma.PosRegisterUncheckedCreateNestedManyWithoutTenantInput
   posSessions?: Prisma.PosSessionUncheckedCreateNestedManyWithoutTenantInput
   posCashMovements?: Prisma.PosCashMovementUncheckedCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationUncheckedCreateNestedManyWithoutTenantInput
   catalogs?: Prisma.CatalogUncheckedCreateNestedManyWithoutTenantInput
 }
 
@@ -2044,6 +2103,7 @@ export type TenantUpdateWithoutPosPaymentsInput = {
   posRegisters?: Prisma.PosRegisterUpdateManyWithoutTenantNestedInput
   posSessions?: Prisma.PosSessionUpdateManyWithoutTenantNestedInput
   posCashMovements?: Prisma.PosCashMovementUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUpdateManyWithoutTenantNestedInput
   catalogs?: Prisma.CatalogUpdateManyWithoutTenantNestedInput
 }
 
@@ -2072,6 +2132,7 @@ export type TenantUncheckedUpdateWithoutPosPaymentsInput = {
   posRegisters?: Prisma.PosRegisterUncheckedUpdateManyWithoutTenantNestedInput
   posSessions?: Prisma.PosSessionUncheckedUpdateManyWithoutTenantNestedInput
   posCashMovements?: Prisma.PosCashMovementUncheckedUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUncheckedUpdateManyWithoutTenantNestedInput
   catalogs?: Prisma.CatalogUncheckedUpdateManyWithoutTenantNestedInput
 }
 
@@ -2099,6 +2160,7 @@ export type TenantCreateWithoutPosCashMovementsInput = {
   posRegisters?: Prisma.PosRegisterCreateNestedManyWithoutTenantInput
   posSessions?: Prisma.PosSessionCreateNestedManyWithoutTenantInput
   posPayments?: Prisma.PosPaymentCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationCreateNestedManyWithoutTenantInput
   catalogs?: Prisma.CatalogCreateNestedManyWithoutTenantInput
 }
 
@@ -2127,6 +2189,7 @@ export type TenantUncheckedCreateWithoutPosCashMovementsInput = {
   posRegisters?: Prisma.PosRegisterUncheckedCreateNestedManyWithoutTenantInput
   posSessions?: Prisma.PosSessionUncheckedCreateNestedManyWithoutTenantInput
   posPayments?: Prisma.PosPaymentUncheckedCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationUncheckedCreateNestedManyWithoutTenantInput
   catalogs?: Prisma.CatalogUncheckedCreateNestedManyWithoutTenantInput
 }
 
@@ -2170,6 +2233,7 @@ export type TenantUpdateWithoutPosCashMovementsInput = {
   posRegisters?: Prisma.PosRegisterUpdateManyWithoutTenantNestedInput
   posSessions?: Prisma.PosSessionUpdateManyWithoutTenantNestedInput
   posPayments?: Prisma.PosPaymentUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUpdateManyWithoutTenantNestedInput
   catalogs?: Prisma.CatalogUpdateManyWithoutTenantNestedInput
 }
 
@@ -2198,6 +2262,7 @@ export type TenantUncheckedUpdateWithoutPosCashMovementsInput = {
   posRegisters?: Prisma.PosRegisterUncheckedUpdateManyWithoutTenantNestedInput
   posSessions?: Prisma.PosSessionUncheckedUpdateManyWithoutTenantNestedInput
   posPayments?: Prisma.PosPaymentUncheckedUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUncheckedUpdateManyWithoutTenantNestedInput
   catalogs?: Prisma.CatalogUncheckedUpdateManyWithoutTenantNestedInput
 }
 
@@ -2225,6 +2290,7 @@ export type TenantCreateWithoutAuditLogsInput = {
   posSessions?: Prisma.PosSessionCreateNestedManyWithoutTenantInput
   posPayments?: Prisma.PosPaymentCreateNestedManyWithoutTenantInput
   posCashMovements?: Prisma.PosCashMovementCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationCreateNestedManyWithoutTenantInput
   catalogs?: Prisma.CatalogCreateNestedManyWithoutTenantInput
 }
 
@@ -2253,6 +2319,7 @@ export type TenantUncheckedCreateWithoutAuditLogsInput = {
   posSessions?: Prisma.PosSessionUncheckedCreateNestedManyWithoutTenantInput
   posPayments?: Prisma.PosPaymentUncheckedCreateNestedManyWithoutTenantInput
   posCashMovements?: Prisma.PosCashMovementUncheckedCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationUncheckedCreateNestedManyWithoutTenantInput
   catalogs?: Prisma.CatalogUncheckedCreateNestedManyWithoutTenantInput
 }
 
@@ -2296,6 +2363,7 @@ export type TenantUpdateWithoutAuditLogsInput = {
   posSessions?: Prisma.PosSessionUpdateManyWithoutTenantNestedInput
   posPayments?: Prisma.PosPaymentUpdateManyWithoutTenantNestedInput
   posCashMovements?: Prisma.PosCashMovementUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUpdateManyWithoutTenantNestedInput
   catalogs?: Prisma.CatalogUpdateManyWithoutTenantNestedInput
 }
 
@@ -2324,6 +2392,7 @@ export type TenantUncheckedUpdateWithoutAuditLogsInput = {
   posSessions?: Prisma.PosSessionUncheckedUpdateManyWithoutTenantNestedInput
   posPayments?: Prisma.PosPaymentUncheckedUpdateManyWithoutTenantNestedInput
   posCashMovements?: Prisma.PosCashMovementUncheckedUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUncheckedUpdateManyWithoutTenantNestedInput
   catalogs?: Prisma.CatalogUncheckedUpdateManyWithoutTenantNestedInput
 }
 
@@ -2351,6 +2420,7 @@ export type TenantCreateWithoutInventoryCountsInput = {
   posSessions?: Prisma.PosSessionCreateNestedManyWithoutTenantInput
   posPayments?: Prisma.PosPaymentCreateNestedManyWithoutTenantInput
   posCashMovements?: Prisma.PosCashMovementCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationCreateNestedManyWithoutTenantInput
   catalogs?: Prisma.CatalogCreateNestedManyWithoutTenantInput
 }
 
@@ -2379,6 +2449,7 @@ export type TenantUncheckedCreateWithoutInventoryCountsInput = {
   posSessions?: Prisma.PosSessionUncheckedCreateNestedManyWithoutTenantInput
   posPayments?: Prisma.PosPaymentUncheckedCreateNestedManyWithoutTenantInput
   posCashMovements?: Prisma.PosCashMovementUncheckedCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationUncheckedCreateNestedManyWithoutTenantInput
   catalogs?: Prisma.CatalogUncheckedCreateNestedManyWithoutTenantInput
 }
 
@@ -2422,6 +2493,7 @@ export type TenantUpdateWithoutInventoryCountsInput = {
   posSessions?: Prisma.PosSessionUpdateManyWithoutTenantNestedInput
   posPayments?: Prisma.PosPaymentUpdateManyWithoutTenantNestedInput
   posCashMovements?: Prisma.PosCashMovementUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUpdateManyWithoutTenantNestedInput
   catalogs?: Prisma.CatalogUpdateManyWithoutTenantNestedInput
 }
 
@@ -2450,6 +2522,7 @@ export type TenantUncheckedUpdateWithoutInventoryCountsInput = {
   posSessions?: Prisma.PosSessionUncheckedUpdateManyWithoutTenantNestedInput
   posPayments?: Prisma.PosPaymentUncheckedUpdateManyWithoutTenantNestedInput
   posCashMovements?: Prisma.PosCashMovementUncheckedUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUncheckedUpdateManyWithoutTenantNestedInput
   catalogs?: Prisma.CatalogUncheckedUpdateManyWithoutTenantNestedInput
 }
 
@@ -2477,6 +2550,7 @@ export type TenantCreateWithoutMembershipsInput = {
   posSessions?: Prisma.PosSessionCreateNestedManyWithoutTenantInput
   posPayments?: Prisma.PosPaymentCreateNestedManyWithoutTenantInput
   posCashMovements?: Prisma.PosCashMovementCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationCreateNestedManyWithoutTenantInput
   catalogs?: Prisma.CatalogCreateNestedManyWithoutTenantInput
 }
 
@@ -2505,6 +2579,7 @@ export type TenantUncheckedCreateWithoutMembershipsInput = {
   posSessions?: Prisma.PosSessionUncheckedCreateNestedManyWithoutTenantInput
   posPayments?: Prisma.PosPaymentUncheckedCreateNestedManyWithoutTenantInput
   posCashMovements?: Prisma.PosCashMovementUncheckedCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationUncheckedCreateNestedManyWithoutTenantInput
   catalogs?: Prisma.CatalogUncheckedCreateNestedManyWithoutTenantInput
 }
 
@@ -2548,6 +2623,7 @@ export type TenantUpdateWithoutMembershipsInput = {
   posSessions?: Prisma.PosSessionUpdateManyWithoutTenantNestedInput
   posPayments?: Prisma.PosPaymentUpdateManyWithoutTenantNestedInput
   posCashMovements?: Prisma.PosCashMovementUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUpdateManyWithoutTenantNestedInput
   catalogs?: Prisma.CatalogUpdateManyWithoutTenantNestedInput
 }
 
@@ -2576,6 +2652,7 @@ export type TenantUncheckedUpdateWithoutMembershipsInput = {
   posSessions?: Prisma.PosSessionUncheckedUpdateManyWithoutTenantNestedInput
   posPayments?: Prisma.PosPaymentUncheckedUpdateManyWithoutTenantNestedInput
   posCashMovements?: Prisma.PosCashMovementUncheckedUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUncheckedUpdateManyWithoutTenantNestedInput
   catalogs?: Prisma.CatalogUncheckedUpdateManyWithoutTenantNestedInput
 }
 
@@ -2603,6 +2680,7 @@ export type TenantCreateWithoutSubscriptionInput = {
   posSessions?: Prisma.PosSessionCreateNestedManyWithoutTenantInput
   posPayments?: Prisma.PosPaymentCreateNestedManyWithoutTenantInput
   posCashMovements?: Prisma.PosCashMovementCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationCreateNestedManyWithoutTenantInput
   catalogs?: Prisma.CatalogCreateNestedManyWithoutTenantInput
 }
 
@@ -2631,6 +2709,7 @@ export type TenantUncheckedCreateWithoutSubscriptionInput = {
   posSessions?: Prisma.PosSessionUncheckedCreateNestedManyWithoutTenantInput
   posPayments?: Prisma.PosPaymentUncheckedCreateNestedManyWithoutTenantInput
   posCashMovements?: Prisma.PosCashMovementUncheckedCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationUncheckedCreateNestedManyWithoutTenantInput
   catalogs?: Prisma.CatalogUncheckedCreateNestedManyWithoutTenantInput
 }
 
@@ -2674,6 +2753,7 @@ export type TenantUpdateWithoutSubscriptionInput = {
   posSessions?: Prisma.PosSessionUpdateManyWithoutTenantNestedInput
   posPayments?: Prisma.PosPaymentUpdateManyWithoutTenantNestedInput
   posCashMovements?: Prisma.PosCashMovementUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUpdateManyWithoutTenantNestedInput
   catalogs?: Prisma.CatalogUpdateManyWithoutTenantNestedInput
 }
 
@@ -2702,6 +2782,7 @@ export type TenantUncheckedUpdateWithoutSubscriptionInput = {
   posSessions?: Prisma.PosSessionUncheckedUpdateManyWithoutTenantNestedInput
   posPayments?: Prisma.PosPaymentUncheckedUpdateManyWithoutTenantNestedInput
   posCashMovements?: Prisma.PosCashMovementUncheckedUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUncheckedUpdateManyWithoutTenantNestedInput
   catalogs?: Prisma.CatalogUncheckedUpdateManyWithoutTenantNestedInput
 }
 
@@ -2729,6 +2810,7 @@ export type TenantCreateWithoutSettingsInput = {
   posSessions?: Prisma.PosSessionCreateNestedManyWithoutTenantInput
   posPayments?: Prisma.PosPaymentCreateNestedManyWithoutTenantInput
   posCashMovements?: Prisma.PosCashMovementCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationCreateNestedManyWithoutTenantInput
   catalogs?: Prisma.CatalogCreateNestedManyWithoutTenantInput
 }
 
@@ -2757,6 +2839,7 @@ export type TenantUncheckedCreateWithoutSettingsInput = {
   posSessions?: Prisma.PosSessionUncheckedCreateNestedManyWithoutTenantInput
   posPayments?: Prisma.PosPaymentUncheckedCreateNestedManyWithoutTenantInput
   posCashMovements?: Prisma.PosCashMovementUncheckedCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationUncheckedCreateNestedManyWithoutTenantInput
   catalogs?: Prisma.CatalogUncheckedCreateNestedManyWithoutTenantInput
 }
 
@@ -2800,6 +2883,7 @@ export type TenantUpdateWithoutSettingsInput = {
   posSessions?: Prisma.PosSessionUpdateManyWithoutTenantNestedInput
   posPayments?: Prisma.PosPaymentUpdateManyWithoutTenantNestedInput
   posCashMovements?: Prisma.PosCashMovementUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUpdateManyWithoutTenantNestedInput
   catalogs?: Prisma.CatalogUpdateManyWithoutTenantNestedInput
 }
 
@@ -2817,6 +2901,137 @@ export type TenantUncheckedUpdateWithoutSettingsInput = {
   stockMovements?: Prisma.StockMovementUncheckedUpdateManyWithoutTenantNestedInput
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutTenantNestedInput
   memberships?: Prisma.TenantMembershipUncheckedUpdateManyWithoutTenantNestedInput
+  categories?: Prisma.CategoryUncheckedUpdateManyWithoutTenantNestedInput
+  variants?: Prisma.VariantUncheckedUpdateManyWithoutTenantNestedInput
+  warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
+  suppliers?: Prisma.SupplierUncheckedUpdateManyWithoutTenantNestedInput
+  purchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutTenantNestedInput
+  inventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutTenantNestedInput
+  posRegisters?: Prisma.PosRegisterUncheckedUpdateManyWithoutTenantNestedInput
+  posSessions?: Prisma.PosSessionUncheckedUpdateManyWithoutTenantNestedInput
+  posPayments?: Prisma.PosPaymentUncheckedUpdateManyWithoutTenantNestedInput
+  posCashMovements?: Prisma.PosCashMovementUncheckedUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUncheckedUpdateManyWithoutTenantNestedInput
+  catalogs?: Prisma.CatalogUncheckedUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantCreateWithoutSocialPublicationsInput = {
+  name: string
+  slug: string
+  status?: $Enums.TenantStatus
+  catalogType: $Enums.CatalogType
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  orders?: Prisma.OrderCreateNestedManyWithoutTenantInput
+  products?: Prisma.ProductCreateNestedManyWithoutTenantInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutActiveTenantInput
+  stockMovements?: Prisma.StockMovementCreateNestedManyWithoutTenantInput
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutTenantInput
+  memberships?: Prisma.TenantMembershipCreateNestedManyWithoutTenantInput
+  settings?: Prisma.TenantSettingsCreateNestedOneWithoutTenantInput
+  categories?: Prisma.CategoryCreateNestedManyWithoutTenantInput
+  variants?: Prisma.VariantCreateNestedManyWithoutTenantInput
+  warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
+  suppliers?: Prisma.SupplierCreateNestedManyWithoutTenantInput
+  purchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutTenantInput
+  inventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutTenantInput
+  posRegisters?: Prisma.PosRegisterCreateNestedManyWithoutTenantInput
+  posSessions?: Prisma.PosSessionCreateNestedManyWithoutTenantInput
+  posPayments?: Prisma.PosPaymentCreateNestedManyWithoutTenantInput
+  posCashMovements?: Prisma.PosCashMovementCreateNestedManyWithoutTenantInput
+  catalogs?: Prisma.CatalogCreateNestedManyWithoutTenantInput
+}
+
+export type TenantUncheckedCreateWithoutSocialPublicationsInput = {
+  id?: number
+  name: string
+  slug: string
+  status?: $Enums.TenantStatus
+  catalogType: $Enums.CatalogType
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutTenantInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutTenantInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutActiveTenantInput
+  stockMovements?: Prisma.StockMovementUncheckedCreateNestedManyWithoutTenantInput
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutTenantInput
+  memberships?: Prisma.TenantMembershipUncheckedCreateNestedManyWithoutTenantInput
+  settings?: Prisma.TenantSettingsUncheckedCreateNestedOneWithoutTenantInput
+  categories?: Prisma.CategoryUncheckedCreateNestedManyWithoutTenantInput
+  variants?: Prisma.VariantUncheckedCreateNestedManyWithoutTenantInput
+  warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
+  suppliers?: Prisma.SupplierUncheckedCreateNestedManyWithoutTenantInput
+  purchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutTenantInput
+  inventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutTenantInput
+  posRegisters?: Prisma.PosRegisterUncheckedCreateNestedManyWithoutTenantInput
+  posSessions?: Prisma.PosSessionUncheckedCreateNestedManyWithoutTenantInput
+  posPayments?: Prisma.PosPaymentUncheckedCreateNestedManyWithoutTenantInput
+  posCashMovements?: Prisma.PosCashMovementUncheckedCreateNestedManyWithoutTenantInput
+  catalogs?: Prisma.CatalogUncheckedCreateNestedManyWithoutTenantInput
+}
+
+export type TenantCreateOrConnectWithoutSocialPublicationsInput = {
+  where: Prisma.TenantWhereUniqueInput
+  create: Prisma.XOR<Prisma.TenantCreateWithoutSocialPublicationsInput, Prisma.TenantUncheckedCreateWithoutSocialPublicationsInput>
+}
+
+export type TenantUpsertWithoutSocialPublicationsInput = {
+  update: Prisma.XOR<Prisma.TenantUpdateWithoutSocialPublicationsInput, Prisma.TenantUncheckedUpdateWithoutSocialPublicationsInput>
+  create: Prisma.XOR<Prisma.TenantCreateWithoutSocialPublicationsInput, Prisma.TenantUncheckedCreateWithoutSocialPublicationsInput>
+  where?: Prisma.TenantWhereInput
+}
+
+export type TenantUpdateToOneWithWhereWithoutSocialPublicationsInput = {
+  where?: Prisma.TenantWhereInput
+  data: Prisma.XOR<Prisma.TenantUpdateWithoutSocialPublicationsInput, Prisma.TenantUncheckedUpdateWithoutSocialPublicationsInput>
+}
+
+export type TenantUpdateWithoutSocialPublicationsInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
+  catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  orders?: Prisma.OrderUpdateManyWithoutTenantNestedInput
+  products?: Prisma.ProductUpdateManyWithoutTenantNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutActiveTenantNestedInput
+  stockMovements?: Prisma.StockMovementUpdateManyWithoutTenantNestedInput
+  subscription?: Prisma.SubscriptionUpdateOneWithoutTenantNestedInput
+  memberships?: Prisma.TenantMembershipUpdateManyWithoutTenantNestedInput
+  settings?: Prisma.TenantSettingsUpdateOneWithoutTenantNestedInput
+  categories?: Prisma.CategoryUpdateManyWithoutTenantNestedInput
+  variants?: Prisma.VariantUpdateManyWithoutTenantNestedInput
+  warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
+  suppliers?: Prisma.SupplierUpdateManyWithoutTenantNestedInput
+  purchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutTenantNestedInput
+  inventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutTenantNestedInput
+  posRegisters?: Prisma.PosRegisterUpdateManyWithoutTenantNestedInput
+  posSessions?: Prisma.PosSessionUpdateManyWithoutTenantNestedInput
+  posPayments?: Prisma.PosPaymentUpdateManyWithoutTenantNestedInput
+  posCashMovements?: Prisma.PosCashMovementUpdateManyWithoutTenantNestedInput
+  catalogs?: Prisma.CatalogUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantUncheckedUpdateWithoutSocialPublicationsInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
+  catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutTenantNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutTenantNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutActiveTenantNestedInput
+  stockMovements?: Prisma.StockMovementUncheckedUpdateManyWithoutTenantNestedInput
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutTenantNestedInput
+  memberships?: Prisma.TenantMembershipUncheckedUpdateManyWithoutTenantNestedInput
+  settings?: Prisma.TenantSettingsUncheckedUpdateOneWithoutTenantNestedInput
   categories?: Prisma.CategoryUncheckedUpdateManyWithoutTenantNestedInput
   variants?: Prisma.VariantUncheckedUpdateManyWithoutTenantNestedInput
   warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
@@ -2856,6 +3071,7 @@ export type TenantCreateWithoutCatalogsInput = {
   posSessions?: Prisma.PosSessionCreateNestedManyWithoutTenantInput
   posPayments?: Prisma.PosPaymentCreateNestedManyWithoutTenantInput
   posCashMovements?: Prisma.PosCashMovementCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationCreateNestedManyWithoutTenantInput
 }
 
 export type TenantUncheckedCreateWithoutCatalogsInput = {
@@ -2884,6 +3100,7 @@ export type TenantUncheckedCreateWithoutCatalogsInput = {
   posSessions?: Prisma.PosSessionUncheckedCreateNestedManyWithoutTenantInput
   posPayments?: Prisma.PosPaymentUncheckedCreateNestedManyWithoutTenantInput
   posCashMovements?: Prisma.PosCashMovementUncheckedCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationUncheckedCreateNestedManyWithoutTenantInput
 }
 
 export type TenantCreateOrConnectWithoutCatalogsInput = {
@@ -2927,6 +3144,7 @@ export type TenantUpdateWithoutCatalogsInput = {
   posSessions?: Prisma.PosSessionUpdateManyWithoutTenantNestedInput
   posPayments?: Prisma.PosPaymentUpdateManyWithoutTenantNestedInput
   posCashMovements?: Prisma.PosCashMovementUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantUncheckedUpdateWithoutCatalogsInput = {
@@ -2955,6 +3173,7 @@ export type TenantUncheckedUpdateWithoutCatalogsInput = {
   posSessions?: Prisma.PosSessionUncheckedUpdateManyWithoutTenantNestedInput
   posPayments?: Prisma.PosPaymentUncheckedUpdateManyWithoutTenantNestedInput
   posCashMovements?: Prisma.PosCashMovementUncheckedUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUncheckedUpdateManyWithoutTenantNestedInput
 }
 
 export type TenantCreateWithoutSuppliersInput = {
@@ -2981,6 +3200,7 @@ export type TenantCreateWithoutSuppliersInput = {
   posSessions?: Prisma.PosSessionCreateNestedManyWithoutTenantInput
   posPayments?: Prisma.PosPaymentCreateNestedManyWithoutTenantInput
   posCashMovements?: Prisma.PosCashMovementCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationCreateNestedManyWithoutTenantInput
   catalogs?: Prisma.CatalogCreateNestedManyWithoutTenantInput
 }
 
@@ -3009,6 +3229,7 @@ export type TenantUncheckedCreateWithoutSuppliersInput = {
   posSessions?: Prisma.PosSessionUncheckedCreateNestedManyWithoutTenantInput
   posPayments?: Prisma.PosPaymentUncheckedCreateNestedManyWithoutTenantInput
   posCashMovements?: Prisma.PosCashMovementUncheckedCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationUncheckedCreateNestedManyWithoutTenantInput
   catalogs?: Prisma.CatalogUncheckedCreateNestedManyWithoutTenantInput
 }
 
@@ -3052,6 +3273,7 @@ export type TenantUpdateWithoutSuppliersInput = {
   posSessions?: Prisma.PosSessionUpdateManyWithoutTenantNestedInput
   posPayments?: Prisma.PosPaymentUpdateManyWithoutTenantNestedInput
   posCashMovements?: Prisma.PosCashMovementUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUpdateManyWithoutTenantNestedInput
   catalogs?: Prisma.CatalogUpdateManyWithoutTenantNestedInput
 }
 
@@ -3080,6 +3302,7 @@ export type TenantUncheckedUpdateWithoutSuppliersInput = {
   posSessions?: Prisma.PosSessionUncheckedUpdateManyWithoutTenantNestedInput
   posPayments?: Prisma.PosPaymentUncheckedUpdateManyWithoutTenantNestedInput
   posCashMovements?: Prisma.PosCashMovementUncheckedUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUncheckedUpdateManyWithoutTenantNestedInput
   catalogs?: Prisma.CatalogUncheckedUpdateManyWithoutTenantNestedInput
 }
 
@@ -3107,6 +3330,7 @@ export type TenantCreateWithoutPurchaseOrdersInput = {
   posSessions?: Prisma.PosSessionCreateNestedManyWithoutTenantInput
   posPayments?: Prisma.PosPaymentCreateNestedManyWithoutTenantInput
   posCashMovements?: Prisma.PosCashMovementCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationCreateNestedManyWithoutTenantInput
   catalogs?: Prisma.CatalogCreateNestedManyWithoutTenantInput
 }
 
@@ -3135,6 +3359,7 @@ export type TenantUncheckedCreateWithoutPurchaseOrdersInput = {
   posSessions?: Prisma.PosSessionUncheckedCreateNestedManyWithoutTenantInput
   posPayments?: Prisma.PosPaymentUncheckedCreateNestedManyWithoutTenantInput
   posCashMovements?: Prisma.PosCashMovementUncheckedCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationUncheckedCreateNestedManyWithoutTenantInput
   catalogs?: Prisma.CatalogUncheckedCreateNestedManyWithoutTenantInput
 }
 
@@ -3178,6 +3403,7 @@ export type TenantUpdateWithoutPurchaseOrdersInput = {
   posSessions?: Prisma.PosSessionUpdateManyWithoutTenantNestedInput
   posPayments?: Prisma.PosPaymentUpdateManyWithoutTenantNestedInput
   posCashMovements?: Prisma.PosCashMovementUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUpdateManyWithoutTenantNestedInput
   catalogs?: Prisma.CatalogUpdateManyWithoutTenantNestedInput
 }
 
@@ -3206,6 +3432,7 @@ export type TenantUncheckedUpdateWithoutPurchaseOrdersInput = {
   posSessions?: Prisma.PosSessionUncheckedUpdateManyWithoutTenantNestedInput
   posPayments?: Prisma.PosPaymentUncheckedUpdateManyWithoutTenantNestedInput
   posCashMovements?: Prisma.PosCashMovementUncheckedUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUncheckedUpdateManyWithoutTenantNestedInput
   catalogs?: Prisma.CatalogUncheckedUpdateManyWithoutTenantNestedInput
 }
 
@@ -3231,6 +3458,7 @@ export type TenantCountOutputType = {
   posSessions: number
   posPayments: number
   posCashMovements: number
+  socialPublications: number
   catalogs: number
 }
 
@@ -3251,6 +3479,7 @@ export type TenantCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions
   posSessions?: boolean | TenantCountOutputTypeCountPosSessionsArgs
   posPayments?: boolean | TenantCountOutputTypeCountPosPaymentsArgs
   posCashMovements?: boolean | TenantCountOutputTypeCountPosCashMovementsArgs
+  socialPublications?: boolean | TenantCountOutputTypeCountSocialPublicationsArgs
   catalogs?: boolean | TenantCountOutputTypeCountCatalogsArgs
 }
 
@@ -3379,6 +3608,13 @@ export type TenantCountOutputTypeCountPosCashMovementsArgs<ExtArgs extends runti
 /**
  * TenantCountOutputType without action
  */
+export type TenantCountOutputTypeCountSocialPublicationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SocialPublicationWhereInput
+}
+
+/**
+ * TenantCountOutputType without action
+ */
 export type TenantCountOutputTypeCountCatalogsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   where?: Prisma.CatalogWhereInput
 }
@@ -3410,6 +3646,7 @@ export type TenantSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   posSessions?: boolean | Prisma.Tenant$posSessionsArgs<ExtArgs>
   posPayments?: boolean | Prisma.Tenant$posPaymentsArgs<ExtArgs>
   posCashMovements?: boolean | Prisma.Tenant$posCashMovementsArgs<ExtArgs>
+  socialPublications?: boolean | Prisma.Tenant$socialPublicationsArgs<ExtArgs>
   catalogs?: boolean | Prisma.Tenant$catalogsArgs<ExtArgs>
   _count?: boolean | Prisma.TenantCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["tenant"]>
@@ -3464,6 +3701,7 @@ export type TenantInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   posSessions?: boolean | Prisma.Tenant$posSessionsArgs<ExtArgs>
   posPayments?: boolean | Prisma.Tenant$posPaymentsArgs<ExtArgs>
   posCashMovements?: boolean | Prisma.Tenant$posCashMovementsArgs<ExtArgs>
+  socialPublications?: boolean | Prisma.Tenant$socialPublicationsArgs<ExtArgs>
   catalogs?: boolean | Prisma.Tenant$catalogsArgs<ExtArgs>
   _count?: boolean | Prisma.TenantCountOutputTypeDefaultArgs<ExtArgs>
 }
@@ -3491,6 +3729,7 @@ export type $TenantPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs
     posSessions: Prisma.$PosSessionPayload<ExtArgs>[]
     posPayments: Prisma.$PosPaymentPayload<ExtArgs>[]
     posCashMovements: Prisma.$PosCashMovementPayload<ExtArgs>[]
+    socialPublications: Prisma.$SocialPublicationPayload<ExtArgs>[]
     catalogs: Prisma.$CatalogPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
@@ -3913,6 +4152,7 @@ export interface Prisma__TenantClient<T, Null = never, ExtArgs extends runtime.T
   posSessions<T extends Prisma.Tenant$posSessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$posSessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PosSessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   posPayments<T extends Prisma.Tenant$posPaymentsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$posPaymentsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PosPaymentPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   posCashMovements<T extends Prisma.Tenant$posCashMovementsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$posCashMovementsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$PosCashMovementPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  socialPublications<T extends Prisma.Tenant$socialPublicationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$socialPublicationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SocialPublicationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   catalogs<T extends Prisma.Tenant$catalogsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$catalogsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$CatalogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -4762,6 +5002,30 @@ export type Tenant$posCashMovementsArgs<ExtArgs extends runtime.Types.Extensions
   take?: number
   skip?: number
   distinct?: Prisma.PosCashMovementScalarFieldEnum | Prisma.PosCashMovementScalarFieldEnum[]
+}
+
+/**
+ * Tenant.socialPublications
+ */
+export type Tenant$socialPublicationsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SocialPublication
+   */
+  select?: Prisma.SocialPublicationSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SocialPublication
+   */
+  omit?: Prisma.SocialPublicationOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SocialPublicationInclude<ExtArgs> | null
+  where?: Prisma.SocialPublicationWhereInput
+  orderBy?: Prisma.SocialPublicationOrderByWithRelationInput | Prisma.SocialPublicationOrderByWithRelationInput[]
+  cursor?: Prisma.SocialPublicationWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SocialPublicationScalarFieldEnum | Prisma.SocialPublicationScalarFieldEnum[]
 }
 
 /**
