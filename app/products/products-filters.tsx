@@ -216,8 +216,10 @@ export function ProductsFilters({
             }}
             className="w-full rounded-xl border border-emerald-100 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-emerald-300 focus:bg-white focus:ring-2 focus:ring-emerald-100"
           >
+            <option value="all">Te gjitha produktet</option>
             <option value="low">Vetem stok i ulet</option>
             <option value="in">Vetem ne stok</option>
+            <option value="out">Pa stok (edhe pa variante)</option>
           </select>
 
           <button

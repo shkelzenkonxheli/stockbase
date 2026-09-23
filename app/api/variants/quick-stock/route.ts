@@ -57,6 +57,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Missing stock updates" }, { status: 400 });
   }
 
+  const warehouse = await prisma.warehouse.findFirst({ where: { id: warehouseId, tenantId, isActive: true }, select: { id: true } });
+  if (!warehouse) return NextResponse.json({ error: "Warehouse not found" }, { status: 404 });
+
   const variants = await prisma.variant.findMany({
     where: {
       tenantId,

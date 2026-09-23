@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { UploadedImage } from "@/app/components/uploaded-image";
-import { CameraBarcodeScanner } from "@/app/stock/scan/camera-barcode-scanner";
+import { ScanMethods } from "@/app/stock/scan/scan-methods";
 import { requireBarcodeAccess } from "@/lib/inventory-module-access";
 import { Code39Barcode, isCode39ValueSupported } from "@/lib/code39-barcode";
 import { prisma } from "@/lib/prisma";
+import { getAiProductAssistantConfig } from "@/lib/product-taxonomy";
 
 export const metadata: Metadata = {
   title: "Scan Barcode",
@@ -114,7 +115,7 @@ export default async function StockScanPage({ searchParams }: ScanPageProps) {
           </p>
         </section>
 
-        <CameraBarcodeScanner initialCode={code} />
+        <ScanMethods initialCode={code} photoEnabled={getAiProductAssistantConfig(currentUser.tenant?.catalogConfig).enabled} />
 
         {code && !variant ? (
           <section className="rounded-[30px] border border-rose-200 bg-rose-50 px-5 py-6 text-sm font-medium text-rose-700 shadow-[0_18px_45px_rgba(15,23,42,0.04)] sm:px-6">

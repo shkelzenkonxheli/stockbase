@@ -276,27 +276,26 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     });
   }
 
+  const positiveStockVariant: Prisma.VariantWhereInput = selectedWarehouseRecord && activeWarehouseId
+    ? { inventories: { some: { warehouseId: activeWarehouseId, stock: { gt: 0 } } } }
+    : { OR: [
+      { inventories: { some: { stock: { gt: 0 } } } },
+      { inventories: { none: {} }, stock: { gt: 0 } },
+    ] };
+
   const where: Prisma.ProductWhereInput = {
     tenantId,
-    variants: {
-      some: {},
-    },
+    ...(selectedStock === "out"
+      ? { variants: { none: positiveStockVariant } }
+      : selectedStock === "all" ? {} : { variants: { some: {} } }),
     ...(filters.length > 0 ? { AND: filters } : {}),
   };
 
   const filterOptionsWhere: Prisma.ProductWhereInput = {
     tenantId,
-    variants: {
-      some: selectedWarehouseRecord && activeWarehouseId
-        ? {
-            inventories: {
-              some: {
-                warehouseId: activeWarehouseId,
-              },
-            },
-          }
-        : {},
-    },
+    ...(selectedWarehouseRecord && activeWarehouseId
+      ? { variants: { some: { inventories: { some: { warehouseId: activeWarehouseId } } } } }
+      : selectedStock === "out" || selectedStock === "all" ? {} : { variants: { some: {} } }),
     ...(searchTokens.length > 0 || selectedCode
       ? {
           AND: filters.filter(
@@ -433,9 +432,9 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     return true;
   };
 
-  const visibleProducts = products.filter((product) =>
-    product.variants.some((variant) => stockMatchesFilter(variant)),
-  );
+  const visibleProducts = products.filter((product) => selectedStock === "out"
+    ? product.variants.every((variant) => getVariantDisplayStock(variant) <= 0)
+    : selectedStock === "all" || product.variants.some((variant) => stockMatchesFilter(variant)));
 
   const lowStockProducts = visibleProducts.filter((product) =>
     product.variants.some((variant) => {

@@ -26,7 +26,10 @@ export async function GET(request: Request) {
       variants: {
         orderBy: { id: "asc" },
         take: 100,
-        select: { id: true, color: true, size: true, stock: true, price: true, imagePath: true },
+        select: {
+          id: true, color: true, size: true, stock: true, price: true, imagePath: true,
+          inventories: { where: { warehouse: { tenantId: tenant.id } }, select: { warehouseId: true, stock: true, warehouse: { select: { name: true } } } },
+        },
       },
     },
   });
@@ -46,6 +49,7 @@ export async function GET(request: Request) {
       stock: variant.stock,
       price: variant.price.toString(),
       imagePath: variant.imagePath,
+      inventories: variant.inventories.map((inventory) => ({ warehouseId: inventory.warehouseId, warehouseName: inventory.warehouse.name, stock: inventory.stock })),
     })),
   } });
 }

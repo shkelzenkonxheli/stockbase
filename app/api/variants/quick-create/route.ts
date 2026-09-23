@@ -30,6 +30,7 @@ type QuickCreatePayload = {
   material?: string;
   powerWatts?: string;
   locationCode?: string;
+  imageFromVariantId?: number;
 };
 
 export async function POST(request: Request) {
@@ -65,6 +66,7 @@ export async function POST(request: Request) {
         material: formData.get("material")?.toString(),
         powerWatts: formData.get("powerWatts")?.toString(),
         locationCode: formData.get("locationCode")?.toString(),
+        imageFromVariantId: formData.get("imageFromVariantId") ? Number(formData.get("imageFromVariantId")) : undefined,
       };
       const candidate = formData.get("image");
       imageFile = candidate instanceof File && candidate.size > 0 ? candidate : null;
@@ -88,6 +90,7 @@ export async function POST(request: Request) {
   const material = String(payload.material ?? "").trim() || null;
   const powerWatts = String(payload.powerWatts ?? "").trim() || null;
   const locationCode = String(payload.locationCode ?? "").trim() || null;
+  const imageFromVariantId = payload.imageFromVariantId;
 
   if (
     !Number.isInteger(productId) ||
@@ -98,6 +101,7 @@ export async function POST(request: Request) {
     !size ||
     !Number.isInteger(stock) ||
     stock < 0 ||
+    (imageFromVariantId !== undefined && (!Number.isSafeInteger(imageFromVariantId) || imageFromVariantId <= 0)) ||
     (reorderLevel !== null && (!Number.isInteger(reorderLevel) || reorderLevel < 0))
   ) {
     return NextResponse.json({ error: "Te dhenat nuk jane valide." }, { status: 400 });
@@ -227,6 +231,12 @@ export async function POST(request: Request) {
     variantsInDb.find(
       (variant) => variant.color.trim().toLowerCase() === color.toLowerCase() && variant.imagePath,
     )?.imagePath ?? null;
+  const sharedImage = imageFromVariantId === undefined ? null : product.variants.find(
+    (variant) => variant.id === imageFromVariantId && variant.color.trim().toLowerCase() === color.toLowerCase() && variant.imagePath,
+  )?.imagePath;
+  if (imageFromVariantId !== undefined && !sharedImage) {
+    return NextResponse.json({ error: "Fotoja e variantit te pare nuk u gjet." }, { status: 400 });
+  }
   const inheritedPrice =
     variantsInDb.find(
       (variant) => variant.color.trim().toLowerCase() === color.toLowerCase(),
@@ -241,7 +251,7 @@ export async function POST(request: Request) {
     );
   }
 
-  let uploadedImagePath = inheritedImage;
+  let uploadedImagePath = sharedImage ?? inheritedImage;
 
   if (imageFile) {
     try {
