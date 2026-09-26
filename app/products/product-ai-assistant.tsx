@@ -95,7 +95,7 @@ function groupCandidateVariants(variants: CandidateVariant[]) {
 
 const inputClass = "mt-1.5 w-full rounded-xl border border-slate-300 bg-white px-3.5 py-2.5 text-sm text-slate-950 outline-none focus:border-violet-500 focus:ring-2 focus:ring-violet-100";
 const confidenceText = { LOW: "Perputhje e ulet", MEDIUM: "Perputhje e mundshme", HIGH: "Perputhje e forte", VERY_HIGH: "Perputhje shume e forte" };
-const reasonText: Record<string, string> = { identifier: "SKU/barcode i njejte", brand: "Brand i njejte", model: "Model i njejte ose shume i ngjashem", category: "Kategori e njejte", color: "Ngjyre e ngjashme", attributes: "Atribute te ngjashme", visual: "Foto vizualisht e ngjashme" };
+const reasonText: Record<string, string> = { identifier: "SKU/barcode i njejte", brand: "Brand i njejte", model: "Model i njejte ose shume i ngjashem", category: "Kategori e njejte", color: "Ngjyre e ngjashme", attributes: "Atribute te ngjashme", visual: "Foto vizualisht e ngjashme", exactPhoto: "Foto identike ne stok" };
 
 function logCandidateChoice(action: string, productId: number) {
   if (process.env.NODE_ENV === "development") console.info("AI candidate choice", { action, productId });
@@ -106,9 +106,16 @@ export function ProductAiAssistant({ categories, warehouses }: { categories: Cat
   const dialogRef = useRef<HTMLDialogElement>(null);
   const candidateDialogRef = useRef<HTMLDialogElement>(null);
   const variantDialogRef = useRef<HTMLDialogElement>(null);
+  const cameraDialogRef = useRef<HTMLDialogElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const cameraStreamRef = useRef<MediaStream | null>(null);
+  const cameraRequestRef = useRef(0);
   const candidateAbortRef = useRef<AbortController | null>(null);
   const nextSizeId = useRef(1);
   const [file, setFile] = useState<File | null>(null);
+  const [searchWeb, setSearchWeb] = useState(false);
+  const [webSearchFailed, setWebSearchFailed] = useState(false);
+  const [cameraOpening, setCameraOpening] = useState(false);
   const [previewUrl, setPreviewUrl] = useState("");
   const [analysis, setAnalysis] = useState<Analysis | null>(null);
   const [existingProducts, setExistingProducts] = useState<ExistingProduct[]>([]);
@@ -132,6 +139,7 @@ export function ProductAiAssistant({ categories, warehouses }: { categories: Cat
   const [duplicateConfirmationId, setDuplicateConfirmationId] = useState<number | null>(null);
   const [duplicateConfirmed, setDuplicateConfirmed] = useState(false);
   const [matchCheckFailed, setMatchCheckFailed] = useState(false);
+  const [exactCheckFailed, setExactCheckFailed] = useState(false);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
@@ -146,11 +154,69 @@ export function ProductAiAssistant({ categories, warehouses }: { categories: Cat
     return () => URL.revokeObjectURL(url);
   }, [file]);
 
+  useEffect(() => () => {
+    cameraRequestRef.current += 1;
+    cameraStreamRef.current?.getTracks().forEach((track) => track.stop());
+  }, []);
+
+  function stopCamera() {
+    cameraRequestRef.current += 1;
+    cameraStreamRef.current?.getTracks().forEach((track) => track.stop());
+    cameraStreamRef.current = null;
+    if (videoRef.current) { videoRef.current.pause(); videoRef.current.srcObject = null; }
+    setCameraOpening(false);
+  }
+
+  async function openCamera() {
+    setError("");
+    if (!window.isSecureContext || !navigator.mediaDevices?.getUserMedia) {
+      setError("Kamera kerkon HTTPS ose localhost. Ngarko foton nga PC si alternative.");
+      return;
+    }
+    const requestId = ++cameraRequestRef.current;
+    setCameraOpening(true);
+    cameraDialogRef.current?.showModal();
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: "environment" } }, audio: false });
+      if (requestId !== cameraRequestRef.current) { stream.getTracks().forEach((track) => track.stop()); return; }
+      cameraStreamRef.current = stream;
+      await new Promise<void>((resolve) => requestAnimationFrame(() => resolve()));
+      if (requestId !== cameraRequestRef.current) return;
+      if (!videoRef.current) throw new Error("Preview i kameres nuk u hap.");
+      videoRef.current.srcObject = stream;
+      await videoRef.current.play();
+      setCameraOpening(false);
+    } catch (cause) {
+      stopCamera();
+      cameraDialogRef.current?.close();
+      setError(cause instanceof DOMException && cause.name === "NotAllowedError"
+        ? "Leja e kameres u refuzua. Aktivizoje ne browser ose ngarko foto."
+        : "Kamera nuk u hap. Kontrollo pajisjen ose ngarko foto.");
+    }
+  }
+
+  async function capturePhoto() {
+    const video = videoRef.current;
+    if (!video?.videoWidth || !video.videoHeight) { setError("Kamera nuk eshte gati. Provo perseri."); return; }
+    const scale = Math.min(1, 1600 / Math.max(video.videoWidth, video.videoHeight));
+    const canvas = document.createElement("canvas");
+    canvas.width = Math.round(video.videoWidth * scale);
+    canvas.height = Math.round(video.videoHeight * scale);
+    canvas.getContext("2d")?.drawImage(video, 0, 0, canvas.width, canvas.height);
+    const blob = await new Promise<Blob | null>((resolve) => canvas.toBlob(resolve, "image/jpeg", 0.84));
+    if (!blob) { setError("Fotoja nuk u kap. Provo perseri."); return; }
+    selectFile(new File([blob], "product-camera.jpg", { type: "image/jpeg" }));
+    cameraDialogRef.current?.close();
+    stopCamera();
+  }
+
   function selectFile(nextFile: File | null) {
     setFile(nextFile);
     setAnalysis(null);
     setExistingProducts([]);
+    setWebSearchFailed(false);
     setMatchCheckFailed(false);
+    setExactCheckFailed(false);
     setError("");
     setExistingProductId(null);
     if (!nextFile) setPreviewUrl("");
@@ -167,15 +233,20 @@ export function ProductAiAssistant({ categories, warehouses }: { categories: Cat
     setAnalysis(null);
     setExistingProducts([]);
     setMatchCheckFailed(false);
+    setExactCheckFailed(false);
+    setWebSearchFailed(false);
     try {
       const data = new FormData();
       data.set("image", file);
+      data.set("searchWeb", String(searchWeb));
       const response = await fetch("/api/ai/product-analysis", { method: "POST", body: data });
-      const body = await response.json() as { analysis?: Analysis; existingProducts?: ExistingProduct[]; matchCheckFailed?: boolean; error?: string };
+      const body = await response.json() as { analysis?: Analysis; existingProducts?: ExistingProduct[]; matchCheckFailed?: boolean; exactCheckFailed?: boolean; webSearchFailed?: boolean; error?: string };
       if (!response.ok || !body.analysis) throw new Error(body.error ?? "Analiza deshtoi.");
       setAnalysis(body.analysis);
       setExistingProducts(body.existingProducts ?? []);
       setMatchCheckFailed(Boolean(body.matchCheckFailed));
+      setExactCheckFailed(Boolean(body.exactCheckFailed));
+      setWebSearchFailed(Boolean(body.webSearchFailed));
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : "Analiza deshtoi.");
     } finally {
@@ -389,13 +460,14 @@ export function ProductAiAssistant({ categories, warehouses }: { categories: Cat
     <section className="mb-5 rounded-[24px] border border-violet-100 bg-violet-50/60 p-5">
       <p className="text-xs font-semibold uppercase tracking-[0.16em] text-violet-700">AI Product Assistant</p>
       <p className="mt-2 text-sm text-slate-600">Ngarko foton; AI propozon te dhenat e produktit.</p>
-      <label className="mt-4 flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-violet-200 bg-white px-4 py-6 text-center transition hover:border-violet-400 hover:bg-violet-50">
-        <span className="text-sm font-semibold text-violet-800">Ngarko foton e produktit</span>
-        <span className="mt-1 text-xs text-slate-500">Kliko ketu per te zgjedhur JPG, PNG ose WebP, deri ne 8 MB.</span>
-        <span className="mt-3 rounded-lg bg-violet-100 px-3 py-1.5 text-xs font-semibold text-violet-700">Zgjidh foto</span>
-        <input type="file" accept="image/jpeg,image/png,image/webp" onChange={(event) => selectFile(event.target.files?.[0] ?? null)} className="sr-only" />
+      <label className="mt-4 flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-violet-200 bg-white px-4 py-6 text-center transition hover:border-violet-400 hover:bg-violet-50 focus-within:border-violet-500 focus-within:ring-2 focus-within:ring-violet-200">
+        <span className="rounded-xl bg-violet-700 px-5 py-2.5 text-sm font-semibold text-white shadow-sm">{file ? "Ndrysho foton" : "Ngarko foto nga PC"}</span>
+        <span className="mt-2 text-xs text-slate-500">JPG, PNG ose WebP, deri ne 8 MB.</span>
+        <input type="file" accept="image/jpeg,image/png,image/webp" disabled={loading} onChange={(event) => selectFile(event.target.files?.[0] ?? null)} className="sr-only" />
       </label>
+      <button type="button" disabled={loading} onClick={() => void openCamera()} className="mt-3 w-full rounded-xl border border-violet-300 bg-white px-4 py-2.5 text-sm font-semibold text-violet-800 hover:bg-violet-50 disabled:opacity-50">Hap kameren</button>
       {previewUrl ? <div className="mt-3 flex items-center gap-3"><UploadedImage src={previewUrl} alt="Fotoja e produktit" className="h-20 w-20 rounded-xl border border-violet-100 object-cover" /><p className="min-w-0 truncate text-xs text-slate-600">{file?.name}</p></div> : null}
+      <label className="mt-4 flex items-start gap-2 text-xs text-slate-700"><input type="checkbox" checked={searchWeb} onChange={(event) => setSearchWeb(event.target.checked)} className="mt-0.5 accent-violet-700" /><span>Kerko edhe ne web per brand/model (opsionale; mund te zgjase dhe te kete kosto shtese). Ngjyra merret nga fotoja.</span></label>
       <button type="button" disabled={!file || loading} onClick={analyze} className="mt-4 w-full rounded-xl bg-violet-700 px-4 py-2.5 text-sm font-semibold text-white disabled:bg-slate-300">{loading ? "Duke analizuar..." : "Analizo me AI"}</button>
       {analysis ? <div className="mt-4 rounded-xl bg-white p-4 text-sm text-slate-700">
         <p><b>Brand:</b> {analysis.brand ?? "Ploteso vete"}</p>
@@ -403,6 +475,7 @@ export function ProductAiAssistant({ categories, warehouses }: { categories: Cat
         <p><b>Kategori:</b> {analysis.category ?? "Ploteso vete"}</p>
         <p><b>Ngjyra:</b> {analysis.color ?? "Ploteso vete"}</p>
         <p className="mt-1 text-xs text-slate-500">Besueshmeria: {Math.round(analysis.confidence * 100)}%</p>
+        {webSearchFailed ? <p className="mt-2 text-xs text-amber-700">Kerkimi ne web nuk u krye; sugjerimi vjen vetem nga fotoja.</p> : null}
         {existingProducts.length > 0 ? <div className="mt-4 border-t border-slate-100 pt-4">
           <p className="font-semibold text-slate-950">A eshte ky produkt tashme ne stok?</p>
           <p className="mt-1 text-xs text-slate-500">Sugjerimet kombinojne te dhenat e produktit dhe, kur eshte e mundur, fotot. Kontrolloji para se te vendosesh.</p>
@@ -419,11 +492,17 @@ export function ProductAiAssistant({ categories, warehouses }: { categories: Cat
               <button type="button" onClick={() => void openVariantModal(product)} className="rounded-lg bg-violet-700 px-2 py-1 text-center text-white hover:bg-violet-800">Shto variant</button>
             </div>
           </div>)}</div>
-        </div> : matchCheckFailed ? <p className="mt-4 text-xs text-amber-700">Kontrolli ne stok nuk u krye. Verifiko produktet ekzistuese para krijimit.</p> : analysis.brand || analysis.model ? <p className="mt-4 text-xs text-slate-500">Nuk u gjet kandidat i ngjashem ne stok.</p> : <p className="mt-4 text-xs text-slate-500">Pa brand ose model te lexueshem, nuk mund te kerkohet me besueshmeri ne stok.</p>}
+        </div> : matchCheckFailed ? <p className="mt-4 text-xs text-amber-700">Kontrolli ne stok nuk u krye. Verifiko produktet ekzistuese para krijimit.</p> : exactCheckFailed ? <p className="mt-4 text-xs text-amber-700">Kontrolli i fotos identike nuk u krye. Verifiko produktet ekzistuese para krijimit.</p> : analysis.brand || analysis.model ? <p className="mt-4 text-xs text-slate-500">Nuk u gjet kandidat i ngjashem ne stok.</p> : <p className="mt-4 text-xs text-slate-500">Pa brand ose model te lexueshem, nuk mund te kerkohet me besueshmeri ne stok.</p>}
         <button type="button" onClick={() => continueWithProduct()} className="mt-4 w-full rounded-xl bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white">{existingProducts.length > 0 ? "Nuk eshte ky: krijo produkt te ri" : "Vazhdo me produktin"}</button>
       </div> : null}
       {error && !dialogRef.current?.open ? <p role="alert" className="mt-3 text-sm font-medium text-rose-700">{error}</p> : null}
     </section>
+
+    <dialog ref={cameraDialogRef} onClose={stopCamera} aria-label="Kamera e produktit" className="m-auto w-[calc(100%-2rem)] max-w-xl rounded-2xl bg-slate-950 p-4 text-white shadow-xl backdrop:bg-slate-950/70">
+      <video ref={videoRef} autoPlay muted playsInline className="aspect-[4/3] w-full rounded-xl bg-black object-contain" />
+      <p className="mt-3 text-center text-sm">{cameraOpening ? "Po hapet kamera..." : "Vendose produktin ne kornize dhe kap foton."}</p>
+      <div className="mt-4 flex justify-end gap-2"><button type="button" onClick={() => cameraDialogRef.current?.close()} className="rounded-xl border border-slate-500 px-4 py-2 text-sm">Mbyll</button><button type="button" disabled={cameraOpening} onClick={() => void capturePhoto()} className="rounded-xl bg-violet-600 px-4 py-2 text-sm font-semibold disabled:opacity-50">Kap foton</button></div>
+    </dialog>
 
     <dialog ref={candidateDialogRef} aria-labelledby="candidate-dialog-title" onClose={() => { candidateAbortRef.current?.abort(); setSelectedCandidate(null); setCandidateDetails(null); setCandidateError(""); }} className="m-auto max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] max-w-3xl overflow-y-auto rounded-[24px] border border-slate-200 bg-white p-0 text-slate-950 shadow-[0_30px_90px_rgba(15,23,42,0.3)] backdrop:bg-slate-950/55">
       <div className="sticky top-0 z-10 flex items-start justify-between gap-4 border-b border-slate-200 bg-white px-5 py-4 sm:px-6">

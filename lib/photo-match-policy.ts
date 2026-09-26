@@ -1,8 +1,9 @@
-import { normalizeProductText, type MatchLevel, type VisualMatch, type MatchSignals } from "@/lib/product-match-core";
+import { normalizeModel, normalizeProductText, type MatchLevel, type ProductAnalysis, type VisualMatch, type MatchSignals } from "@/lib/product-match-core";
 
 export type RankedPhotoCandidate = {
   id: number;
   color: string | null;
+  imagePath?: string | null;
   confidence: MatchLevel;
   finalScore: number;
   visualMatch: VisualMatch;
@@ -26,6 +27,12 @@ export type PhotoColorGroup = {
   unassignedStock: number;
 };
 
+export function photoWarehouseProductFilter(tenantId: number, warehouseId: number | null) {
+  return warehouseId === null ? {} : {
+    variants: { some: { tenantId, inventories: { some: { warehouseId, stock: { gt: 0 }, warehouse: { tenantId } } } } },
+  };
+}
+
 export function isSingleStrongPhotoMatch(candidates: RankedPhotoCandidate[]) {
   const [first, second] = candidates;
   return Boolean(first &&
@@ -36,15 +43,35 @@ export function isSingleStrongPhotoMatch(candidates: RankedPhotoCandidate[]) {
     (!second || first.finalScore - second.finalScore >= 10));
 }
 
-export function summarizePhotoStock(variants: PhotoStockVariant[], preferredColor: string | null) {
+export function canSkipPhotoVisualComparison(analysis: ProductAnalysis, candidates: Array<{ fuzzyScore: number; signals: MatchSignals }>) {
+  if (candidates.length !== 1) return false;
+  const model = normalizeModel(analysis.model, analysis.brand);
+  const category = normalizeProductText(analysis.category);
+  const [candidate] = candidates;
+  return model.split(" ").length >= 2 && model.length >= 7 && model !== category &&
+    candidate.fuzzyScore >= 90 && candidate.signals.brand >= 0.98 &&
+    candidate.signals.model >= 0.98 && candidate.signals.category >= 0.98 &&
+    candidate.signals.color >= 0.98;
+}
+
+export function isPlausiblePhotoCandidate(candidate: RankedPhotoCandidate) {
+  if (candidate.confidence !== "LOW") return true;
+  if (candidate.visualMatch === "UNLIKELY" || candidate.finalScore < 30) return false;
+  return candidate.signals.model >= 0.65 ||
+    (candidate.signals.brand >= 0.75 && candidate.signals.category >= 0.75 &&
+      (candidate.signals.color >= 0.5 || candidate.visualMatch === "STRONG" || Boolean(candidate.imagePath)));
+}
+
+export function summarizePhotoStock(variants: PhotoStockVariant[], preferredColor: string | null, warehouseScoped = false) {
   const colors = new Map<string, Omit<PhotoColorGroup, "sizes" | "warehouses"> & { sizeTotals: Map<string, number>; warehouseTotals: Map<string, number> }>();
   const warehouses = new Map<string, number>();
   let unassignedStock = 0;
   for (const variant of variants) {
+    if (warehouseScoped && !variant.inventories.some((inventory) => inventory.stock > 0)) continue;
     const stock = variant.inventories.length
       ? variant.inventories.reduce((sum, inventory) => sum + inventory.stock, 0)
-      : variant.stock;
-    if (!variant.inventories.length) unassignedStock += stock;
+      : warehouseScoped ? 0 : variant.stock;
+    if (!warehouseScoped && !variant.inventories.length) unassignedStock += stock;
     for (const inventory of variant.inventories) {
       warehouses.set(inventory.warehouse.name, (warehouses.get(inventory.warehouse.name) ?? 0) + inventory.stock);
     }
@@ -57,7 +84,7 @@ export function summarizePhotoStock(variants: PhotoStockVariant[], preferredColo
     group.imagePath ||= variant.imagePath;
     group.totalStock += stock;
     group.sizeTotals.set(variant.size, (group.sizeTotals.get(variant.size) ?? 0) + stock);
-    if (!variant.inventories.length) group.unassignedStock += stock;
+    if (!warehouseScoped && !variant.inventories.length) group.unassignedStock += stock;
     for (const inventory of variant.inventories) {
       group.warehouseTotals.set(inventory.warehouse.name, (group.warehouseTotals.get(inventory.warehouse.name) ?? 0) + inventory.stock);
     }

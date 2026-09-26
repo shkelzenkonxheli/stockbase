@@ -1,7 +1,9 @@
 import { getCurrentUser, hasRole } from "@/lib/auth";
 import { findPhotoResultDetails } from "@/lib/find-by-photo";
 import { isBarcodeEnabled } from "@/lib/inventory-module-access";
-import { findDuplicateCandidates, type CandidateSearchStats } from "@/lib/product-duplicate-matching";
+import { canSkipPhotoVisualComparison } from "@/lib/photo-match-policy";
+import { prisma } from "@/lib/prisma";
+import { findPhotoCandidates, type PhotoCandidateSearchStats } from "@/lib/product-duplicate-matching";
 import { combineVisualMatch } from "@/lib/product-match-core";
 import { analyzeProductPhoto, hasSupportedPhotoSignature, MAX_PRODUCT_PHOTO_BYTES, PHOTO_MIME_TYPES } from "@/lib/product-photo-analysis";
 import { getAiProductAssistantConfig } from "@/lib/product-taxonomy";
@@ -19,12 +21,13 @@ export async function POST(request: Request) {
   const apiKey = process.env.OPENAI_API_KEY?.trim();
   if (!apiKey) return Response.json({ error: "Sherbimi i kerkimit me foto nuk eshte konfiguruar." }, { status: 503 });
 
-  let image: FormDataEntryValue | null;
+  let formData: FormData;
   try {
-    image = (await request.formData()).get("image");
+    formData = await request.formData();
   } catch {
     return Response.json({ error: "Fotoja nuk u ngarkua. Provo perseri." }, { status: 400 });
   }
+  const image = formData.get("image");
   if (!(image instanceof File) || !PHOTO_MIME_TYPES.includes(image.type as typeof PHOTO_MIME_TYPES[number]) ||
     image.size === 0 || image.size > MAX_PRODUCT_PHOTO_BYTES ||
     !hasSupportedPhotoSignature(image.type, new Uint8Array(await image.slice(0, 16).arrayBuffer()))) {
@@ -32,6 +35,15 @@ export async function POST(request: Request) {
   }
 
   const tenantId = tenant.id;
+  const warehouseValue = formData.get("warehouseId");
+  if (warehouseValue !== null && (typeof warehouseValue !== "string" || !/^[1-9]\d*$/.test(warehouseValue))) {
+    return Response.json({ error: "Depoja e zgjedhur nuk eshte valide." }, { status: 400 });
+  }
+  const warehouseId = warehouseValue === null ? null : Number(warehouseValue);
+  if (warehouseId !== null && (!Number.isSafeInteger(warehouseId) ||
+    !await prisma.warehouse.findFirst({ where: { id: warehouseId, tenantId, isActive: true }, select: { id: true } }))) {
+    return Response.json({ error: "Depoja e zgjedhur nuk eshte valide." }, { status: 400 });
+  }
   const encoder = new TextEncoder();
   const started = Date.now();
   let cancelled = false;
@@ -47,26 +59,42 @@ export async function POST(request: Request) {
         if (request.signal.aborted || cancelled) return;
         const analysisMs = Date.now() - analysisStarted;
         send("searching");
-        const searchStats: CandidateSearchStats = { initialCandidateCount: 0, fuzzyRanking: [] };
-        const candidates = await findDuplicateCandidates(tenantId, analysis, undefined, (stats) => { Object.assign(searchStats, stats); });
+        const searchStarted = Date.now();
+        const searchStats: PhotoCandidateSearchStats = { initialCandidateCount: 0, fuzzyRanking: [], fallbackScanned: 0, fallbackShortlisted: 0 };
+        const candidates = await findPhotoCandidates(tenantId, analysis, warehouseId, (stats) => { Object.assign(searchStats, stats); });
         if (request.signal.aborted || cancelled) return;
-        send("comparing");
+        const searchMs = Date.now() - searchStarted;
+        const skipVisual = canSkipPhotoVisualComparison(analysis, candidates);
+        const metadataRanked = candidates.map((candidate) => combineVisualMatch(candidate, "NOT_CHECKED"));
         let comparedIds: number[] = [];
-        const visualStarted = Date.now();
+        let previewMs = 0;
+        let visualMs = 0;
         let visuals: Awaited<ReturnType<typeof compareCandidateImages>> = [];
-        try {
-          visuals = await compareCandidateImages(tenantId, image, candidates, (ids) => { comparedIds = ids; });
-        } catch (error) {
-          console.error("Find by Photo visual comparison failed", { code: error instanceof Error ? error.name : "Unknown" });
+        if (candidates.length && !skipVisual) {
+          const visualStarted = Date.now();
+          const visualPromise = compareCandidateImages(tenantId, image, candidates, (ids) => { comparedIds = ids; })
+            .then((results) => { visualMs = Date.now() - visualStarted; return results; })
+            .catch((error): Awaited<ReturnType<typeof compareCandidateImages>> => {
+              visualMs = Date.now() - visualStarted;
+              console.error("Find by Photo visual comparison failed", { code: error instanceof Error ? error.name : "Unknown" });
+              return [];
+            });
+          const previewStarted = Date.now();
+          const previewResults = await findPhotoResultDetails(tenantId, metadataRanked, analysis, warehouseId);
+          previewMs = Date.now() - previewStarted;
+          if (request.signal.aborted || cancelled) return;
+          if (previewResults.length) send("preview", { results: previewResults });
+          send("comparing");
+          visuals = await visualPromise;
         }
         if (request.signal.aborted || cancelled) return;
-        const visualMs = Date.now() - visualStarted;
         const visualById = new Map(visuals.map((result) => [result.productId, result]));
         const ranked = candidates.map((candidate) => combineVisualMatch(candidate, visualById.get(candidate.id)?.visualMatch ?? "NOT_CHECKED"))
           .sort((a, b) => b.finalScore - a.finalScore);
-        const results = await findPhotoResultDetails(tenantId, ranked, analysis);
+        const results = await findPhotoResultDetails(tenantId, ranked, analysis, warehouseId);
         if (process.env.NODE_ENV === "development") console.info("Find by Photo", {
-          tenantId, analysisMs, metadata: analysis, initialCandidates: searchStats.initialCandidateCount,
+          tenantId, warehouseId, analysisMs, searchMs, previewMs, metadata: analysis, initialCandidates: searchStats.initialCandidateCount,
+          fallbackScanned: searchStats.fallbackScanned, fallbackShortlisted: searchStats.fallbackShortlisted, skipVisual,
           fuzzyRanking: searchStats.fuzzyRanking, comparedIds, visualMs,
           finalRanking: ranked.map((item) => ({ id: item.id, score: item.finalScore, confidence: item.confidence, visual: item.visualMatch })),
           totalMs: Date.now() - started,

@@ -44,6 +44,8 @@ export const MATCH_CONFIG = {
   candidateLimit: 120,
   responseLimit: 5,
   visualCandidateLimit: 5,
+  photoFallbackScanLimit: 1500,
+  photoFallbackShortlistLimit: 80,
   minimumCandidateScore: 15,
   levels: { medium: 45, high: 70, veryHigh: 90 },
   visualAdjustments: { STRONG: 10, POSSIBLE: 3, UNLIKELY: -8, NOT_CHECKED: 0 },
@@ -171,7 +173,7 @@ export function scoreProductMatch(analysis: ProductAnalysis, product: MatchProdu
     brand: product.brand,
     category: product.category,
     color: best?.color ?? null,
-    imagePath: best?.imagePath ?? null,
+    imagePath: best?.imagePath ?? rankedVariants.find((variant) => variant.imagePath)?.imagePath ?? null,
     matchedVariants: rankedVariants.slice(0, 5).map((variant) => ({ id: variant.id, color: variant.color, size: variant.size, stock: variant.stock, imagePath: variant.imagePath, colorSimilarity: variant.colorSimilarity })),
     signals,
     fuzzyScore,
@@ -179,6 +181,16 @@ export function scoreProductMatch(analysis: ProductAnalysis, product: MatchProdu
     reasons,
     matchedOn: reasons,
   };
+}
+
+export function shortlistPhotoMetadata(analysis: ProductAnalysis, products: Array<Pick<MatchProduct, "id" | "name" | "brand" | "category">>) {
+  return products.map((product) => ({
+    id: product.id,
+    score: scoreProductMatch(analysis, { ...product, variants: [] }).fuzzyScore,
+  })).filter((product) => product.score > 0)
+    .sort((a, b) => b.score - a.score)
+    .slice(0, MATCH_CONFIG.photoFallbackShortlistLimit)
+    .map((product) => product.id);
 }
 
 export function combineVisualMatch<T extends ReturnType<typeof scoreProductMatch>>(candidate: T, visualMatch: VisualMatch) {

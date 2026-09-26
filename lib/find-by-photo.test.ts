@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { isSingleStrongPhotoMatch, summarizePhotoStock, type RankedPhotoCandidate } from "./photo-match-policy";
+import { canSkipPhotoVisualComparison, isPlausiblePhotoCandidate, isSingleStrongPhotoMatch, photoWarehouseProductFilter, summarizePhotoStock, type RankedPhotoCandidate } from "./photo-match-policy";
 import { hasSupportedPhotoSignature } from "./product-photo-analysis";
 
 const candidate: RankedPhotoCandidate = {
@@ -24,6 +24,26 @@ test("one strong match requires product identity evidence", () => {
   assert.equal(isSingleStrongPhotoMatch([{ ...candidate, confidence: "LOW" }]), false);
 });
 
+test("visual comparison is skipped only for one unambiguous full model match", () => {
+  const analysis = { brand: "Nike", model: "Air Max 270", category: "Patika", color: "Black / White", material: null, attributes: [], confidence: 0.92 };
+  const exact = { ...candidate, fuzzyScore: 96 };
+  assert.equal(canSkipPhotoVisualComparison(analysis, [exact]), true);
+  assert.equal(canSkipPhotoVisualComparison(analysis, [exact, { ...exact, id: 2 }]), false);
+  assert.equal(canSkipPhotoVisualComparison({ ...analysis, model: "Fendi" }, [exact]), false);
+  assert.equal(canSkipPhotoVisualComparison(analysis, [{ ...exact, signals: { ...exact.signals, color: 0.7 } }]), false);
+  assert.equal(canSkipPhotoVisualComparison(analysis, [{ ...exact, signals: { ...exact.signals, brand: 0.7 } }]), false);
+});
+
+test("weak photo matches require identity evidence or brand, category and color together", () => {
+  const weak = { ...candidate, confidence: "LOW" as const, finalScore: 38, visualMatch: "NOT_CHECKED" as const };
+  assert.equal(isPlausiblePhotoCandidate({ ...weak, signals: { ...weak.signals, model: 0, color: 0 } }), false);
+  assert.equal(isPlausiblePhotoCandidate({ ...weak, signals: { ...weak.signals, model: 0 } }), true);
+  assert.equal(isPlausiblePhotoCandidate({ ...weak, imagePath: "/product.jpg", signals: { ...weak.signals, model: 0, color: 0 } }), true);
+  assert.equal(isPlausiblePhotoCandidate({ ...weak, visualMatch: "STRONG", signals: { ...weak.signals, model: 0, color: 0 } }), true);
+  assert.equal(isPlausiblePhotoCandidate({ ...weak, visualMatch: "UNLIKELY" }), false);
+  assert.equal(isPlausiblePhotoCandidate({ ...weak, signals: { ...weak.signals, brand: 0, model: 0, color: 0 } }), false);
+});
+
 test("stock summary uses warehouse inventory, keeps sold-out sizes and real other colors", () => {
   const summary = summarizePhotoStock([
     { color: "Black / White", size: "41", stock: 9, imagePath: "/black.jpg", inventories: [{ stock: 0, warehouse: { name: "Store" } }] },
@@ -36,4 +56,26 @@ test("stock summary uses warehouse inventory, keeps sold-out sizes and real othe
   assert.deepEqual(summary.colors[0].warehouses, [{ name: "Main", stock: 3 }, { name: "Store", stock: 2 }]);
   assert.equal(summary.colors[1].totalStock, 4);
   assert.deepEqual(summary.warehouses, [{ name: "Main", stock: 7 }, { name: "Store", stock: 2 }]);
+});
+
+test("warehouse filter requires positive stock in the selected tenant warehouse", () => {
+  assert.deepEqual(photoWarehouseProductFilter(3, null), {});
+  assert.deepEqual(photoWarehouseProductFilter(3, 7), {
+    variants: { some: { tenantId: 3, inventories: { some: { warehouseId: 7, stock: { gt: 0 }, warehouse: { tenantId: 3 } } } } },
+  });
+});
+
+test("warehouse-scoped details exclude colors and sizes absent from the selected warehouse", () => {
+  const summary = summarizePhotoStock([
+    { color: "Black", size: "41", stock: 9, imagePath: "/black.jpg", inventories: [] },
+    { color: "Black", size: "42", stock: 8, imagePath: "/black-42.jpg", inventories: [{ stock: 2, warehouse: { name: "Store" } }] },
+    { color: "White", size: "43", stock: 4, imagePath: null, inventories: [] },
+    { color: "Blue", size: "44", stock: 1, imagePath: null, inventories: [{ stock: 0, warehouse: { name: "Store" } }] },
+  ], "Black", true);
+  assert.deepEqual(summary.colors[0].sizes, [{ size: "42", stock: 2 }]);
+  assert.equal(summary.colors.length, 1);
+  assert.equal(summary.colors[0].totalStock, 2);
+  assert.equal(summary.imagePath, "/black-42.jpg");
+  assert.equal(summary.unassignedStock, 0);
+  assert.deepEqual(summary.warehouses, [{ name: "Store", stock: 2 }]);
 });

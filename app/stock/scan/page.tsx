@@ -76,6 +76,12 @@ export default async function StockScanPage({ searchParams }: ScanPageProps) {
     : null;
 
   const canRenderBarcode = variant?.barcode ? isCode39ValueSupported(variant.barcode) : false;
+  const photoEnabled = getAiProductAssistantConfig(currentUser.tenant?.catalogConfig).enabled;
+  const warehouses = photoEnabled ? await prisma.warehouse.findMany({
+    where: { tenantId, isActive: true },
+    select: { id: true, name: true },
+    orderBy: { name: "asc" },
+  }) : [];
 
   return (
     <main className="px-4 py-6 sm:px-6 lg:px-8">
@@ -115,7 +121,7 @@ export default async function StockScanPage({ searchParams }: ScanPageProps) {
           </p>
         </section>
 
-        <ScanMethods initialCode={code} photoEnabled={getAiProductAssistantConfig(currentUser.tenant?.catalogConfig).enabled} />
+        <ScanMethods initialCode={code} photoEnabled={photoEnabled} warehouses={warehouses} />
 
         {code && !variant ? (
           <section className="rounded-[30px] border border-rose-200 bg-rose-50 px-5 py-6 text-sm font-medium text-rose-700 shadow-[0_18px_45px_rgba(15,23,42,0.04)] sm:px-6">

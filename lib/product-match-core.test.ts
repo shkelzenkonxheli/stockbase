@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { buildCandidateSearch, combineVisualMatch, normalizeModel, normalizeProductText, scoreProductMatch, textSimilarity, type MatchProduct, type ProductAnalysis } from "./product-match-core";
+import { buildCandidateSearch, combineVisualMatch, normalizeModel, normalizeProductText, scoreProductMatch, shortlistPhotoMetadata, textSimilarity, type MatchProduct, type ProductAnalysis } from "./product-match-core";
 import { trustedProductImageKey } from "./product-image-key";
 
 const analysis: ProductAnalysis = { brand: "Nike", model: "Air Max 270", category: "Sneakers", color: "Black / White", material: null, attributes: [], confidence: 0.9 };
@@ -36,6 +36,18 @@ test("different color remains the same possible product with a lower color signa
   const result = scoreProductMatch(analysis, { ...product, variants: [{ ...product.variants[0], color: "Grey" }] });
   assert.equal(result.signals.model, 1);
   assert.equal(result.signals.color, 0);
+});
+
+test("matching keeps a product photo when the closest color has none", () => {
+  const result = scoreProductMatch({ ...analysis, color: "Brown" }, {
+    ...product,
+    variants: [
+      { ...product.variants[0], color: "Brown", imagePath: null },
+      { ...product.variants[0], id: 11, color: "Cream", imagePath: "/cream.jpg" },
+    ],
+  });
+  assert.equal(result.color, "Brown");
+  assert.equal(result.imagePath, "/cream.jpg");
 });
 
 test("exact SKU or barcode is the strongest identifier when provided", () => {
@@ -76,6 +88,15 @@ test("candidate retrieval always includes tenantId and fragments joined model na
   assert.ok(search.needles.includes("air"));
   assert.ok(search.needles.includes("max"));
   assert.ok(search.needles.includes("270"));
+});
+
+test("photo fallback shortlists a model even when SQL substring search would miss it", () => {
+  const ids = shortlistPhotoMetadata(analysis, [
+    { id: 1, name: "Court Vision", brand: "Nike", category: "Patika" },
+    { id: 2, name: "AirMax270", brand: "NIKE", category: "Patika" },
+    { id: 3, name: "Air Max 2090", brand: "Nike", category: "Patika" },
+  ]);
+  assert.equal(ids[0], 2);
 });
 
 test("R2 image keys must belong to the selected product path", () => {
