@@ -22,6 +22,7 @@ import {
   normalizeVariantCode,
 } from "@/lib/variant-codes";
 import { getTenantWarehouses } from "@/lib/warehouses";
+import { setWarehouseInventoryStock } from "@/lib/warehouse-stock-write";
 import { VariantImageUploadForm } from "./variant-image-upload-form";
 
 type EditVariantPageProps = {
@@ -173,6 +174,7 @@ async function updateVariant(formData: FormData) {
   const variant = await prisma.variant.findFirst({
     where: { id: variantId, productId, tenantId: tenantId ?? undefined },
     include: {
+      inventories: { select: { id: true }, take: 1 },
       product: {
         include: {
           category: true,
@@ -293,37 +295,7 @@ async function updateVariant(formData: FormData) {
   try {
     await prisma.$transaction(async (tx) => {
       if (activeWarehouseId) {
-        const existingInventory = await tx.variantInventory.findUnique({
-          where: {
-            variantId_warehouseId: {
-              variantId,
-              warehouseId: activeWarehouseId,
-            },
-          },
-          select: {
-            stock: true,
-          },
-        });
-        const previousWarehouseStock = existingInventory?.stock ?? 0;
-
-        await tx.variantInventory.upsert({
-          where: {
-            variantId_warehouseId: {
-              variantId,
-              warehouseId: activeWarehouseId,
-            },
-          },
-          create: {
-            variantId,
-            warehouseId: activeWarehouseId,
-            stock,
-            locationCode,
-          },
-          update: {
-            stock,
-            locationCode,
-          },
-        });
+        const previous = await setWarehouseInventoryStock(tx, variantId, activeWarehouseId, stock, locationCode);
 
         await tx.variant.update({
           where: { id: variantId },
@@ -337,7 +309,7 @@ async function updateVariant(formData: FormData) {
             sku,
             barcode: nextBarcode,
             stock: {
-              increment: stock - previousWarehouseStock,
+              increment: stock - previous.previousStock,
             },
             reorderLevel,
             price,
@@ -345,8 +317,9 @@ async function updateVariant(formData: FormData) {
           },
         });
       } else {
+        if (variant.inventories.length && stock !== variant.stock) throw new Error("WAREHOUSE_REQUIRED");
         await tx.variant.update({
-          where: { id: variantId },
+          where: { id: variantId, stock: variant.stock },
           data: {
             size,
             color,
@@ -380,6 +353,15 @@ async function updateVariant(formData: FormData) {
       });
     });
   } catch (error) {
+    if (error instanceof Error && (error.message === "WAREHOUSE_REQUIRED" || (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2025"))) {
+      redirect(buildEditVariantHref(productId, variantId, {
+        error: error.message === "WAREHOUSE_REQUIRED"
+          ? "Zgjidh depon para se te ndryshosh stokun."
+          : "Stoku ndryshoi nderkohe. Rifresko faqen dhe provo perseri.",
+        warehouse: selectedWarehouse,
+        returnTo,
+      }));
+    }
     if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === "P2002") {
       const duplicateLabel =
         formatVariantDuplicateLabel(categoryConfig, {

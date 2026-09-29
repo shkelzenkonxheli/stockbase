@@ -10,6 +10,7 @@ import { calculatePurchaseOrderMetrics } from "@/lib/purchase-order-metrics";
 import { prisma } from "@/lib/prisma";
 import { buildBarcodeFromVariantId, buildVariantSku, ensureUniqueSku } from "@/lib/variant-codes";
 import { getTenantWarehouses } from "@/lib/warehouses";
+import { addWarehouseStock, InsufficientStockError, removeWarehouseStock } from "@/lib/warehouse-stock-write";
 import { PurchaseOrdersManager } from "./purchase-orders-manager";
 
 export const metadata: Metadata = {
@@ -1165,45 +1166,17 @@ async function receivePurchaseOrder(formData: FormData) {
       if (adjustment.quantity <= 0 || adjustment.quantity > remaining) {
         return { ok: false as const, reason: "items" as const };
       }
+    }
 
+    for (const adjustment of adjustments) {
+      const item = itemMap.get(adjustment.itemId)!;
+      const claimed = await tx.purchaseOrderItem.updateMany({
+        where: { id: item.id, receivedQuantity: { lte: item.orderedQuantity - adjustment.quantity } },
+        data: { receivedQuantity: { increment: adjustment.quantity } },
+      });
+      if (claimed.count !== 1) throw new Error("PURCHASE_RECEIPT_CHANGED");
       const resolvedVariant = await resolveVariantForItem(item);
-
-      if (resolvedVariant.inventoryId) {
-        await tx.variantInventory.update({
-          where: { id: resolvedVariant.inventoryId },
-          data: {
-            stock: {
-              increment: adjustment.quantity,
-            },
-          },
-        });
-      } else {
-        await tx.variantInventory.create({
-          data: {
-            variantId: resolvedVariant.variantId,
-            warehouseId,
-            stock: adjustment.quantity,
-          },
-        });
-      }
-
-      await tx.variant.update({
-        where: { id: resolvedVariant.variantId },
-        data: {
-          stock: {
-            increment: adjustment.quantity,
-          },
-        },
-      });
-
-      await tx.purchaseOrderItem.update({
-        where: { id: item.id },
-        data: {
-          receivedQuantity: {
-            increment: adjustment.quantity,
-          },
-        },
-      });
+      await addWarehouseStock(tx, resolvedVariant.variantId, warehouseId, adjustment.quantity);
     }
 
     await tx.stockMovement.createMany({
@@ -1269,6 +1242,9 @@ async function receivePurchaseOrder(formData: FormData) {
       warehouseId,
       productIds: [...new Set(Array.from(resolvedVariants.values()).map((item) => item.productId))],
     };
+  }).catch((error: unknown) => {
+    if (error instanceof Error && error.message === "PURCHASE_RECEIPT_CHANGED") redirect("/purchases?error=receive_items");
+    throw error;
   });
 
   if (!result.ok) {
@@ -1368,55 +1344,32 @@ async function returnPurchaseOrderToSupplier(formData: FormData) {
 
     for (const adjustment of adjustments) {
       const item = itemMap.get(adjustment.itemId);
-      if (!item || !item.variant) {
+      if (!item?.variant || adjustment.quantity <= 0 || adjustment.quantity > item.receivedQuantity - item.returnedQuantity) {
         return { ok: false as const, reason: "validation" as const };
       }
+    }
 
-      const returnableQuantity = item.receivedQuantity - item.returnedQuantity;
-      if (adjustment.quantity <= 0 || adjustment.quantity > returnableQuantity) {
-        return { ok: false as const, reason: "validation" as const };
-      }
+    for (const adjustment of adjustments) {
+      const item = itemMap.get(adjustment.itemId)!;
+      const variant = item.variant!;
 
       const inventory = await tx.variantInventory.findUnique({
         where: {
           variantId_warehouseId: {
-            variantId: item.variant.id,
+            variantId: variant.id,
             warehouseId,
           },
         },
         select: { id: true, stock: true },
       });
 
-      if (!inventory || inventory.stock < adjustment.quantity || item.variant.stock < adjustment.quantity) {
-        return { ok: false as const, reason: "stock" as const };
-      }
-
-      await tx.variantInventory.update({
-        where: { id: inventory.id },
-        data: {
-          stock: {
-            decrement: adjustment.quantity,
-          },
-        },
+      if (!inventory) throw new InsufficientStockError();
+      const claimed = await tx.purchaseOrderItem.updateMany({
+        where: { id: item.id, returnedQuantity: { lte: item.receivedQuantity - adjustment.quantity } },
+        data: { returnedQuantity: { increment: adjustment.quantity } },
       });
-
-      await tx.variant.update({
-        where: { id: item.variant.id },
-        data: {
-          stock: {
-            decrement: adjustment.quantity,
-          },
-        },
-      });
-
-      await tx.purchaseOrderItem.update({
-        where: { id: item.id },
-        data: {
-          returnedQuantity: {
-            increment: adjustment.quantity,
-          },
-        },
-      });
+      if (claimed.count !== 1) throw new Error("PURCHASE_RETURN_CHANGED");
+      await removeWarehouseStock(tx, inventory.id, variant.id, adjustment.quantity);
     }
 
     await tx.stockMovement.createMany({
@@ -1473,15 +1426,17 @@ async function returnPurchaseOrderToSupplier(formData: FormData) {
     });
 
     return { ok: true as const };
+  }).catch((error: unknown) => {
+    if (error instanceof InsufficientStockError) redirect("/purchases?error=return_stock");
+    if (error instanceof Error && error.message === "PURCHASE_RETURN_CHANGED") redirect("/purchases?error=return_validation");
+    throw error;
   });
 
   if (!result.ok) {
     const code =
       result.reason === "state"
         ? "return_state"
-        : result.reason === "stock"
-          ? "return_stock"
-          : "return_validation";
+        : "return_validation";
     redirect(`/purchases?error=${code}`);
   }
 

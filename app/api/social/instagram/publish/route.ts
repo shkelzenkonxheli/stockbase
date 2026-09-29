@@ -4,6 +4,7 @@ import { isSocialMediaEnabled } from "@/lib/inventory-module-access";
 import { decryptInstagramToken } from "@/lib/instagram-oauth";
 import { prisma } from "@/lib/prisma";
 import { parseTenantCatalogConfig } from "@/lib/product-taxonomy";
+import { resolveInstagramImageUrl } from "@/lib/social-public-image";
 
 type PublishPayload = { variantId?: number; imageUrl?: string; caption?: string; type?: "POST" | "STORY" };
 type GraphResponse = { id?: string; status_code?: string; error?: { message?: string } };
@@ -26,15 +27,6 @@ async function waitForMediaContainer(containerId: string, accessToken: string) {
     }
   }
   throw new Error("Instagram po e pergatit foton me gjate se zakonisht. Provo perseri pas pak.");
-}
-
-function resolvePublicImageUrl(value: string) {
-  if (/^https:\/\//i.test(value)) return value;
-  const baseUrl = process.env.SOCIAL_PUBLIC_BASE_URL?.trim();
-  if (!baseUrl?.startsWith("https://")) {
-    throw new Error("Per publikim nga localhost vendos SOCIAL_PUBLIC_BASE_URL me nje URL publike HTTPS.");
-  }
-  return new URL(value, baseUrl).toString();
 }
 
 export async function POST(request: Request) {
@@ -60,7 +52,7 @@ export async function POST(request: Request) {
   if (!imagePath) return NextResponse.json({ error: "Foto e produktit nuk u gjet." }, { status: 404 });
 
   try {
-    const imageUrl = resolvePublicImageUrl(imagePath);
+    const imageUrl = await resolveInstagramImageUrl(imagePath, currentUser.tenant.id);
     const imageCheck = await fetch(imageUrl, { method: "HEAD", cache: "no-store" });
     const imageContentType = imageCheck.headers.get("content-type") ?? "";
     if (!imageCheck.ok || !imageContentType.startsWith("image/")) {

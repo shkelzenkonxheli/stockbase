@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { getCurrentUser, hasRole } from "@/lib/auth";
 import { writeAuditLog } from "@/lib/audit-log";
 import { prisma } from "@/lib/prisma";
+import { activeTenantWarehouseWhere } from "@/lib/warehouse-scope";
+import { setWarehouseInventoryStock } from "@/lib/warehouse-stock-write";
 
 type SetStockPayload = {
   productId?: number;
@@ -50,6 +52,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Te dhenat nuk jane valide." }, { status: 400 });
   }
 
+  const warehouse = await prisma.warehouse.findFirst({
+    where: activeTenantWarehouseWhere(tenantId, warehouseId),
+    select: { id: true },
+  });
+  if (!warehouse) {
+    return NextResponse.json({ error: "Depoja nuk u gjet." }, { status: 404 });
+  }
+
   const variant = await prisma.variant.findFirst({
     where: {
       id: variantId,
@@ -58,18 +68,8 @@ export async function POST(request: Request) {
     },
     select: {
       id: true,
-      stock: true,
       size: true,
       color: true,
-      locationCode: true,
-      inventories: {
-        where: { warehouseId },
-        select: {
-          id: true,
-          stock: true,
-        },
-        take: 1,
-      },
     },
   });
 
@@ -77,31 +77,14 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Varianti nuk u gjet." }, { status: 404 });
   }
 
-  const inventory = variant.inventories[0];
-  const previousWarehouseStock = inventory?.stock ?? 0;
-
   await prisma.$transaction(async (tx) => {
-    if (inventory) {
-      await tx.variantInventory.update({
-        where: { id: inventory.id },
-        data: { stock, locationCode },
-      });
-    } else {
-      await tx.variantInventory.create({
-        data: {
-          variantId,
-          warehouseId,
-          stock,
-          locationCode,
-        },
-      });
-    }
+    const previous = await setWarehouseInventoryStock(tx, variantId, warehouseId, stock, locationCode);
 
     await tx.variant.update({
       where: { id: variantId },
       data: {
         stock: {
-          increment: stock - previousWarehouseStock,
+          increment: stock - previous.previousStock,
         },
       },
     });
@@ -116,8 +99,8 @@ export async function POST(request: Request) {
       warehouseId,
       metadata: {
         before: {
-          stock: previousWarehouseStock,
-          locationCode: variant.locationCode ?? null,
+          stock: previous.previousStock,
+          locationCode: previous.previousLocationCode,
         },
         after: {
           stock,

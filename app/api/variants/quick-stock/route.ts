@@ -3,6 +3,8 @@ import { NextResponse } from "next/server";
 import { getCurrentUser, hasRole } from "@/lib/auth";
 import { writeAuditLog } from "@/lib/audit-log";
 import { prisma } from "@/lib/prisma";
+import { activeTenantWarehouseWhere } from "@/lib/warehouse-scope";
+import { addWarehouseStock } from "@/lib/warehouse-stock-write";
 
 type StockUpdatePayload = {
   productId?: number;
@@ -57,7 +59,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Missing stock updates" }, { status: 400 });
   }
 
-  const warehouse = await prisma.warehouse.findFirst({ where: { id: warehouseId, tenantId, isActive: true }, select: { id: true } });
+  const warehouse = await prisma.warehouse.findFirst({ where: activeTenantWarehouseWhere(tenantId, warehouseId), select: { id: true } });
   if (!warehouse) return NextResponse.json({ error: "Warehouse not found" }, { status: 404 });
 
   const variants = await prisma.variant.findMany({
@@ -70,17 +72,8 @@ export async function POST(request: Request) {
     },
     select: {
       id: true,
-      stock: true,
       size: true,
       color: true,
-      inventories: {
-        where: { warehouseId },
-        select: {
-          id: true,
-          stock: true,
-        },
-        take: 1,
-      },
     },
   });
 
@@ -98,33 +91,7 @@ export async function POST(request: Request) {
         continue;
       }
 
-      const inventory = variant.inventories[0];
-
-      if (inventory) {
-        await tx.variantInventory.update({
-          where: { id: inventory.id },
-          data: {
-            stock: inventory.stock + update.quantity,
-          },
-        });
-      } else {
-        await tx.variantInventory.create({
-          data: {
-            variantId: update.variantId,
-            warehouseId,
-            stock: update.quantity,
-          },
-        });
-      }
-
-      await tx.variant.update({
-        where: {
-          id: update.variantId,
-        },
-        data: {
-          stock: variant.stock + update.quantity,
-        },
-      });
+      await addWarehouseStock(tx, update.variantId, warehouseId, update.quantity);
 
       await tx.stockMovement.create({
         data: {

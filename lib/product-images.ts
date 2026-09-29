@@ -1,5 +1,6 @@
 import path from "node:path";
 import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { inspectUploadImage, MAX_PRODUCT_PHOTO_BYTES } from "@/lib/image-upload-validation";
 import { buildAppAssetUrl, getR2Client, getR2Config } from "@/lib/r2";
 
 export class ProductImageUploadError extends Error {
@@ -18,25 +19,6 @@ function sanitizeFileSegment(value: string) {
     .toLowerCase();
 }
 
-function extensionFromFile(file: File) {
-  const fromName = path.extname(file.name).toLowerCase();
-
-  if (fromName) {
-    return fromName;
-  }
-
-  switch (file.type) {
-    case "image/png":
-      return ".png";
-    case "image/webp":
-      return ".webp";
-    case "image/avif":
-      return ".avif";
-    default:
-      return ".jpg";
-  }
-}
-
 export async function listProductImages(productId: number) {
   void productId;
   return [];
@@ -47,9 +29,8 @@ export async function saveProductImage(productId: number, file: File) {
     return null;
   }
 
-  if (!file.type.startsWith("image/")) {
-    throw new ProductImageUploadError("File i zgjedhur nuk eshte foto valide.");
-  }
+  const image = await inspectUploadImage(file, MAX_PRODUCT_PHOTO_BYTES);
+  if (!image) throw new ProductImageUploadError("Ngarko nje foto JPG, PNG ose WebP deri ne 8 MB.");
 
   let config;
   let client;
@@ -65,8 +46,7 @@ export async function saveProductImage(productId: number, file: File) {
 
   const originalBase = path.basename(file.name, path.extname(file.name));
   const safeBase = sanitizeFileSegment(originalBase) || "image";
-  const extension = extensionFromFile(file);
-  const objectKey = `${config.appFolder}/products/${productId}/${Date.now()}-${safeBase}${extension}`;
+  const objectKey = `${config.appFolder}/products/${productId}/${Date.now()}-${safeBase}${image.extension}`;
 
   try {
     await client.send(
@@ -74,7 +54,7 @@ export async function saveProductImage(productId: number, file: File) {
         Bucket: config.bucketName,
         Key: objectKey,
         Body: Buffer.from(await file.arrayBuffer()),
-        ContentType: file.type || "image/jpeg",
+        ContentType: image.contentType,
         CacheControl: "public, max-age=31536000, immutable",
       }),
     );

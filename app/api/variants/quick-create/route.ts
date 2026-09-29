@@ -18,6 +18,7 @@ import {
   buildVariantSku,
   ensureUniqueSku,
 } from "@/lib/variant-codes";
+import { activeTenantWarehouseWhere } from "@/lib/warehouse-scope";
 
 type QuickCreatePayload = {
   productId?: number;
@@ -48,6 +49,8 @@ export async function POST(request: Request) {
     const contentType = request.headers.get("content-type") ?? "";
 
     if (contentType.includes("multipart/form-data")) {
+      const contentLength = Number(request.headers.get("content-length"));
+      if (contentLength > 10 * 1024 * 1024) return NextResponse.json({ error: "Foto mund te jete maksimumi 8 MB." }, { status: 413 });
       const formData = await request.formData();
       payload = {
         productId: Number(formData.get("productId")),
@@ -105,6 +108,14 @@ export async function POST(request: Request) {
     (reorderLevel !== null && (!Number.isInteger(reorderLevel) || reorderLevel < 0))
   ) {
     return NextResponse.json({ error: "Te dhenat nuk jane valide." }, { status: 400 });
+  }
+
+  const warehouse = await prisma.warehouse.findFirst({
+    where: activeTenantWarehouseWhere(tenantId, warehouseId),
+    select: { id: true },
+  });
+  if (!warehouse) {
+    return NextResponse.json({ error: "Depoja nuk u gjet." }, { status: 404 });
   }
 
   const product = await prisma.product.findFirst({

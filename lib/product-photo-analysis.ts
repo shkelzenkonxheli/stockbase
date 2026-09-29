@@ -1,5 +1,6 @@
 import OpenAI from "openai";
 import type { ProductAnalysis } from "@/lib/product-match-core";
+export { PHOTO_MIME_TYPES, MAX_PRODUCT_PHOTO_BYTES, hasSupportedPhotoSignature } from "@/lib/image-upload-validation";
 
 const schema = {
   type: "object",
@@ -15,16 +16,6 @@ const schema = {
   },
   required: ["brand", "model", "category", "color", "material", "attributes", "confidence"],
 } as const;
-
-export const PHOTO_MIME_TYPES = ["image/jpeg", "image/png", "image/webp"] as const;
-export const MAX_PRODUCT_PHOTO_BYTES = 8 * 1024 * 1024;
-
-export function hasSupportedPhotoSignature(type: string, bytes: Uint8Array) {
-  if (type === "image/jpeg") return bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff;
-  if (type === "image/png") return [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a].every((value, index) => bytes[index] === value);
-  if (type === "image/webp") return String.fromCharCode(...bytes.slice(0, 4)) === "RIFF" && String.fromCharCode(...bytes.slice(8, 12)) === "WEBP";
-  return false;
-}
 
 export async function analyzeProductPhoto(image: File, apiKey: string, signal?: AbortSignal): Promise<ProductAnalysis> {
   const dataUrl = `data:${image.type};base64,${Buffer.from(await image.arrayBuffer()).toString("base64")}`;

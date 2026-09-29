@@ -123,38 +123,21 @@ async function createTransfer(formData: FormData) {
       const sourceInventory = variant.inventories.find(
         (inventory) => inventory.warehouseId === fromWarehouseId,
       )!;
-      const targetInventory = variant.inventories.find(
-        (inventory) => inventory.warehouseId === toWarehouseId,
-      );
-
-      await tx.variantInventory.update({
-        where: { id: sourceInventory.id },
+      const removed = await tx.variantInventory.updateMany({
+        where: { id: sourceInventory.id, stock: { gte: adjustment.quantity } },
         data: {
           stock: {
             decrement: adjustment.quantity,
           },
         },
       });
+      if (removed.count !== 1) throw new Error("INSUFFICIENT_TRANSFER_STOCK");
 
-      if (targetInventory) {
-        await tx.variantInventory.update({
-          where: { id: targetInventory.id },
-          data: {
-            stock: {
-              increment: adjustment.quantity,
-            },
-          },
-        });
-      } else {
-        await tx.variantInventory.create({
-          data: {
-            variantId: adjustment.variantId,
-            warehouseId: toWarehouseId,
-            stock: adjustment.quantity,
-            locationCode: null,
-          },
-        });
-      }
+      await tx.variantInventory.upsert({
+        where: { variantId_warehouseId: { variantId: adjustment.variantId, warehouseId: toWarehouseId } },
+        create: { variantId: adjustment.variantId, warehouseId: toWarehouseId, stock: adjustment.quantity },
+        update: { stock: { increment: adjustment.quantity } },
+      });
 
       await tx.stockMovement.createMany({
         data: [
@@ -200,6 +183,11 @@ async function createTransfer(formData: FormData) {
     });
 
     return { ok: true as const };
+  }).catch((error: unknown) => {
+    if (error instanceof Error && error.message === "INSUFFICIENT_TRANSFER_STOCK") {
+      redirect("/stock/transfer?error=stock");
+    }
+    throw error;
   });
 
   if (!result.ok) {

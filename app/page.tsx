@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { getCurrentUser, hasRole, hasTenantAccess, isPlatformAdmin } from "@/lib/auth";
 import { LowStockModal } from "@/app/dashboard/low-stock-modal";
 import { RecentMovementsModal } from "@/app/dashboard/recent-movements-modal";
-import { getEffectiveReorderLevel, isLowStock } from "@/lib/inventory";
+import { getEffectiveReorderLevel } from "@/lib/inventory";
 import { prisma } from "@/lib/prisma";
 import { getCatalogTemplate, getPosConfig, getPurchasesConfig } from "@/lib/product-taxonomy";
 import { MarketingHomepage } from "@/app/marketing/marketing-homepage";
@@ -169,21 +169,23 @@ export default async function Home() {
 
   const [
     totalProducts,
-    totalStockValueData,
+    stockSummaryRows,
     ordersToday,
     recentMovements,
     lowStockVariants,
-    completedTodayItems,
+    todaySalesRows,
     ordersNeedingAction,
     posPaymentsToday,
     openPurchaseOrders,
   ] =
     await Promise.all([
       prisma.product.count({ where: { tenantId } }),
-      prisma.variant.findMany({
-        where: { tenantId },
-        select: { stock: true, reorderLevel: true, price: true },
-      }),
+      prisma.$queryRaw<Array<{ lowCount: bigint; units: bigint; value: string | number }>>`
+        SELECT COUNT(*) FILTER (WHERE stock > 0 AND stock <= CASE WHEN "reorderLevel" >= 0 THEN "reorderLevel" ELSE 5 END) AS "lowCount",
+               COALESCE(SUM(stock), 0) AS units,
+               COALESCE(SUM(stock * price), 0) AS value
+        FROM "Variant" WHERE "tenantId" = ${tenantId}
+      `,
       prisma.order.count({
         where: {
           tenantId,
@@ -216,45 +218,27 @@ export default async function Home() {
           },
         },
       }),
-      prisma.variant.findMany({
-        where: { tenantId },
-        select: {
-          id: true,
-          stock: true,
-          reorderLevel: true,
-          sku: true,
-          color: true,
-          size: true,
-          product: {
-            select: {
-              id: true,
-              name: true,
-              brand: true,
-              category: {
-                select: {
-                  name: true,
-                },
-              },
-            },
-          },
-        },
-        orderBy: [{ stock: "asc" }, { updatedAt: "asc" }],
-      }),
-      prisma.orderItem.findMany({
-        where: {
-          order: {
-            tenantId,
-            status: { in: ["DONE", "PARTIALLY_RETURNED"] },
-            createdAt: { gte: dateFrom, lt: dateTo },
-          },
-        },
-        select: {
-          quantity: true,
-          returnedQuantity: true,
-          unitPrice: true,
-          unitCost: true,
-        },
-      }),
+      prisma.$queryRaw<Array<{ id: number; stock: number; reorderLevel: number | null; sku: string | null; color: string | null; size: string | null; productId: number; productName: string; brand: string | null; categoryName: string }>>`
+        SELECT v.id, v.stock, v."reorderLevel", v.sku, v.color, v.size,
+               p.id AS "productId", p.name AS "productName", p.brand, c.name AS "categoryName"
+        FROM "Variant" v
+        JOIN "Product" p ON p.id = v."productId"
+        JOIN "Category" c ON c.id = p."categoryId"
+        WHERE v."tenantId" = ${tenantId}
+          AND v.stock > 0
+          AND v.stock <= CASE WHEN v."reorderLevel" >= 0 THEN v."reorderLevel" ELSE 5 END
+        ORDER BY v.stock ASC, v."updatedAt" ASC
+      `,
+      prisma.$queryRaw<Array<{ units: bigint; revenue: string | number; cost: string | number }>>`
+        SELECT COALESCE(SUM(GREATEST(0, oi.quantity - oi."returnedQuantity")), 0) AS units,
+               COALESCE(SUM(oi."unitPrice" * GREATEST(0, oi.quantity - oi."returnedQuantity")), 0) AS revenue,
+               COALESCE(SUM(oi."unitCost" * GREATEST(0, oi.quantity - oi."returnedQuantity")), 0) AS cost
+        FROM "OrderItem" oi
+        JOIN "Order" o ON o.id = oi."orderId"
+        WHERE o."tenantId" = ${tenantId}
+          AND o.status IN ('DONE', 'PARTIALLY_RETURNED')
+          AND o."createdAt" >= ${dateFrom} AND o."createdAt" < ${dateTo}
+      `,
       prisma.order.count({
         where: { tenantId, status: { in: ["NEW", "READY"] } },
       }),
@@ -272,26 +256,14 @@ export default async function Home() {
         : Promise.resolve(0),
     ]);
 
-  const lowStockCount = totalStockValueData.filter((variant) =>
-    isLowStock(variant.stock, variant.reorderLevel),
-  ).length;
-
-  const totalStockValue = totalStockValueData.reduce(
-    (sum, variant) => sum + Number(variant.price) * variant.stock,
-    0,
-  );
-  const totalStockUnits = totalStockValueData.reduce((sum, variant) => sum + variant.stock, 0);
-  const todaySales = completedTodayItems.reduce(
-    (totals, item) => {
-      const soldQuantity = Math.max(0, item.quantity - item.returnedQuantity);
-      return {
-        units: totals.units + soldQuantity,
-        revenue: totals.revenue + Number(item.unitPrice) * soldQuantity,
-        cost: totals.cost + Number(item.unitCost) * soldQuantity,
-      };
-    },
-    { units: 0, revenue: 0, cost: 0 },
-  );
+  const lowStockCount = Number(stockSummaryRows[0]?.lowCount ?? 0);
+  const totalStockValue = Number(stockSummaryRows[0]?.value ?? 0);
+  const totalStockUnits = Number(stockSummaryRows[0]?.units ?? 0);
+  const todaySales = {
+    units: Number(todaySalesRows[0]?.units ?? 0),
+    revenue: Number(todaySalesRows[0]?.revenue ?? 0),
+    cost: Number(todaySalesRows[0]?.cost ?? 0),
+  };
   const grossProfit = todaySales.revenue - todaySales.cost;
   const profitMargin = todaySales.revenue > 0 ? (grossProfit / todaySales.revenue) * 100 : 0;
   const cashSales = Number(
@@ -301,16 +273,15 @@ export default async function Home() {
     posPaymentsToday.find((payment) => payment.method === "CARD")?._sum.amount ?? 0,
   );
   const lowStockItems = lowStockVariants
-    .filter((variant) => isLowStock(variant.stock, variant.reorderLevel))
     .map((variant) => {
       const reorderLevel = getEffectiveReorderLevel(variant.reorderLevel);
 
       return {
         id: variant.id,
-        productId: variant.product.id,
-        productName: variant.product.name,
-        brand: variant.product.brand,
-        categoryName: variant.product.category.name,
+        productId: variant.productId,
+        productName: variant.productName,
+        brand: variant.brand,
+        categoryName: variant.categoryName,
         color: variant.color,
         size: variant.size,
         sku: variant.sku,

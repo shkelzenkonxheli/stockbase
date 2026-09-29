@@ -6,6 +6,7 @@ import { requireRole } from "@/lib/auth";
 import { writeAuditLog } from "@/lib/audit-log";
 import { parseTenantCatalogConfig } from "@/lib/product-taxonomy";
 import { prisma } from "@/lib/prisma";
+import { InsufficientStockError, removeWarehouseStock } from "@/lib/warehouse-stock-write";
 import { getTenantWarehouses } from "@/lib/warehouses";
 import { OrderForm } from "./order-form";
 
@@ -174,26 +175,10 @@ async function createOrder(formData: FormData) {
       const variant = variantsById.get(item.variantId);
       const inventory = variant?.inventories[0];
       if (!variant || !inventory) {
-        return { ok: false as const, reason: "variant" };
+        throw new InsufficientStockError();
       }
 
-      await tx.variantInventory.update({
-        where: { id: inventory.id },
-        data: {
-          stock: {
-            decrement: item.quantity,
-          },
-        },
-      });
-
-      await tx.variant.update({
-        where: { id: item.variantId },
-        data: {
-          stock: {
-            decrement: item.quantity,
-          },
-        },
-      });
+      await removeWarehouseStock(tx, inventory.id, item.variantId, item.quantity);
     }
 
     await writeAuditLog(tx, {
@@ -272,6 +257,9 @@ export default async function NewOrderPage({
   const tenantSettings = await prisma.tenantSettings.findUnique({
     where: { tenantId },
     select: { catalogConfig: true },
+  }).catch((error: unknown) => {
+    if (error instanceof InsufficientStockError) redirect("/orders/new?error=stock");
+    throw error;
   });
   const warehouses = await getTenantWarehouses(
     tenantId,

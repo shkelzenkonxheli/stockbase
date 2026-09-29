@@ -1,15 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 import type { Prisma } from "@/app/generated/prisma/client";
 import { ConfirmActionForm } from "@/app/components/confirm-action-form";
-import { hasRole, requireUser } from "@/lib/auth";
+import { hasRole, requireRole, requireUser } from "@/lib/auth";
 import { isLowStock } from "@/lib/inventory";
 import {
   getCatalogAwareCategoryConfig,
   getProductListViewConfig,
-  parseTenantCatalogConfig,
   parseCategoryFieldConfig,
   type ProductListFieldKey,
 } from "@/lib/product-taxonomy";
@@ -110,22 +108,15 @@ function summarizeList(values: string[], visibleCount: number) {
 async function deleteProduct(formData: FormData) {
   "use server";
 
-  const currentUser = await requireUser();
+  const currentUser = await requireRole(["SUPER_ADMIN"]);
   const tenantId = currentUser.tenant?.id;
   const productId = Number(formData.get("productId"));
-  if (!productId || !tenantId) return;
+  if (!Number.isSafeInteger(productId) || productId <= 0 || !tenantId) return;
 
-  const product = await prisma.product.findFirst({
-    where: { id: productId, tenantId },
-    select: {
-      id: true,
-      _count: { select: { variants: true } },
-    },
+  const deleted = await prisma.product.deleteMany({
+    where: { id: productId, tenantId, variants: { none: {} } },
   });
-
-  if (!product || product._count.variants > 0) return;
-
-  await prisma.product.delete({ where: { id: productId } });
+  if (!deleted.count) return;
   revalidatePath("/");
   revalidatePath("/products");
 }
@@ -287,7 +278,9 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     tenantId,
     ...(selectedStock === "out"
       ? { variants: { none: positiveStockVariant } }
-      : selectedStock === "all" ? {} : { variants: { some: {} } }),
+      : selectedStock === "in"
+        ? { variants: { some: positiveStockVariant } }
+        : selectedStock === "all" ? {} : { variants: { some: {} } }),
     ...(filters.length > 0 ? { AND: filters } : {}),
   };
 

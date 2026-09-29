@@ -40,6 +40,9 @@ function getMessage(error?: string, success?: string) {
   if (error === "completed") {
     return { type: "error" as const, text: "Ky numerim eshte perfunduar dhe nuk mund te ndryshohet." };
   }
+  if (error === "stock-changed") {
+    return { type: "error" as const, text: "Stoku ndryshoi pas nisjes se numerimit. Krijo nje numerim te ri per te shmangur mbishkrimin e shitjeve ose hyrjeve te reja." };
+  }
   if (success === "saved") {
     return { type: "success" as const, text: "Numerimi u ruajt si draft." };
   }
@@ -247,6 +250,11 @@ async function finalizeCount(formData: FormData) {
   }
 
   await prisma.$transaction(async (tx) => {
+    const claimed = await tx.inventoryCountSession.updateMany({
+      where: { id: session.id, status: "OPEN" },
+      data: { status: "COMPLETED", completedAt: new Date(), completedById: currentUser.id },
+    });
+    if (claimed.count !== 1) throw new Error("INVENTORY_COUNT_COMPLETED");
     const summary: Array<{
       variantId: number;
       size: string;
@@ -269,15 +277,17 @@ async function finalizeCount(formData: FormData) {
         },
       });
 
-      await tx.variantInventory.updateMany({
+      const updated = await tx.variantInventory.updateMany({
         where: {
           variantId: line.variantId,
           warehouseId: session.warehouseId,
+          stock: line.expectedStock,
         },
         data: {
           stock: countedStock,
         },
       });
+      if (updated.count !== 1) throw new Error("INVENTORY_COUNT_STOCK_CHANGED");
 
       if (difference !== 0) {
         await tx.variant.update({
@@ -310,15 +320,6 @@ async function finalizeCount(formData: FormData) {
       });
     }
 
-    await tx.inventoryCountSession.update({
-      where: { id: session.id },
-      data: {
-        status: "COMPLETED",
-        completedAt: new Date(),
-        completedById: currentUser.id,
-      },
-    });
-
     await writeAuditLog(tx, {
       tenantId,
       userId: currentUser.id,
@@ -333,6 +334,11 @@ async function finalizeCount(formData: FormData) {
         changes: summary.filter((item) => item.difference !== 0),
       },
     });
+  }).catch((error: unknown) => {
+    if (error instanceof Error && (error.message === "INVENTORY_COUNT_STOCK_CHANGED" || error.message === "INVENTORY_COUNT_COMPLETED")) {
+      redirect(buildCountReturnUrl(sessionId, formData, { error: error.message === "INVENTORY_COUNT_STOCK_CHANGED" ? "stock-changed" : "completed" }));
+    }
+    throw error;
   });
 
   revalidatePath("/stock/count");

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser, hasRole } from "@/lib/auth";
 import { ProductImageUploadError, saveProductImage } from "@/lib/product-images";
+import { inspectUploadImage, MAX_PRODUCT_PHOTO_BYTES } from "@/lib/image-upload-validation";
 import { findDuplicateCandidates } from "@/lib/product-duplicate-matching";
 import { normalizeProductText } from "@/lib/product-match-core";
 import {
@@ -29,6 +30,8 @@ export async function POST(request: Request) {
 
   let form: FormData;
   try {
+    const contentLength = Number(request.headers.get("content-length"));
+    if (contentLength > 10 * 1024 * 1024) return NextResponse.json({ error: "Foto mund te jete maksimumi 8 MB." }, { status: 413 });
     form = await request.formData();
   } catch {
     return NextResponse.json({ error: "Kerkesa nuk eshte valide." }, { status: 400 });
@@ -71,8 +74,7 @@ export async function POST(request: Request) {
       !costValue || !priceValue ||
       !Number.isFinite(costPrice) || costPrice < 0 || costPrice > 99999999.99 ||
       !Number.isFinite(price) || price < 0 || price > 99999999.99 ||
-      !(image instanceof File) || image.size === 0 || image.size > 8 * 1024 * 1024 ||
-      !["image/jpeg", "image/png", "image/webp"].includes(image.type)) {
+      !(image instanceof File) || !await inspectUploadImage(image, MAX_PRODUCT_PHOTO_BYTES)) {
     return NextResponse.json({ error: "Kontrollo fushat dhe foton (JPG, PNG ose WebP, maksimumi 8 MB)." }, { status: 400 });
   }
 

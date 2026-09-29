@@ -8,6 +8,7 @@ import { writeAuditLog } from "@/lib/audit-log";
 import { parseTenantCatalogConfig } from "@/lib/product-taxonomy";
 import { prisma } from "@/lib/prisma";
 import { getTenantWarehouses } from "@/lib/warehouses";
+import { addWarehouseStock } from "@/lib/warehouse-stock-write";
 import { IncomingStockForm } from "./incoming-stock-form";
 
 export const metadata: Metadata = {
@@ -89,17 +90,8 @@ async function createIncomingStock(formData: FormData) {
       },
       select: {
         id: true,
-        stock: true,
         size: true,
         color: true,
-        inventories: {
-          where: { warehouseId },
-          select: {
-            id: true,
-            stock: true,
-          },
-          take: 1,
-        },
       },
     });
 
@@ -115,35 +107,7 @@ async function createIncomingStock(formData: FormData) {
         return { ok: false as const };
       }
 
-      const existingInventory = variant.inventories[0];
-
-      if (existingInventory) {
-        await tx.variantInventory.update({
-          where: { id: existingInventory.id },
-          data: {
-            stock: {
-              increment: adjustment.quantity,
-            },
-          },
-        });
-      } else {
-        await tx.variantInventory.create({
-          data: {
-            variantId: adjustment.variantId,
-            warehouseId,
-            stock: adjustment.quantity,
-          },
-        });
-      }
-
-      await tx.variant.update({
-        where: { id: adjustment.variantId },
-        data: {
-          stock: {
-            increment: adjustment.quantity,
-          },
-        },
-      });
+      await addWarehouseStock(tx, adjustment.variantId, warehouseId, adjustment.quantity);
     }
 
     await tx.stockMovement.createMany({

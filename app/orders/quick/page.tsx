@@ -7,6 +7,7 @@ import { requireRole } from "@/lib/auth";
 import { writeAuditLog } from "@/lib/audit-log";
 import { parseTenantCatalogConfig } from "@/lib/product-taxonomy";
 import { prisma } from "@/lib/prisma";
+import { InsufficientStockError, removeWarehouseStock } from "@/lib/warehouse-stock-write";
 import { getTenantWarehouses } from "@/lib/warehouses";
 import { QuickOrdersForm } from "./quick-orders-form";
 
@@ -214,26 +215,10 @@ async function createQuickOrders(formData: FormData) {
       const variant = variantsById.get(variantId);
       const inventory = variant?.inventories[0];
       if (!variant || !inventory) {
-        return { ok: false as const, reason: "variant" };
+        throw new InsufficientStockError();
       }
 
-      await tx.variantInventory.update({
-        where: { id: inventory.id },
-        data: {
-          stock: {
-            decrement: quantity,
-          },
-        },
-      });
-
-      await tx.variant.update({
-        where: { id: variantId },
-        data: {
-          stock: {
-            decrement: quantity,
-          },
-        },
-      });
+      await removeWarehouseStock(tx, inventory.id, variantId, quantity);
     }
 
     await writeAuditLog(tx, {
@@ -268,6 +253,9 @@ async function createQuickOrders(formData: FormData) {
       posSessionId: posSession?.id ?? null,
       productIds: [...new Set(variants.map((variant) => variant.productId))],
     };
+  }).catch((error: unknown) => {
+    if (error instanceof InsufficientStockError) redirect("/orders/quick?error=stock");
+    throw error;
   });
 
   if (!result.ok) {
