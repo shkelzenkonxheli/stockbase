@@ -1830,31 +1830,34 @@ export function PurchaseOrdersManager({
 
       <dialog
         ref={detailsDialogRef}
-        className="m-auto w-[min(780px,calc(100%-1rem))] rounded-[28px] border border-emerald-100 bg-white p-0 text-left shadow-[0_28px_90px_rgba(15,23,42,0.24)] backdrop:bg-slate-950/45"
+        className="m-auto w-[min(880px,calc(100%-1rem))] max-w-[calc(100vw-1rem)] rounded-[28px] border border-emerald-100 bg-white p-0 text-left shadow-[0_28px_90px_rgba(15,23,42,0.24)] backdrop:bg-slate-950/45"
         onClose={closeDetailsModal}
       >
         {selectedOrder ? (
-          <div className="max-h-[88vh] overflow-y-auto">
-            <div className="border-b border-emerald-100 px-5 py-5 sm:px-6">
-              <div className="flex items-start justify-between gap-4">
-                <div>
+          <div className="max-h-[90vh] overflow-y-auto overflow-x-hidden">
+            <div className="border-b border-emerald-100 bg-[linear-gradient(120deg,#f4fbf7_0%,#ffffff_65%)] px-4 py-5 sm:px-6">
+              <div className="flex min-w-0 flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+                <div className="min-w-0">
                   <p className="text-xs font-semibold uppercase tracking-[0.18em] text-emerald-700">
                     PO #{selectedOrder.id}
                   </p>
-                  <h2 className="mt-2 text-2xl font-semibold tracking-tight text-slate-950">
+                  <h2 className="mt-2 break-words text-2xl font-semibold tracking-tight text-slate-950">
                     {selectedOrder.supplierName}
                   </h2>
                   <p className="mt-2 text-sm text-slate-500">
                     {selectedOrder.warehouseName} / {selectedOrder.orderedAtLabel}
                   </p>
+                  <span className={`mt-3 inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${statusClasses(selectedOrder.status)}`}>
+                    {statusLabel(selectedOrder.status)}
+                  </span>
                 </div>
 
-                <div className="flex items-center gap-2">
+                <div className="flex max-w-full flex-wrap items-center gap-2 sm:justify-end">
                   <a
                     href={`/purchases/${selectedOrder.id}/print`}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
+                    className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 transition hover:border-slate-300 hover:bg-slate-50"
                   >
                     Print
                   </a>
@@ -1862,20 +1865,21 @@ export function PurchaseOrdersManager({
                     href={`/purchases/${selectedOrder.id}/export.pdf`}
                     target="_blank"
                     rel="noreferrer"
-                    className="inline-flex items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm font-medium text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-100"
+                    className="inline-flex items-center justify-center rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs font-semibold text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-100"
                   >
                     Export PDF
                   </a>
                   <a
                     href={`/purchases/${selectedOrder.id}/export.csv`}
-                    className="inline-flex items-center justify-center rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 transition hover:border-blue-300 hover:bg-blue-100"
+                    className="inline-flex items-center justify-center rounded-xl border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 transition hover:border-blue-300 hover:bg-blue-100"
                   >
                     Export CSV
                   </a>
                   <button
                     type="button"
                     onClick={closeDetailsModal}
-                    className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-600 transition hover:border-slate-300 hover:bg-slate-50"
+                    aria-label="Mbyll detajet e porosise"
+                    className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-600 transition hover:border-slate-300 hover:bg-slate-50"
                   >
                     Mbyll
                   </button>
@@ -1883,20 +1887,8 @@ export function PurchaseOrdersManager({
               </div>
             </div>
 
-            <div className="space-y-4 px-4 py-4 sm:px-5">
-              <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
-                <div className="min-w-0 rounded-2xl border border-slate-200 bg-slate-50/70 px-3 py-2.5">
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                    Statusi
-                  </p>
-                  <p className="mt-1.5">
-                    <span
-                      className={`inline-flex rounded-full border px-3 py-1 text-xs font-semibold ${statusClasses(selectedOrder.status)}`}
-                    >
-                      {statusLabel(selectedOrder.status)}
-                    </span>
-                  </p>
-                </div>
+            <div className="space-y-5 px-4 py-5 sm:px-6">
+              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                 <div className="min-w-0 rounded-2xl border border-slate-200 bg-slate-50/70 px-3 py-2.5">
                   <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
                     Artikuj
@@ -1919,12 +1911,6 @@ export function PurchaseOrdersManager({
                   </p>
                   <p className="mt-1.5 break-words text-sm font-semibold text-emerald-800">{selectedOrder.receivedLabel}</p>
                 </div>
-                <div className="min-w-0 rounded-2xl border border-fuchsia-200 bg-fuchsia-50/70 px-3 py-2.5">
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-fuchsia-700">
-                    Kthyer
-                  </p>
-                  <p className="mt-1.5 break-words text-sm font-semibold text-fuchsia-800">{selectedOrder.returnedLabel}</p>
-                </div>
                 <div className="min-w-0 rounded-2xl border border-amber-200 bg-amber-50/70 px-3 py-2.5">
                   <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-700">
                     Ne pritje
@@ -1932,6 +1918,9 @@ export function PurchaseOrdersManager({
                   <p className="mt-1.5 break-words text-sm font-semibold text-amber-800">{selectedOrder.outstandingLabel}</p>
                 </div>
               </div>
+              {selectedOrder.returnedQuantity > 0 ? (
+                <p className="text-xs font-medium text-fuchsia-700">Kthyer te furnitori: {selectedOrder.returnedQuantity} cope / {selectedOrder.returnedLabel}</p>
+              ) : null}
 
               <div className="space-y-2">
                 <div className="flex items-center justify-between gap-3">
@@ -2011,14 +2000,19 @@ export function PurchaseOrdersManager({
               </div>
 
               {selectedOrderCanEdit ? (
+                <details key={`edit-${selectedOrder.id}`} className="group overflow-hidden rounded-[22px] border border-slate-200 bg-slate-50/70 open:border-sky-200 open:bg-sky-50/40">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3.5 text-sm font-semibold text-slate-800 marker:hidden hover:bg-slate-100/70 [&::-webkit-details-marker]:hidden">
+                    <span>Edit PO <span className="ml-2 font-normal text-slate-500">Ndrysho porosine para pranimit</span></span>
+                    <span aria-hidden="true" className="text-slate-400 transition group-open:rotate-180">v</span>
+                  </summary>
                 <form
                   action={updateAction}
-                  className="rounded-[24px] border border-sky-200 bg-[linear-gradient(180deg,#fbfdff_0%,#eff6ff_100%)] p-4"
+                  className="min-w-0 border-t border-sky-100 bg-white p-4"
                 >
                   <input type="hidden" name="purchaseOrderId" value={selectedOrder.id} />
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
-                      <h3 className="text-lg font-semibold text-slate-950">Edit purchase order</h3>
+                      <h3 className="text-base font-semibold text-slate-950">Ndrysho te dhenat</h3>
                       <p className="mt-1 text-sm text-slate-500">
                         Mund te ndryshosh daten, furnitorin, depon dhe rreshtat para pranimit.
                       </p>
@@ -2034,13 +2028,13 @@ export function PurchaseOrdersManager({
                     ) : null}
                   </div>
 
-                  <div className="mt-4 grid gap-3 md:grid-cols-2">
-                    <label className="grid gap-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                  <div className="mt-4 grid min-w-0 gap-3 sm:grid-cols-2">
+                    <label className="grid min-w-0 gap-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
                       Furnitori
                       <select
                         name="supplierId"
                         defaultValue={String(selectedOrder.supplierId)}
-                        className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium tracking-normal text-slate-900 outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+                        className="min-w-0 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium tracking-normal text-slate-900 outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
                       >
                         {suppliers.map((supplier) => (
                           <option key={supplier.id} value={supplier.id}>
@@ -2050,12 +2044,12 @@ export function PurchaseOrdersManager({
                       </select>
                     </label>
 
-                    <label className="grid gap-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                    <label className="grid min-w-0 gap-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
                       Depoja
                       <select
                         name="warehouseId"
                         defaultValue={String(selectedOrder.warehouseId)}
-                        className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium tracking-normal text-slate-900 outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+                        className="min-w-0 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium tracking-normal text-slate-900 outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
                       >
                         {warehouses.map((warehouse) => (
                           <option key={warehouse.id} value={warehouse.id}>
@@ -2065,22 +2059,22 @@ export function PurchaseOrdersManager({
                       </select>
                     </label>
 
-                    <label className="grid gap-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                    <label className="grid min-w-0 gap-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
                       Data
                       <input
                         type="date"
                         name="orderedAt"
                         defaultValue={selectedOrder.orderedAtValue}
-                        className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium tracking-normal text-slate-900 outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+                        className="min-w-0 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium tracking-normal text-slate-900 outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
                       />
                     </label>
 
-                    <label className="grid gap-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                    <label className="grid min-w-0 gap-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
                       Statusi
                       <select
                         name="status"
                         defaultValue={selectedOrder.status === "DRAFT" ? "DRAFT" : "ORDERED"}
-                        className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium tracking-normal text-slate-900 outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+                        className="min-w-0 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium tracking-normal text-slate-900 outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
                       >
                         <option value="ORDERED">Ordered</option>
                         <option value="DRAFT">Draft</option>
@@ -2088,13 +2082,13 @@ export function PurchaseOrdersManager({
                     </label>
                   </div>
 
-                  <label className="mt-3 grid gap-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                  <label className="mt-3 grid min-w-0 gap-1.5 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
                     Shenim
                     <textarea
                       name="note"
                       rows={2}
                       defaultValue={selectedOrder.note ?? ""}
-                      className="rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium tracking-normal text-slate-900 outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
+                      className="min-w-0 w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium tracking-normal text-slate-900 outline-none transition focus:border-sky-300 focus:ring-4 focus:ring-sky-100"
                     />
                   </label>
 
@@ -2102,10 +2096,10 @@ export function PurchaseOrdersManager({
                     {selectedOrder.items.map((item) => (
                       <div
                         key={`edit-${item.id}`}
-                        className="grid gap-3 rounded-2xl border border-white/80 bg-white/90 p-4 lg:grid-cols-[minmax(0,1fr)_100px_120px]"
+                        className="grid min-w-0 gap-3 rounded-2xl border border-slate-200 bg-slate-50/50 p-3 sm:grid-cols-[minmax(0,1fr)_100px_120px]"
                       >
                         <input type="hidden" name={`item_${item.id}`} value={item.id} />
-                        <div>
+                        <div className="min-w-0">
                           <p className="font-semibold text-slate-950">{item.productName}</p>
                           <p className="mt-1 text-sm text-slate-500">
                             {item.color} / {item.size || "Standard"}
@@ -2115,18 +2109,18 @@ export function PurchaseOrdersManager({
                           ) : null}
                         </div>
 
-                        <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                        <label className="grid min-w-0 gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
                           Sasia
                           <input
                             type="number"
                             name={`quantity_${item.id}`}
                             min={1}
                             defaultValue={item.orderedQuantity}
-                            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-sky-300"
+                            className="min-w-0 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-sky-300"
                           />
                         </label>
 
-                        <label className="grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                        <label className="grid min-w-0 gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
                           Cmimi
                           <input
                             type="number"
@@ -2134,17 +2128,17 @@ export function PurchaseOrdersManager({
                             min={0}
                             name={`unitCost_${item.id}`}
                             defaultValue={item.unitCostValue}
-                            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-sky-300"
+                            className="min-w-0 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-sky-300"
                           />
                         </label>
 
-                        <label className="lg:col-span-3 grid gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
+                        <label className="grid min-w-0 gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 sm:col-span-3">
                           Shenim rreshti
                           <input
                             type="text"
                             name={`note_${item.id}`}
                             defaultValue={item.note ?? ""}
-                            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-sky-300"
+                            className="min-w-0 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-sky-300"
                           />
                         </label>
                       </div>
@@ -2160,10 +2154,16 @@ export function PurchaseOrdersManager({
                     </button>
                   </div>
                 </form>
+                </details>
               ) : null}
 
               {selectedOrderCanReceive ? (
-                <form action={receiveAction} className="rounded-[24px] border border-emerald-200 bg-[linear-gradient(180deg,#f8fffb_0%,#effaf3_100%)] p-4">
+                <details key={`receive-${selectedOrder.id}`} className="group overflow-hidden rounded-[22px] border border-emerald-200 bg-emerald-50/50">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3.5 text-sm font-semibold text-emerald-900 marker:hidden hover:bg-emerald-50 [&::-webkit-details-marker]:hidden">
+                    <span>Prano stok <span className="ml-2 font-normal text-emerald-700">{selectedOrder.remainingQuantity} cope ne pritje</span></span>
+                    <span aria-hidden="true" className="text-emerald-600 transition group-open:rotate-180">v</span>
+                  </summary>
+                <form action={receiveAction} className="min-w-0 border-t border-emerald-100 bg-white p-4">
                   <input type="hidden" name="purchaseOrderId" value={selectedOrder.id} />
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
                     <div>
@@ -2196,7 +2196,7 @@ export function PurchaseOrdersManager({
                     {selectedOrder.items.map((item) => (
                       <div
                         key={`receive-${item.id}`}
-                        className="grid gap-3 rounded-2xl border border-white/80 bg-white/90 p-3 sm:grid-cols-[minmax(0,1fr)_110px]"
+                        className="grid min-w-0 gap-3 rounded-2xl border border-slate-200 bg-slate-50/50 p-3 sm:grid-cols-[minmax(0,1fr)_110px]"
                       >
                         <div>
                           <p className="font-semibold text-slate-950">{item.productName}</p>
@@ -2225,19 +2225,25 @@ export function PurchaseOrdersManager({
                             max={item.remainingQuantity}
                             defaultValue={item.remainingQuantity > 0 ? item.remainingQuantity : 0}
                             disabled={item.remainingQuantity <= 0}
-                            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-emerald-300 disabled:cursor-not-allowed disabled:bg-slate-50"
+                            className="min-w-0 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-emerald-300 disabled:cursor-not-allowed disabled:bg-slate-50"
                           />
                         </label>
                       </div>
                     ))}
                   </div>
                 </form>
+                </details>
               ) : null}
 
               {selectedOrderCanReturn ? (
+                <details key={`return-${selectedOrder.id}`} className="group overflow-hidden rounded-[22px] border border-fuchsia-200 bg-fuchsia-50/50">
+                  <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3.5 text-sm font-semibold text-fuchsia-900 marker:hidden hover:bg-fuchsia-50 [&::-webkit-details-marker]:hidden">
+                    <span>Kthe te furnitori <span className="ml-2 font-normal text-fuchsia-700">{selectedOrder.items.reduce((sum, item) => sum + item.returnableQuantity, 0)} cope te kthyeshme</span></span>
+                    <span aria-hidden="true" className="text-fuchsia-600 transition group-open:rotate-180">v</span>
+                  </summary>
                 <form
                   action={returnAction}
-                  className="rounded-[24px] border border-fuchsia-200 bg-[linear-gradient(180deg,#fff8fe_0%,#faf1ff_100%)] p-4"
+                  className="min-w-0 border-t border-fuchsia-100 bg-white p-4"
                 >
                   <input type="hidden" name="purchaseOrderId" value={selectedOrder.id} />
                   <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
@@ -2268,7 +2274,7 @@ export function PurchaseOrdersManager({
                     {selectedOrder.items.map((item) => (
                       <div
                         key={`return-${item.id}`}
-                        className="grid gap-3 rounded-2xl border border-white/80 bg-white/90 p-3 sm:grid-cols-[minmax(0,1fr)_110px]"
+                        className="grid min-w-0 gap-3 rounded-2xl border border-slate-200 bg-slate-50/50 p-3 sm:grid-cols-[minmax(0,1fr)_110px]"
                       >
                         <div>
                           <p className="font-semibold text-slate-950">{item.productName}</p>
@@ -2297,13 +2303,14 @@ export function PurchaseOrdersManager({
                             max={item.returnableQuantity}
                             defaultValue={item.returnableQuantity > 0 ? item.returnableQuantity : 0}
                             disabled={item.returnableQuantity <= 0}
-                            className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-fuchsia-300 disabled:cursor-not-allowed disabled:bg-slate-50"
+                            className="min-w-0 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-fuchsia-300 disabled:cursor-not-allowed disabled:bg-slate-50"
                           />
                         </label>
                       </div>
                     ))}
                   </div>
                 </form>
+                </details>
               ) : null}
 
               {selectedOrder.note ? (

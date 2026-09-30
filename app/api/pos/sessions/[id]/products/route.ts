@@ -67,14 +67,6 @@ export async function GET(request: Request, context: RouteProps) {
       brand: true,
       category: { select: { name: true } },
       variants: {
-        where: {
-          inventories: {
-            some: {
-              warehouseId: session.warehouseId,
-              stock: { gt: 0 },
-            },
-          },
-        },
         orderBy: [{ size: "asc" }, { color: "asc" }],
         select: {
           id: true,

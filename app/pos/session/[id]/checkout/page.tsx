@@ -71,6 +71,7 @@ export default async function PosCheckoutPage({ params }: RouteProps) {
       sessionId={session.id}
       registerName={session.register.name}
       warehouseName={session.register.warehouse.name}
+      openedByName={session.openedBy.name}
       categories={categories}
       brands={productBrands.map((product) => product.brand?.trim() ?? "").filter(Boolean)}
     />

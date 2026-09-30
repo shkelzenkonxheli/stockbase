@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BarcodeScanDialog } from "@/app/components/barcode-scan-dialog";
+import { UploadedImage } from "@/app/components/uploaded-image";
 
 type Variant = {
   id: number;
@@ -23,6 +24,9 @@ type Product = {
   variants: Variant[];
 };
 
+type CatalogCacheEntry = { products: Product[]; fetchedAt: number };
+const CATALOG_CACHE_MS = 15_000;
+
 type CartItem = Variant & {
   name: string;
   brand: string;
@@ -36,6 +40,7 @@ type PosCheckoutProps = {
   sessionId: number;
   registerName: string;
   warehouseName: string;
+  openedByName: string;
   categories: Array<{ id: number; name: string }>;
   brands: string[];
 };
@@ -45,22 +50,46 @@ function money(value: number) {
 }
 
 function productImage(product: Product) {
-  return product.variants.find((variant) => variant.imagePath)?.imagePath ?? null;
+  return product.variants.find((variant) => variant.stock > 0 && variant.imagePath)?.imagePath
+    ?? product.variants.find((variant) => variant.imagePath)?.imagePath
+    ?? null;
+}
+
+function groupColors(variants: Variant[]) {
+  const colors = new Map<string, { color: string; imagePath: string | null; variants: Variant[]; stock: number }>();
+  for (const variant of variants) {
+    const color = variant.color.trim() || "Pa ngjyre";
+    const key = color.toLowerCase();
+    const group = colors.get(key);
+    if (group) {
+      group.variants.push(variant);
+      group.stock += variant.stock;
+      if (!group.imagePath && variant.imagePath) group.imagePath = variant.imagePath;
+    } else {
+      colors.set(key, { color, imagePath: variant.imagePath, variants: [variant], stock: variant.stock });
+    }
+  }
+  return [...colors.values()].sort((a, b) => Number(b.stock > 0) - Number(a.stock > 0) || a.color.localeCompare(b.color));
 }
 
 export function PosCheckout({
   sessionId,
   registerName,
   warehouseName,
+  openedByName,
   categories,
   brands,
 }: PosCheckoutProps) {
   const router = useRouter();
   const searchInputRef = useRef<HTMLInputElement | null>(null);
+  const catalogCacheRef = useRef(new Map<string, CatalogCacheEntry>());
+  const catalogRequestsRef = useRef(new Map<string, Promise<Product[]>>());
+  const catalogGenerationRef = useRef(0);
   const [search, setSearch] = useState("");
   const [categoryId, setCategoryId] = useState("");
   const [brand, setBrand] = useState("");
   const [products, setProducts] = useState<Product[]>([]);
+  const [catalogRevision, setCatalogRevision] = useState(0);
   const [selectedProductId, setSelectedProductId] = useState<number | null>(null);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [scannerOpen, setScannerOpen] = useState(false);
@@ -76,6 +105,7 @@ export function PosCheckout({
   const [discountValue, setDiscountValue] = useState("");
 
   const selectedProduct = products.find((product) => product.id === selectedProductId) ?? null;
+  const selectedColorGroups = useMemo(() => groupColors(selectedProduct?.variants ?? []), [selectedProduct]);
   const total = useMemo(
     () => cart.reduce((sum, item) => sum + (Number(item.unitPrice) || 0) * item.quantity, 0),
     [cart],
@@ -98,33 +128,91 @@ export function PosCheckout({
     setReceivedCash(payableTotal.toFixed(2));
   }, [paymentMethod, payableTotal]);
 
-  useEffect(() => {
-    const controller = new AbortController();
-    const timeoutId = window.setTimeout(async () => {
-      setIsLoadingProducts(true);
-      try {
-        const params = new URLSearchParams();
-        if (search.trim()) params.set("q", search.trim());
-        if (categoryId) params.set("categoryId", categoryId);
-        if (brand) params.set("brand", brand);
-        const response = await fetch(`/api/pos/sessions/${sessionId}/products?${params.toString()}`, {
-          signal: controller.signal,
-        });
-        const payload = (await response.json()) as { products?: Product[] };
-        if (response.ok) setProducts(payload.products ?? []);
-      } catch (error) {
-        if (!(error instanceof DOMException && error.name === "AbortError")) {
-          setMessage({ tone: "error", text: "Nuk u ngarkuan produktet." });
+  const fetchCatalog = useCallback((params: URLSearchParams) => {
+    const key = params.toString();
+    const pending = catalogRequestsRef.current.get(key);
+    if (pending) return pending;
+
+    const generation = catalogGenerationRef.current;
+    const request = fetch(`/api/pos/sessions/${sessionId}/products?${key}`)
+      .then(async (response) => {
+        if (!response.ok) throw new Error("Nuk u ngarkuan produktet.");
+        const payload = await response.json() as { products?: Product[] };
+        const nextProducts = payload.products ?? [];
+        if (catalogGenerationRef.current === generation && !params.has("q")) {
+          catalogCacheRef.current.set(key, { products: nextProducts, fetchedAt: Date.now() });
+          if (catalogCacheRef.current.size > 24) {
+            const oldestKey = catalogCacheRef.current.keys().next().value;
+            if (oldestKey !== undefined) catalogCacheRef.current.delete(oldestKey);
+          }
         }
+        return nextProducts;
+      });
+    catalogRequestsRef.current.set(key, request);
+    void request.finally(() => {
+      if (catalogRequestsRef.current.get(key) === request) catalogRequestsRef.current.delete(key);
+    }).catch(() => {});
+    return request;
+  }, [sessionId]);
+
+  useEffect(() => {
+    let active = true;
+    const timeoutId = window.setTimeout(async () => {
+      const params = new URLSearchParams();
+      if (search.trim()) params.set("q", search.trim());
+      if (categoryId) params.set("categoryId", categoryId);
+      if (brand) params.set("brand", brand);
+      const cached = catalogCacheRef.current.get(params.toString());
+      if (cached) {
+        setProducts(cached.products);
+        setIsLoadingProducts(false);
+        if (Date.now() - cached.fetchedAt < CATALOG_CACHE_MS) return;
+      } else {
+        setIsLoadingProducts(true);
+      }
+      try {
+        const nextProducts = await fetchCatalog(params);
+        if (active) setProducts(nextProducts);
+      } catch {
+        if (active) setMessage({ tone: "error", text: "Nuk u ngarkuan produktet." });
       } finally {
-        if (!controller.signal.aborted) setIsLoadingProducts(false);
+        if (active) setIsLoadingProducts(false);
       }
     }, search ? 180 : 0);
     return () => {
-      controller.abort();
+      active = false;
       window.clearTimeout(timeoutId);
     };
-  }, [brand, categoryId, search, sessionId]);
+  }, [brand, categoryId, search, fetchCatalog, catalogRevision]);
+
+  useEffect(() => {
+    if (search.trim() || isLoadingProducts) return;
+    let cancelled = false;
+    const timeoutId = window.setTimeout(async () => {
+      const warmBrands = brands.filter((item) => item !== brand).slice(0, 8);
+      for (let index = 0; index < warmBrands.length && !cancelled; index += 2) {
+        await Promise.all(warmBrands.slice(index, index + 2).map(async (item) => {
+          const params = new URLSearchParams();
+          if (categoryId) params.set("categoryId", categoryId);
+          params.set("brand", item);
+          const cached = catalogCacheRef.current.get(params.toString());
+          if (cached && Date.now() - cached.fetchedAt < CATALOG_CACHE_MS) return;
+          try { await fetchCatalog(params); } catch { /* The selected filter will report errors. */ }
+        }));
+      }
+    }, 600);
+    return () => { cancelled = true; window.clearTimeout(timeoutId); };
+  }, [brand, brands, categoryId, fetchCatalog, isLoadingProducts, search]);
+
+  const prefetchBrand = useCallback((nextBrand: string) => {
+    if (search.trim()) return;
+    const params = new URLSearchParams();
+    if (categoryId) params.set("categoryId", categoryId);
+    params.set("brand", nextBrand);
+    const cached = catalogCacheRef.current.get(params.toString());
+    if (cached && Date.now() - cached.fetchedAt < CATALOG_CACHE_MS) return;
+    void fetchCatalog(params).catch(() => {});
+  }, [categoryId, fetchCatalog, search]);
 
   const addVariant = useCallback((product: Pick<Product, "name" | "brand">, variant: Variant) => {
     if (variant.stock <= 0) {
@@ -221,6 +309,10 @@ export function PosCheckout({
         return;
       }
       setCart([]);
+      catalogGenerationRef.current += 1;
+      catalogCacheRef.current.clear();
+      catalogRequestsRef.current.clear();
+      setCatalogRevision((current) => current + 1);
       setReceivedCash("0.00");
       setDiscountValue("");
       setDiscountOpen(false);
@@ -236,33 +328,53 @@ export function PosCheckout({
   }
 
   return (
-    <main className="min-h-screen bg-[#081225] text-slate-100">
-      <div className="grid min-h-screen xl:grid-cols-[minmax(0,1fr)_380px]">
-        <section className="min-w-0 border-b border-white/10 xl:border-b-0 xl:border-r">
-          <header className="flex min-h-[76px] items-center gap-3 border-b border-white/10 bg-[#0c1830] px-4 py-3 sm:px-6">
-            <button type="button" onClick={() => router.push(`/pos/session/${sessionId}`)} className="hidden rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-xs font-semibold text-slate-300 transition hover:bg-white/10 sm:inline-flex">Sessioni</button>
-            <form className="flex min-w-0 flex-1 flex-wrap items-center gap-2" onSubmit={(event) => { event.preventDefault(); void lookupBarcode(search); }}>
-              <div className="flex min-w-[210px] flex-1 items-center gap-3 rounded-2xl border border-slate-600/70 bg-slate-800/80 px-4 py-3 shadow-inner">
-                <span className="text-xs font-bold uppercase tracking-[0.12em] text-emerald-300">Search</span>
-                <input ref={searchInputRef} value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Skano ose kerko produkt, model, barcode / SKU..." className="min-w-0 flex-1 bg-transparent text-sm text-white outline-none placeholder:text-slate-400" />
-                {isLookingUp ? <span className="text-xs font-medium text-slate-400">Duke kerkuar</span> : null}
+    <main className="min-h-screen bg-[#f2f4f0] font-sans text-[#18312d]">
+      <div className="grid min-h-screen lg:grid-cols-[minmax(0,1fr)_360px] 2xl:grid-cols-[minmax(0,1fr)_400px]">
+        <section className="min-w-0 border-b border-[#dce5dd] lg:border-b-0 lg:border-r">
+          <header className="border-b border-[#dce5dd] bg-white px-4 py-3 sm:px-5">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div className="min-w-0">
+                <h1 className="truncate text-xl font-semibold tracking-tight text-[#12342c]">{warehouseName}</h1>
+                <p className="mt-0.5 text-xs text-[#61766c]">Hapur nga {openedByName}</p>
               </div>
-              <select value={categoryId} onChange={(event) => setCategoryId(event.target.value)} aria-label="Filtro kategorine" className="min-w-0 flex-1 rounded-xl border border-slate-600 bg-slate-800 px-3 py-3 text-sm text-slate-200 outline-none focus:border-emerald-400 sm:max-w-44"><option value="">Te gjitha kategorite</option>{categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select>
-              <select value={brand} onChange={(event) => setBrand(event.target.value)} aria-label="Filtro brandin" className="min-w-0 flex-1 rounded-xl border border-slate-600 bg-slate-800 px-3 py-3 text-sm text-slate-200 outline-none focus:border-emerald-400 sm:max-w-44"><option value="">Te gjitha brandet</option>{brands.map((item) => <option key={item} value={item}>{item}</option>)}</select>
-              <button type="button" onClick={() => setScannerOpen(true)} className="inline-flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-xs font-bold text-emerald-300 transition hover:bg-white/10" aria-label="Hap kameran">Scan</button>
+              <div className="flex items-center gap-2">
+                <button type="button" onClick={() => setScannerOpen(true)} className="inline-flex min-h-10 items-center rounded-xl border border-[#c9ded1] bg-[#edfaf2] px-3 text-sm font-semibold text-[#006e52] transition hover:bg-[#dbf3e4]">Skano kodin</button>
+                <button type="button" onClick={() => router.push(`/pos/session/${sessionId}`)} className="inline-flex min-h-10 items-center rounded-xl border border-[#dce5dd] bg-white px-3 text-sm font-semibold text-[#425b51] transition hover:bg-[#f3f6f3]">Sessioni</button>
+              </div>
+            </div>
+            <form className="mt-3 flex min-w-0 flex-col gap-2 sm:flex-row sm:items-center sm:justify-between" onSubmit={(event) => { event.preventDefault(); void lookupBarcode(search); }}>
+              <div className="flex min-w-0 w-full max-w-[620px] items-center gap-3 rounded-2xl border border-[#cbdcd0] bg-[#f7faf7] px-4 py-2.5 focus-within:border-[#00a578] focus-within:ring-2 focus-within:ring-[#00a578]/10">
+                <span aria-hidden="true" className="text-lg text-[#678176]">⌕</span>
+                <input ref={searchInputRef} value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Kerko produkt, model, barcode ose SKU" className="min-w-0 flex-1 bg-transparent text-sm text-[#18312d] outline-none placeholder:text-[#82948a]" />
+                {isLookingUp ? <span className="text-xs font-medium text-[#678176]">Duke kerkuar...</span> : null}
+              </div>
+              <select value={categoryId} onChange={(event) => setCategoryId(event.target.value)} aria-label="Filtro kategorine" className="min-h-11 w-full min-w-0 rounded-2xl border border-[#cbdcd0] bg-white px-3 text-sm font-medium text-[#28493d] outline-none focus:border-[#00a578] sm:w-52 sm:shrink-0"><option value="">Te gjitha kategorite</option>{categories.map((category) => <option key={category.id} value={category.id}>{category.name}</option>)}</select>
             </form>
+            <div className="mt-3 flex w-full min-w-0 flex-nowrap gap-2 overflow-x-auto whitespace-nowrap pb-1 touch-pan-x" aria-label="Filtro sipas brandit">
+              <button type="button" onClick={() => setBrand("")} aria-pressed={!brand} className={`shrink-0 rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${!brand ? "bg-[#123b31] text-white" : "border border-[#dce5dd] bg-white text-[#526c60] hover:bg-[#f2f7f2]"}`}>Te gjitha</button>
+              {brands.map((item) => <button key={item} type="button" onPointerEnter={() => prefetchBrand(item)} onFocus={() => prefetchBrand(item)} onClick={() => setBrand(item)} aria-pressed={brand === item} className={`shrink-0 rounded-full px-3.5 py-1.5 text-sm font-semibold transition ${brand === item ? "bg-[#123b31] text-white" : "border border-[#dce5dd] bg-white text-[#526c60] hover:bg-[#f2f7f2]"}`}>{item}</button>)}
+            </div>
           </header>
 
-          <div className="p-4 sm:p-6">
-            {message ? <div className={`mb-4 rounded-2xl border px-4 py-3 text-sm font-medium ${message.tone === "success" ? "border-emerald-400/30 bg-emerald-400/10 text-emerald-200" : "border-rose-400/30 bg-rose-400/10 text-rose-200"}`}><div className="flex flex-wrap items-center justify-between gap-3"><span>{message.text}</span>{lastCompletedOrderId ? <a href={`/pos/sales/${lastCompletedOrderId}/receipt`} target="_blank" rel="noreferrer" className="rounded-xl bg-emerald-400 px-3 py-2 text-xs font-bold text-slate-950 transition hover:bg-emerald-300">Printo faturen</a> : null}</div></div> : null}
-            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6">
-              {isLoadingProducts ? <p className="col-span-full py-12 text-center text-sm text-slate-400">Po ngarkohet katalogu...</p> : products.length === 0 ? <p className="col-span-full rounded-2xl border border-dashed border-white/10 px-4 py-12 text-center text-sm text-slate-400">Nuk u gjet produkt me kete kerkese ne stokun e {warehouseName}.</p> : products.map((product) => {
+          <div className="p-4 sm:p-6 lg:p-8">
+            {message ? <div role="status" className={`mb-5 rounded-2xl border px-4 py-3 text-sm font-medium ${message.tone === "success" ? "border-[#afe2c2] bg-[#eaf9ee] text-[#006d4e]" : "border-rose-200 bg-rose-50 text-rose-800"}`}><div className="flex flex-wrap items-center justify-between gap-3"><span>{message.text}</span>{message.tone === "success" && lastCompletedOrderId ? <a href={`/pos/sales/${lastCompletedOrderId}/receipt`} target="_blank" rel="noreferrer" className="rounded-xl bg-[#123b31] px-3 py-2 text-xs font-bold text-white">Printo faturen</a> : null}</div></div> : null}
+            <div className="mb-4 flex items-center justify-between gap-3"><div><h2 className="text-base font-semibold text-[#173b30]">Katalogu</h2><p className="mt-0.5 text-xs text-[#73877b]">Prek produktin per te zgjedhur numrin dhe ngjyren</p></div><span className="rounded-full border border-[#d5e5d9] bg-white px-3 py-1 text-xs font-semibold text-[#557466]">{products.length} produkte</span></div>
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
+              {isLoadingProducts ? Array.from({ length: 6 }, (_, index) => <div key={`loading-${index}`} aria-hidden="true" className="overflow-hidden rounded-[20px] border border-[#dce6dc] bg-white"><div className="aspect-[1.22] animate-pulse bg-[#eaf0e9]" /><div className="space-y-2 p-3"><div className="h-3 w-1/3 animate-pulse rounded bg-[#eaf0e9]" /><div className="h-4 w-4/5 animate-pulse rounded bg-[#eaf0e9]" /><div className="h-4 w-1/2 animate-pulse rounded bg-[#eaf0e9]" /></div></div>) : products.length === 0 ? <p className="col-span-full rounded-2xl border border-dashed border-[#c8dcd0] bg-white px-4 py-12 text-center text-sm text-[#71867a]">Nuk u gjet produkt me kete kerkese ne stokun e {warehouseName}.</p> : products.map((product) => {
                 const image = productImage(product);
-                const minimumPrice = Math.min(...product.variants.map((variant) => variant.price));
+                const availableVariants = product.variants.filter((variant) => variant.stock > 0);
+                const minimumPrice = availableVariants.length ? Math.min(...availableVariants.map((variant) => variant.price)) : 0;
+                const colorGroups = groupColors(product.variants);
                 const selected = selectedProduct?.id === product.id;
-                return <button key={product.id} type="button" onClick={() => setSelectedProductId(selected ? null : product.id)} className={`group overflow-hidden rounded-xl border text-left transition ${selected ? "border-emerald-400 bg-emerald-400/10 shadow-[0_0_0_1px_rgba(52,211,153,0.2)]" : "border-white/10 bg-[#111e36] hover:-translate-y-0.5 hover:border-slate-500 hover:bg-[#152440]"}`}>
-                  <div className="relative aspect-[1.18] bg-[linear-gradient(135deg,#20314c_0%,#101b31_100%)]">{image ? <img src={image} alt="" className="h-full w-full object-cover opacity-90 transition group-hover:scale-105" /> : <div className="flex h-full items-center justify-center text-[9px] font-bold uppercase tracking-[0.14em] text-slate-600">No image</div>}<span className="absolute left-1.5 top-1.5 max-w-[calc(100%-12px)] truncate rounded-md bg-slate-950/80 px-1.5 py-0.5 text-[8px] font-bold uppercase tracking-[0.08em] text-emerald-300">{product.category}</span></div>
-                  <div className="p-2.5"><p className="truncate text-[9px] font-bold uppercase tracking-[0.1em] text-emerald-300">{product.brand || "Produkt"}</p><p className="mt-1 truncate text-xs font-semibold text-white">{product.name}</p><div className="mt-2 flex items-center justify-between gap-1"><span className="text-xs font-semibold text-emerald-300">{money(minimumPrice)}</span><span className="rounded-md bg-white/5 px-1.5 py-0.5 text-[9px] font-semibold text-slate-400">{product.variants.length}</span></div></div>
+                return <button key={product.id} type="button" onClick={() => setSelectedProductId(selected ? null : product.id)} className={`group min-w-0 overflow-hidden rounded-[20px] border bg-white text-left shadow-[0_8px_24px_rgba(25,54,40,0.04)] transition hover:-translate-y-0.5 hover:shadow-[0_14px_28px_rgba(25,54,40,0.1)] ${selected ? "border-[#00a578] ring-2 ring-[#00a578]/20" : "border-[#dce6dc] hover:border-[#9bcab2]"}`}>
+                  <div className="relative aspect-[1.22] overflow-hidden bg-[linear-gradient(145deg,#f7f9f4_0%,#e9f0e9_100%)]">{image ? <UploadedImage src={image} alt="" loading="lazy" decoding="async" className="h-full w-full object-contain p-2 transition duration-300 group-hover:scale-[1.04]" /> : <div className="flex h-full items-center justify-center text-3xl font-bold uppercase tracking-tight text-[#9bb7a6]">{product.name.slice(0, 2)}</div>}<span className="absolute left-2 top-2 max-w-[calc(100%-16px)] truncate rounded-full border border-white/70 bg-white/90 px-2 py-1 text-[10px] font-bold text-[#3d6250] shadow-sm">{product.category}</span></div>
+                  <div className="p-3"><p className="truncate text-[10px] font-bold uppercase tracking-[0.1em] text-[#008368]">{product.brand || "Produkt"}</p><p className="mt-1 line-clamp-2 min-h-[2.5rem] text-sm font-semibold leading-5 text-[#17372d]">{product.name}</p>
+                    <div className="mt-2 flex min-h-10 items-center gap-1.5 overflow-hidden" aria-label={`${colorGroups.length} ngjyra`}>
+                      {colorGroups.slice(0, 4).map((group) => <span key={group.color} title={`${group.color}${group.stock <= 0 ? " - pa stok ne kete depo" : ""}`} className={`flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-lg border bg-[#f2f5ef] ${group.stock > 0 ? "border-[#cadbce]" : "border-[#e2e5df] opacity-55"}`}>{group.imagePath ? <UploadedImage src={group.imagePath} alt={group.color} loading="lazy" decoding="async" className="h-full w-full object-contain" /> : <span className="px-1 text-[8px] font-semibold text-[#63786a]">{group.color.slice(0, 3)}</span>}</span>)}
+                      {colorGroups.length > 4 ? <span className="text-[10px] font-semibold text-[#61766c]">+{colorGroups.length - 4}</span> : null}
+                    </div>
+                    <div className="mt-2 flex items-center justify-between gap-1 border-t border-[#e8eee7] pt-2.5"><span className="text-sm font-bold text-[#17372d]">{money(minimumPrice)}</span><span className="rounded-lg bg-[#edf5ed] px-2 py-1 text-[10px] font-semibold text-[#4a7158]">{colorGroups.length} ngjyra</span></div>
+                  </div>
                 </button>;
               })}
             </div>
@@ -270,24 +382,26 @@ export function PosCheckout({
           </div>
         </section>
 
-        <aside className="flex min-h-[600px] flex-col bg-[#0b162b] p-4 sm:p-6 xl:sticky xl:top-0 xl:h-screen">
-          <div className="flex items-start justify-between gap-3 border-b border-white/10 pb-5"><div><p className="text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-300">Cart</p><h2 className="mt-1 text-xl font-semibold text-white">Shitja aktuale</h2><p className="mt-1 text-xs text-slate-400">{registerName}</p></div><span className="rounded-xl bg-emerald-400/15 px-3 py-1.5 text-xs font-bold text-emerald-300">{totalUnits} artikuj</span></div>
+        <aside className="flex min-h-[520px] min-w-0 flex-col bg-white p-4 shadow-[-10px_0_32px_rgba(23,56,42,0.04)] sm:p-6 lg:sticky lg:top-0 lg:h-screen">
+          <div className="flex items-start justify-between gap-3 border-b border-[#e4ebe3] pb-5"><div><p className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#00866b]">Shporta</p><h2 className="mt-1 text-xl font-semibold tracking-tight text-[#17372d]">Shitja aktuale</h2><p className="mt-1 text-xs text-[#75877b]">{registerName}</p></div><span className="rounded-xl bg-[#e8f6ec] px-3 py-1.5 text-xs font-bold text-[#007e5e]">{totalUnits} artikuj</span></div>
           <div className="mt-4 min-h-0 flex-1 space-y-3 overflow-y-auto">
             {cart.length === 0 ? (
-              <div className="flex min-h-44 items-center justify-center rounded-2xl border border-dashed border-white/10 px-5 text-center text-sm text-slate-400">
-                Kerko produktin ose skano barcode per ta shtuar ne shitje.
+              <div className="flex min-h-44 flex-col items-center justify-center rounded-2xl border border-dashed border-[#cbded1] bg-[#f8fbf8] px-5 text-center">
+                <span aria-hidden="true" className="mb-2 text-3xl text-[#b5cabc]">+</span>
+                <p className="text-sm font-semibold text-[#3e6653]">Shporta eshte bosh</p>
+                <p className="mt-1 text-xs text-[#81968a]">Zgjidh produkt ose skano barcode.</p>
               </div>
             ) : (
               cart.map((item) => (
-                <div key={item.id} className="rounded-xl border border-white/10 bg-[#14223b] px-3 py-2.5">
+                <div key={item.id} className="rounded-2xl border border-[#e0e9df] bg-[#fafcf9] px-3 py-3">
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="truncate font-semibold text-white">{item.name}</p>
-                      <p className="mt-0.5 text-xs text-emerald-300">
+                      <p className="truncate font-semibold text-[#17372d]">{item.name}</p>
+                      <p className="mt-0.5 text-xs text-[#648578]">
                         {[item.brand, item.color, item.size].filter(Boolean).join(" - ")}
                       </p>
                     </div>
-                    <button type="button" onClick={() => updateQuantity(item.id, 0)} className="inline-flex h-7 w-7 items-center justify-center rounded-lg text-rose-300 transition hover:bg-rose-400/10 hover:text-rose-200" aria-label="Largo produktin" title="Largo produktin">
+                    <button type="button" onClick={() => updateQuantity(item.id, 0)} className="inline-flex h-8 w-8 items-center justify-center rounded-lg text-rose-500 transition hover:bg-rose-50" aria-label="Largo produktin" title="Largo produktin">
                       x
                     </button>
                   </div>
@@ -301,45 +415,58 @@ export function PosCheckout({
                         inputMode="decimal"
                         value={item.unitPrice}
                         onChange={(event) => updateUnitPrice(item.id, event.target.value)}
-                        className="w-24 rounded-lg border border-white/10 bg-white/5 px-2 py-1.5 text-sm font-semibold text-white outline-none focus:border-emerald-400"
+                        className="w-24 rounded-lg border border-[#cbded1] bg-white px-2 py-1.5 text-sm font-semibold text-[#17372d] outline-none focus:border-[#00a578]"
                       />
                     </label>
-                    <div className="flex overflow-hidden rounded-xl border border-white/10">
-                      <button type="button" onClick={() => updateQuantity(item.id, item.quantity - 1)} className="h-7 w-7 text-slate-300 hover:bg-white/10">-</button>
-                      <span className="flex h-7 min-w-7 items-center justify-center border-x border-white/10 text-sm font-semibold">{item.quantity}</span>
-                      <button type="button" onClick={() => updateQuantity(item.id, item.quantity + 1)} className="h-7 w-7 text-slate-300 hover:bg-white/10">+</button>
+                    <div className="flex overflow-hidden rounded-xl border border-[#cbded1] bg-white">
+                      <button type="button" onClick={() => updateQuantity(item.id, item.quantity - 1)} className="h-8 w-8 text-[#416452] hover:bg-[#edf6ee]">-</button>
+                      <span className="flex h-8 min-w-8 items-center justify-center border-x border-[#cbded1] text-sm font-semibold text-[#17372d]">{item.quantity}</span>
+                      <button type="button" onClick={() => updateQuantity(item.id, item.quantity + 1)} className="h-8 w-8 text-[#416452] hover:bg-[#edf6ee]">+</button>
                     </div>
-                    <span className="text-xs text-slate-400">Stok {item.stock}</span>
+                    <span className="text-xs text-[#82968a]">Stok {item.stock}</span>
                   </div>
                 </div>
               ))
             )}
           </div>
-          <div className="mt-4 border-t border-white/10 pt-4">
+          <div className="mt-4 border-t border-[#e4ebe3] pt-4">
             <div className="mb-3 flex items-center justify-between gap-3">
-              <button type="button" onClick={() => setDiscountOpen((current) => !current)} className={`rounded-lg border px-3 py-2 text-xs font-bold transition ${appliedDiscount > 0 ? "border-amber-300/40 bg-amber-300/10 text-amber-200" : "border-white/10 bg-white/5 text-slate-300 hover:bg-white/10"}`}>{appliedDiscount > 0 ? `Zbritje -${money(appliedDiscount)}` : "Zbritje"}</button>
-              {appliedDiscount > 0 ? <button type="button" onClick={() => { setDiscountValue(""); setDiscountOpen(false); }} className="text-xs font-semibold text-rose-300 hover:text-rose-200">Hiq</button> : null}
+              <button type="button" onClick={() => setDiscountOpen((current) => !current)} className={`rounded-xl border px-3 py-2 text-xs font-bold transition ${appliedDiscount > 0 ? "border-amber-300 bg-amber-50 text-amber-800" : "border-[#dce5dd] bg-white text-[#557164] hover:bg-[#f3f7f3]"}`}>{appliedDiscount > 0 ? `Zbritje -${money(appliedDiscount)}` : "+ Zbritje"}</button>
+              {appliedDiscount > 0 ? <button type="button" onClick={() => { setDiscountValue(""); setDiscountOpen(false); }} className="text-xs font-semibold text-rose-600 hover:text-rose-700">Hiq</button> : null}
             </div>
-            {discountOpen ? <div className="mb-3 rounded-xl border border-amber-300/20 bg-amber-300/5 p-3"><div className="flex gap-2"><button type="button" onClick={() => setDiscountType("PERCENT")} className={`flex-1 rounded-lg px-2 py-2 text-xs font-bold ${discountType === "PERCENT" ? "bg-amber-300 text-slate-950" : "border border-white/10 text-slate-300"}`}>%</button><button type="button" onClick={() => setDiscountType("FIXED")} className={`flex-1 rounded-lg px-2 py-2 text-xs font-bold ${discountType === "FIXED" ? "bg-amber-300 text-slate-950" : "border border-white/10 text-slate-300"}`}>EUR</button></div><input type="number" min="0" max={discountType === "PERCENT" ? "100" : undefined} step="0.01" inputMode="decimal" value={discountValue} onChange={(event) => setDiscountValue(event.target.value)} placeholder={discountType === "PERCENT" ? "p.sh. 10" : "p.sh. 5.00"} className="mt-2 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-sm font-semibold text-white outline-none focus:border-amber-300" /></div> : null}
+            {discountOpen ? <div className="mb-3 rounded-xl border border-amber-200 bg-amber-50/60 p-3"><div className="flex gap-2"><button type="button" onClick={() => setDiscountType("PERCENT")} className={`flex-1 rounded-lg px-2 py-2 text-xs font-bold ${discountType === "PERCENT" ? "bg-amber-300 text-[#3d3219]" : "border border-amber-200 bg-white text-amber-800"}`}>%</button><button type="button" onClick={() => setDiscountType("FIXED")} className={`flex-1 rounded-lg px-2 py-2 text-xs font-bold ${discountType === "FIXED" ? "bg-amber-300 text-[#3d3219]" : "border border-amber-200 bg-white text-amber-800"}`}>EUR</button></div><input type="number" min="0" max={discountType === "PERCENT" ? "100" : undefined} step="0.01" inputMode="decimal" value={discountValue} onChange={(event) => setDiscountValue(event.target.value)} placeholder={discountType === "PERCENT" ? "p.sh. 10" : "p.sh. 5.00"} className="mt-2 w-full rounded-lg border border-amber-200 bg-white px-3 py-2 text-sm font-semibold text-[#17372d] outline-none focus:border-amber-400" /></div> : null}
             <div className="flex gap-2">
-              <button type="button" onClick={() => setPaymentMethod("CASH")} className={`inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-bold transition ${paymentMethod === "CASH" ? "bg-emerald-400 text-slate-950" : "border border-white/10 bg-white/5 text-slate-300"}`}><span aria-hidden="true">$</span> Cash</button>
-              <button type="button" onClick={() => setPaymentMethod("CARD")} className={`inline-flex flex-1 items-center justify-center gap-1.5 rounded-lg px-3 py-2.5 text-sm font-bold transition ${paymentMethod === "CARD" ? "bg-emerald-400 text-slate-950" : "border border-white/10 bg-white/5 text-slate-300"}`}><span aria-hidden="true">▣</span> Karta</button>
+              <button type="button" onClick={() => setPaymentMethod("CASH")} className={`inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-bold transition ${paymentMethod === "CASH" ? "border border-[#0a765b] bg-[#e5f6e9] text-[#006e52]" : "border border-[#dce5dd] bg-white text-[#667d6f]"}`}>Cash</button>
+              <button type="button" onClick={() => setPaymentMethod("CARD")} className={`inline-flex min-h-11 flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2.5 text-sm font-bold transition ${paymentMethod === "CARD" ? "border border-[#0a765b] bg-[#e5f6e9] text-[#006e52]" : "border border-[#dce5dd] bg-white text-[#667d6f]"}`}>Karta</button>
             </div>
-            {paymentMethod === "CASH" ? <div className="mt-3"><div className="flex justify-between text-[10px] font-bold uppercase tracking-[0.12em] text-slate-400"><label htmlFor="cash-received">Cash i pranuar</label><button type="button" onClick={() => setReceivedCash(payableTotal.toFixed(2))} className="text-emerald-300">Exact</button></div><input id="cash-received" inputMode="decimal" value={receivedCash} onChange={(event) => setReceivedCash(event.target.value)} className="mt-1.5 w-full rounded-lg border border-white/10 bg-white/5 px-3 py-2.5 text-right font-semibold text-white outline-none focus:border-emerald-400" /><div className="mt-1.5 flex justify-between text-xs"><span className="text-slate-400">Kthimi</span><span className="font-bold text-emerald-300">{money(change)}</span></div></div> : null}
-            <div className="mt-4 flex items-end justify-between gap-3"><div><p className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-400">{appliedDiscount > 0 ? `Nentotali ${money(total)} · Zbritje ${money(appliedDiscount)}` : "Totali"}</p><p className="mt-0.5 text-2xl font-bold tracking-tight text-white">{money(payableTotal)}</p></div><button type="button" disabled={!cart.length || isSubmitting} onClick={() => void submitCheckout()} className="rounded-xl bg-emerald-500 px-4 py-3 text-sm font-bold text-slate-950 shadow-[0_12px_28px_rgba(16,185,129,0.22)] transition hover:bg-emerald-400 disabled:cursor-not-allowed disabled:opacity-40">{isSubmitting ? "Duke ruajtur..." : "Perfundo"}</button></div>
+            {paymentMethod === "CASH" ? <div className="mt-3"><div className="flex justify-between text-[10px] font-bold uppercase tracking-[0.12em] text-[#6d8376]"><label htmlFor="cash-received">Cash i pranuar</label><button type="button" onClick={() => setReceivedCash(payableTotal.toFixed(2))} className="text-[#00866b]">Exact</button></div><input id="cash-received" inputMode="decimal" value={receivedCash} onChange={(event) => setReceivedCash(event.target.value)} className="mt-1.5 w-full rounded-xl border border-[#cbded1] bg-white px-3 py-2.5 text-right font-semibold text-[#17372d] outline-none focus:border-[#00a578]" /><div className="mt-1.5 flex justify-between text-xs"><span className="text-[#6d8376]">Kthimi</span><span className="font-bold text-[#00866b]">{money(change)}</span></div></div> : null}
+            <div className="mt-4 rounded-2xl bg-[#11392f] p-4 text-white">
+              {appliedDiscount > 0 ? <div className="mb-2 flex justify-between text-xs text-[#b7d8c8]"><span>Nentotali</span><span>{money(total)}</span></div> : null}
+              {appliedDiscount > 0 ? <div className="mb-2 flex justify-between text-xs text-[#b7d8c8]"><span>Zbritje</span><span>-{money(appliedDiscount)}</span></div> : null}
+              <div className="flex items-end justify-between gap-3"><span className="text-sm font-medium text-[#cbe7d8]">Totali</span><strong className="text-2xl font-bold tracking-tight">{money(payableTotal)}</strong></div>
+              <button type="button" disabled={!cart.length || isSubmitting} onClick={() => void submitCheckout()} className="mt-4 min-h-12 w-full rounded-xl bg-[#b8f475] px-4 py-3 text-sm font-bold text-[#183c29] transition hover:bg-[#c8ff8c] disabled:cursor-not-allowed disabled:opacity-40">{isSubmitting ? "Duke ruajtur..." : "Perfundo shitjen"}</button>
+            </div>
           </div>
         </aside>
       </div>
       {selectedProduct ? (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6" role="dialog" aria-modal="true" aria-label={`Zgjidh numrin per ${selectedProduct.name}`}>
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6" role="dialog" aria-modal="true" aria-label={`Zgjidh ngjyren dhe numrin per ${selectedProduct.name}`}>
           <button type="button" onClick={() => setSelectedProductId(null)} className="absolute inset-0 bg-slate-950/75 backdrop-blur-sm" aria-label="Mbyll zgjedhjen e numrit" />
-          <section className="relative z-10 w-full max-w-xl rounded-[24px] border border-emerald-400/30 bg-[#10233c] p-4 shadow-[0_28px_90px_rgba(0,0,0,0.45)] sm:p-5">
-            <div className="flex items-start justify-between gap-4 border-b border-white/10 pb-4">
-              <div className="min-w-0"><p className="text-[10px] font-bold uppercase tracking-[0.16em] text-emerald-300">Zgjidh numrin</p><h2 className="mt-1 truncate text-lg font-semibold text-white">{selectedProduct.name}</h2></div>
-              <button type="button" onClick={() => setSelectedProductId(null)} className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-white/10 text-sm font-semibold text-slate-300 transition hover:bg-white/10" aria-label="Mbyll">x</button>
+          <section className="relative z-10 max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-[26px] border border-[#dce9de] bg-white p-4 shadow-[0_28px_90px_rgba(0,0,0,0.24)] sm:p-6">
+            <div className="flex items-start justify-between gap-4 border-b border-[#e5ede5] pb-4">
+              <div className="min-w-0"><p className="text-[10px] font-bold uppercase tracking-[0.16em] text-[#00866b]">Zgjidh ngjyren dhe numrin</p><h2 className="mt-1 truncate text-xl font-semibold text-[#17372d]">{selectedProduct.name}</h2><p className="mt-1 text-xs text-[#71877a]">Shfaqen te gjitha ngjyrat; shiten vetem ato me stok ne {warehouseName}.</p></div>
+              <button type="button" onClick={() => setSelectedProductId(null)} className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-xl border border-[#dce9de] text-sm font-semibold text-[#557164] transition hover:bg-[#f3f7f3]" aria-label="Mbyll">x</button>
             </div>
-            <div className="mt-4 grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5">
-              {selectedProduct.variants.map((variant) => <button key={variant.id} type="button" onClick={() => { addVariant(selectedProduct, variant); setSelectedProductId(null); }} className="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-3 text-center transition hover:border-emerald-400 hover:bg-emerald-400/10"><span className="block text-lg font-bold text-white">{variant.size || "-"}</span>{variant.color ? <span className="mt-0.5 block truncate text-[10px] font-medium text-slate-400">{variant.color}</span> : null}<span className="mt-1 block text-[10px] font-semibold text-emerald-300">Stok {variant.stock}</span></button>)}
+            <div className="mt-4 space-y-3">
+              {selectedColorGroups.map((group) => <div key={group.color} className="rounded-2xl border border-[#dce9de] bg-[#fbfdfb] p-3">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-16 w-16 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-[#edf3ec]">{group.imagePath ? <UploadedImage src={group.imagePath} alt={group.color} loading="lazy" decoding="async" className="h-full w-full object-contain" /> : <span className="px-1 text-center text-xs font-semibold text-[#65806d]">{group.color}</span>}</div>
+                  <div className="min-w-0"><h3 className="truncate text-sm font-semibold text-[#17372d]">{group.color}</h3><p className={`mt-1 text-xs font-medium ${group.stock > 0 ? "text-[#00866b]" : "text-[#8c9c91]"}`}>{group.stock > 0 ? `${group.stock} cope ne kete depo` : "Pa stok ne kete depo"}</p></div>
+                </div>
+                <div className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-4">
+                  {group.variants.map((variant) => <button key={variant.id} type="button" disabled={variant.stock <= 0} onClick={() => { addVariant(selectedProduct, variant); setSelectedProductId(null); }} className="min-h-16 rounded-xl border border-[#d2e2d4] bg-white px-2 py-2 text-center transition hover:border-[#00a578] hover:bg-[#ecf8ef] disabled:cursor-not-allowed disabled:border-[#e5ebe5] disabled:bg-[#f5f7f4] disabled:opacity-55"><span className="block text-base font-bold text-[#17372d]">{variant.size || "Standard"}</span><span className="mt-0.5 block text-[10px] font-semibold text-[#00866b]">Stok {variant.stock}</span></button>)}
+                </div>
+              </div>)}
             </div>
           </section>
         </div>
