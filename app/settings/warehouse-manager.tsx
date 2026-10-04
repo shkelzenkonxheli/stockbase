@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useState, useTransition } from "react";
@@ -29,6 +29,8 @@ export function WarehouseManager({ warehouses }: WarehouseManagerProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [createName, setCreateName] = useState("");
+  const [showCreate, setShowCreate] = useState(false);
+  const [editingId, setEditingId] = useState<number | null>(null);
   const [message, setMessage] = useState<{ type: "success" | "error"; text: string } | null>(null);
   const [drafts, setDrafts] = useState<Record<number, { name: string; isActive: boolean }>>(() =>
     Object.fromEntries(
@@ -102,6 +104,7 @@ export function WarehouseManager({ warehouses }: WarehouseManagerProps) {
         "Depoja u krijua me sukses.",
       );
       setCreateName("");
+      setShowCreate(false);
     } catch (error) {
       setMessage({
         type: "error",
@@ -126,6 +129,7 @@ export function WarehouseManager({ warehouses }: WarehouseManagerProps) {
         },
         "Depoja u perditesua me sukses.",
       );
+      setEditingId(null);
     } catch (error) {
       setMessage({
         type: "error",
@@ -157,187 +161,42 @@ export function WarehouseManager({ warehouses }: WarehouseManagerProps) {
   }
 
   return (
-    <div className="mx-auto max-w-3xl space-y-5">
-      <section className="rounded-[24px] border border-slate-200 bg-white p-4 sm:p-5">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-end">
-          <div className="min-w-0 flex-1 space-y-2">
-            <label htmlFor="warehouse-create-name" className="block text-sm font-medium text-slate-800">
-              Shto depo te re
-            </label>
-            <input
-              id="warehouse-create-name"
-              type="text"
-              value={createName}
-              onChange={(event) => setCreateName(event.target.value)}
-              placeholder="p.sh. Depo Qendrore"
-              className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-200"
-            />
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div><h2 className="text-xl font-bold tracking-tight text-slate-950">Depot</h2><p className="mt-1 text-sm text-slate-600">Shiko stokun dhe menaxho depot e biznesit.</p></div>
+        <button type="button" onClick={() => setShowCreate((value) => !value)} className="inline-flex min-h-10 items-center gap-2 rounded-xl bg-emerald-700 px-4 text-sm font-semibold text-white transition hover:bg-emerald-800">+ Shto depo</button>
+      </div>
+      {showCreate ? <section className="rounded-2xl border border-emerald-200 bg-emerald-50/50 p-4">
+        <label htmlFor="warehouse-create-name" className="block text-sm font-semibold text-slate-800">Emri i depos se re</label>
+        <div className="mt-3 flex flex-wrap gap-2"><input id="warehouse-create-name" type="text" value={createName} onChange={(event) => setCreateName(event.target.value)} onKeyDown={(event) => { if (event.key === "Enter") { event.preventDefault(); if (!isPending) void handleCreate(); } }} placeholder="p.sh. Depo Qendrore" className="min-h-11 min-w-0 flex-1 rounded-xl border border-slate-300 bg-white px-4 text-sm outline-none focus:border-emerald-600" /><button type="button" onClick={() => void handleCreate()} disabled={isPending} className="rounded-xl bg-slate-950 px-5 text-sm font-semibold text-white disabled:opacity-60">Krijo depon</button></div>
+      </section> : null}
+      {message ? <div role="status" className={`rounded-xl border px-4 py-3 text-sm ${message.type === "success" ? "border-emerald-200 bg-emerald-50 text-emerald-800" : "border-rose-200 bg-rose-50 text-rose-700"}`}>{message.text}</div> : null}
+      {hasWarehouses ? sortedWarehouses.map((warehouse) => {
+        const draft = drafts[warehouse.id] ?? { name: warehouse.name, isActive: warehouse.isActive };
+        const hasStock = warehouse.totalStock > 0;
+        const hasAssignments = warehouse.assignedProductCount > 0;
+        const hasHistory = warehouse._count.orders > 0 || warehouse._count.orderItems > 0 || warehouse._count.stockMovements > 0 || warehouse._count.inventoryCounts > 0 || warehouse._count.auditLogs > 0;
+        const canDeactivate = !warehouse.isActive || (!hasStock && activeWarehouseCount > 1);
+        const canDelete = !hasStock && !hasAssignments && !hasHistory;
+        const notes = [hasStock ? "Ka stok aktiv" : null, hasAssignments ? "Ka produkte te lidhura" : null, hasHistory ? "Ka histori ne sistem" : null, warehouse.isActive && activeWarehouseCount <= 1 ? "Depoja e fundit aktive" : null].filter(Boolean);
+        return <article key={warehouse.id} className="rounded-2xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5">
+          <div className="flex flex-wrap items-start gap-3">
+            <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-slate-50 text-emerald-900" aria-hidden="true"><svg viewBox="0 0 24 24" className="h-6 w-6 fill-none stroke-current stroke-[1.7]"><path d="M3 20V8l9-5 9 5v12H3ZM8 20v-7h8v7M3 10h18" /></svg></span>
+            <div className="min-w-0 flex-1"><div className="flex flex-wrap items-center gap-2"><h3 className="text-base font-bold text-slate-950">{warehouse.name}</h3><span className={`rounded-full px-2.5 py-1 text-[11px] font-semibold ${warehouse.isActive ? "bg-emerald-50 text-emerald-700" : "bg-slate-100 text-slate-500"}`}>{warehouse.isActive ? "Aktive" : "Jo aktive"}</span></div><p className="mt-1 text-xs text-slate-500">{warehouse.slug}</p></div>
+            <div className="flex gap-2"><button type="button" onClick={() => setEditingId(editingId === warehouse.id ? null : warehouse.id)} className="rounded-xl border border-slate-200 px-3 py-2 text-xs font-semibold text-slate-700 hover:bg-slate-50">Ndrysho</button><button type="button" onClick={() => void handleDelete(warehouse.id)} disabled={isPending || !canDelete} title={!canDelete ? notes.join(", ") : "Fshi depon"} className="rounded-xl border border-rose-100 bg-rose-50 px-3 py-2 text-xs font-semibold text-rose-700 disabled:cursor-not-allowed disabled:opacity-40">Fshi</button></div>
           </div>
-          <button
-            type="button"
-            onClick={() => void handleCreate()}
-            disabled={isPending}
-            className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:opacity-60"
-          >
-            Shto depo
-          </button>
-        </div>
-        <p className="mt-3 text-xs text-slate-500">
-          Depot menaxhohen nga databaza. Mund t'i riemerosh ose caktivizosh pa prekur konfigurimin tjeter.
-        </p>
-      </section>
-
-      {message ? (
-        <div
-          className={`rounded-2xl px-4 py-3 text-sm ${
-            message.type === "success"
-              ? "border border-emerald-200 bg-emerald-50 text-emerald-800"
-              : "border border-rose-200 bg-rose-50 text-rose-700"
-          }`}
-        >
-          {message.text}
-        </div>
-      ) : null}
-
-      <section className="space-y-3">
-        {hasWarehouses ? (
-          sortedWarehouses.map((warehouse) => {
-            const draft = drafts[warehouse.id] ?? {
-              name: warehouse.name,
-              isActive: warehouse.isActive,
-            };
-            const hasStock = warehouse.totalStock > 0;
-            const hasAssignments = warehouse.assignedProductCount > 0;
-            const hasHistory =
-              warehouse._count.orders > 0 ||
-              warehouse._count.orderItems > 0 ||
-              warehouse._count.stockMovements > 0 ||
-              warehouse._count.inventoryCounts > 0 ||
-              warehouse._count.auditLogs > 0;
-            const canDeactivate = !warehouse.isActive || (!hasStock && activeWarehouseCount > 1);
-            const canDelete = !hasStock && !hasAssignments && !hasHistory;
-            const statusNotes = [
-              hasStock ? "Ka stok aktiv" : null,
-              hasAssignments ? "Ka produkte te lidhura" : null,
-              hasHistory ? "Ka histori ne sistem" : null,
-              warehouse.isActive && activeWarehouseCount <= 1 ? "Eshte depoja e fundit aktive" : null,
-            ].filter(Boolean) as string[];
-
-            return (
-              <article
-                key={warehouse.id}
-                className="rounded-[22px] border border-slate-200 bg-white px-4 py-4 shadow-sm"
-              >
-                <div className="grid gap-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-start">
-                  <div className="space-y-4">
-                    <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
-                      <div className="space-y-2">
-                        <label className="block text-sm font-medium text-slate-800">Emri i depos</label>
-                        <input
-                          type="text"
-                          value={draft.name}
-                          onChange={(event) => updateDraft(warehouse.id, "name", event.target.value)}
-                          className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-200"
-                        />
-                      </div>
-                      <label className="inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-sm font-medium text-slate-700">
-                        <input
-                          type="checkbox"
-                          checked={draft.isActive}
-                          onChange={(event) => updateDraft(warehouse.id, "isActive", event.target.checked)}
-                          className="h-4 w-4 rounded border-slate-300 text-slate-900 focus:ring-slate-300"
-                        />
-                        Aktive
-                      </label>
-                    </div>
-
-                    <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
-                      <div className="rounded-2xl bg-slate-50 px-3 py-3">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Stok total</p>
-                        <p className="mt-1 text-sm font-semibold text-slate-950">{warehouse.totalStock}</p>
-                      </div>
-                      <div className="rounded-2xl bg-slate-50 px-3 py-3">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Variante</p>
-                        <p className="mt-1 text-sm font-semibold text-slate-950">{warehouse.variantCount}</p>
-                      </div>
-                      <div className="rounded-2xl bg-slate-50 px-3 py-3">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Produkte</p>
-                        <p className="mt-1 text-sm font-semibold text-slate-950">{warehouse.assignedProductCount}</p>
-                      </div>
-                      <div className="rounded-2xl bg-slate-50 px-3 py-3">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Porosi</p>
-                        <p className="mt-1 text-sm font-semibold text-slate-950">{warehouse._count.orders + warehouse._count.orderItems}</p>
-                      </div>
-                      <div className="rounded-2xl bg-slate-50 px-3 py-3">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Levizje</p>
-                        <p className="mt-1 text-sm font-semibold text-slate-950">{warehouse._count.stockMovements}</p>
-                      </div>
-                      <div className="rounded-2xl bg-slate-50 px-3 py-3">
-                        <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Numerime</p>
-                        <p className="mt-1 text-sm font-semibold text-slate-950">{warehouse._count.inventoryCounts}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2">
-                      <span
-                        className={`rounded-full px-3 py-1 text-xs font-medium ${
-                          draft.isActive ? "bg-emerald-100 text-emerald-700" : "bg-slate-100 text-slate-700"
-                        }`}
-                      >
-                        {draft.isActive ? "Aktive" : "Jo aktive"}
-                      </span>
-                      {!canDeactivate ? (
-                        <span className="rounded-full bg-amber-100 px-3 py-1 text-xs font-medium text-amber-800">
-                          Nuk caktivizohet tani
-                        </span>
-                      ) : null}
-                      {!canDelete ? (
-                        <span className="rounded-full bg-rose-100 px-3 py-1 text-xs font-medium text-rose-700">
-                          Nuk fshihet tani
-                        </span>
-                      ) : null}
-                    </div>
-
-                    {statusNotes.length > 0 ? (
-                      <div className="rounded-2xl border border-slate-200 bg-slate-50 px-3 py-3 text-xs text-slate-600">
-                        <p className="font-semibold uppercase tracking-[0.14em] text-slate-500">Kufizime</p>
-                        <p className="mt-1">{statusNotes.join(" · ")}.</p>
-                      </div>
-                    ) : (
-                      <div className="rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-3 text-xs text-emerald-800">
-                        Kjo depo mund te caktivizohet ose fshihet nese nuk lidhet me te dhena te reja.
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="flex flex-wrap gap-2 lg:justify-end">
-                    <button
-                      type="button"
-                      onClick={() => void handleSave(warehouse.id)}
-                      disabled={isPending}
-                      className="inline-flex items-center justify-center rounded-2xl border border-slate-300 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-slate-400 hover:bg-slate-50 disabled:opacity-60"
-                    >
-                      Ruaj
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => void handleDelete(warehouse.id)}
-                      disabled={isPending || !canDelete}
-                      className="inline-flex items-center justify-center rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-medium text-rose-700 transition hover:border-rose-300 hover:bg-rose-100 disabled:opacity-60"
-                    >
-                      Fshi
-                    </button>
-                  </div>
-                </div>
-              </article>
-            );
-          })
-        ) : (
-          <div className="rounded-[22px] border border-dashed border-slate-300 bg-white px-4 py-6 text-sm text-slate-600">
-            Nuk ka ende depo. Shto nje depo dhe sistemi do ta perdore ne produktet, stokun, porosite dhe transferet.
-          </div>
-        )}
-      </section>
+          <div className="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-3 xl:grid-cols-6">{[
+            ["Stok total", warehouse.totalStock], ["Variante", warehouse.variantCount], ["Produkte", warehouse.assignedProductCount],
+            ["Porosi", warehouse._count.orders + warehouse._count.orderItems], ["Levizje", warehouse._count.stockMovements], ["Numerime", warehouse._count.inventoryCounts],
+          ].map(([label, value]) => <div key={label} className="rounded-xl bg-slate-50 px-3 py-2.5"><p className="text-[11px] text-slate-500">{label}</p><p className="mt-1 text-sm font-bold text-slate-950">{value}</p></div>)}</div>
+          <div className="mt-4 rounded-xl bg-slate-50 px-3 py-2.5 text-xs text-slate-600"><span className="font-semibold text-slate-700">Gjendja: </span>{notes.length ? notes.join(" / ") : "Pa kufizime. Depoja mund te ndryshohet ose fshihet."}</div>
+          {editingId === warehouse.id ? <div className="mt-4 grid gap-3 rounded-xl border border-emerald-200 bg-emerald-50/40 p-4 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-end">
+            <label className="text-xs font-semibold text-slate-700">Emri i depos<input type="text" value={draft.name} onChange={(event) => updateDraft(warehouse.id, "name", event.target.value)} className="mt-2 block min-h-11 w-full rounded-xl border border-slate-300 bg-white px-3 text-sm outline-none focus:border-emerald-600" /></label>
+            <label className="inline-flex min-h-11 items-center gap-2 text-sm text-slate-700"><input type="checkbox" checked={draft.isActive} disabled={!canDeactivate && warehouse.isActive} onChange={(event) => updateDraft(warehouse.id, "isActive", event.target.checked)} /> Aktive</label>
+            <div className="flex flex-wrap gap-2 sm:col-span-2"><button type="button" onClick={() => void handleSave(warehouse.id)} disabled={isPending} className="rounded-xl bg-emerald-700 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60">Ruaj depon</button><button type="button" onClick={() => { setDrafts((current) => ({ ...current, [warehouse.id]: { name: warehouse.name, isActive: warehouse.isActive } })); setEditingId(null); }} className="rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-600">Anulo</button></div>
+          </div> : null}
+        </article>;
+      }) : <div className="rounded-2xl border border-dashed border-slate-200 bg-white px-4 py-8 text-center text-sm text-slate-500">Nuk ka ende depo. Shto depon e pare per te filluar.</div>}
     </div>
   );
 }

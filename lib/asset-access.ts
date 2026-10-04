@@ -8,7 +8,7 @@ const SIGNATURE_LIFETIME_MS = 15 * 60 * 1000;
 export type AssetKey = {
   key: string;
   path: string;
-  kind: "product" | "social";
+  kind: "product" | "social" | "logo";
   ownerId: number;
 };
 
@@ -29,12 +29,12 @@ export function parseAssetPath(pathname: string, appFolder: string): AssetKey | 
     const folderParts = folder.split("/");
     if (parts.length !== folderParts.length + 3 || !folderParts.every((part, index) => parts[index] === part)) continue;
     const [kind, id, filename] = parts.slice(folderParts.length);
-    if ((kind !== "products" && kind !== "social") || !/^[1-9]\d*$/.test(id)) return null;
+    if ((kind !== "products" && kind !== "social" && kind !== "logos") || !/^[1-9]\d*$/.test(id)) return null;
     const ownerId = Number(id);
     const extension = filename.split(".").pop()?.toLowerCase();
     if (!Number.isSafeInteger(ownerId) || !extension || !IMAGE_EXTENSIONS.has(extension)) return null;
     const key = parts.join("/");
-    return { key, path: `${prefix}${parts.map(encodeURIComponent).join("/")}`, kind: kind === "products" ? "product" : "social", ownerId };
+    return { key, path: `${prefix}${parts.map(encodeURIComponent).join("/")}`, kind: kind === "products" ? "product" : kind === "logos" ? "logo" : "social", ownerId };
   }
   return null;
 }

@@ -149,7 +149,7 @@ async function login(formData: FormData) {
     redirect("/platform/tenants");
   }
 
-  redirect("/");
+  redirect("/workspace");
 }
 
 function getErrorMessage(error?: string) {
@@ -210,7 +210,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
       redirect("/subscription");
     }
 
-    redirect("/");
+    redirect("/workspace");
   }
 
   const usersCount = await prisma.user.count();

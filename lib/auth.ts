@@ -1,4 +1,5 @@
 import { randomBytes } from "node:crypto";
+import { cache } from "react";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { parseTenantCatalogConfig, type TenantCatalogConfig } from "@/lib/product-taxonomy";
@@ -93,7 +94,7 @@ export function getTenantAccessBlockedReason(input: {
   return null;
 }
 
-export async function getCurrentUser(): Promise<AuthUser | null> {
+async function loadCurrentUser(): Promise<AuthUser | null> {
   const cookieStore = await cookies();
   const sessionToken = cookieStore.get(SESSION_COOKIE)?.value;
 
@@ -150,7 +151,7 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
     });
 
     if (tenantId) {
-      return getCurrentUser();
+      return loadCurrentUser();
     }
   }
 
@@ -246,6 +247,8 @@ export async function getCurrentUser(): Promise<AuthUser | null> {
       : null,
   };
 }
+
+export const getCurrentUser = cache(loadCurrentUser);
 
 export async function requireUser() {
   const user = await getCurrentUser();

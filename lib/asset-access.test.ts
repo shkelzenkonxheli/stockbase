@@ -7,6 +7,9 @@ test("only product and social raster image paths in known folders are public ass
     key: "stockbase/products/42/123-shoe.jpg", path: "/api/assets/stockbase/products/42/123-shoe.jpg", kind: "product", ownerId: 42,
   });
   assert.equal(parseAssetPath("/api/assets/stockbase-test/social/3/123.png", "stockbase")?.kind, "social");
+  assert.deepEqual(parseAssetPath("/api/assets/stockbase/logos/3/business.png", "stockbase"), {
+    key: "stockbase/logos/3/business.png", path: "/api/assets/stockbase/logos/3/business.png", kind: "logo", ownerId: 3,
+  });
   assert.equal(parseAssetPath("/api/assets/company/media/products/42/photo.webp", "company/media")?.ownerId, 42);
   for (const path of [
     "/api/assets/stockbase/backups/database.sql", "/api/assets/other/products/42/photo.jpg",

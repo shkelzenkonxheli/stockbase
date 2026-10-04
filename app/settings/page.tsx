@@ -1,21 +1,22 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { FlashMessage } from "@/app/components/flash-message";
-import { ConfirmActionButton } from "@/app/components/confirm-action-button";
 import { SettingsListViewEditor } from "@/app/components/settings-list-view-editor";
 import { SettingsCategoryCard } from "@/app/components/settings-category-card";
+import { SettingsCategoryBrowser } from "@/app/components/settings-category-browser";
+import { SettingsLogoPicker } from "@/app/components/settings-logo-picker";
 import { SettingsTabs } from "@/app/components/settings-tabs";
 import { WarehouseManager } from "./warehouse-manager";
 import { requireRole } from "@/lib/auth";
 import { createTenantCategory, ensureTenantCategories } from "@/lib/categories";
 import { prisma } from "@/lib/prisma";
+import { saveTenantLogo } from "@/lib/tenant-logo";
 import { getTenantWarehouseSummaries, syncTenantWarehouses } from "@/lib/warehouses";
 import {
   CATALOG_TYPES,
   createCategoryFieldKey,
-  getCatalogAllowedCategories,
   getCatalogAwareCategoryConfig,
   getOrderListViewConfig,
   getProductListViewConfig,
@@ -269,9 +270,10 @@ async function updateTenantSettings(formData: FormData) {
 
   const existingSettings = await prisma.tenantSettings.findUnique({
     where: { tenantId },
-    select: { catalogConfig: true, currency: true, primaryColor: true },
+    select: { catalogConfig: true, currency: true, primaryColor: true, logoUrl: true },
   });
   const existingTenantConfig = parseTenantCatalogConfig(existingSettings?.catalogConfig);
+  let logoUrl = existingSettings?.logoUrl ?? null;
   const currentProductListView = getProductListViewConfig(existingTenantConfig);
   const currentOrderListView = getOrderListViewConfig(existingTenantConfig);
 
@@ -336,6 +338,16 @@ async function updateTenantSettings(formData: FormData) {
     redirect("/settings?error=no-active-categories");
   }
 
+  const logoFile = formData.get("businessLogo");
+  if (logoFile instanceof File && logoFile.size > 0) {
+    try {
+      logoUrl = await saveTenantLogo(tenantId, logoFile);
+    } catch (error) {
+      console.error("Tenant logo upload failed", { tenantId, message: error instanceof Error ? error.message : "Unknown error" });
+      redirect("/settings?error=logo-upload");
+    }
+  }
+
   await prisma.$transaction([
     prisma.tenant.update({
       where: { id: tenantId },
@@ -352,6 +364,7 @@ async function updateTenantSettings(formData: FormData) {
         language,
         currency: existingSettings?.currency ?? "EUR",
         primaryColor: existingSettings?.primaryColor ?? null,
+        logoUrl,
         catalogConfig,
       },
       update: {
@@ -359,6 +372,7 @@ async function updateTenantSettings(formData: FormData) {
         language,
         currency: existingSettings?.currency ?? "EUR",
         primaryColor: existingSettings?.primaryColor ?? null,
+        logoUrl,
         catalogConfig,
       },
     }),
@@ -501,6 +515,10 @@ function getMessage(success?: string, error?: string) {
     };
   }
 
+  if (error === "logo-upload") {
+    return { type: "error" as const, text: "Logoja nuk u ngarkua. Perdore JPG, PNG ose WebP deri ne 2 MB dhe provo perseri." };
+  }
+
   if (success === "category-deleted") {
     return {
       type: "success" as const,
@@ -592,6 +610,11 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
           products: true,
         },
       },
+      products: {
+        where: { variants: { some: { imagePath: { not: null } } } },
+        take: 1,
+        select: { variants: { where: { imagePath: { not: null } }, take: 1, select: { imagePath: true } } },
+      },
     },
   });
 
@@ -600,6 +623,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
     categoryName: category.name,
     isActive: category.isActive,
     productCount: category._count.products,
+    imagePath: category.products[0]?.variants[0]?.imagePath ?? null,
     fieldKey: createCategoryFieldKey(category.name),
     config: getCatalogAwareCategoryConfig(
       tenant.catalogType,
@@ -610,19 +634,12 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
   }));
   const warehouseSummaries = await getTenantWarehouseSummaries(tenantId, tenantCatalogConfig);
   return (
-    <main className="px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-6xl space-y-6">
-        <section className="rounded-[30px] border border-slate-200 bg-white px-5 py-6 shadow-[0_18px_45px_rgba(15,23,42,0.06)] sm:px-6 lg:px-8">
-          <p className="text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">
-            Tenant Settings
-          </p>
-          <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">
-            Konfigurimi i tenant-it
-          </h1>
-          <p className="mt-3 max-w-3xl text-sm leading-6 text-slate-600 sm:text-base">
-            Ketu rregullon biznesin, llojin e katalogut dhe kategorite qe klienti
-            do te perdore gjate menaxhimit te produkteve.
-          </p>
+    <main className="min-h-screen bg-[linear-gradient(180deg,#f7faf8_0%,#eef5f1_100%)] px-4 py-7 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl space-y-5">
+        <section className="px-1 pb-1">
+          <p className="text-xs font-bold uppercase tracking-[0.18em] text-emerald-700">StockBase / Konfigurimi</p>
+          <h1 className="mt-2 text-3xl font-bold tracking-tight text-slate-950">Settings</h1>
+          <p className="mt-1 text-sm text-slate-600">Menaxho biznesin, katalogun, depot dhe menyren si shfaqen te dhenat.</p>
         </section>
 
         {message ? (
@@ -633,18 +650,20 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
           />
         ) : null}
 
-        <section>
+        <section aria-label="Konfigurimi i biznesit">
           <form
             action={updateTenantSettings}
-            className="rounded-[30px] border border-slate-200 bg-white px-5 py-6 shadow-[0_18px_45px_rgba(15,23,42,0.06)] sm:px-6 lg:px-8"
+            className="overflow-clip rounded-[24px] border border-slate-200 bg-white shadow-[0_18px_45px_rgba(15,23,42,0.06)]"
           >
-            <div className="mx-auto max-w-3xl space-y-6">
               <SettingsTabs
                 settings={
-                  <div className="mx-auto max-w-2xl space-y-5">
-                    <section className="rounded-[24px] border border-slate-200 bg-white p-4 sm:p-5">
-                      <div className="grid gap-5 sm:grid-cols-2">
-                        <div className="space-y-2 sm:col-span-2">
+                  <div className="mx-auto max-w-4xl space-y-7">
+                    <section id="settings-profile" className="scroll-mt-24 border-b border-slate-200 pb-7">
+                      <h2 className="text-lg font-bold tracking-tight text-slate-950">Profili i biznesit</h2>
+                      <p className="mt-1 text-sm text-slate-600">Te dhenat baze qe perdoren ne StockBase.</p>
+                      <div className="mt-5 grid gap-6 md:grid-cols-[minmax(0,1fr)_240px]">
+                        <div className="space-y-5">
+                        <div className="min-w-0 space-y-2">
                           <label htmlFor="businessName" className="block text-sm font-medium text-slate-800">
                             Emri i biznesit
                           </label>
@@ -653,11 +672,11 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
                             name="businessName"
                             type="text"
                             defaultValue={tenant.settings?.businessName ?? tenant.name}
-                            className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-200"
+                            className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-600 focus:ring-4 focus:ring-emerald-100"
                           />
                         </div>
 
-                        <div className="space-y-2 sm:col-span-2">
+                        <div className="min-w-0 space-y-2">
                           <label htmlFor="catalogType" className="block text-sm font-medium text-slate-800">
                             Lloji i katalogut
                           </label>
@@ -665,7 +684,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
                             id="catalogType"
                             name="catalogType"
                             defaultValue={tenant.catalogType}
-                            className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-200"
+                            className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-600 focus:ring-4 focus:ring-emerald-100"
                           >
                             {catalogOptions.map((option) => (
                               <option key={option.value} value={option.value}>
@@ -675,7 +694,15 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
                           </select>
                         </div>
 
-                        <div className="space-y-2">
+                        </div>
+                        <SettingsLogoPicker logoUrl={tenant.settings?.logoUrl ?? null} />
+                      </div>
+                    </section>
+
+                    <section id="settings-language" className="scroll-mt-24 border-b border-slate-200 pb-7">
+                      <h2 className="text-lg font-bold tracking-tight text-slate-950">Gjuha</h2>
+                      <p className="mt-1 text-sm text-slate-600">Zgjidh gjuhen e paracaktuar te biznesit.</p>
+                      <div className="mt-5 max-w-sm space-y-2">
                           <label htmlFor="language" className="block text-sm font-medium text-slate-800">
                             Gjuha
                           </label>
@@ -683,18 +710,19 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
                             id="language"
                             name="language"
                             defaultValue={tenant.settings?.language ?? "sq"}
-                            className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-200"
+                            className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-600 focus:ring-4 focus:ring-emerald-100"
                           >
                             <option value="sq">Shqip</option>
                             <option value="en">English</option>
                           </select>
-                        </div>
                       </div>
                     </section>
 
-                    <section className="rounded-[24px] border border-slate-200 bg-white p-4 sm:p-5">
-                      <div className="grid gap-4 sm:grid-cols-2">
-                        <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                    <section id="settings-catalog" className="scroll-mt-24 border-b border-slate-200 pb-7">
+                      <h2 className="text-lg font-bold tracking-tight text-slate-950">Konfigurimi i katalogut</h2>
+                      <p className="mt-1 text-sm text-slate-600">Organizimi i produkteve dhe perdorimi i depove.</p>
+                      <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                        <div className="rounded-xl border border-slate-200 bg-slate-50/80 p-4">
                           <div className="flex flex-wrap items-center justify-between gap-3">
                             <div>
                               <p className="text-sm font-semibold text-slate-950">Depoja</p>
@@ -715,7 +743,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
                           </div>
                         </div>
 
-                        <div className="rounded-2xl border border-slate-200 bg-slate-50/70 p-4">
+                        <div className="rounded-xl border border-emerald-100 bg-emerald-50/60 p-4">
                           <p className="text-sm font-semibold text-slate-950">POS Module</p>
                           <p className="mt-1 text-sm text-slate-600">
                             Leja per POS menaxhohet nga platforma. Kur aktivizohet, ketu mund te konfiguroni depot dhe register-at.
@@ -727,7 +755,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
                       </p>
                     </section>
 
-                    <section className="rounded-[24px] border border-slate-200 bg-white p-4 sm:p-5">
+                    <section className="rounded-xl border border-slate-200 bg-slate-50/60 p-4 sm:p-5">
                       <div className="flex items-center justify-between gap-3">
                         <p className="text-xs font-semibold uppercase tracking-[0.16em] text-slate-500">
                           Subscription
@@ -774,96 +802,39 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
                   </div>
                 }
                 categories={
-                  <div className="mx-auto max-w-3xl space-y-5">
-                    <section className="rounded-[24px] border border-dashed border-slate-300 bg-white p-4 sm:p-5">
-                      <p className="text-base font-semibold text-slate-950">Shto kategori te re</p>
-                      <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                        <div className="space-y-2">
-                          <label htmlFor="newCategoryName" className="block text-sm font-medium text-slate-800">
-                            Emri i kategorise
+                  <SettingsCategoryBrowser
+                    categories={categoryConfigs.map((category) => ({ id: category.id, name: category.categoryName, productCount: category.productCount, isActive: category.isActive, imagePath: category.imagePath }))}
+                    createForm={
+                      <section className="rounded-2xl border border-emerald-200 bg-emerald-50/40 p-4 sm:p-5">
+                        <h3 className="text-sm font-bold text-slate-950">Kategori e re</h3>
+                        <p className="mt-1 text-xs text-slate-600">Ploteso emrin dhe bazen e fushave, pastaj shtyp Ruaj ndryshimet.</p>
+                        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+                          <label className="space-y-2 text-sm font-medium text-slate-800">Emri i kategorise
+                            <input name="newCategoryName" type="text" placeholder="p.sh. Lini shtepie Premium" className="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none focus:border-emerald-600" />
                           </label>
-                          <input
-                            id="newCategoryName"
-                            name="newCategoryName"
-                            type="text"
-                            placeholder="p.sh. Lini shtepie Premium"
-                            className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-200"
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <label htmlFor="newCategoryPreset" className="block text-sm font-medium text-slate-800">
-                            Baza e fushave
+                          <label className="space-y-2 text-sm font-medium text-slate-800">Baza e fushave
+                            <select name="newCategoryPreset" defaultValue="" className="block w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none focus:border-emerald-600">
+                              <option value="" disabled>Zgjidh preset-in</option>
+                              {PRODUCT_CATEGORIES.map((categoryName) => <option key={categoryName} value={categoryName}>{categoryName}</option>)}
+                            </select>
                           </label>
-                          <select
-                            id="newCategoryPreset"
-                            name="newCategoryPreset"
-                            defaultValue=""
-                            className="w-full rounded-2xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-200"
-                          >
-                            <option value="" disabled>
-                              Zgjidh preset-in
-                            </option>
-                            {PRODUCT_CATEGORIES.map((categoryName) => (
-                              <option key={categoryName} value={categoryName}>
-                                {categoryName}
-                              </option>
-                            ))}
-                          </select>
                         </div>
-                      </div>
-                    </section>
-
-                    <section className="space-y-3">
-                      {categoryConfigs.map((category) => (
-                        <div
-                          key={category.id}
-                          className="rounded-[22px] border border-slate-200 bg-white px-4 py-4"
-                        >
-                          <div className="flex flex-wrap items-center justify-between gap-3">
-                            <div>
-                              <p className="text-sm font-semibold text-slate-950">{category.categoryName}</p>
-                              <p className="mt-1 text-xs text-slate-500">
-                                {category.productCount} produkte
-                              </p>
-                            </div>
-                            <div className="flex flex-wrap items-center gap-2 text-xs font-medium">
-                              <span
-                                className={`rounded-full px-3 py-1 ${
-                                  category.isActive
-                                    ? "bg-emerald-100 text-emerald-700"
-                                    : "bg-amber-100 text-amber-700"
-                                }`}
-                              >
-                                {category.isActive ? "Aktive" : "Arkivuar"}
-                              </span>
-                              <span className="rounded-full bg-slate-100 px-3 py-1 text-slate-700">
-                                Konfiguroje te tab-i Variablat
-                              </span>
-                              <ConfirmActionButton
-                                action={deleteCategory}
-                                fieldName="categoryId"
-                                fieldValue={category.id}
-                                confirmMessage={
-                                  category.productCount > 0
-                                    ? "Kjo kategori ka produkte. Do te arkivohet dhe nuk do te shfaqet per produkte te reja. Vazhdon?"
-                                    : "A je i sigurt qe don ta fshish kete kategori?"
-                                }
-                                buttonLabel={category.productCount > 0 ? "Arkivo" : "Fshi"}
-                                className="inline-flex items-center justify-center rounded-full border border-rose-200 bg-rose-50 px-3 py-1 text-xs font-semibold text-rose-700 transition hover:bg-rose-100"
-                              />
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </section>
+                      </section>
+                    }
+                    details={categoryConfigs.map(({ id, categoryName, isActive, productCount, fieldKey, config }) => (
+                      <SettingsCategoryCard key={id} id={id} categoryName={categoryName} isActive={isActive} productCount={productCount} fieldKey={fieldKey} config={config} deleteCategoryAction={deleteCategory} defaultOpen embedded />
+                    ))}
+                  />
+                }
+                warehouses={
+                  <div className="mx-auto max-w-4xl space-y-5">
+                    <WarehouseManager warehouses={warehouseSummaries} />
                   </div>
                 }
-                warehouses={<WarehouseManager warehouses={warehouseSummaries} />}
                 variables={
                   <div className="mx-auto max-w-3xl space-y-5">
                     <div>
-                      <p className="text-sm font-semibold text-slate-950">Variablat sipas kategorise</p>
+                      <h2 className="text-lg font-bold tracking-tight text-slate-950">Variablat sipas kategorise</h2>
                       <p className="mt-1 text-sm text-slate-600">
                         Ketu vendos fushat qe klienti ploteson kur shton produkt dhe variant.
                       </p>
@@ -900,24 +871,18 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
                   </section>
                 }
                 footer={
-                  <div className="mx-auto mt-8 max-w-3xl border-t border-slate-200 pt-5">
-                    <div className="mx-auto max-w-2xl">
-                      <button
-                        type="submit"
-                        className="inline-flex w-full items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-[0_10px_25px_rgba(15,23,42,0.18)] transition hover:bg-slate-800 sm:w-auto sm:min-w-[220px]"
-                      >
-                        Ruaj ndryshimet
-                      </button>
-                    </div>
+                  <div className="flex flex-wrap items-center justify-end gap-3">
+                    <a href="/settings" className="inline-flex min-h-11 items-center justify-center rounded-xl border border-slate-200 bg-white px-5 text-sm font-semibold text-slate-700 transition hover:bg-slate-50">Anulo</a>
+                    <button type="submit" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-slate-950 px-5 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-950">
+                      <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 fill-none stroke-current stroke-[1.8]"><path d="M4 4h13l3 3v13H4V4Z" /><path d="M7 4v6h9V4M8 20v-7h8v7" /></svg>
+                      Ruaj ndryshimet
+                    </button>
                   </div>
                 }
               />
-            </div>
           </form>
         </section>
       </div>
     </main>
   );
 }
-
-

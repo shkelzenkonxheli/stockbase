@@ -18,6 +18,10 @@ async function sessionOwnsTenant(tenantId: number) {
 }
 
 async function authorizeAsset(requestUrl: URL, asset: AssetKey, secret: string) {
+  if (asset.kind === "logo") {
+    const settings = await prisma.tenantSettings.findUnique({ where: { tenantId: asset.ownerId }, select: { logoUrl: true } });
+    return { allowed: settings?.logoUrl === asset.path && await sessionOwnsTenant(asset.ownerId), cache: "private, no-store" };
+  }
   if (asset.kind === "social") {
     const signed = verifyAssetSignature(requestUrl, asset, asset.ownerId, secret);
     return signed ? { allowed: true, cache: "private, no-store" } : {

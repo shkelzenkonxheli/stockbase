@@ -20,6 +20,7 @@ type SettingsCategoryCardProps = {
   config: CategoryConfig;
   deleteCategoryAction: (formData: FormData) => void | Promise<void>;
   defaultOpen?: boolean;
+  embedded?: boolean;
 };
 
 type VariableDefinition = {
@@ -73,6 +74,7 @@ export function SettingsCategoryCard({
   config,
   deleteCategoryAction,
   defaultOpen = false,
+  embedded = false,
 }: SettingsCategoryCardProps) {
   const normalizedCategory = normalize(categoryName);
   const isFootwearCategory =
@@ -198,12 +200,12 @@ export function SettingsCategoryCard({
     <>
       <details
         open={defaultOpen}
-        className="group rounded-[26px] border border-slate-200 bg-white shadow-sm"
+        className={embedded ? "group space-y-4" : "group rounded-[26px] border border-slate-200 bg-white shadow-sm"}
       >
         <input type="hidden" name="categoryIds" value={id} />
         <input type="hidden" name={`categoryFieldKey__${id}`} value={fieldKey} />
 
-        <summary className="flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4">
+        <summary className={embedded ? "hidden" : "flex cursor-pointer list-none items-center justify-between gap-4 px-5 py-4"}>
           <div className="min-w-0">
             <div className="flex flex-wrap items-center gap-2">
               <p className="text-base font-semibold text-slate-950">{categoryName}</p>
@@ -236,8 +238,9 @@ export function SettingsCategoryCard({
           </svg>
         </summary>
 
-        <div className="space-y-5 border-t border-slate-200 px-5 py-5">
-          <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_220px_180px]">
+        <div className={embedded ? "space-y-5" : "space-y-5 border-t border-slate-200 px-5 py-5"}>
+          {embedded ? <div><h3 className="text-base font-bold text-slate-950">Informacioni i kategorise</h3><p className="mt-1 text-sm text-slate-500">Ndrysho emrin ose statusin e kategorise.</p></div> : null}
+          <div className="grid gap-4 rounded-2xl border border-slate-200 bg-white p-4 xl:grid-cols-[minmax(0,1fr)_220px_180px]">
             <div className="space-y-2">
               <label
                 htmlFor={`categoryName__${id}`}
@@ -282,6 +285,7 @@ export function SettingsCategoryCard({
             </div>
           </div>
 
+          {embedded ? <div><h3 className="text-base font-bold text-slate-950">Fushat e produktit</h3><p className="mt-1 text-sm text-slate-500">Rregullo fushat qe perdoren kur shton produkte ne kete kategori.</p></div> : null}
           <div className="grid gap-5">
             <section className="rounded-[22px] border border-slate-200 bg-slate-50/70 p-4">
               <SectionHeader title="Produkti" />
