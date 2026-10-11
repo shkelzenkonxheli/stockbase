@@ -2,13 +2,12 @@
 
 import { Children, type ReactNode, useMemo, useState } from "react";
 
-type TabKey = "settings" | "categories" | "variables" | "view" | "warehouses";
+type TabKey = "settings" | "categories" | "view" | "warehouses";
 type SectionKey = "profile" | "language" | "catalog" | TabKey;
 
 type SettingsTabsProps = {
   settings: ReactNode;
   categories: ReactNode;
-  variables: ReactNode;
   view: ReactNode;
   warehouses: ReactNode;
   footer?: ReactNode;
@@ -22,7 +21,6 @@ const NAV_GROUPS: Array<{ title: string; items: Array<{ key: SectionKey; label: 
   { title: "Katalogu", items: [
     { key: "catalog", label: "Konfigurimi", icon: "catalog" },
     { key: "categories", label: "Kategorite", icon: "categories" },
-    { key: "variables", label: "Variablat", icon: "variables" },
   ] },
   { title: "Inventari", items: [{ key: "warehouses", label: "Depot", icon: "warehouse" }] },
   { title: "Pamja", items: [{ key: "view", label: "Shfaqja e listave", icon: "view" }] },
@@ -33,21 +31,19 @@ const ICONS: Record<string, ReactNode> = {
   language: <><circle cx="12" cy="12" r="9" /><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18" /></>,
   catalog: <><path d="m12 3 8 4.5v9L12 21l-8-4.5v-9L12 3Z" /><path d="m4 7.5 8 4.5 8-4.5M12 12v9" /></>,
   categories: <><path d="m12 3 9 9-9 9-9-9 9-9Z" /><path d="M8 12h8" /></>,
-  variables: <><path d="M4 7h16M4 12h16M4 17h16" /><circle cx="9" cy="7" r="2" fill="white" /><circle cx="15" cy="12" r="2" fill="white" /><circle cx="10" cy="17" r="2" fill="white" /></>,
   warehouse: <><path d="M3 20V8l9-5 9 5v12H3Z" /><path d="M8 20v-7h8v7M3 10h18" /></>,
   view: <><rect x="3" y="4" width="18" height="14" rx="2" /><path d="M9 21h6M12 18v3" /></>,
 };
 
-export function SettingsTabs({ settings, categories, variables, view, warehouses, footer }: SettingsTabsProps) {
+export function SettingsTabs({ settings, categories, view, warehouses, footer }: SettingsTabsProps) {
   const [activeSection, setActiveSection] = useState<SectionKey>("profile");
   const activeTab: TabKey = activeSection === "profile" || activeSection === "language" || activeSection === "catalog" ? "settings" : activeSection;
   const panels = useMemo(() => ({
     settings: Children.toArray(settings),
     warehouses: Children.toArray(warehouses),
     categories: Children.toArray(categories),
-    variables: Children.toArray(variables),
     view: Children.toArray(view),
-  }), [categories, settings, variables, view, warehouses]);
+  }), [categories, settings, view, warehouses]);
 
   function openSection(key: SectionKey) {
     setActiveSection(key);
@@ -81,7 +77,6 @@ export function SettingsTabs({ settings, categories, variables, view, warehouses
           <div className={activeTab === "settings" ? "block" : "hidden"}>{panels.settings}</div>
           <div className={activeTab === "warehouses" ? "block" : "hidden"}>{panels.warehouses}</div>
           <div className={activeTab === "categories" ? "block" : "hidden"}>{panels.categories}</div>
-          <div className={activeTab === "variables" ? "block" : "hidden"}>{panels.variables}</div>
           <div className={activeTab === "view" ? "block" : "hidden"}>{panels.view}</div>
         </div>
         {activeTab !== "warehouses" && footer ? <div className="sticky bottom-0 z-20 border-t border-slate-200 bg-white/95 px-4 py-3 backdrop-blur sm:px-7 lg:px-9">{footer}</div> : null}

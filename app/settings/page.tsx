@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
@@ -277,13 +277,6 @@ async function updateTenantSettings(formData: FormData) {
   const currentProductListView = getProductListViewConfig(existingTenantConfig);
   const currentOrderListView = getOrderListViewConfig(existingTenantConfig);
 
-  const categoryIds = formData
-    .getAll("categoryIds")
-    .map((value) => Number(value))
-    .filter((value) => !Number.isNaN(value));
-  const submittedCategoryNames = new Set<string>();
-  let activeCategoriesCount = 0;
-
   const catalogConfig: TenantCatalogConfig = {
     warehouse: {
       enabled: isTruthyField(formData.get("warehouseEnabled")),
@@ -307,35 +300,11 @@ async function updateTenantSettings(formData: FormData) {
     ),
   };
 
-  for (const categoryId of categoryIds) {
-    const submittedName = formData.get(`categoryName__${categoryId}`)?.toString().trim();
-    const categoryFieldKey = formData.get(`categoryFieldKey__${categoryId}`)?.toString().trim();
-
-    if (!submittedName) {
-      redirect("/settings?error=category-name-required");
-    }
-
-    const normalizedName = normalizeCategoryName(submittedName);
-    if (submittedCategoryNames.has(normalizedName)) {
-      redirect("/settings?error=duplicate-category");
-    }
-
-    submittedCategoryNames.add(normalizedName);
-
-    if (categoryFieldKey && isTruthyField(formData.get(`${categoryFieldKey}__isActive`))) {
-      activeCategoriesCount += 1;
-    }
-  }
-
   if (newCategoryName) {
-    const normalizedNewCategoryName = normalizeCategoryName(newCategoryName);
-    if (submittedCategoryNames.has(normalizedNewCategoryName)) {
+    const existingNames = await prisma.category.findMany({ where: { tenantId }, select: { name: true } });
+    if (existingNames.some((item) => normalizeCategoryName(item.name) === normalizeCategoryName(newCategoryName))) {
       redirect("/settings?error=duplicate-category");
     }
-  }
-
-  if (activeCategoriesCount === 0) {
-    redirect("/settings?error=no-active-categories");
   }
 
   const logoFile = formData.get("businessLogo");
@@ -380,105 +349,9 @@ async function updateTenantSettings(formData: FormData) {
 
   await syncTenantWarehouses(tenantId, catalogConfig);
 
-  await ensureTenantCategories(tenantId, catalogType);
-
-  for (const categoryId of categoryIds) {
-    const categoryFieldKey = formData.get(`categoryFieldKey__${categoryId}`)?.toString().trim();
-    if (!categoryFieldKey) {
-      continue;
-    }
-
-    const categoryName = formData.get(`categoryName__${categoryId}`)?.toString().trim();
-    if (!categoryName) {
-      continue;
-    }
-
-    await prisma.category.updateMany({
-      where: {
-        id: categoryId,
-        tenantId,
-      },
-      data: {
-        name: categoryName,
-        isActive: isTruthyField(formData.get(`${categoryFieldKey}__isActive`)),
-        config: {
-          customVariantFields: sanitizeCustomVariantFields(
-            parseJsonArrayField(formData.get(`${categoryFieldKey}__customVariantFields`)),
-          ),
-          productNameLabel:
-            formData.get(`${categoryFieldKey}__productNameLabel`)?.toString().trim() || undefined,
-          productNamePlaceholder:
-            formData.get(`${categoryFieldKey}__productNamePlaceholder`)?.toString().trim() ||
-            undefined,
-          sizeLabel: formData.get(`${categoryFieldKey}__sizeLabel`)?.toString().trim() || undefined,
-          sizePlaceholder:
-            formData.get(`${categoryFieldKey}__sizePlaceholder`)?.toString().trim() || undefined,
-          sizeInputType:
-            (formData.get(`${categoryFieldKey}__sizeInputType`)?.toString().trim() as
-              | "text"
-              | "number"
-              | "select"
-              | undefined) ?? undefined,
-          sizeOptions: (formData.get(`${categoryFieldKey}__sizeOptions`)?.toString() ?? "")
-            .split(/\r?\n|,/)
-            .map((item) => item.trim())
-            .filter(Boolean),
-          colorLabel:
-            formData.get(`${categoryFieldKey}__colorLabel`)?.toString().trim() || undefined,
-          colorPlaceholder:
-            formData.get(`${categoryFieldKey}__colorPlaceholder`)?.toString().trim() || undefined,
-          colorInputType:
-            (formData.get(`${categoryFieldKey}__colorInputType`)?.toString().trim() as
-              | "text"
-              | "number"
-              | "select"
-              | undefined) ?? undefined,
-          colorOptions: (formData.get(`${categoryFieldKey}__colorOptions`)?.toString() ?? "")
-            .split(/\r?\n|,/)
-            .map((item) => item.trim())
-            .filter(Boolean),
-          materialLabel:
-            formData.get(`${categoryFieldKey}__materialLabel`)?.toString().trim() || undefined,
-          materialPlaceholder:
-            formData.get(`${categoryFieldKey}__materialPlaceholder`)?.toString().trim() ||
-            undefined,
-          materialInputType:
-            (formData.get(`${categoryFieldKey}__materialInputType`)?.toString().trim() as
-              | "text"
-              | "number"
-              | "select"
-              | undefined) ?? undefined,
-          materialOptions: (formData.get(`${categoryFieldKey}__materialOptions`)?.toString() ?? "")
-            .split(/\r?\n|,/)
-            .map((item) => item.trim())
-            .filter(Boolean),
-          powerLabel:
-            formData.get(`${categoryFieldKey}__powerLabel`)?.toString().trim() || undefined,
-          powerPlaceholder:
-            formData.get(`${categoryFieldKey}__powerPlaceholder`)?.toString().trim() || undefined,
-          powerInputType:
-            (formData.get(`${categoryFieldKey}__powerInputType`)?.toString().trim() as
-              | "text"
-              | "number"
-              | "select"
-              | undefined) ?? undefined,
-          powerOptions: (formData.get(`${categoryFieldKey}__powerOptions`)?.toString() ?? "")
-            .split(/\r?\n|,/)
-            .map((item) => item.trim())
-            .filter(Boolean),
-          variantHelper:
-            formData.get(`${categoryFieldKey}__variantHelper`)?.toString().trim() || undefined,
-          showMaterialField: isTruthyField(formData.get(`${categoryFieldKey}__showMaterialField`)),
-          showPowerField: isTruthyField(formData.get(`${categoryFieldKey}__showPowerField`)),
-          showProductBrandField: isTruthyField(
-            formData.get(`${categoryFieldKey}__showProductBrandField`),
-          ),
-          sharedVariantImageByColor: isTruthyField(
-            formData.get(`${categoryFieldKey}__sharedVariantImageByColor`),
-          ),
-        },
-      },
-    });
+  const categoryCount = await prisma.category.count({ where: { tenantId } });
+  if (categoryCount === 0 || currentUser.tenant?.catalogType !== catalogType) {
+    await ensureTenantCategories(tenantId, catalogType);
   }
 
   if (
@@ -501,6 +374,9 @@ async function updateTenantSettings(formData: FormData) {
 }
 
 function getMessage(success?: string, error?: string) {
+  if (success === "category-saved") {
+    return { type: "success" as const, text: "Kategoria dhe variablat u ruajten me sukses." };
+  }
   if (success === "1") {
     return {
       type: "success" as const,
@@ -552,6 +428,14 @@ function getMessage(success?: string, error?: string) {
       type: "error" as const,
       text: "Veprimi mbi kategorine deshtoi.",
     };
+  }
+
+  if (error === "category-name-required") {
+    return { type: "error" as const, text: "Shkruaj emrin e kategorise." };
+  }
+
+  if (error === "duplicate-category") {
+    return { type: "error" as const, text: "Nje kategori me kete emer ekziston tashme." };
   }
 
   return null;
@@ -803,6 +687,7 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
                 }
                 categories={
                   <SettingsCategoryBrowser
+                    saveAction={updateCategorySettings}
                     categories={categoryConfigs.map((category) => ({ id: category.id, name: category.categoryName, productCount: category.productCount, isActive: category.isActive, imagePath: category.imagePath }))}
                     createForm={
                       <section className="rounded-2xl border border-emerald-200 bg-emerald-50/40 p-4 sm:p-5">
@@ -822,37 +707,16 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
                       </section>
                     }
                     details={categoryConfigs.map(({ id, categoryName, isActive, productCount, fieldKey, config }) => (
-                      <SettingsCategoryCard key={id} id={id} categoryName={categoryName} isActive={isActive} productCount={productCount} fieldKey={fieldKey} config={config} deleteCategoryAction={deleteCategory} defaultOpen embedded />
+                      <div key={id} className="space-y-4">
+                        <SettingsCategoryCard id={id} categoryName={categoryName} isActive={isActive} productCount={productCount} fieldKey={fieldKey} config={config} deleteCategoryAction={deleteCategory} embedded />
+                        <SettingsCategoryCard id={id} categoryName={categoryName} isActive={isActive} productCount={productCount} fieldKey={fieldKey} config={config} deleteCategoryAction={deleteCategory} />
+                      </div>
                     ))}
                   />
                 }
                 warehouses={
                   <div className="mx-auto max-w-4xl space-y-5">
                     <WarehouseManager warehouses={warehouseSummaries} />
-                  </div>
-                }
-                variables={
-                  <div className="mx-auto max-w-3xl space-y-5">
-                    <div>
-                      <h2 className="text-lg font-bold tracking-tight text-slate-950">Variablat sipas kategorise</h2>
-                      <p className="mt-1 text-sm text-slate-600">
-                        Ketu vendos fushat qe klienti ploteson kur shton produkt dhe variant.
-                      </p>
-                    </div>
-
-                    {categoryConfigs.map(({ id, categoryName, isActive, productCount, fieldKey, config }, index) => (
-                      <SettingsCategoryCard
-                        key={id}
-                        id={id}
-                        categoryName={categoryName}
-                        isActive={isActive}
-                        productCount={productCount}
-                        fieldKey={fieldKey}
-                        config={config}
-                        deleteCategoryAction={deleteCategory}
-                        defaultOpen={index === 0}
-                      />
-                    ))}
                   </div>
                 }
                 view={
@@ -885,4 +749,80 @@ export default async function SettingsPage({ searchParams }: SettingsPageProps) 
       </div>
     </main>
   );
+}
+
+function readCategoryConfig(formData: FormData, fieldKey: string) {
+  const read = (key: string) => formData.get(`${fieldKey}__${key}`)?.toString().trim() || undefined;
+  const options = (key: string) => (read(key) ?? "").split(/\r?\n|,/).map((item) => item.trim()).filter(Boolean);
+  const inputType = (key: string) => read(key) as "text" | "number" | "select" | undefined;
+  return {
+    customVariantFields: sanitizeCustomVariantFields(parseJsonArrayField(formData.get(`${fieldKey}__customVariantFields`))),
+    productNameLabel: read("productNameLabel"),
+    productNamePlaceholder: read("productNamePlaceholder"),
+    sizeLabel: read("sizeLabel"),
+    sizePlaceholder: read("sizePlaceholder"),
+    sizeInputType: inputType("sizeInputType"),
+    sizeOptions: options("sizeOptions"),
+    colorLabel: read("colorLabel"),
+    colorPlaceholder: read("colorPlaceholder"),
+    colorInputType: inputType("colorInputType"),
+    colorOptions: options("colorOptions"),
+    materialLabel: read("materialLabel"),
+    materialPlaceholder: read("materialPlaceholder"),
+    materialInputType: inputType("materialInputType"),
+    materialOptions: options("materialOptions"),
+    powerLabel: read("powerLabel"),
+    powerPlaceholder: read("powerPlaceholder"),
+    powerInputType: inputType("powerInputType"),
+    powerOptions: options("powerOptions"),
+    variantHelper: read("variantHelper"),
+    showMaterialField: isTruthyField(formData.get(`${fieldKey}__showMaterialField`)),
+    showPowerField: isTruthyField(formData.get(`${fieldKey}__showPowerField`)),
+    showProductBrandField: isTruthyField(formData.get(`${fieldKey}__showProductBrandField`)),
+    sharedVariantImageByColor: isTruthyField(formData.get(`${fieldKey}__sharedVariantImageByColor`)),
+  };
+}
+
+async function updateCategorySettings(formData: FormData) {
+  "use server";
+
+  const currentUser = await requireRole(["SUPER_ADMIN"]);
+  const tenantId = currentUser.tenant?.id;
+  const categoryId = Number(formData.get("categoryIds"));
+  if (!tenantId || !Number.isInteger(categoryId) || categoryId <= 0) {
+    redirect("/settings?error=category-action");
+  }
+
+  const category = await prisma.category.findFirst({
+    where: { id: categoryId, tenantId },
+    select: { id: true, name: true },
+  });
+  if (!category) redirect("/settings?error=category-missing");
+
+  const name = formData.get(`categoryName__${categoryId}`)?.toString().trim();
+  if (!name) redirect("/settings?error=category-name-required");
+  const fieldKey = createCategoryFieldKey(category.name);
+  if (formData.get(`categoryFieldKey__${categoryId}`) !== fieldKey) {
+    redirect("/settings?error=category-action");
+  }
+  const isActive = isTruthyField(formData.get(`${fieldKey}__isActive`));
+  const otherCategories = await prisma.category.findMany({
+    where: { tenantId, id: { not: categoryId } },
+    select: { name: true, isActive: true },
+  });
+  if (otherCategories.some((item) => normalizeCategoryName(item.name) === normalizeCategoryName(name))) {
+    redirect("/settings?error=duplicate-category");
+  }
+  if (!isActive && !otherCategories.some((item) => item.isActive)) {
+    redirect("/settings?error=last-active-category");
+  }
+
+  await prisma.category.updateMany({
+    where: { id: categoryId, tenantId },
+    data: { name, isActive, config: readCategoryConfig(formData, fieldKey) },
+  });
+  revalidatePath("/products");
+  revalidatePath("/");
+  revalidatePath("/settings");
+  redirect("/settings?success=category-saved");
 }

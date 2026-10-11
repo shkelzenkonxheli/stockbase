@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useRef, useState } from "react";
@@ -52,13 +53,17 @@ export function OperationalLauncher({ groups }: { groups: OperationalGroup[] }) 
 
   return (
     <>
-      <section className="pt-8 sm:pt-11">
-        <p className="text-xs font-bold uppercase tracking-[0.25em] text-emerald-800">Qendra operative</p>
-        <div className="mt-2 flex flex-wrap items-end justify-between gap-3">
-          <div><h1 className="text-3xl font-black tracking-tight sm:text-4xl">Cfare do te besh sot?</h1><p className="mt-2 text-sm text-slate-600 sm:text-base">Zgjidh nje fushe pune. Veprimet e lidhura jane grupuar bashke.</p></div>
-          <span className="rounded-full border border-emerald-900/10 bg-white/70 px-3 py-1.5 text-xs font-semibold text-emerald-900">{groups.length} fusha pune</span>
+      <section className="pt-6 sm:pt-8">
+        <div className="relative isolate overflow-hidden rounded-[1.75rem] border border-emerald-900/10 bg-[#eef5ef] px-6 py-8 shadow-[0_16px_40px_rgba(7,45,34,0.06)] sm:px-9 sm:py-10">
+          <Image src="/marketing/concepts/sunlit-warehouse.webp" alt="" fill priority sizes="(max-width: 1280px) 100vw, 1280px" className="-z-20 object-cover object-center" aria-hidden="true" />
+          <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-r from-[#f8fbf8]/98 via-[#f8fbf8]/90 to-[#f8fbf8]/35 max-sm:bg-[#f8fbf8]/85" />
+          <p className="text-xs font-bold uppercase tracking-[0.25em] text-emerald-900">Qendra operative</p>
+          <div className="mt-2 flex flex-wrap items-end justify-between gap-3">
+            <div><h1 className="text-3xl font-black tracking-tight sm:text-4xl">Cfare do te besh sot?</h1><p className="mt-2 text-sm text-slate-700 sm:text-base">Zgjidh nje fushe pune. Veprimet e lidhura jane grupuar bashke.</p></div>
+            <span className="rounded-full border border-emerald-900/10 bg-white/85 px-3 py-1.5 text-xs font-semibold text-emerald-900 shadow-sm">{groups.length} fusha pune</span>
+          </div>
         </div>
-        <div className="mt-7 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-4">
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 xl:grid-cols-4">
           {groups.map((group, index) => {
             const shared = "group relative flex min-h-42 flex-col items-start rounded-[1.4rem] border border-emerald-950/10 bg-white/90 p-4 text-left shadow-[0_9px_28px_rgba(7,45,34,0.045)] transition hover:-translate-y-1 hover:border-emerald-500/50 hover:shadow-[0_15px_32px_rgba(7,45,34,0.1)] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700 sm:min-h-48 sm:p-5";
             const content = <><span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-emerald-50 text-emerald-900 group-hover:bg-emerald-950 group-hover:text-white"><Icon id={group.id} /></span><span className="mt-auto block"><span className="block text-base font-extrabold tracking-tight sm:text-lg">{group.title}</span><span className="mt-1 block text-xs leading-snug text-slate-500 sm:text-sm">{group.description}</span></span><span className="absolute right-4 top-4 rounded-full border border-emerald-900/10 px-2 py-1 text-[10px] font-bold text-emerald-800 sm:right-5 sm:top-5">{group.links.length === 1 ? "Hap" : `${group.links.length} opsione`}</span></>;

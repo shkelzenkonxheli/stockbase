@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import test from "node:test";
 import { parseAssetPath, signAssetUrl, verifyAssetSignature } from "./asset-access";
 
-test("only product and social raster image paths in known folders are public asset candidates", () => {
+test("only product, social and logo raster image paths in known folders are public asset candidates", () => {
   assert.deepEqual(parseAssetPath("/api/assets/stockbase/products/42/123-shoe.jpg", "stockbase"), {
     key: "stockbase/products/42/123-shoe.jpg", path: "/api/assets/stockbase/products/42/123-shoe.jpg", kind: "product", ownerId: 42,
   });
