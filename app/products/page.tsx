@@ -5,6 +5,7 @@ import type { Prisma } from "@/app/generated/prisma/client";
 import { ConfirmActionForm } from "@/app/components/confirm-action-form";
 import { hasRole, requireRole, requireUser } from "@/lib/auth";
 import { isLowStock } from "@/lib/inventory";
+import { isMultiWarehouseEnabled } from "@/lib/inventory-module-access";
 import {
   getCatalogAwareCategoryConfig,
   getProductListViewConfig,
@@ -155,6 +156,8 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
     selectedStock,
   );
   const warehouseRecords = await getTenantWarehouses(tenantId, tenant.catalogConfig);
+  const transferWarehouses = warehouseRecords.filter((warehouse) => warehouse.isActive).map(({ id, name }) => ({ id, name }));
+  const canTransferStock = canManageInventory && isMultiWarehouseEnabled(tenant.catalogConfig) && transferWarehouses.length > 1;
   const selectedWarehouseRecord =
     warehouseRecords.find(
       (warehouse) => warehouse.name.toLowerCase() === selectedWarehouse.toLowerCase(),
@@ -609,6 +612,8 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                               showImageButton={false}
                               canAdjustStock={canQuickAdjustStock}
                               canDeleteColor={canManageInventory}
+                              canTransferStock={canTransferStock}
+                              transferWarehouses={transferWarehouses}
                               className="w-full"
                             />
                             <Link
@@ -671,6 +676,8 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                             className="h-full w-full"
                             canAdjustStock={canQuickAdjustStock}
                             canDeleteColor={canManageInventory}
+                            canTransferStock={canTransferStock}
+                            transferWarehouses={transferWarehouses}
                           />
                         </div>
                         <div className="min-w-0 flex-1">
@@ -810,6 +817,8 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                                   className="h-full w-full"
                                   canAdjustStock={canQuickAdjustStock}
                                   canDeleteColor={canManageInventory}
+                                  canTransferStock={canTransferStock}
+                                  transferWarehouses={transferWarehouses}
                                 />
                               </div>
                               <div className="min-w-0">
@@ -858,6 +867,8 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                                 iconOnly
                                 canAdjustStock={canQuickAdjustStock}
                                 canDeleteColor={canManageInventory}
+                                canTransferStock={canTransferStock}
+                                transferWarehouses={transferWarehouses}
                               />
                               <Link
                                 href={buildProductDetailsHref(product.id, {

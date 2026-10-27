@@ -4,7 +4,8 @@ import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import { UploadedImage } from "@/app/components/uploaded-image";
-import { LOW_STOCK_THRESHOLD, getStockTone, isLowStock } from "@/lib/inventory";
+import { QuickStockTransferModal } from "./quick-stock-transfer-modal";
+import { getStockTone, isLowStock } from "@/lib/inventory";
 import {
   buildVariantIdentityKey,
   type CategoryConfig,
@@ -37,6 +38,8 @@ type ProductStockQuickViewProps = {
   iconOnly?: boolean;
   canAdjustStock?: boolean;
   canDeleteColor?: boolean;
+  canTransferStock?: boolean;
+  transferWarehouses?: { id: number; name: string }[];
 };
 
 type StockReason = "INCOMING_STOCK" | "CUSTOMER_RETURN";
@@ -301,6 +304,8 @@ export function ProductStockQuickView({
   iconOnly = false,
   canAdjustStock = false,
   canDeleteColor = false,
+  canTransferStock = false,
+  transferWarehouses = [],
 }: ProductStockQuickViewProps) {
   const router = useRouter();
   const stockViewMode = getStockViewMode(productBrand);
@@ -314,6 +319,7 @@ export function ProductStockQuickView({
     alt: string;
   } | null>(null);
   const [successToast, setSuccessToast] = useState<string | null>(null);
+  const [transferTarget, setTransferTarget] = useState<{ color?: string; variantId?: number } | null>(null);
 
   const [stockEditorColor, setStockEditorColor] = useState<string | null>(null);
   const [stockInputs, setStockInputs] = useState<Record<number, string>>({});
@@ -347,6 +353,7 @@ export function ProductStockQuickView({
   const [variantDraftSize, setVariantDraftSize] = useState("");
   const [variantDraftStock, setVariantDraftStock] = useState("");
   const [openColorActions, setOpenColorActions] = useState<string | null>(null);
+  const [colorMenuPosition, setColorMenuPosition] = useState({ top: 0, left: 0 });
   const [variantActionsTarget, setVariantActionsTarget] = useState<ProductQuickVariant | null>(
     null,
   );
@@ -543,6 +550,7 @@ export function ProductStockQuickView({
       showStock ||
       Boolean(previewImage) ||
       Boolean(variantActionsTarget) ||
+      Boolean(transferTarget) ||
       Boolean(deleteColorTarget) ||
       Boolean(deleteVariantTarget) ||
       Boolean(stockEditorColor) ||
@@ -578,6 +586,7 @@ export function ProductStockQuickView({
     stockEditorColor,
     stockEditorVariantId,
     variantActionsTarget,
+    transferTarget,
   ]);
 
   useEffect(() => {
@@ -1191,6 +1200,28 @@ export function ProductStockQuickView({
       {hasMounted
         ? createPortal(
             <>
+              {transferTarget && canTransferStock ? (
+                <QuickStockTransferModal
+                  productId={productId}
+                  productName={productName}
+                  target={transferTarget}
+                  warehouses={transferWarehouses}
+                  preferredWarehouseId={warehouseId}
+                  onClose={() => setTransferTarget(null)}
+                  onSuccess={({ fromWarehouseId, toWarehouseId, adjustments }) => {
+                    if (warehouseId === fromWarehouseId || warehouseId === toWarehouseId) {
+                      const sign = warehouseId === fromWarehouseId ? -1 : 1;
+                      const quantities = new Map(adjustments.map((item) => [item.variantId, item.quantity]));
+                      setVariantsState((current) => current.map((variant) => ({
+                        ...variant,
+                        stock: variant.stock + sign * (quantities.get(variant.id) ?? 0),
+                      })));
+                    }
+                    setSuccessToast("Stoku u transferua me sukses.");
+                    router.refresh();
+                  }}
+                />
+              ) : null}
               {successToast ? (
                 <div className="fixed inset-x-4 bottom-4 z-[230] rounded-2xl border border-emerald-200 bg-emerald-50 px-4 py-3 text-center text-sm font-medium text-emerald-700 shadow-lg sm:left-auto sm:right-4 sm:w-auto sm:text-left">
                   {successToast}
@@ -1271,7 +1302,7 @@ export function ProductStockQuickView({
               </div>
             </div>
 
-            <div className="flex-1 space-y-3 overflow-y-auto overflow-x-hidden px-3.5 py-2.5 sm:px-5 sm:py-4">
+            <div className="flex-1 space-y-3 overflow-y-auto overflow-x-hidden px-3.5 py-2.5 sm:px-5 sm:py-4" onScroll={() => setOpenColorActions(null)}>
               {stockViewMode === "electronics" ? (
                 groupedByModel.map((group) => {
                   const groupStockTone = getAggregateStockTone(group.variants);
@@ -1541,20 +1572,31 @@ export function ProductStockQuickView({
                         <div className="relative shrink-0 self-start">
                           <button
                             type="button"
-                            onClick={() =>
-                              setOpenColorActions((current) =>
-                                current === color ? null : color,
-                              )
-                            }
+                            onClick={(event) => {
+                              const rect = event.currentTarget.getBoundingClientRect();
+                              const menuHeight = canDeleteColor ? 210 : canTransferStock ? 178 : 146;
+                              const roomBelow = window.innerHeight - rect.bottom;
+                              const top = roomBelow >= menuHeight + 12
+                                ? rect.bottom + 6
+                                : Math.max(8, rect.top - menuHeight - 6);
+                              setColorMenuPosition({
+                                top,
+                                left: Math.max(8, Math.min(rect.right - 176, window.innerWidth - 184)),
+                              });
+                              setOpenColorActions((current) => current === color ? null : color);
+                            }}
                             className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:border-slate-300 hover:bg-slate-50 hover:text-slate-900"
                             aria-label={`Veprimet per ${color}`}
+                            aria-expanded={openColorActions === color}
                           >
                             <IconMore />
                           </button>
 
                           {openColorActions === color ? (
                             <>
-                              <div className="absolute right-0 top-12 z-20 hidden w-44 rounded-2xl border border-slate-200 bg-white p-1.5 shadow-xl sm:block">
+                              {createPortal(<>
+                                <div className="fixed inset-0 z-[299] hidden sm:block" onClick={() => setOpenColorActions(null)} />
+                                <div className="fixed z-[300] hidden w-44 rounded-2xl border border-slate-200 bg-white p-1 shadow-2xl sm:block" style={colorMenuPosition} onClick={(event) => event.stopPropagation()}>
                                 <button
                                   type="button"
                                   onClick={() => {
@@ -1604,6 +1646,11 @@ export function ProductStockQuickView({
                                   <IconPencil />
                                   Edito stokun
                                 </button>
+                                {canTransferStock ? (
+                                  <button type="button" onClick={() => { setOpenColorActions(null); setTransferTarget({ color }); }} className="flex w-full items-center gap-2 rounded-xl px-2.5 py-2 text-left text-[13px] font-medium text-emerald-700 transition hover:bg-emerald-50">
+                                    <IconBox /> Transfero
+                                  </button>
+                                ) : null}
                                 {canDeleteColor ? (
                                   <>
                                     <div className="my-1.5 h-px bg-slate-100" />
@@ -1623,7 +1670,8 @@ export function ProductStockQuickView({
                                     </button>
                                   </>
                                 ) : null}
-                              </div>
+                                </div>
+                              </>, document.body)}
 
                               <div
                                 className="fixed inset-0 z-20 bg-slate-950/15 sm:hidden"
@@ -1687,6 +1735,11 @@ export function ProductStockQuickView({
                                   <IconPencil />
                                   Edito stokun
                                 </button>
+                                {canTransferStock ? (
+                                  <button type="button" onClick={() => { setOpenColorActions(null); setTransferTarget({ color }); }} className="flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-left text-sm font-medium text-emerald-700 transition hover:bg-emerald-50">
+                                    <IconBox /> Transfero
+                                  </button>
+                                ) : null}
                                 {canDeleteColor ? (
                                   <>
                                     <div className="my-1.5 h-px bg-slate-100" />
@@ -1844,6 +1897,11 @@ export function ProductStockQuickView({
                     Edito stokun
                   </button>
                 </>
+              ) : null}
+              {canTransferStock ? (
+                <button type="button" onClick={() => { setTransferTarget({ variantId: variantActionsTarget.id }); setVariantActionsTarget(null); }} className="flex w-full items-center gap-2 rounded-2xl border border-emerald-200 bg-emerald-50 px-3 py-2.5 text-left text-sm font-medium text-emerald-800 transition hover:bg-emerald-100">
+                  <IconBox /> Transfero
+                </button>
               ) : null}
               {canDeleteColor ? (
                 <button

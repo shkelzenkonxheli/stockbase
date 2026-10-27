@@ -1,12 +1,12 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { FlashMessage } from "@/app/components/flash-message";
 import { requireMultiWarehouseAccess } from "@/lib/inventory-module-access";
-import { writeAuditLog } from "@/lib/audit-log";
 import { parseTenantCatalogConfig } from "@/lib/product-taxonomy";
 import { prisma } from "@/lib/prisma";
+import { parseStockTransferAdjustments } from "@/lib/stock-transfer";
+import { createStockTransfer, revalidateStockTransferPaths } from "@/lib/stock-transfer-write";
 import { getTenantWarehouses } from "@/lib/warehouses";
 import { TransferStockForm } from "./transfer-stock-form";
 
@@ -27,181 +27,25 @@ async function createTransfer(formData: FormData) {
   const currentUser = await requireMultiWarehouseAccess();
   const tenantId = currentUser.tenant?.id;
 
-  const productId = Number(formData.get("productId"));
   const fromWarehouseId = Number(formData.get("fromWarehouseId"));
   const toWarehouseId = Number(formData.get("toWarehouseId"));
-  const adjustmentsRaw = formData.get("adjustments")?.toString();
+  const adjustments = parseStockTransferAdjustments(formData.get("adjustments")?.toString() ?? null);
 
-  if (!tenantId || !productId || !fromWarehouseId || !toWarehouseId || !adjustmentsRaw) {
+  if (!tenantId || !Number.isSafeInteger(fromWarehouseId) || fromWarehouseId <= 0 ||
+      !Number.isSafeInteger(toWarehouseId) || toWarehouseId <= 0 || !adjustments) {
     redirect("/stock/transfer?error=validation");
   }
 
-  if (fromWarehouseId === toWarehouseId) {
-    redirect("/stock/transfer?error=same-warehouse");
-  }
-
-  let parsedAdjustments: unknown;
-
-  try {
-    parsedAdjustments = JSON.parse(adjustmentsRaw);
-  } catch {
-    redirect("/stock/transfer?error=validation");
-  }
-
-  if (!Array.isArray(parsedAdjustments) || parsedAdjustments.length === 0) {
-    redirect("/stock/transfer?error=validation");
-  }
-
-  const adjustments = parsedAdjustments
-    .map((item) => {
-      if (!item || typeof item !== "object") {
-        return null;
-      }
-
-      const candidate = item as { variantId?: unknown; quantity?: unknown };
-      const variantId = Number(candidate.variantId);
-      const quantity = Number(candidate.quantity);
-
-      if (!variantId || !quantity || quantity <= 0) {
-        return null;
-      }
-
-      return { variantId, quantity };
-    })
-    .filter((item): item is { variantId: number; quantity: number } => item !== null);
-
-  if (adjustments.length === 0) {
-    redirect("/stock/transfer?error=validation");
-  }
-
-  const result = await prisma.$transaction(async (tx) => {
-    const variants = await tx.variant.findMany({
-      where: {
-        tenantId,
-        productId,
-        id: { in: adjustments.map((item) => item.variantId) },
-      },
-      select: {
-        id: true,
-        size: true,
-        color: true,
-        inventories: {
-          where: {
-            warehouseId: {
-              in: [fromWarehouseId, toWarehouseId],
-            },
-          },
-          select: {
-            id: true,
-            warehouseId: true,
-            stock: true,
-            locationCode: true,
-          },
-        },
-      },
-    });
-
-    if (variants.length !== adjustments.length) {
-      return { ok: false as const, reason: "variant" };
-    }
-
-    const variantsById = new Map(variants.map((variant) => [variant.id, variant]));
-
-    for (const adjustment of adjustments) {
-      const variant = variantsById.get(adjustment.variantId);
-      const sourceInventory = variant?.inventories.find(
-        (inventory) => inventory.warehouseId === fromWarehouseId,
-      );
-
-      if (!variant || !sourceInventory || sourceInventory.stock < adjustment.quantity) {
-        return { ok: false as const, reason: "stock" };
-      }
-    }
-
-    for (const adjustment of adjustments) {
-      const variant = variantsById.get(adjustment.variantId)!;
-      const sourceInventory = variant.inventories.find(
-        (inventory) => inventory.warehouseId === fromWarehouseId,
-      )!;
-      const removed = await tx.variantInventory.updateMany({
-        where: { id: sourceInventory.id, stock: { gte: adjustment.quantity } },
-        data: {
-          stock: {
-            decrement: adjustment.quantity,
-          },
-        },
-      });
-      if (removed.count !== 1) throw new Error("INSUFFICIENT_TRANSFER_STOCK");
-
-      await tx.variantInventory.upsert({
-        where: { variantId_warehouseId: { variantId: adjustment.variantId, warehouseId: toWarehouseId } },
-        create: { variantId: adjustment.variantId, warehouseId: toWarehouseId, stock: adjustment.quantity },
-        update: { stock: { increment: adjustment.quantity } },
-      });
-
-      await tx.stockMovement.createMany({
-        data: [
-          {
-            tenantId,
-            variantId: adjustment.variantId,
-            warehouseId: fromWarehouseId,
-            quantity: -adjustment.quantity,
-            reason: "TRANSFER",
-          },
-          {
-            tenantId,
-            variantId: adjustment.variantId,
-            warehouseId: toWarehouseId,
-            quantity: adjustment.quantity,
-            reason: "TRANSFER",
-          },
-        ],
-      });
-    }
-
-    await writeAuditLog(tx, {
-      tenantId,
-      userId: currentUser.id,
-      action: "STOCK_TRANSFER_CREATED",
-      entityType: "TRANSFER",
-      entityId: productId,
-      entityLabel: `Produkti #${productId}`,
-      warehouseId: toWarehouseId,
-      metadata: {
-        fromWarehouseId,
-        toWarehouseId,
-        adjustments: adjustments.map((adjustment) => {
-          const variant = variantsById.get(adjustment.variantId);
-          return {
-            variantId: adjustment.variantId,
-            quantity: adjustment.quantity,
-            size: variant?.size ?? null,
-            color: variant?.color ?? null,
-          };
-        }),
-      },
-    });
-
-    return { ok: true as const };
-  }).catch((error: unknown) => {
-    if (error instanceof Error && error.message === "INSUFFICIENT_TRANSFER_STOCK") {
-      redirect("/stock/transfer?error=stock");
-    }
-    throw error;
+  const result = await createStockTransfer({
+    tenantId,
+    userId: currentUser.id,
+    fromWarehouseId,
+    toWarehouseId,
+    adjustments,
   });
+  if (!result.ok) redirect(`/stock/transfer?error=${result.reason}`);
 
-  if (!result.ok) {
-    redirect(`/stock/transfer?error=${result.reason}`);
-  }
-
-  revalidatePath("/");
-  revalidatePath("/products");
-  revalidatePath(`/products/${productId}`);
-  revalidatePath("/stock/incoming");
-  revalidatePath("/stock/transfer");
-  revalidatePath("/orders/new");
-  revalidatePath("/orders/quick");
-
+  revalidateStockTransferPaths(result.productIds);
   redirect("/stock/transfer?success=1");
 }
 
@@ -209,7 +53,14 @@ function getMessage(error?: string, success?: string) {
   if (error === "validation") {
     return {
       type: "error" as const,
-      text: "Zgjedh te dy depot, produktin dhe te pakten nje variant me sasi.",
+      text: "Zgjedh dy depo te ndryshme dhe te pakten nje variant me sasi valide.",
+    };
+  }
+
+  if (error === "warehouse") {
+    return {
+      type: "error" as const,
+      text: "Nje nga depot nuk eshte me aktive. Rifresko faqen dhe provo perseri.",
     };
   }
 
@@ -264,61 +115,27 @@ export default async function TransferStockPage({
     select: { catalogConfig: true },
   });
 
-  const [warehouses, products] = await Promise.all([
-    getTenantWarehouses(
-      tenantId,
-      parseTenantCatalogConfig(tenantSettings?.catalogConfig),
-    ),
-    prisma.product.findMany({
-      where: {
-        tenantId,
-        variants: { some: {} },
-      },
-      select: {
-        id: true,
-        name: true,
-        category: {
-          select: {
-            name: true,
-          },
-        },
-      },
-      orderBy: [{ name: "asc" }],
-    }),
-  ]);
+  const warehouses = await getTenantWarehouses(
+    tenantId,
+    parseTenantCatalogConfig(tenantSettings?.catalogConfig),
+  );
 
   return (
-    <main className="px-4 py-6 sm:px-6 lg:px-8">
-      <section className="mx-auto w-full max-w-7xl">
-        <div className="rounded-[30px] border border-emerald-100 bg-[linear-gradient(135deg,#f7fffb_0%,#ffffff_52%,#edf9f2_100%)] px-5 py-6 shadow-[0_20px_55px_rgba(16,185,129,0.10)] sm:px-6 lg:px-8">
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div>
-            <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700">
-              Transfer Stoku
-            </p>
-            <h1 className="mt-3 text-3xl font-semibold tracking-tight text-slate-950">
-              Transfer stoku mes depove
-            </h1>
-            <p className="mt-2 text-sm text-slate-600">
-              Zgjedh produktin, depon burim dhe depon destinacion per te levizur stokun.
-            </p>
-          </div>
+    <main className="min-h-screen bg-[#f8faf8] px-4 py-6 text-slate-950 sm:px-6 lg:px-8">
+      <section className="mx-auto w-full max-w-6xl">
+        <Link href="/workspace" className="mb-5 inline-flex items-center gap-2 text-sm font-medium text-emerald-800 hover:text-emerald-950">
+          <span aria-hidden="true">&larr;</span> Te veprimet
+        </Link>
 
-          <div className="flex flex-wrap items-center gap-3">
-            <Link
-              href="/stock/incoming"
-              className="inline-flex items-center justify-center rounded-2xl border border-emerald-200 bg-white/92 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50"
-            >
-              Hyrje stoku
-            </Link>
-            <Link
-              href="/products"
-              className="inline-flex items-center justify-center rounded-2xl border border-emerald-200 bg-white/92 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50"
-            >
-              Shiko produktet
-            </Link>
+        <div className="border-b border-emerald-950/10 pb-6">
+          <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-800">StockBase / Inventari</p>
+          <div className="mt-2 flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight sm:text-4xl">Transfer i ri stoku</h1>
+              <p className="mt-2 text-sm text-slate-600">Gjej variantet, cakto sasite dhe kontrollo transferin para ruajtjes.</p>
+            </div>
+            <Link href="/stock/incoming" className="rounded-xl border border-emerald-950/15 bg-white px-4 py-2.5 text-sm font-semibold text-emerald-900 hover:bg-emerald-50">Hyrje stoku</Link>
           </div>
-        </div>
         </div>
 
         {message ? (
@@ -334,11 +151,6 @@ export default async function TransferStockPage({
           warehouses={warehouses.map((warehouse) => ({
             id: warehouse.id,
             name: warehouse.name,
-          }))}
-          products={products.map((product) => ({
-            id: product.id,
-            name: product.name,
-            brand: product.category.name,
           }))}
         />
       </section>
