@@ -2,43 +2,162 @@ import Image from "next/image";
 import Link from "next/link";
 import { AppScreenshot, BarcodePhotoSection, MarketingHero, PurchasesPhotoSection } from "./marketing-photo-sections";
 
-const features = [
-  ["Inventory Engine", "Real-time multi-location inventory", "Sync inventory across warehouses, stores and sales channels."],
-  ["Cloud POS", "Fast checkout, always connected", "Barcode-ready selling with cash, card and register sessions."],
-  ["Barcode", "Scan. Find. Update.", "Find variants instantly and keep stock accurate at every movement."],
-  ["Purchases", "Supplier to stock", "Purchase orders, receiving, returns and margins in one workflow."],
-  ["Orders", "Orders without chaos", "A single workspace for store, phone and online order operations."],
-  ["Analytics", "Stock turnover and insight", "Make better purchase decisions with live product and sales data."],
-];
+const screens = [
+  {
+    title: "Inventory",
+    description: "Products, variants and stock across your locations.",
+    src: "/marketing/screenshots/inventory.webp",
+    alt: "StockBase inventory with products, sizes, colors and warehouse stock",
+    width: 1627,
+    height: 722,
+  },
+  {
+    title: "Point of sale",
+    description: "A focused checkout connected to your stock.",
+    src: "/marketing/screenshots/pos.webp",
+    alt: "StockBase POS with product cards and checkout cart",
+    width: 1916,
+    height: 865,
+  },
+  {
+    title: "Purchase orders",
+    description: "Order from suppliers and receive into stock.",
+    src: "/marketing/screenshots/purchases.webp",
+    alt: "StockBase purchase orders with suppliers and receiving status",
+    width: 1636,
+    height: 690,
+  },
+  {
+    title: "Workspace",
+    description: "Every day-to-day operation in one place.",
+    src: "/marketing/screenshots/workspace.webp",
+    alt: "StockBase operational workspace with grouped actions",
+    width: 1902,
+    height: 862,
+  },
+] as const;
 
-function Icon({ name }: { name: string }) {
-  return <span className="flex h-9 w-9 items-center justify-center rounded-lg bg-emerald-100 text-sm font-bold text-emerald-800">{name.slice(0, 1)}</span>;
-}
+const menuLinks = [
+  { label: "Product", href: "#product" },
+  { label: "How it works", href: "#features" },
+  { label: "Solutions", href: "#solutions" },
+  { label: "Trial", href: "#trial" },
+] as const;
 
 export function MarketingHomepage({ supportEmail }: { supportEmail: string }) {
-  return <main className="bg-[#f8f9ff] text-[#0b1c30]">
-    <header className="sticky top-0 z-50 border-b border-slate-100 bg-white/95 backdrop-blur-xl">
-      <div className="mx-auto flex min-h-16 max-w-7xl items-center justify-between gap-3 px-5 py-2 lg:h-20 lg:px-8 lg:py-0">
-        <Link href="/" className="flex shrink-0 items-center gap-2.5"><Image src="/stock-app-logo.svg" alt="StockBase" width={31} height={31} /><b className="text-base tracking-tight">StockBase</b></Link>
-        <nav className="hidden items-center gap-7 text-sm text-slate-600 lg:flex"><a href="#product">Product</a><a href="#solutions">Solutions</a><a href="#features">Features</a><a href="#pricing">Pricing</a><a href="#resources">Resources</a></nav>
-        <div className="flex shrink-0 items-center gap-2"><Link href="/login" className="hidden px-3 py-2 text-sm text-slate-600 sm:block">Log in</Link><Link href="/trial" className="hidden rounded-lg border border-slate-200 px-3 py-2 text-sm font-medium md:block">Book a Demo</Link><Link href="/trial" className="rounded-lg bg-[#006c4a] px-3 py-2 text-sm font-semibold text-white shadow-sm"><span className="sm:hidden">Try free</span><span className="hidden sm:inline">Start Free Trial</span></Link></div>
-      </div>
-      <nav aria-label="Mobile navigation" className="flex gap-5 overflow-x-auto whitespace-nowrap border-t border-slate-100 px-5 py-2.5 text-xs font-semibold text-slate-600 lg:hidden"><a href="#product">Product</a><a href="#solutions">Solutions</a><a href="#features">Features</a><a href="#pricing">Pricing</a><a href="#resources">Resources</a></nav>
-    </header>
-    <MarketingHero dashboard={<AppScreenshot src="/marketing/screenshots/workspace.webp" alt="StockBase workspace with grouped actions for sales, products, warehouses and administration" width={1902} height={862} label="Workspace" />} />
-    <section id="features" className="scroll-mt-28 bg-[#eff4ff] py-16 lg:scroll-mt-20"><div className="mx-auto max-w-7xl px-5 lg:px-8"><div className="mx-auto max-w-2xl text-center"><p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">Complete operations</p><h2 className="mt-3 text-3xl font-bold tracking-tight">Everything your business needs to manage stock and sales</h2></div><div className="mt-10 grid gap-4 md:grid-cols-2 lg:grid-cols-3">{features.map(([eyebrow,title,copy], index)=><article key={title} className={`rounded-xl bg-white p-6 shadow-sm ${index===0||index===3?"md:col-span-2 lg:col-span-2":""}`}><div className="flex items-start justify-between"><Icon name={eyebrow} /><span className="text-xs text-emerald-700">?</span></div><p className="mt-7 text-xs font-bold uppercase tracking-wider text-emerald-700">{eyebrow}</p><h3 className="mt-2 text-xl font-bold">{title}</h3><p className="mt-3 max-w-lg text-sm leading-6 text-slate-600">{copy}</p><div className="mt-6 h-14 rounded-lg bg-[linear-gradient(90deg,#eff4ff,#f8f9ff)]" /></article>)}</div></div></section>
-    <section id="solutions" className="scroll-mt-28 bg-white py-16 lg:scroll-mt-20"><div className="mx-auto max-w-7xl px-5 lg:px-8"><div className="grid gap-10 lg:grid-cols-[0.72fr_1.28fr] lg:items-end"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">Master catalog</p><h2 className="mt-3 text-3xl font-bold tracking-tight">Know exactly what&apos;s in stock</h2><p className="mt-4 leading-7 text-slate-600">A single catalogue for every product, location and sales channel. Keep prices, stock and variants connected.</p><ul className="mt-6 space-y-3 text-sm text-slate-700"><li>Multi-warehouse availability</li><li>Safety stock alerts</li><li>Product variants and barcode labels</li></ul></div><AppScreenshot src="/marketing/screenshots/inventory.webp" alt="StockBase inventory list showing products, brands, stock, sizes and colors" width={1627} height={722} label="Inventory" /></div></div></section>
-    <section className="bg-[#131b2e] py-16 text-white"><div className="mx-auto max-w-7xl px-5 lg:px-8"><div className="max-w-2xl"><p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-300">Location intelligence</p><h2 className="mt-3 text-3xl font-bold">Your inventory. Across every location.</h2><p className="mt-4 text-slate-300">Move stock between warehouse, store and POS without losing visibility.</p></div><div className="mt-10 grid gap-4 md:grid-cols-3">{["Copenhagen Central","Aarhus Warehouse","Online fulfilment"].map((location,index)=><div key={location} className="rounded-xl border border-white/10 bg-white/5 p-5"><p className="text-xs text-emerald-300">LOCATION 0{index+1}</p><h3 className="mt-2 font-bold">{location}</h3><div className="mt-8 h-12 rounded bg-slate-800" /><p className="mt-3 text-xs text-slate-400">Live inventory sync</p></div>)}</div></div></section>
-    <BarcodePhotoSection />
-    <PurchasesPhotoSection />
-    <section className="bg-white py-16"><div className="mx-auto max-w-7xl px-5 lg:px-8"><div className="text-center"><p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">Unified orders</p><h2 className="mt-3 text-3xl font-bold">Orders without the chaos</h2></div><div className="mt-8 rounded-xl border border-slate-200 bg-white p-4 shadow-sm sm:p-5"><div className="flex flex-wrap gap-2 text-xs"><span className="rounded-full bg-slate-100 px-3 py-1">All orders</span><span className="rounded-full bg-emerald-100 px-3 py-1 text-emerald-800">Store POS</span><span className="rounded-full bg-slate-100 px-3 py-1">Phone orders</span></div><div className="mt-5 overflow-x-auto"><div className="min-w-[520px]"><div className="grid grid-cols-4 gap-3 border-b pb-3 text-[10px] font-bold text-slate-500"><span>ORDER</span><span>CUSTOMER</span><span>CHANNEL</span><span>STATUS</span></div>{["#1024 / Emma","#1023 / Sara","#1022 / Nordic Store"].map((order)=><div key={order} className="grid grid-cols-4 gap-3 border-b py-3 text-xs"><span className="font-semibold">{order}</span><span>Customer</span><span>Store POS</span><span className="text-emerald-700">Ready to pack</span></div>)}</div></div></div></div></section>
-    <section className="bg-[#131b2e] py-16 text-white"><div className="mx-auto max-w-7xl px-5 lg:px-8"><div className="max-w-2xl"><p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-300">Cloud POS</p><h2 className="mt-3 text-3xl font-bold">From stockroom to checkout</h2><p className="mt-4 text-slate-300">A focused touch POS for modern retail teams. Browse products, select a variant and complete the sale from one screen.</p></div><div className="mt-8"><AppScreenshot src="/marketing/screenshots/pos.webp" alt="StockBase point of sale showing product cards, filters and checkout cart" width={1916} height={865} label="Point of sale" /></div></div></section>
-    <section className="bg-white py-16"><div className="mx-auto max-w-7xl px-5 lg:px-8"><div className="grid gap-8 lg:grid-cols-2"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">Sales catalogue</p><h2 className="mt-3 text-3xl font-bold">Turn inventory into a sales catalog</h2><p className="mt-4 text-slate-600">Select products, control prices and share a professional catalogue with wholesale customers.</p></div><div className="grid grid-cols-2 gap-3 sm:grid-cols-3">{["nike.jpg","IMG_6366.webp","bg1.jpg"].map((image,index)=><div key={image} className="rounded-lg border border-slate-200 p-2"><Image src={`/${image}`} alt="Catalog item" width={160} height={110} className="h-20 w-full rounded object-cover" /><p className="mt-2 text-xs font-bold">Catalog item</p><p className="text-[10px] text-emerald-700"> {90+index*20}</p></div>)}</div></div></div></section>
-    <section className="bg-[#eff4ff] py-16"><div className="mx-auto max-w-7xl px-5 lg:px-8"><div className="text-center"><p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">Connected workflow</p><h2 className="mt-3 text-3xl font-bold">One connected workflow</h2></div><div className="mt-8 grid gap-3 md:grid-cols-4">{["Purchase order","Warehouse intake","Orders and POS","Analytics"].map((item,index)=><div key={item} className="rounded-xl bg-white p-5 text-center shadow-sm"><span className="text-emerald-700">0{index+1}</span><p className="mt-3 font-semibold">{item}</p></div>)}</div></div></section>
-    <section className="bg-white py-16"><div className="mx-auto max-w-7xl px-5 lg:px-8"><div className="grid gap-8 lg:grid-cols-[0.7fr_1.3fr]"><div><p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">Business intelligence</p><h2 className="mt-3 text-3xl font-bold">See what&apos;s happening in your business</h2><p className="mt-4 text-slate-600">Actionable inventory turnover, product margins and stockout data.</p></div><div className="grid gap-3 sm:grid-cols-3">{[["4.2x","Inventory turnover"],["24,180 DKK","Stock value"],["14 Days","Runout alert"]].map(([value,label])=><div key={label} className="rounded-xl bg-[#eff4ff] p-5"><p className="text-2xl font-bold">{value}</p><p className="mt-2 text-xs text-slate-600">{label}</p></div>)}</div></div></div></section>
-    <section id="pricing" className="scroll-mt-28 bg-[#eff4ff] py-16 lg:scroll-mt-20"><div className="mx-auto max-w-7xl px-5 text-center lg:px-8"><p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">Built for every workflow</p><h2 className="mt-3 text-3xl font-bold">Work wherever your business happens</h2><div className="mt-8 grid gap-4 md:grid-cols-3">{[["Desktop and web app","Full operations workspace"],["Tablet POS register","Fast counter checkout"],["Handheld scanner","Mobile stock work"]].map(([title,copy])=><article key={title} className="rounded-xl bg-white p-6 shadow-sm"><div className="mx-auto h-10 w-10 rounded-lg bg-emerald-100" /><h3 className="mt-4 font-bold">{title}</h3><p className="mt-2 text-sm text-slate-600">{copy}</p></article>)}</div></div></section>
-    <section className="bg-white py-16"><div className="mx-auto max-w-7xl px-5 lg:px-8"><div className="text-center"><p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-700">Trusted by operators</p><h2 className="mt-3 text-3xl font-bold">Trusted by European retail innovators</h2></div><div className="mt-8 grid gap-4 md:grid-cols-3">{["StockBase eliminated our warehouse blind spots across four locations.","The POS and live transfer tracking work without hiccups.","Moving from legacy ERP was seamless for our supplier POs."].map((quote,index)=><blockquote key={quote} className="rounded-xl border border-slate-200 p-6 text-sm leading-7 text-slate-600">{quote}<footer className="mt-5 text-xs font-bold text-slate-900">Retail operator / Europe {index+1}</footer></blockquote>)}</div></div></section>
-    <section className="bg-[#131b2e] py-20 text-center text-white"><div className="mx-auto max-w-2xl px-5"><p className="text-xs font-bold uppercase tracking-[0.16em] text-emerald-300">Start today</p><h2 className="mt-3 text-3xl font-bold">Ready to take control of your inventory?</h2><p className="mt-4 text-slate-300">Bring stock, sales and operations into one platform.</p><div className="mt-7 flex justify-center gap-3"><Link href="/trial" className="rounded-lg bg-emerald-500 px-5 py-3 text-sm font-bold text-slate-950">Start free trial</Link><a href={`mailto:${supportEmail}`} className="rounded-lg border border-white/20 px-5 py-3 text-sm font-semibold">Contact sales</a></div></div></section>
-    <footer id="resources" className="bg-white py-12"><div className="mx-auto grid max-w-7xl gap-10 px-5 md:grid-cols-6 lg:px-8"><div className="md:col-span-2"><div className="flex items-center gap-2"><Image src="/stock-app-logo.svg" alt="StockBase" width={28} height={28} /><b>StockBase</b></div><p className="mt-4 max-w-sm text-sm leading-6 text-slate-600">Inventory intelligence and operational tools for European retail teams.</p><p className="mt-5 text-xs text-emerald-700">? Systems operational</p></div>{[["Product","Inventory / Orders / POS / Catalog"],["Company","About / Contact"],["Resources","Help / Documentation"],["Legal","Privacy / Terms"]].map(([title,links])=><div key={title}><p className="text-xs font-bold uppercase tracking-wider">{title}</p><p className="mt-4 whitespace-pre-line text-sm leading-7 text-slate-600">{links.replaceAll(" / ","\n")}</p></div>)}</div><div className="mx-auto mt-10 flex max-w-7xl flex-col gap-3 border-t border-slate-100 px-5 pt-6 text-xs text-slate-500 sm:flex-row sm:justify-between lg:px-8"><span> 2026 StockBase. Built in Europe.</span><span>Privacy Statement / Terms of Service / Security Standards</span></div></footer>
-  </main>;
+  return (
+    <main className="overflow-x-clip bg-[#fbfcf8] text-[#112c23]">
+      <header className="sticky top-0 z-50 border-b border-emerald-950/10 bg-[#fbfcf8]/95 backdrop-blur-xl">
+        <div className="mx-auto flex min-h-17 max-w-[1440px] items-center justify-between gap-4 px-5 sm:px-8 lg:min-h-20 xl:px-12">
+          <Link href="/" className="flex shrink-0 items-center gap-2.5" aria-label="StockBase home">
+            <Image src="/stock-app-logo.svg" alt="" width={34} height={34} priority />
+            <span className="text-xl font-black tracking-[-0.05em] text-[#082d23]">StockBase</span>
+          </Link>
+          <nav aria-label="Primary navigation" className="hidden items-center gap-8 text-sm font-medium text-[#385247] lg:flex">
+            {menuLinks.map((item) => <a key={item.href} href={item.href} className="transition hover:text-emerald-700">{item.label}</a>)}
+          </nav>
+          <div className="flex items-center gap-2 sm:gap-4">
+            <Link href="/login" className="hidden px-2 py-2 text-sm font-semibold text-[#173f2d] transition hover:text-emerald-700 sm:inline-flex">Log in</Link>
+            <Link href="/trial" className="inline-flex min-h-10 items-center rounded-xl bg-[#006c4a] px-3 text-xs font-bold text-white shadow-sm transition hover:bg-[#075c43] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700 sm:px-4 sm:text-sm">Request a trial</Link>
+            <details className="group relative lg:hidden">
+              <summary className="flex h-10 w-10 cursor-pointer list-none items-center justify-center rounded-xl border border-emerald-950/15 bg-white text-[#173f2d] [&::-webkit-details-marker]:hidden" aria-label="Open navigation">
+                <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5 fill-none stroke-current stroke-2"><path d="M4 7h16M4 12h16M4 17h16" strokeLinecap="round" /></svg>
+              </summary>
+              <nav aria-label="Mobile navigation" className="absolute right-0 top-12 z-50 flex w-56 flex-col gap-1 rounded-2xl border border-emerald-950/10 bg-white p-2 shadow-[0_20px_45px_rgba(5,37,25,0.16)]">
+                {menuLinks.map((item) => <a key={item.href} href={item.href} className="rounded-xl px-3 py-2.5 text-sm font-semibold transition hover:bg-emerald-50">{item.label}</a>)}
+                <Link href="/login" className="rounded-xl px-3 py-2.5 text-sm font-semibold transition hover:bg-emerald-50 sm:hidden">Log in</Link>
+              </nav>
+            </details>
+          </div>
+        </div>
+      </header>
+
+      <MarketingHero />
+
+      <section id="features" className="scroll-mt-24 border-t border-emerald-950/10 bg-white py-16 sm:py-20">
+        <div className="mx-auto max-w-[1440px] px-5 sm:px-8 xl:px-12">
+          <div className="flex flex-wrap items-end justify-between gap-5">
+            <div className="max-w-2xl">
+              <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">Inside the platform</p>
+              <h2 className="mt-3 text-3xl font-black tracking-[-0.045em] text-[#082d23] sm:text-4xl">See StockBase in action.</h2>
+              <p className="mt-3 text-sm leading-6 text-[#52665b] sm:text-base">Real screens from the product, not illustrations. Explore the tools your team uses every day.</p>
+            </div>
+            <span className="text-xs font-semibold text-emerald-800 lg:hidden">Scroll to explore on mobile</span>
+          </div>
+          <div className="-mx-5 mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto px-5 pb-4 sm:-mx-8 sm:px-8 lg:mx-0 lg:grid lg:grid-cols-4 lg:overflow-visible lg:px-0 xl:gap-5">
+            {screens.map((screen, index) => (
+              <article key={screen.src} className="group min-w-[min(82vw,330px)] snap-start overflow-hidden rounded-[22px] border border-emerald-950/10 bg-[#fbfcf8] shadow-[0_10px_30px_rgba(18,47,35,0.06)] transition hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(18,47,35,0.12)] lg:min-w-0">
+                <a href={screen.src} target="_blank" rel="noopener noreferrer" aria-label={`Open ${screen.title} screenshot in full size`} className="block overflow-hidden border-b border-emerald-950/10 focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-emerald-700">
+                  <Image src={screen.src} alt={screen.alt} width={screen.width} height={screen.height} sizes="(max-width: 1024px) 82vw, 24vw" className="aspect-[16/10] w-full object-cover object-top transition duration-500 group-hover:scale-[1.03]" />
+                </a>
+                <div className="p-4 sm:p-5">
+                  <p className="text-[11px] font-bold tracking-[0.16em] text-emerald-700">0{index + 1} / STOCKBASE</p>
+                  <h3 className="mt-2 text-lg font-bold tracking-tight">{screen.title}</h3>
+                  <p className="mt-1 text-sm leading-6 text-[#52665b]">{screen.description}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section id="solutions" className="scroll-mt-24 bg-[#f3f7f0] py-18 sm:py-24">
+        <div className="mx-auto grid max-w-[1440px] gap-10 px-5 sm:px-8 lg:grid-cols-[0.72fr_1.28fr] lg:items-center lg:gap-16 xl:px-12">
+          <div className="max-w-xl">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-700">One source of truth</p>
+            <h2 className="mt-4 text-3xl font-black leading-tight tracking-[-0.045em] sm:text-4xl">Know what is in stock, wherever it is.</h2>
+            <p className="mt-5 text-base leading-8 text-[#52665b]">Keep product variants, colors, sizes and warehouse quantities together. Find what you need without switching between disconnected tools.</p>
+            <ul className="mt-7 space-y-3 text-sm font-semibold text-[#204838]">
+              <li className="flex gap-3"><span aria-hidden="true" className="text-emerald-700">&#10003;</span> Stock by warehouse and variant</li>
+              <li className="flex gap-3"><span aria-hidden="true" className="text-emerald-700">&#10003;</span> Product and barcode search</li>
+              <li className="flex gap-3"><span aria-hidden="true" className="text-emerald-700">&#10003;</span> Clear stock movement history</li>
+            </ul>
+          </div>
+          <AppScreenshot src="/marketing/screenshots/inventory.webp" alt="StockBase inventory list showing product variants and current stock" width={1627} height={722} label="Inventory" />
+        </div>
+      </section>
+
+      <BarcodePhotoSection />
+
+      <section className="bg-[#0c3328] py-18 text-white sm:py-24">
+        <div className="mx-auto max-w-[1440px] px-5 sm:px-8 xl:px-12">
+          <div className="mb-9 max-w-2xl">
+            <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-300">Point of sale</p>
+            <h2 className="mt-4 text-3xl font-black tracking-[-0.045em] sm:text-4xl">From product shelf to checkout.</h2>
+            <p className="mt-4 text-base leading-7 text-emerald-50/75">Choose the right product and variant, then complete the sale from a focused POS screen.</p>
+          </div>
+          <AppScreenshot src="/marketing/screenshots/pos.webp" alt="StockBase POS product selection and checkout cart" width={1916} height={865} label="Point of sale" />
+        </div>
+      </section>
+
+      <PurchasesPhotoSection />
+
+      <section id="trial" className="scroll-mt-24 bg-[#fbfcf8] px-5 py-18 sm:px-8 sm:py-24">
+        <div className="mx-auto max-w-5xl overflow-hidden rounded-[30px] bg-[#0b3c2d] px-6 py-12 text-center text-white shadow-[0_25px_65px_rgba(8,56,38,0.18)] sm:px-10 sm:py-16">
+          <p className="text-xs font-bold uppercase tracking-[0.2em] text-emerald-200">See it with your own products</p>
+          <h2 className="mx-auto mt-4 max-w-2xl text-3xl font-black tracking-[-0.045em] sm:text-5xl">Bring your stock and sales together.</h2>
+          <p className="mx-auto mt-5 max-w-xl text-sm leading-7 text-emerald-50/80 sm:text-base">Request a 14-day trial. Our team will set up a workspace for your business to test StockBase.</p>
+          <div className="mt-8 flex flex-wrap justify-center gap-3">
+            <Link href="/trial" className="inline-flex min-h-12 items-center justify-center rounded-xl bg-white px-6 text-sm font-bold text-[#0b3c2d] transition hover:bg-emerald-50">Request a trial</Link>
+            <a href={`mailto:${supportEmail}`} className="inline-flex min-h-12 items-center justify-center rounded-xl border border-white/35 px-6 text-sm font-semibold text-white transition hover:bg-white/10">Contact us</a>
+          </div>
+        </div>
+      </section>
+
+      <footer className="border-t border-emerald-950/10 bg-white px-5 py-10 sm:px-8">
+        <div className="mx-auto flex max-w-[1440px] flex-col gap-8 sm:flex-row sm:items-end sm:justify-between xl:px-4">
+          <div>
+            <div className="flex items-center gap-2"><Image src="/stock-app-logo.svg" alt="" width={28} height={28} /><span className="text-lg font-black tracking-tight">StockBase</span></div>
+            <p className="mt-3 max-w-sm text-sm leading-6 text-[#52665b]">Inventory, purchases and point of sale in one clear workspace.</p>
+          </div>
+          <nav aria-label="Footer navigation" className="flex flex-wrap gap-x-6 gap-y-3 text-sm font-semibold text-[#365647]">
+            <a href="#product" className="hover:text-emerald-700">Product</a>
+            <a href="#features" className="hover:text-emerald-700">Screens</a>
+            <Link href="/trial" className="hover:text-emerald-700">Trial</Link>
+            <a href={`mailto:${supportEmail}`} className="hover:text-emerald-700">Contact</a>
+          </nav>
+        </div>
+      </footer>
+    </main>
+  );
 }

@@ -1,4 +1,3 @@
-import type { ReactNode } from "react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -20,40 +19,38 @@ export function AppScreenshot({ src, alt, width, height, label }: { src: string;
   );
 }
 
-export function MarketingHero({ dashboard }: { dashboard: ReactNode }) {
+export function MarketingHero() {
   return (
-    <section id="product" className="relative isolate scroll-mt-28 overflow-hidden bg-[#f4f7f3] lg:scroll-mt-20">
-      <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_5%_15%,rgba(166,220,190,0.26),transparent_36%),linear-gradient(140deg,#f8fbf8_10%,#edf4ee_100%)]" />
-      <div className="relative mx-auto grid max-w-7xl gap-9 px-5 pb-12 pt-12 lg:grid-cols-[0.92fr_1.08fr] lg:items-center lg:gap-12 lg:px-8 lg:pb-16 lg:pt-20">
-        <div className="max-w-xl">
-          <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-white/80 px-4 py-2 text-[11px] font-bold uppercase tracking-[0.14em] text-emerald-800">
-            <i className="h-2 w-2 rounded-full bg-emerald-600" />
-            Multi-location inventory and POS
-          </span>
-          <h1 className="mt-6 text-4xl font-bold leading-[1.08] tracking-[-0.045em] text-[#102e27] sm:text-5xl lg:text-[58px]">
-            Inventory, orders and sales.
-            <span className="mt-2 block text-[#007450]">One powerful platform.</span>
-          </h1>
-          <p className="mt-6 max-w-lg text-base leading-7 text-slate-600">
-            StockBase brings products, warehouses, purchases, orders and point of sale into one clear workspace for growing businesses.
+    <section id="product" className="relative isolate scroll-mt-24 overflow-hidden bg-[#fbfcf8]">
+      <div className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_8%_70%,rgba(205,234,210,0.38),transparent_38%)]" />
+      <div className="mx-auto grid max-w-[1440px] gap-10 px-5 pb-14 pt-12 sm:px-8 sm:pt-16 lg:min-h-[540px] lg:grid-cols-[0.88fr_1.12fr] lg:items-center lg:gap-12 lg:pb-14 lg:pt-14 xl:px-12">
+        <div className="relative z-10 max-w-xl">
+          <p className="inline-flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-emerald-800">
+            <span className="h-2 w-2 rounded-full bg-emerald-600" /> Inventory and POS, connected
           </p>
-          <div className="mt-8 flex flex-wrap gap-3">
-            <Link href="/trial" className="inline-flex min-h-12 items-center rounded-xl bg-[#006c4a] px-6 text-sm font-bold text-white shadow-lg shadow-emerald-900/15 transition hover:bg-[#005c40]">Start Free Trial</Link>
-            <Link href="/trial" className="inline-flex min-h-12 items-center rounded-xl border border-slate-200 bg-white px-6 text-sm font-semibold text-slate-800 transition hover:border-emerald-300 hover:bg-emerald-50">Book a Demo</Link>
+          <h1 className="mt-5 text-[clamp(3.2rem,5.2vw,5rem)] font-black leading-[0.99] tracking-[-0.075em] text-[#082d23]">
+            Run stock and sales with clarity.
+          </h1>
+          <p className="mt-7 max-w-lg text-base leading-7 text-[#40594f] sm:text-lg sm:leading-8">
+            Keep products, warehouses, purchases and checkout in one clear workspace. Know what you have and move with confidence.
+          </p>
+          <div className="mt-8 flex flex-wrap items-center gap-4">
+            <Link href="/trial" className="inline-flex min-h-12 items-center justify-center rounded-xl bg-[#006c4a] px-6 text-sm font-bold text-white shadow-[0_12px_26px_rgba(0,77,48,0.17)] transition hover:bg-[#075c43] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-700">Request a trial <span aria-hidden="true" className="ml-3 text-lg">&rarr;</span></Link>
+            <a href="#features" className="inline-flex min-h-12 items-center text-sm font-bold text-[#0a4a35] underline decoration-emerald-400 underline-offset-4 transition hover:text-emerald-800">See how it works</a>
           </div>
-          <p className="mt-5 text-xs text-slate-500">14-day free trial / No credit card required / EU hosted</p>
+          <p className="mt-5 text-xs text-slate-500">14-day trial / Activated by the StockBase team</p>
         </div>
-        <div className="relative min-h-[300px] overflow-hidden rounded-[28px] border border-white/70 bg-slate-200 shadow-[0_30px_80px_rgba(20,64,48,0.18)] sm:min-h-[400px] lg:min-h-[500px]">
-          <Image src="/marketing/concepts/sunlit-warehouse.webp" alt="Bright warehouse with products ready for inventory operations" fill priority sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover" />
-          <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-[#072a23]/70 via-transparent to-transparent" />
-          <div className="absolute bottom-5 left-5 right-5 rounded-2xl border border-white/25 bg-white/15 p-4 text-white backdrop-blur-md sm:bottom-7 sm:left-7 sm:right-auto sm:max-w-xs">
-            <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-emerald-100">From stockroom to sale</p>
-            <p className="mt-1 text-lg font-semibold leading-snug">Every item, movement and sale in one place.</p>
+        <div className="relative isolate min-h-[380px] overflow-hidden rounded-[28px] border border-emerald-950/10 bg-[#dbe9da] shadow-[0_30px_70px_rgba(13,52,37,0.16)] sm:min-h-[480px] lg:min-h-[460px]">
+          <Image src="/marketing/concepts/sunlit-warehouse.webp" alt="Sunlit warehouse with products ready for inventory operations" fill priority sizes="(max-width: 1024px) 100vw, 56vw" className="-z-20 object-cover object-center" />
+          <div className="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-t from-[#082d23]/30 via-transparent to-white/10" />
+          <div className="absolute inset-x-4 bottom-5 overflow-hidden rounded-2xl border border-white/80 bg-white shadow-[0_22px_55px_rgba(5,31,21,0.28)] sm:inset-x-6 sm:bottom-7 lg:inset-x-7">
+            <div className="flex h-9 items-center gap-1.5 border-b border-slate-100 bg-[#fbfdfb] px-3">
+              <span className="h-1.5 w-1.5 rounded-full bg-rose-300" /><span className="h-1.5 w-1.5 rounded-full bg-amber-300" /><span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+              <span className="ml-2 text-[10px] font-bold uppercase tracking-[0.13em] text-emerald-900">StockBase / Inventory</span>
+            </div>
+            <Image src="/marketing/screenshots/inventory.webp" alt="Actual StockBase inventory screen with products, stock, sizes and colors" width={1627} height={722} priority sizes="(max-width: 1024px) 90vw, 52vw" className="block h-auto w-full" />
           </div>
         </div>
-      </div>
-      <div className="relative mx-auto max-w-7xl px-5 pb-16 lg:px-8 lg:pb-20">
-        <div className="mx-auto max-w-6xl">{dashboard}</div>
       </div>
     </section>
   );

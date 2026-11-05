@@ -303,7 +303,33 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       : {}),
   };
 
-  const [products, totalProducts, filterProducts, stockTotals] = await Promise.all([
+  const stockTotalPromise = selectedWarehouseRecord && activeWarehouseId
+    ? prisma.variantInventory.aggregate({
+        where: {
+          warehouseId: activeWarehouseId,
+          variant: {
+            product: {
+              tenantId,
+              ...(filters.length > 0 ? { AND: filters.filter((_, index) => index !== filters.length - 1) } : {}),
+            },
+          },
+        },
+        _sum: { stock: true },
+      }).then((result) => result._sum.stock ?? 0)
+    : Promise.all([
+        prisma.variantInventory.aggregate({
+          where: { variant: { product: where } },
+          _sum: { stock: true },
+        }),
+        prisma.variant.aggregate({
+          where: { product: where, inventories: { none: {} } },
+          _sum: { stock: true },
+        }),
+      ]).then(([inventories, legacyVariants]) =>
+        (inventories._sum.stock ?? 0) + (legacyVariants._sum.stock ?? 0),
+      );
+
+  const [products, totalProducts, filterProducts, totalUnits] = await Promise.all([
     prisma.product.findMany({
       where,
       orderBy: { createdAt: "desc" },
@@ -362,31 +388,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       select: { name: true, brand: true, warehouseName: true, category: { select: { name: true } } },
       orderBy: [{ name: "asc" }],
     }),
-    prisma.variant.findMany({
-      where: selectedWarehouseRecord
-        ? {
-            product: { tenantId, ...(filters.length > 0 ? { AND: filters.filter((_, index) => index !== filters.length - 1) } : {}) },
-            inventories: {
-              some: {
-                warehouseId: activeWarehouseId ?? -1,
-              },
-            },
-          }
-        : { product: where },
-      select: {
-        stock: true,
-        reorderLevel: true,
-        inventories: selectedWarehouseRecord && activeWarehouseId
-          ? {
-              where: { warehouseId: activeWarehouseId },
-              select: { stock: true },
-              take: 1,
-            }
-          : {
-              select: { stock: true },
-            },
-      },
-    }),
+    stockTotalPromise,
   ]);
 
   const totalPages = Math.max(1, Math.ceil(totalProducts / PAGE_SIZE));
@@ -402,10 +404,6 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       ),
     ),
   ];
-  const totalUnits = stockTotals.reduce(
-    (sum, variant) => sum + getVariantDisplayStock(variant),
-    0,
-  );
   const stockMatchesFilter = (variant: {
     stock: number;
     reorderLevel?: number | null;
@@ -441,58 +439,36 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
   return (
     <main className="px-4 py-6 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl space-y-6">
-        <section className="space-y-5 rounded-[30px] border border-emerald-100 bg-[linear-gradient(135deg,#f7fffb_0%,#ffffff_52%,#edf9f2_100%)] px-5 py-6 shadow-[0_20px_55px_rgba(16,185,129,0.10)] sm:px-6 lg:px-8">
-          <div className="flex flex-col gap-6 lg:flex-row lg:items-start lg:justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.22em] text-emerald-700">
-                Inventari aktiv
-              </p>
-              <h1 className="mt-2 text-4xl font-semibold tracking-tight text-slate-950">
-                Inventari i produkteve
-              </h1>
-              <div className="mt-3 flex flex-wrap gap-3 text-sm">
-                <span className="inline-flex items-center rounded-full border border-slate-200 bg-white/90 px-3 py-1 text-slate-600 shadow-sm">
-                  {totalProducts.toLocaleString("sq-AL")} produkte
-                </span>
-                <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 font-medium text-emerald-700 shadow-sm">
-                  {totalUnits.toLocaleString("sq-AL")} njesi ne total
-                </span>
-                <span className="inline-flex items-center rounded-full border border-rose-200 bg-rose-50 px-3 py-1 font-medium text-rose-600 shadow-sm">
-                  {lowStockProducts} me stok te ulet
-                </span>
+      <div className="mx-auto max-w-7xl space-y-3">
+        <section className="overflow-hidden rounded-[26px] border border-slate-200 bg-white shadow-[0_14px_40px_rgba(15,35,27,0.055)]">
+          <div className="flex flex-col gap-4 px-5 py-4 sm:px-7 lg:flex-row lg:items-start lg:justify-between lg:px-8">
+            <div className="min-w-0">
+              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-emerald-700">Katalogu / Inventari</p>
+              <h1 className="mt-1 text-[2rem] font-bold leading-tight tracking-[-0.045em] text-slate-950 sm:text-4xl">Produktet</h1>
+              <p className="mt-1 text-sm text-slate-500">Menaxho produktet, variantet dhe stokun ne nje vend.</p>
+            </div>
+            {canManageInventory ? (
+              <div className="flex flex-wrap gap-2.5">
+                <Link href="/products/import" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 text-sm font-semibold text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50">
+                  <svg viewBox="0 0 20 20" aria-hidden="true" className="h-4 w-4 fill-none stroke-current stroke-[1.7]"><path d="M10 13V3m0 0L6.5 6.5M10 3l3.5 3.5M4 12.5v3A1.5 1.5 0 0 0 5.5 17h9a1.5 1.5 0 0 0 1.5-1.5v-3" strokeLinecap="round" strokeLinejoin="round" /></svg>
+                  Importo
+                </Link>
+                <Link href="/products/new" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#093a2d] px-5 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(9,58,45,0.14)] transition hover:bg-emerald-800">
+                  <svg viewBox="0 0 20 20" aria-hidden="true" className="h-4 w-4 fill-none stroke-current stroke-[1.8]"><path d="M10 4v12M4 10h12" strokeLinecap="round" /></svg>
+                  Shto produkt
+                </Link>
               </div>
-            </div>
-
-            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-              {canManageInventory ? (
-                <Link
-                  href="/products/import"
-                  className="inline-flex items-center justify-center rounded-2xl border border-emerald-200 bg-white/92 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50"
-                >
-                  Importo file
-                </Link>
-              ) : null}
-              <Link
-                href="/"
-                className="inline-flex items-center justify-center rounded-2xl border border-emerald-200 bg-white/82 px-4 py-3 text-sm font-medium text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50"
-              >
-                Ballina
-              </Link>
-              {canManageInventory ? (
-                <Link
-                  href="/products/new"
-                  className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(15,23,42,0.18)] transition hover:bg-emerald-700"
-                >
-                  + Shto Produkt
-                </Link>
-              ) : null}
-            </div>
+            ) : null}
           </div>
+          <dl className="grid grid-cols-3 divide-x divide-slate-100 border-t border-slate-100 bg-[#fbfcfa] px-2 py-2.5 sm:px-5">
+            <div className="min-w-0 px-3 sm:px-5"><dt className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Produkte</dt><dd className="mt-1 text-xl font-bold tabular-nums text-slate-950 sm:text-2xl">{totalProducts.toLocaleString("sq-AL")}</dd></div>
+            <div className="min-w-0 px-3 sm:px-5"><dt className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Njesi ne total</dt><dd className="mt-1 text-xl font-bold tabular-nums text-slate-950 sm:text-2xl">{totalUnits.toLocaleString("sq-AL")}</dd></div>
+            <div className="min-w-0 px-3 sm:px-5"><dt className="text-[10px] font-bold uppercase tracking-[0.14em] text-slate-500">Stok i ulet ne faqe</dt><dd className="mt-1 text-xl font-bold tabular-nums text-rose-700 sm:text-2xl">{lowStockProducts}</dd></div>
+          </dl>
         </section>
 
-        <section className="overflow-hidden rounded-[30px] border border-emerald-100/80 bg-[linear-gradient(180deg,#ffffff_0%,#fbfefc_100%)] shadow-[0_16px_44px_rgba(15,23,42,0.08)]">
-          <div className="border-b border-emerald-100/80 bg-[linear-gradient(180deg,#fcfffd_0%,#f3fbf6_100%)] px-4 py-4 sm:px-5">
+        <section className="overflow-hidden rounded-[26px] border border-slate-200 bg-white shadow-[0_14px_40px_rgba(15,35,27,0.055)]">
+          <div className="border-b border-slate-100 px-4 py-3 sm:px-6">
             <ProductsFilters
               key={`${searchQuery}|${selectedCode}|${selectedCategory}|${selectedModel}|${selectedWarehouse}|${selectedStock}`}
               searchQuery={searchQuery}

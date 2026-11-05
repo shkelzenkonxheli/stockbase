@@ -42,28 +42,25 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
     <html lang="sq" className="light" style={{ colorScheme: "light" }}>
       <body className={`${geistSans.variable} ${geistMono.variable} bg-[linear-gradient(180deg,#ebf8f0_0%,#eef4f7_100%)] text-slate-950 antialiased`}>
         <AppShellGate enabled={Boolean(currentUser && hasAccess)} header={currentUser ? (
-          <header className="sticky top-0 z-40 border-b border-emerald-200/80 bg-[linear-gradient(180deg,rgba(212,250,226,0.96)_0%,rgba(236,253,245,0.94)_52%,rgba(255,255,255,0.92)_100%)] backdrop-blur print:hidden">
-            <div className="flex items-center gap-3 px-4 py-3 sm:px-6 lg:px-8">
+          <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 shadow-[0_4px_20px_rgba(15,45,35,0.04)] backdrop-blur print:hidden">
+            <div className="mx-auto flex h-16 max-w-7xl items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
               <WorkspaceBackLink />
-              <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
-                <span className="hidden rounded-full border border-emerald-300 bg-emerald-100 px-3 py-1 text-xs font-semibold uppercase tracking-[0.16em] text-emerald-800 sm:inline-flex">
-                  {roleLabel(currentUser.role)}
-                </span>
+              <div className="flex shrink-0 items-center gap-2 sm:gap-3">
                 <form action={logout}>
-                  <button type="submit" aria-label="Dil" title="Dil" className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-emerald-200 bg-white/95 text-slate-700 transition hover:border-emerald-400 hover:bg-emerald-100 sm:h-auto sm:w-auto sm:gap-2 sm:rounded-2xl sm:px-4 sm:py-2.5">
+                  <button type="submit" aria-label="Dil" title="Dil" className="inline-flex h-10 w-10 items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white text-slate-600 transition hover:border-emerald-300 hover:bg-emerald-50 hover:text-emerald-800 sm:w-auto sm:px-3">
                     <svg viewBox="0 0 24 24" aria-hidden="true" className="h-4 w-4 fill-none stroke-current stroke-[1.8]">
                       <path d="M15 17l5-5-5-5M20 12H9M12 19H6a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2h6" />
                     </svg>
                     <span className="hidden sm:inline">Dil</span>
                   </button>
                 </form>
-                <div className="flex items-center gap-2 rounded-xl border border-emerald-200 bg-white/92 px-2.5 py-2 shadow-sm sm:gap-3 sm:rounded-2xl sm:px-3">
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xs font-semibold text-white" style={{ backgroundColor: primaryColor }}>
+                <div className="flex h-10 items-center gap-2 rounded-xl border border-slate-200 bg-[#f8fbf9] pl-1 pr-1 shadow-sm sm:gap-2.5 sm:pr-3">
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg text-xs font-bold text-white" style={{ backgroundColor: primaryColor }}>
                     {userInitials(currentUser.name)}
                   </span>
                   <div className="hidden min-w-0 sm:block">
-                    <p className="max-w-[140px] truncate text-sm font-medium text-slate-900">{currentUser.name}</p>
-                    <p className="max-w-[140px] truncate text-xs text-slate-500">{tenantLabel}</p>
+                    <p className="max-w-[180px] truncate text-xs font-bold leading-tight text-slate-900">{currentUser.name}</p>
+                    <p className="max-w-[180px] truncate text-[10px] leading-tight text-slate-500">{tenantLabel} / {roleLabel(currentUser.role)}</p>
                   </div>
                 </div>
               </div>

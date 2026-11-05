@@ -143,12 +143,12 @@ export async function syncTenantWarehouses(tenantId: number, tenantConfig?: Tena
     return getFallbackWarehouses(tenantId, tenantConfig);
   }
 
-  const existingCount = await prisma.warehouse.count({ where: { tenantId } });
-  if (existingCount > 0) {
-    return prisma.warehouse.findMany({
-      where: { tenantId, isActive: true },
-      orderBy: { name: "asc" },
-    });
+  const existingWarehouses = await prisma.warehouse.findMany({
+    where: { tenantId },
+    orderBy: { name: "asc" },
+  });
+  if (existingWarehouses.length > 0) {
+    return existingWarehouses.filter((warehouse) => warehouse.isActive);
   }
 
   const names = await getBootstrapWarehouseNames(tenantId, tenantConfig);
@@ -191,7 +191,7 @@ export async function ensureWarehouseInventoryRows(tenantId: number) {
   }
 
   const variants = await prisma.variant.findMany({
-    where: { tenantId },
+    where: { tenantId, inventories: { none: {} } },
     select: {
       id: true,
       stock: true,
@@ -201,61 +201,41 @@ export async function ensureWarehouseInventoryRows(tenantId: number) {
           warehouseName: true,
         },
       },
-      inventories: {
-        select: {
-          warehouseId: true,
-        },
-      },
     },
   });
+
+  if (variants.length === 0) {
+    return warehouses;
+  }
 
   const byName = new Map(warehouses.map((warehouse) => [warehouse.name.toLowerCase(), warehouse]));
   const fallbackWarehouse = warehouses[0];
 
-  await prisma.$transaction(async (tx) => {
-    if (!hasVariantInventoryDelegate(tx)) {
-      return;
-    }
+  const missingInventories = variants.map((variant) => {
+    const preferredName = variant.product.warehouseName?.trim().toLowerCase();
+    const preferredWarehouse =
+      (preferredName ? byName.get(preferredName) : null) ?? fallbackWarehouse;
 
-    for (const variant of variants) {
-      if (variant.inventories.length > 0) {
-        continue;
-      }
+    return {
+      variantId: variant.id,
+      warehouseId: preferredWarehouse.id,
+      stock: variant.stock,
+      locationCode: variant.locationCode,
+    };
+  });
 
-      const preferredName = variant.product.warehouseName?.trim().toLowerCase();
-      const preferredWarehouse =
-        (preferredName ? byName.get(preferredName) : null) ?? fallbackWarehouse;
-
-      if (!preferredWarehouse) {
-        continue;
-      }
-
-      await tx.variantInventory.create({
-        data: {
-          variantId: variant.id,
-          warehouseId: preferredWarehouse.id,
-          stock: variant.stock,
-          locationCode: variant.locationCode,
-        },
-      });
-    }
+  await prisma.variantInventory.createMany({
+    data: missingInventories,
+    skipDuplicates: true,
   });
 
   return warehouses;
 }
 
 export async function getTenantWarehouses(tenantId: number, tenantConfig?: TenantCatalogConfig | null) {
-  await syncTenantWarehouses(tenantId, tenantConfig);
+  const warehouses = await syncTenantWarehouses(tenantId, tenantConfig);
   await ensureWarehouseInventoryRows(tenantId);
-
-  if (!hasWarehouseDelegate(prisma)) {
-    return getFallbackWarehouses(tenantId, tenantConfig);
-  }
-
-  return prisma.warehouse.findMany({
-    where: { tenantId, isActive: true },
-    orderBy: { name: "asc" },
-  });
+  return warehouses;
 }
 
 export async function getTenantWarehouseSummaries(
