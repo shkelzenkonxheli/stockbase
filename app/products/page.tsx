@@ -15,7 +15,8 @@ import {
 import { prisma } from "@/lib/prisma";
 import { getTenantWarehouses } from "@/lib/warehouses";
 import { ProductsFilters } from "./products-filters";
-import { ProductStockQuickView } from "./product-stock-quick-view";
+import { ProductStockQuickViewLazy } from "./product-stock-quick-view-lazy";
+import { CreateProductDialog } from "./create-product-dialog";
 
 function IconGrid() {
   return (
@@ -329,7 +330,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
         (inventories._sum.stock ?? 0) + (legacyVariants._sum.stock ?? 0),
       );
 
-  const [products, totalProducts, filterProducts, totalUnits] = await Promise.all([
+  const [products, totalProducts, filterProductGroups, totalUnits, creationCategories] = await Promise.all([
     prisma.product.findMany({
       where,
       orderBy: { createdAt: "desc" },
@@ -383,24 +384,39 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
       },
     }),
     prisma.product.count({ where }),
-    prisma.product.findMany({
+    prisma.product.groupBy({
       where: filterOptionsWhere,
-      select: { name: true, brand: true, warehouseName: true, category: { select: { name: true } } },
-      orderBy: [{ name: "asc" }],
+      by: ["categoryId", "name", "brand"],
+      orderBy: { name: "asc" },
     }),
     stockTotalPromise,
+    canManageInventory ? prisma.category.findMany({
+      where: { tenantId, isActive: true },
+      orderBy: { name: "asc" },
+      select: { id: true, name: true, config: true },
+    }) : Promise.resolve([]),
   ]);
+
+  const filterCategories = await prisma.category.findMany({
+    where: { id: { in: [...new Set(filterProductGroups.map((product) => product.categoryId))] } },
+    select: { id: true, name: true },
+  });
+  const categoryNames = new Map(filterCategories.map((category) => [category.id, category.name]));
+  const filterProducts = filterProductGroups.flatMap((product) => {
+    const categoryName = categoryNames.get(product.categoryId);
+    return categoryName ? [{ ...product, categoryName }] : [];
+  });
 
   const totalPages = Math.max(1, Math.ceil(totalProducts / PAGE_SIZE));
   const previousPage = currentPage > 1 ? currentPage - 1 : null;
   const nextPage = currentPage < totalPages ? currentPage + 1 : null;
-  const categories = [...new Set(filterProducts.map((product) => product.category.name))];
+  const categories = [...new Set(filterProducts.map((product) => product.categoryName))];
   const warehouses = warehouseRecords.map((warehouse) => warehouse.name);
   const models = [
     ...new Set(
       filterProducts.map(
         (product) =>
-          `${product.category.name.toLowerCase()}::${product.brand ? `${product.brand} ` : ""}${product.name}`,
+          `${product.categoryName.toLowerCase()}::${product.brand ? `${product.brand} ` : ""}${product.name}`,
       ),
     ),
   ];
@@ -453,10 +469,18 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                   <svg viewBox="0 0 20 20" aria-hidden="true" className="h-4 w-4 fill-none stroke-current stroke-[1.7]"><path d="M10 13V3m0 0L6.5 6.5M10 3l3.5 3.5M4 12.5v3A1.5 1.5 0 0 0 5.5 17h9a1.5 1.5 0 0 0 1.5-1.5v-3" strokeLinecap="round" strokeLinejoin="round" /></svg>
                   Importo
                 </Link>
-                <Link href="/products/new" className="inline-flex min-h-11 items-center justify-center gap-2 rounded-xl bg-[#093a2d] px-5 text-sm font-semibold text-white shadow-[0_10px_24px_rgba(9,58,45,0.14)] transition hover:bg-emerald-800">
-                  <svg viewBox="0 0 20 20" aria-hidden="true" className="h-4 w-4 fill-none stroke-current stroke-[1.8]"><path d="M10 4v12M4 10h12" strokeLinecap="round" /></svg>
-                  Shto produkt
-                </Link>
+                <CreateProductDialog
+                  categories={creationCategories.map((category) => {
+                    const config = getCatalogAwareCategoryConfig(
+                      tenant.catalogType,
+                      category.name,
+                      tenant.catalogConfig,
+                      parseCategoryFieldConfig(category.config),
+                    );
+                    return { id: category.id, name: category.name, sizeLabel: config.sizeLabel, showMaterial: config.showMaterialField, showPower: config.showPowerField };
+                  })}
+                  warehouses={transferWarehouses}
+                />
               </div>
             ) : null}
           </div>
@@ -560,7 +584,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                         </summary>
                         <div className="absolute right-0 mt-2 w-48 overflow-hidden rounded-2xl border border-emerald-100 bg-white p-2 shadow-[0_18px_40px_rgba(15,23,42,0.14)]">
                           <div className="flex flex-col gap-2">
-                            <ProductStockQuickView
+                            <ProductStockQuickViewLazy
                               productId={product.id}
                               productName={product.brand ? `${product.brand} ${product.name}` : product.name}
                               productBrand={product.category.name}
@@ -624,7 +648,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
 
                       <div className="flex items-start gap-3">
                         <div className="h-14 w-14 shrink-0 overflow-hidden rounded-2xl border border-emerald-100 bg-slate-100">
-                          <ProductStockQuickView
+                          <ProductStockQuickViewLazy
                             productId={product.id}
                             productName={product.brand ? `${product.brand} ${product.name}` : product.name}
                             productBrand={product.category.name}
@@ -767,7 +791,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                           <td className="px-3 py-3.5">
                             <div className="flex items-start gap-3">
                               <div className="h-11 w-11 shrink-0 overflow-hidden rounded-xl border border-emerald-100 bg-slate-100">
-                                <ProductStockQuickView
+                                <ProductStockQuickViewLazy
                                   productId={product.id}
                                   productName={product.brand ? `${product.brand} ${product.name}` : product.name}
                                   productBrand={product.category.name}
@@ -814,7 +838,7 @@ export default async function ProductsPage({ searchParams }: ProductsPageProps) 
                             ))}
                           <td className="px-3 py-3.5">
                             <div className="flex items-center justify-end gap-1.5 whitespace-nowrap">
-                              <ProductStockQuickView
+                              <ProductStockQuickViewLazy
                                 productId={product.id}
                                 productName={product.brand ? `${product.brand} ${product.name}` : product.name}
                                 productBrand={product.category.name}

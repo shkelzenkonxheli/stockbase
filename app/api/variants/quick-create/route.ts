@@ -28,6 +28,7 @@ type QuickCreatePayload = {
   stock?: number;
   reorderLevel?: number;
   price?: number;
+  costPrice?: number;
   material?: string;
   powerWatts?: string;
   locationCode?: string;
@@ -66,6 +67,10 @@ export async function POST(request: Request) {
           formData.get("price") !== null && formData.get("price") !== ""
             ? Number(formData.get("price"))
             : undefined,
+        costPrice:
+          formData.get("costPrice") !== null && formData.get("costPrice") !== ""
+            ? Number(formData.get("costPrice"))
+            : undefined,
         material: formData.get("material")?.toString(),
         powerWatts: formData.get("powerWatts")?.toString(),
         locationCode: formData.get("locationCode")?.toString(),
@@ -90,6 +95,9 @@ export async function POST(request: Request) {
       ? null
       : Number(payload.reorderLevel);
   const price = Number(payload.price);
+  const costPrice = payload.costPrice === undefined || payload.costPrice === null
+    ? null
+    : Number(payload.costPrice);
   const material = String(payload.material ?? "").trim() || null;
   const powerWatts = String(payload.powerWatts ?? "").trim() || null;
   const locationCode = String(payload.locationCode ?? "").trim() || null;
@@ -104,6 +112,7 @@ export async function POST(request: Request) {
     !size ||
     !Number.isInteger(stock) ||
     stock < 0 ||
+    (costPrice !== null && (!Number.isFinite(costPrice) || costPrice < 0 || costPrice > 99999999.99)) ||
     (imageFromVariantId !== undefined && (!Number.isSafeInteger(imageFromVariantId) || imageFromVariantId <= 0)) ||
     (reorderLevel !== null && (!Number.isInteger(reorderLevel) || reorderLevel < 0))
   ) {
@@ -295,6 +304,7 @@ export async function POST(request: Request) {
         stock,
         reorderLevel,
         price: effectivePrice,
+        ...(costPrice !== null ? { costPrice } : {}),
         imagePath: uploadedImagePath,
         material,
         powerWatts,
@@ -357,6 +367,7 @@ export async function POST(request: Request) {
       stock,
       reorderLevel,
       price: effectivePrice,
+      costPrice,
       material,
       powerWatts,
       locationCode,

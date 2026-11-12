@@ -1,15 +1,13 @@
 import Link from "next/link";
-import { revalidatePath } from "next/cache";
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { FlashMessage } from "@/app/components/flash-message";
 import { requireRole } from "@/lib/auth";
-import { writeAuditLog } from "@/lib/audit-log";
 import { parseTenantCatalogConfig } from "@/lib/product-taxonomy";
 import { prisma } from "@/lib/prisma";
-import { InsufficientStockError, removeWarehouseStock } from "@/lib/warehouse-stock-write";
 import { getTenantWarehouses } from "@/lib/warehouses";
 import { QuickOrdersForm } from "./quick-orders-form";
+import { createQuickOrders } from "./create-quick-orders";
 
 export const metadata: Metadata = {
   title: "Porosi te Shpejta",
@@ -24,260 +22,6 @@ type QuickOrdersPageProps = {
   }>;
 };
 
-async function createQuickOrders(formData: FormData) {
-  "use server";
-
-  const currentUser = await requireRole(["SUPER_ADMIN", "SELLER"]);
-  const tenantId = currentUser.tenant?.id;
-  if (!tenantId) {
-    redirect("/login");
-  }
-
-  const source = formData.get("source")?.toString() as
-    | "INSTAGRAM"
-    | "STORE"
-    | "WHOLESALE"
-    | undefined;
-  const warehouseId = Number(formData.get("warehouseId"));
-  const rowsRaw = formData.get("rows")?.toString();
-  const posSessionIdValue = Number(formData.get("posSessionId"));
-  const posSessionId = Number.isInteger(posSessionIdValue) && posSessionIdValue > 0 ? posSessionIdValue : null;
-
-  if (!source || !warehouseId || !rowsRaw) {
-    redirect("/orders/quick?error=validation");
-  }
-
-  let parsedRows: unknown;
-
-  try {
-    parsedRows = JSON.parse(rowsRaw);
-  } catch {
-    redirect("/orders/quick?error=validation");
-  }
-
-  if (!Array.isArray(parsedRows) || parsedRows.length === 0) {
-    redirect("/orders/quick?error=validation");
-  }
-
-  const rows = parsedRows
-    .map((row) => {
-      if (!row || typeof row !== "object") {
-        return null;
-      }
-
-      const candidate = row as {
-        variantId?: unknown;
-        quantity?: unknown;
-        unitPrice?: unknown;
-      };
-
-      const variantId = Number(candidate.variantId);
-      const quantity = Number(candidate.quantity);
-      const unitPrice = Number(candidate.unitPrice);
-
-      if (
-        !variantId ||
-        Number.isNaN(quantity) ||
-        quantity <= 0 ||
-        Number.isNaN(unitPrice) ||
-        unitPrice < 0
-      ) {
-        return null;
-      }
-
-      return {
-        variantId,
-        quantity,
-        unitPrice,
-      };
-    })
-    .filter(
-      (
-        row,
-      ): row is {
-        variantId: number;
-        quantity: number;
-        unitPrice: number;
-      } => row !== null,
-    );
-
-  if (rows.length === 0) {
-    redirect("/orders/quick?error=validation");
-  }
-
-  const requestedByVariant = new Map<number, number>();
-
-  for (const row of rows) {
-    requestedByVariant.set(
-      row.variantId,
-      (requestedByVariant.get(row.variantId) ?? 0) + row.quantity,
-    );
-  }
-
-  const result = await prisma.$transaction(async (tx) => {
-    let posSession:
-      | {
-          id: number;
-          warehouseId: number;
-        }
-      | null = null;
-
-    if (posSessionId) {
-      posSession = await tx.posSession.findFirst({
-        where: {
-          id: posSessionId,
-          tenantId,
-          status: "OPEN",
-          warehouseId,
-          ...(currentUser.role === "SUPER_ADMIN" ? {} : { openedById: currentUser.id }),
-        },
-        select: {
-          id: true,
-          warehouseId: true,
-        },
-      });
-
-      if (!posSession) {
-        return { ok: false as const, reason: "session" };
-      }
-    }
-
-    const variants = await tx.variant.findMany({
-      where: {
-        tenantId,
-        id: {
-          in: [...requestedByVariant.keys()],
-        },
-      },
-      select: {
-        id: true,
-        stock: true,
-        productId: true,
-        size: true,
-        color: true,
-        costPrice: true,
-        inventories: {
-          where: { warehouseId },
-          select: {
-            id: true,
-            stock: true,
-          },
-          take: 1,
-        },
-      },
-    });
-
-    if (variants.length !== requestedByVariant.size) {
-      return { ok: false as const, reason: "variant" };
-    }
-
-    const variantsById = new Map(variants.map((variant) => [variant.id, variant]));
-
-    for (const [variantId, quantity] of requestedByVariant.entries()) {
-      const variant = variantsById.get(variantId);
-
-      const inventory = variant?.inventories[0];
-      if (!variant || !inventory || inventory.stock < quantity) {
-        return { ok: false as const, reason: "stock" };
-      }
-    }
-
-    const totalQuantity = rows.reduce((sum, row) => sum + row.quantity, 0);
-    const primaryVariantId = rows[0]?.variantId;
-
-    const order = await tx.order.create({
-      data: {
-        tenantId,
-        customerName: "Quick Order",
-        phone: "-",
-        instagram: null,
-        source,
-        status: "DONE",
-        quantity: totalQuantity,
-        variantId: primaryVariantId,
-        warehouseId,
-        posSessionId: posSession?.id ?? null,
-      },
-    });
-
-    await tx.orderItem.createMany({
-      data: rows.map((row) => ({
-        orderId: order.id,
-        variantId: row.variantId,
-        warehouseId,
-        quantity: row.quantity,
-        unitPrice: row.unitPrice,
-        unitCost: variantsById.get(row.variantId)?.costPrice ?? 0,
-      })),
-    });
-
-    for (const [variantId, quantity] of requestedByVariant.entries()) {
-      const variant = variantsById.get(variantId);
-      const inventory = variant?.inventories[0];
-      if (!variant || !inventory) {
-        throw new InsufficientStockError();
-      }
-
-      await removeWarehouseStock(tx, inventory.id, variantId, quantity);
-    }
-
-    await writeAuditLog(tx, {
-      tenantId,
-      userId: currentUser.id,
-      action: "ORDER_CREATED",
-      entityType: "ORDER",
-      entityId: order.id,
-      entityLabel: "Quick Order",
-      warehouseId,
-      metadata: {
-        source,
-        orderId: order.id,
-        posSessionId: posSession?.id ?? null,
-        totalQuantity,
-        rows: rows.map((row) => {
-          const variant = variantsById.get(row.variantId);
-          return {
-            variantId: row.variantId,
-            quantity: row.quantity,
-            unitPrice: row.unitPrice,
-            size: variant?.size ?? null,
-            color: variant?.color ?? null,
-          };
-        }),
-      },
-    });
-
-    return {
-      ok: true as const,
-      orderId: order.id,
-      posSessionId: posSession?.id ?? null,
-      productIds: [...new Set(variants.map((variant) => variant.productId))],
-    };
-  }).catch((error: unknown) => {
-    if (error instanceof InsufficientStockError) redirect("/orders/quick?error=stock");
-    throw error;
-  });
-
-  if (!result.ok) {
-    redirect(`/orders/quick?error=${result.reason}`);
-  }
-
-  revalidatePath("/");
-  revalidatePath("/products");
-  for (const productId of result.productIds) {
-    revalidatePath(`/products/${productId}`);
-  }
-  revalidatePath("/orders");
-  revalidatePath("/orders/new");
-  revalidatePath("/orders/quick");
-  if (result.posSessionId) {
-    revalidatePath(`/pos/session/${result.posSessionId}`);
-    redirect(`/pos/session/${result.posSessionId}?sale=1`);
-  }
-
-  redirect("/orders");
-}
-
 function getErrorMessage(error?: string) {
   switch (error) {
     case "stock":
@@ -288,6 +32,8 @@ function getErrorMessage(error?: string) {
       return "Ploteso variantin dhe nje sasi valide per cdo rresht qe don te ruash.";
     case "session":
       return "POS session nuk ekziston me, eshte mbyllur ose nuk ke akses ne te.";
+    case "warehouse":
+      return "Depoja nuk eshte aktive per kete biznes.";
     default:
       return null;
   }

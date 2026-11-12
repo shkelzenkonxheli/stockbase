@@ -1,6 +1,5 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { FlashMessage } from "@/app/components/flash-message";
 import { ProductAiAssistant } from "@/app/products/product-ai-assistant";
@@ -8,6 +7,7 @@ import { requireRole } from "@/lib/auth";
 import { ensureTenantCategories } from "@/lib/categories";
 import { prisma } from "@/lib/prisma";
 import { getTenantWarehouses } from "@/lib/warehouses";
+import { createProductRecord } from "../create-product-action";
 import {
   getCategoryDescription,
   getCatalogAwareCategoryConfig,
@@ -19,66 +19,9 @@ import {
 
 async function createProduct(formData: FormData) {
   "use server";
-
-  const currentUser = await requireRole(["SUPER_ADMIN"]);
-  const tenantId = currentUser.tenant?.id;
-  if (!tenantId) {
-    redirect("/login");
-  }
-
-  const name = formData.get("name")?.toString().trim();
-  const brand = formData.get("brand")?.toString().trim() || null;
-  const warehouseName = formData.get("warehouseName")?.toString().trim() || null;
-  const categoryId = Number(formData.get("categoryId"));
-  if (!name || !categoryId) {
-    return;
-  }
-
-  const category = await prisma.category.findFirst({
-    where: {
-      id: categoryId,
-      tenantId,
-      isActive: true,
-    },
-    select: { id: true },
-  });
-
-  if (!category) {
-    redirect("/products/new?error=Kategoria%20nuk%20eshte%20valide%20per%20kete%20tenant.");
-  }
-
-  const existingProduct = await prisma.product.findFirst({
-    where: {
-      tenantId,
-      name: { equals: name, mode: "insensitive" },
-      brand: brand ? { equals: brand, mode: "insensitive" } : null,
-      categoryId,
-    },
-    select: { id: true },
-  });
-
-  if (existingProduct) {
-    redirect(
-      `/products/new?error=${encodeURIComponent(
-        "Ky produkt ekziston tashme ne kete kategori. Ndrysho emrin ose zgjidh produktin ekzistues.",
-      )}`,
-    );
-  }
-
-  const product = await prisma.product.create({
-    data: {
-      tenantId,
-      name,
-      brand,
-      warehouseName,
-      categoryId,
-    },
-  });
-
-  revalidatePath("/");
-  revalidatePath("/products");
-
-  redirect(`/products/${product.id}`);
+  const result = await createProductRecord(formData);
+  if (result.error) redirect(`/products/new?error=${encodeURIComponent(result.error)}`);
+  redirect(`/products/${result.productId}`);
 }
 
 export const metadata: Metadata = {

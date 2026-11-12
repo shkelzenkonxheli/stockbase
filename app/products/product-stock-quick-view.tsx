@@ -24,7 +24,7 @@ type ProductQuickVariant = {
   locationCode?: string | null;
 };
 
-type ProductStockQuickViewProps = {
+export type ProductStockQuickViewProps = {
   productId: number;
   productName: string;
   productBrand: string;
@@ -40,6 +40,8 @@ type ProductStockQuickViewProps = {
   canDeleteColor?: boolean;
   canTransferStock?: boolean;
   transferWarehouses?: { id: number; name: string }[];
+  initialView?: "stock" | "image";
+  hideTriggers?: boolean;
 };
 
 type StockReason = "INCOMING_STOCK" | "CUSTOMER_RETURN";
@@ -306,18 +308,20 @@ export function ProductStockQuickView({
   canDeleteColor = false,
   canTransferStock = false,
   transferWarehouses = [],
+  initialView,
+  hideTriggers = false,
 }: ProductStockQuickViewProps) {
   const router = useRouter();
   const stockViewMode = getStockViewMode(productBrand);
   const isElectricalCategory = stockViewMode === "electronics";
   const isFootwearCategory = stockViewMode === "footwear";
-  const [showStock, setShowStock] = useState(false);
+  const [showStock, setShowStock] = useState(initialView === "stock");
   const [hasMounted, setHasMounted] = useState(false);
   const [variantsState, setVariantsState] = useState(variants);
   const [previewImage, setPreviewImage] = useState<{
     src: string;
     alt: string;
-  } | null>(null);
+  } | null>(initialView === "image" && imagePath ? { src: imagePath, alt: productName } : null);
   const [successToast, setSuccessToast] = useState<string | null>(null);
   const [transferTarget, setTransferTarget] = useState<{ color?: string; variantId?: number } | null>(null);
 
@@ -1152,7 +1156,7 @@ export function ProductStockQuickView({
 
   return (
     <>
-      {showImageButton ? (
+      {!hideTriggers && showImageButton ? (
         <button
           type="button"
           onClick={() =>
@@ -1182,7 +1186,7 @@ export function ProductStockQuickView({
         </button>
       ) : null}
 
-      <button
+      {!hideTriggers ? <button
         type="button"
         onClick={(event) => {
           event.currentTarget.closest("details")?.removeAttribute("open");
@@ -1195,7 +1199,7 @@ export function ProductStockQuickView({
         title="Stoku"
       >
         {iconOnly ? <IconBox /> : "Stoku"}
-      </button>
+      </button> : null}
 
       {hasMounted
         ? createPortal(

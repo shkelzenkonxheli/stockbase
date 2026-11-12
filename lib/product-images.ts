@@ -1,5 +1,5 @@
 import path from "node:path";
-import { PutObjectCommand } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3";
 import { inspectUploadImage, MAX_PRODUCT_PHOTO_BYTES } from "@/lib/image-upload-validation";
 import { buildAppAssetUrl, getR2Client, getR2Config } from "@/lib/r2";
 
@@ -67,4 +67,13 @@ export async function saveProductImage(productId: number, file: File) {
   }
 
   return buildAppAssetUrl(objectKey);
+}
+
+export async function deleteProductImageUpload(imagePath: string) {
+  const prefix = "/api/assets/";
+  if (!imagePath.startsWith(prefix)) return;
+  const key = imagePath.slice(prefix.length).split("/").map(decodeURIComponent).join("/");
+  const config = getR2Config();
+  if (!key.startsWith(`${config.appFolder}/products/`)) return;
+  await getR2Client().send(new DeleteObjectCommand({ Bucket: config.bucketName, Key: key }));
 }

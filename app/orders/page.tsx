@@ -8,6 +8,7 @@ import { getOrderListViewConfig } from "@/lib/product-taxonomy";
 import { prisma } from "@/lib/prisma";
 import { OrdersFilters } from "./orders-filters";
 import { OrdersManager } from "./orders-manager";
+import { QuickOrderDialog } from "./quick/quick-order-dialog";
 
 const PAGE_SIZE = 20;
 const BUSINESS_TIME_ZONE = "Europe/Belgrade";
@@ -23,6 +24,7 @@ type OrdersPageProps = {
     source?: string;
     status?: string;
     date?: string;
+    quickOrderError?: string;
   }>;
 };
 
@@ -1091,12 +1093,7 @@ export default async function OrdersPage({
               </div>
               {canCreateOrders ? (
                 <>
-                  <Link
-                    href="/orders/quick"
-                    className="inline-flex items-center justify-center rounded-2xl border border-emerald-200 bg-white/92 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50"
-                  >
-                    Porosi te shpejta
-                  </Link>
+                  <QuickOrderDialog />
                   <Link
                     href="/orders/new"
                     className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(15,23,42,0.18)] transition hover:bg-emerald-700"
@@ -1108,6 +1105,15 @@ export default async function OrdersPage({
             </div>
           </div>
         </section>
+
+        {resolvedSearchParams?.quickOrderError ? (
+          <p role="alert" className="rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-800">
+            {resolvedSearchParams.quickOrderError === "stock" ? "Stoku ndryshoi para ruajtjes. Kontrollo sasine dhe provo perseri." :
+              resolvedSearchParams.quickOrderError === "warehouse" ? "Depoja nuk eshte me aktive. Zgjidh nje depo tjeter." :
+              resolvedSearchParams.quickOrderError === "variant" ? "Nje nga variantet nuk ekziston me. Provo perseri." :
+              "Porosia nuk u ruajt. Kontrollo te dhenat dhe provo perseri."}
+          </p>
+        ) : null}
 
         <section className="overflow-hidden rounded-[30px] border border-emerald-100/80 bg-[linear-gradient(180deg,#ffffff_0%,#fbfefc_100%)] shadow-[0_16px_44px_rgba(15,23,42,0.08)]">
           <div className="border-b border-emerald-100/80 bg-[linear-gradient(180deg,#fcfffd_0%,#f3fbf6_100%)] px-4 py-4 sm:px-5">
