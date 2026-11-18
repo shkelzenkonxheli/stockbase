@@ -62,6 +62,7 @@ export const ModelName = {
   User: 'User',
   Session: 'Session',
   Tenant: 'Tenant',
+  OnlineStore: 'OnlineStore',
   PosRegister: 'PosRegister',
   PosSession: 'PosSession',
   PosPayment: 'PosPayment',
@@ -265,6 +266,20 @@ export const TenantScalarFieldEnum = {
 } as const
 
 export type TenantScalarFieldEnum = (typeof TenantScalarFieldEnum)[keyof typeof TenantScalarFieldEnum]
+
+
+export const OnlineStoreScalarFieldEnum = {
+  tenantId: 'tenantId',
+  name: 'name',
+  logoUrl: 'logoUrl',
+  whatsappNumber: 'whatsappNumber',
+  warehouseId: 'warehouseId',
+  categoryIds: 'categoryIds',
+  productIds: 'productIds',
+  updatedAt: 'updatedAt'
+} as const
+
+export type OnlineStoreScalarFieldEnum = (typeof OnlineStoreScalarFieldEnum)[keyof typeof OnlineStoreScalarFieldEnum]
 
 
 export const PosRegisterScalarFieldEnum = {

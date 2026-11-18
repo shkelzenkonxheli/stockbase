@@ -26,7 +26,10 @@ export function getOperationalGroups(options: Options): OperationalGroup[] {
       id: "products", title: "Produkte", description: "Produktet dhe kataloget",
       links: [
         { label: "Produktet", href: "/products", description: "Shiko produktet dhe variantet" },
-        ...(admin ? [{ label: "Kataloget", href: "/catalogs", description: "Krijo kataloge per klientet" }] : []),
+        ...(admin ? [
+          { label: "Kataloget", href: "/catalogs", description: "Krijo kataloge per klientet" },
+          { label: "Online Store", href: "/online-store", description: "Menaxho produktet dhe kategorite e dyqanit online" },
+        ] : []),
       ],
     },
     {

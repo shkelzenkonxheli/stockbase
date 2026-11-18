@@ -17,17 +17,18 @@ const globalForPrisma = globalThis as unknown as {
 
 // In development, Prisma can remain cached across a schema migration. Bump this
 // value with migrations so an outdated generated client is never reused.
-const prismaSchemaVersion = "20260921100000";
-const hasCurrentPosDelegates = Boolean(
+const prismaSchemaVersion = "20261118100000";
+const hasCurrentDelegates = Boolean(
   globalForPrisma.prisma &&
     "posPayment" in globalForPrisma.prisma &&
     "posCashMovement" in globalForPrisma.prisma &&
     "socialPublication" in globalForPrisma.prisma &&
+    "onlineStore" in globalForPrisma.prisma &&
     globalForPrisma.prismaSchemaVersion === prismaSchemaVersion,
 );
 
 export const prisma =
-  globalForPrisma.prisma && hasCurrentPosDelegates
+  globalForPrisma.prisma && hasCurrentDelegates
     ? globalForPrisma.prisma
     : new PrismaClient({ adapter });
 

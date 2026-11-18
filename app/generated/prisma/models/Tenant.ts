@@ -232,6 +232,7 @@ export type TenantWhereInput = {
   catalogType?: Prisma.EnumCatalogTypeFilter<"Tenant"> | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFilter<"Tenant"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Tenant"> | Date | string
+  onlineStore?: Prisma.XOR<Prisma.OnlineStoreNullableScalarRelationFilter, Prisma.OnlineStoreWhereInput> | null
   orders?: Prisma.OrderListRelationFilter
   products?: Prisma.ProductListRelationFilter
   sessions?: Prisma.SessionListRelationFilter
@@ -262,6 +263,7 @@ export type TenantOrderByWithRelationInput = {
   catalogType?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  onlineStore?: Prisma.OnlineStoreOrderByWithRelationInput
   orders?: Prisma.OrderOrderByRelationAggregateInput
   products?: Prisma.ProductOrderByRelationAggregateInput
   sessions?: Prisma.SessionOrderByRelationAggregateInput
@@ -295,6 +297,7 @@ export type TenantWhereUniqueInput = Prisma.AtLeast<{
   catalogType?: Prisma.EnumCatalogTypeFilter<"Tenant"> | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFilter<"Tenant"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Tenant"> | Date | string
+  onlineStore?: Prisma.XOR<Prisma.OnlineStoreNullableScalarRelationFilter, Prisma.OnlineStoreWhereInput> | null
   orders?: Prisma.OrderListRelationFilter
   products?: Prisma.ProductListRelationFilter
   sessions?: Prisma.SessionListRelationFilter
@@ -352,6 +355,7 @@ export type TenantCreateInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderCreateNestedManyWithoutTenantInput
   products?: Prisma.ProductCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionCreateNestedManyWithoutActiveTenantInput
@@ -382,6 +386,7 @@ export type TenantUncheckedCreateInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutTenantInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutActiveTenantInput
@@ -411,6 +416,7 @@ export type TenantUpdateInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUpdateManyWithoutTenantNestedInput
   products?: Prisma.ProductUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutActiveTenantNestedInput
@@ -441,6 +447,7 @@ export type TenantUncheckedUpdateInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutTenantNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutActiveTenantNestedInput
@@ -654,6 +661,20 @@ export type EnumTenantStatusFieldUpdateOperationsInput = {
   set?: $Enums.TenantStatus
 }
 
+export type TenantCreateNestedOneWithoutOnlineStoreInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutOnlineStoreInput, Prisma.TenantUncheckedCreateWithoutOnlineStoreInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutOnlineStoreInput
+  connect?: Prisma.TenantWhereUniqueInput
+}
+
+export type TenantUpdateOneRequiredWithoutOnlineStoreNestedInput = {
+  create?: Prisma.XOR<Prisma.TenantCreateWithoutOnlineStoreInput, Prisma.TenantUncheckedCreateWithoutOnlineStoreInput>
+  connectOrCreate?: Prisma.TenantCreateOrConnectWithoutOnlineStoreInput
+  upsert?: Prisma.TenantUpsertWithoutOnlineStoreInput
+  connect?: Prisma.TenantWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.TenantUpdateToOneWithWhereWithoutOnlineStoreInput, Prisma.TenantUpdateWithoutOnlineStoreInput>, Prisma.TenantUncheckedUpdateWithoutOnlineStoreInput>
+}
+
 export type TenantCreateNestedOneWithoutPosRegistersInput = {
   create?: Prisma.XOR<Prisma.TenantCreateWithoutPosRegistersInput, Prisma.TenantUncheckedCreateWithoutPosRegistersInput>
   connectOrCreate?: Prisma.TenantCreateOrConnectWithoutPosRegistersInput
@@ -843,6 +864,7 @@ export type TenantCreateWithoutProductsInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionCreateNestedManyWithoutActiveTenantInput
   stockMovements?: Prisma.StockMovementCreateNestedManyWithoutTenantInput
@@ -872,6 +894,7 @@ export type TenantUncheckedCreateWithoutProductsInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutActiveTenantInput
   stockMovements?: Prisma.StockMovementUncheckedCreateNestedManyWithoutTenantInput
@@ -916,6 +939,7 @@ export type TenantUpdateWithoutProductsInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutActiveTenantNestedInput
   stockMovements?: Prisma.StockMovementUpdateManyWithoutTenantNestedInput
@@ -945,6 +969,7 @@ export type TenantUncheckedUpdateWithoutProductsInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutActiveTenantNestedInput
   stockMovements?: Prisma.StockMovementUncheckedUpdateManyWithoutTenantNestedInput
@@ -973,6 +998,7 @@ export type TenantCreateWithoutCategoriesInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderCreateNestedManyWithoutTenantInput
   products?: Prisma.ProductCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionCreateNestedManyWithoutActiveTenantInput
@@ -1002,6 +1028,7 @@ export type TenantUncheckedCreateWithoutCategoriesInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutTenantInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutActiveTenantInput
@@ -1046,6 +1073,7 @@ export type TenantUpdateWithoutCategoriesInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUpdateManyWithoutTenantNestedInput
   products?: Prisma.ProductUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutActiveTenantNestedInput
@@ -1075,6 +1103,7 @@ export type TenantUncheckedUpdateWithoutCategoriesInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutTenantNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutActiveTenantNestedInput
@@ -1103,6 +1132,7 @@ export type TenantCreateWithoutVariantsInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderCreateNestedManyWithoutTenantInput
   products?: Prisma.ProductCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionCreateNestedManyWithoutActiveTenantInput
@@ -1132,6 +1162,7 @@ export type TenantUncheckedCreateWithoutVariantsInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutTenantInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutActiveTenantInput
@@ -1176,6 +1207,7 @@ export type TenantUpdateWithoutVariantsInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUpdateManyWithoutTenantNestedInput
   products?: Prisma.ProductUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutActiveTenantNestedInput
@@ -1205,6 +1237,7 @@ export type TenantUncheckedUpdateWithoutVariantsInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutTenantNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutActiveTenantNestedInput
@@ -1233,6 +1266,7 @@ export type TenantCreateWithoutWarehousesInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderCreateNestedManyWithoutTenantInput
   products?: Prisma.ProductCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionCreateNestedManyWithoutActiveTenantInput
@@ -1262,6 +1296,7 @@ export type TenantUncheckedCreateWithoutWarehousesInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutTenantInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutActiveTenantInput
@@ -1306,6 +1341,7 @@ export type TenantUpdateWithoutWarehousesInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUpdateManyWithoutTenantNestedInput
   products?: Prisma.ProductUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutActiveTenantNestedInput
@@ -1335,6 +1371,7 @@ export type TenantUncheckedUpdateWithoutWarehousesInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutTenantNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutActiveTenantNestedInput
@@ -1363,6 +1400,7 @@ export type TenantCreateWithoutStockMovementsInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderCreateNestedManyWithoutTenantInput
   products?: Prisma.ProductCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionCreateNestedManyWithoutActiveTenantInput
@@ -1392,6 +1430,7 @@ export type TenantUncheckedCreateWithoutStockMovementsInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutTenantInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutActiveTenantInput
@@ -1436,6 +1475,7 @@ export type TenantUpdateWithoutStockMovementsInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUpdateManyWithoutTenantNestedInput
   products?: Prisma.ProductUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutActiveTenantNestedInput
@@ -1465,6 +1505,7 @@ export type TenantUncheckedUpdateWithoutStockMovementsInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutTenantNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutActiveTenantNestedInput
@@ -1493,6 +1534,7 @@ export type TenantCreateWithoutOrdersInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreCreateNestedOneWithoutTenantInput
   products?: Prisma.ProductCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionCreateNestedManyWithoutActiveTenantInput
   stockMovements?: Prisma.StockMovementCreateNestedManyWithoutTenantInput
@@ -1522,6 +1564,7 @@ export type TenantUncheckedCreateWithoutOrdersInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedCreateNestedOneWithoutTenantInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutActiveTenantInput
   stockMovements?: Prisma.StockMovementUncheckedCreateNestedManyWithoutTenantInput
@@ -1566,6 +1609,7 @@ export type TenantUpdateWithoutOrdersInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUpdateOneWithoutTenantNestedInput
   products?: Prisma.ProductUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutActiveTenantNestedInput
   stockMovements?: Prisma.StockMovementUpdateManyWithoutTenantNestedInput
@@ -1595,6 +1639,7 @@ export type TenantUncheckedUpdateWithoutOrdersInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedUpdateOneWithoutTenantNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutActiveTenantNestedInput
   stockMovements?: Prisma.StockMovementUncheckedUpdateManyWithoutTenantNestedInput
@@ -1623,6 +1668,7 @@ export type TenantCreateWithoutSessionsInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderCreateNestedManyWithoutTenantInput
   products?: Prisma.ProductCreateNestedManyWithoutTenantInput
   stockMovements?: Prisma.StockMovementCreateNestedManyWithoutTenantInput
@@ -1652,6 +1698,7 @@ export type TenantUncheckedCreateWithoutSessionsInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutTenantInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutTenantInput
   stockMovements?: Prisma.StockMovementUncheckedCreateNestedManyWithoutTenantInput
@@ -1696,6 +1743,7 @@ export type TenantUpdateWithoutSessionsInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUpdateManyWithoutTenantNestedInput
   products?: Prisma.ProductUpdateManyWithoutTenantNestedInput
   stockMovements?: Prisma.StockMovementUpdateManyWithoutTenantNestedInput
@@ -1725,8 +1773,143 @@ export type TenantUncheckedUpdateWithoutSessionsInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutTenantNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutTenantNestedInput
+  stockMovements?: Prisma.StockMovementUncheckedUpdateManyWithoutTenantNestedInput
+  subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutTenantNestedInput
+  memberships?: Prisma.TenantMembershipUncheckedUpdateManyWithoutTenantNestedInput
+  settings?: Prisma.TenantSettingsUncheckedUpdateOneWithoutTenantNestedInput
+  categories?: Prisma.CategoryUncheckedUpdateManyWithoutTenantNestedInput
+  variants?: Prisma.VariantUncheckedUpdateManyWithoutTenantNestedInput
+  warehouses?: Prisma.WarehouseUncheckedUpdateManyWithoutTenantNestedInput
+  suppliers?: Prisma.SupplierUncheckedUpdateManyWithoutTenantNestedInput
+  purchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutTenantNestedInput
+  inventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutTenantNestedInput
+  posRegisters?: Prisma.PosRegisterUncheckedUpdateManyWithoutTenantNestedInput
+  posSessions?: Prisma.PosSessionUncheckedUpdateManyWithoutTenantNestedInput
+  posPayments?: Prisma.PosPaymentUncheckedUpdateManyWithoutTenantNestedInput
+  posCashMovements?: Prisma.PosCashMovementUncheckedUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUncheckedUpdateManyWithoutTenantNestedInput
+  catalogs?: Prisma.CatalogUncheckedUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantCreateWithoutOnlineStoreInput = {
+  name: string
+  slug: string
+  status?: $Enums.TenantStatus
+  catalogType: $Enums.CatalogType
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  orders?: Prisma.OrderCreateNestedManyWithoutTenantInput
+  products?: Prisma.ProductCreateNestedManyWithoutTenantInput
+  sessions?: Prisma.SessionCreateNestedManyWithoutActiveTenantInput
+  stockMovements?: Prisma.StockMovementCreateNestedManyWithoutTenantInput
+  subscription?: Prisma.SubscriptionCreateNestedOneWithoutTenantInput
+  memberships?: Prisma.TenantMembershipCreateNestedManyWithoutTenantInput
+  settings?: Prisma.TenantSettingsCreateNestedOneWithoutTenantInput
+  categories?: Prisma.CategoryCreateNestedManyWithoutTenantInput
+  variants?: Prisma.VariantCreateNestedManyWithoutTenantInput
+  warehouses?: Prisma.WarehouseCreateNestedManyWithoutTenantInput
+  suppliers?: Prisma.SupplierCreateNestedManyWithoutTenantInput
+  purchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutTenantInput
+  inventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutTenantInput
+  posRegisters?: Prisma.PosRegisterCreateNestedManyWithoutTenantInput
+  posSessions?: Prisma.PosSessionCreateNestedManyWithoutTenantInput
+  posPayments?: Prisma.PosPaymentCreateNestedManyWithoutTenantInput
+  posCashMovements?: Prisma.PosCashMovementCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationCreateNestedManyWithoutTenantInput
+  catalogs?: Prisma.CatalogCreateNestedManyWithoutTenantInput
+}
+
+export type TenantUncheckedCreateWithoutOnlineStoreInput = {
+  id?: number
+  name: string
+  slug: string
+  status?: $Enums.TenantStatus
+  catalogType: $Enums.CatalogType
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutTenantInput
+  products?: Prisma.ProductUncheckedCreateNestedManyWithoutTenantInput
+  sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutActiveTenantInput
+  stockMovements?: Prisma.StockMovementUncheckedCreateNestedManyWithoutTenantInput
+  subscription?: Prisma.SubscriptionUncheckedCreateNestedOneWithoutTenantInput
+  memberships?: Prisma.TenantMembershipUncheckedCreateNestedManyWithoutTenantInput
+  settings?: Prisma.TenantSettingsUncheckedCreateNestedOneWithoutTenantInput
+  categories?: Prisma.CategoryUncheckedCreateNestedManyWithoutTenantInput
+  variants?: Prisma.VariantUncheckedCreateNestedManyWithoutTenantInput
+  warehouses?: Prisma.WarehouseUncheckedCreateNestedManyWithoutTenantInput
+  suppliers?: Prisma.SupplierUncheckedCreateNestedManyWithoutTenantInput
+  purchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutTenantInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutTenantInput
+  inventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutTenantInput
+  posRegisters?: Prisma.PosRegisterUncheckedCreateNestedManyWithoutTenantInput
+  posSessions?: Prisma.PosSessionUncheckedCreateNestedManyWithoutTenantInput
+  posPayments?: Prisma.PosPaymentUncheckedCreateNestedManyWithoutTenantInput
+  posCashMovements?: Prisma.PosCashMovementUncheckedCreateNestedManyWithoutTenantInput
+  socialPublications?: Prisma.SocialPublicationUncheckedCreateNestedManyWithoutTenantInput
+  catalogs?: Prisma.CatalogUncheckedCreateNestedManyWithoutTenantInput
+}
+
+export type TenantCreateOrConnectWithoutOnlineStoreInput = {
+  where: Prisma.TenantWhereUniqueInput
+  create: Prisma.XOR<Prisma.TenantCreateWithoutOnlineStoreInput, Prisma.TenantUncheckedCreateWithoutOnlineStoreInput>
+}
+
+export type TenantUpsertWithoutOnlineStoreInput = {
+  update: Prisma.XOR<Prisma.TenantUpdateWithoutOnlineStoreInput, Prisma.TenantUncheckedUpdateWithoutOnlineStoreInput>
+  create: Prisma.XOR<Prisma.TenantCreateWithoutOnlineStoreInput, Prisma.TenantUncheckedCreateWithoutOnlineStoreInput>
+  where?: Prisma.TenantWhereInput
+}
+
+export type TenantUpdateToOneWithWhereWithoutOnlineStoreInput = {
+  where?: Prisma.TenantWhereInput
+  data: Prisma.XOR<Prisma.TenantUpdateWithoutOnlineStoreInput, Prisma.TenantUncheckedUpdateWithoutOnlineStoreInput>
+}
+
+export type TenantUpdateWithoutOnlineStoreInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
+  catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  orders?: Prisma.OrderUpdateManyWithoutTenantNestedInput
+  products?: Prisma.ProductUpdateManyWithoutTenantNestedInput
+  sessions?: Prisma.SessionUpdateManyWithoutActiveTenantNestedInput
+  stockMovements?: Prisma.StockMovementUpdateManyWithoutTenantNestedInput
+  subscription?: Prisma.SubscriptionUpdateOneWithoutTenantNestedInput
+  memberships?: Prisma.TenantMembershipUpdateManyWithoutTenantNestedInput
+  settings?: Prisma.TenantSettingsUpdateOneWithoutTenantNestedInput
+  categories?: Prisma.CategoryUpdateManyWithoutTenantNestedInput
+  variants?: Prisma.VariantUpdateManyWithoutTenantNestedInput
+  warehouses?: Prisma.WarehouseUpdateManyWithoutTenantNestedInput
+  suppliers?: Prisma.SupplierUpdateManyWithoutTenantNestedInput
+  purchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutTenantNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutTenantNestedInput
+  inventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutTenantNestedInput
+  posRegisters?: Prisma.PosRegisterUpdateManyWithoutTenantNestedInput
+  posSessions?: Prisma.PosSessionUpdateManyWithoutTenantNestedInput
+  posPayments?: Prisma.PosPaymentUpdateManyWithoutTenantNestedInput
+  posCashMovements?: Prisma.PosCashMovementUpdateManyWithoutTenantNestedInput
+  socialPublications?: Prisma.SocialPublicationUpdateManyWithoutTenantNestedInput
+  catalogs?: Prisma.CatalogUpdateManyWithoutTenantNestedInput
+}
+
+export type TenantUncheckedUpdateWithoutOnlineStoreInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  status?: Prisma.EnumTenantStatusFieldUpdateOperationsInput | $Enums.TenantStatus
+  catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutTenantNestedInput
+  products?: Prisma.ProductUncheckedUpdateManyWithoutTenantNestedInput
+  sessions?: Prisma.SessionUncheckedUpdateManyWithoutActiveTenantNestedInput
   stockMovements?: Prisma.StockMovementUncheckedUpdateManyWithoutTenantNestedInput
   subscription?: Prisma.SubscriptionUncheckedUpdateOneWithoutTenantNestedInput
   memberships?: Prisma.TenantMembershipUncheckedUpdateManyWithoutTenantNestedInput
@@ -1753,6 +1936,7 @@ export type TenantCreateWithoutPosRegistersInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderCreateNestedManyWithoutTenantInput
   products?: Prisma.ProductCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionCreateNestedManyWithoutActiveTenantInput
@@ -1782,6 +1966,7 @@ export type TenantUncheckedCreateWithoutPosRegistersInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutTenantInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutActiveTenantInput
@@ -1826,6 +2011,7 @@ export type TenantUpdateWithoutPosRegistersInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUpdateManyWithoutTenantNestedInput
   products?: Prisma.ProductUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutActiveTenantNestedInput
@@ -1855,6 +2041,7 @@ export type TenantUncheckedUpdateWithoutPosRegistersInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutTenantNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutActiveTenantNestedInput
@@ -1883,6 +2070,7 @@ export type TenantCreateWithoutPosSessionsInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderCreateNestedManyWithoutTenantInput
   products?: Prisma.ProductCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionCreateNestedManyWithoutActiveTenantInput
@@ -1912,6 +2100,7 @@ export type TenantUncheckedCreateWithoutPosSessionsInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutTenantInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutActiveTenantInput
@@ -1956,6 +2145,7 @@ export type TenantUpdateWithoutPosSessionsInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUpdateManyWithoutTenantNestedInput
   products?: Prisma.ProductUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutActiveTenantNestedInput
@@ -1985,6 +2175,7 @@ export type TenantUncheckedUpdateWithoutPosSessionsInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutTenantNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutActiveTenantNestedInput
@@ -2013,6 +2204,7 @@ export type TenantCreateWithoutPosPaymentsInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderCreateNestedManyWithoutTenantInput
   products?: Prisma.ProductCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionCreateNestedManyWithoutActiveTenantInput
@@ -2042,6 +2234,7 @@ export type TenantUncheckedCreateWithoutPosPaymentsInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutTenantInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutActiveTenantInput
@@ -2086,6 +2279,7 @@ export type TenantUpdateWithoutPosPaymentsInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUpdateManyWithoutTenantNestedInput
   products?: Prisma.ProductUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutActiveTenantNestedInput
@@ -2115,6 +2309,7 @@ export type TenantUncheckedUpdateWithoutPosPaymentsInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutTenantNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutActiveTenantNestedInput
@@ -2143,6 +2338,7 @@ export type TenantCreateWithoutPosCashMovementsInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderCreateNestedManyWithoutTenantInput
   products?: Prisma.ProductCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionCreateNestedManyWithoutActiveTenantInput
@@ -2172,6 +2368,7 @@ export type TenantUncheckedCreateWithoutPosCashMovementsInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutTenantInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutActiveTenantInput
@@ -2216,6 +2413,7 @@ export type TenantUpdateWithoutPosCashMovementsInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUpdateManyWithoutTenantNestedInput
   products?: Prisma.ProductUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutActiveTenantNestedInput
@@ -2245,6 +2443,7 @@ export type TenantUncheckedUpdateWithoutPosCashMovementsInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutTenantNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutActiveTenantNestedInput
@@ -2273,6 +2472,7 @@ export type TenantCreateWithoutAuditLogsInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderCreateNestedManyWithoutTenantInput
   products?: Prisma.ProductCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionCreateNestedManyWithoutActiveTenantInput
@@ -2302,6 +2502,7 @@ export type TenantUncheckedCreateWithoutAuditLogsInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutTenantInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutActiveTenantInput
@@ -2346,6 +2547,7 @@ export type TenantUpdateWithoutAuditLogsInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUpdateManyWithoutTenantNestedInput
   products?: Prisma.ProductUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutActiveTenantNestedInput
@@ -2375,6 +2577,7 @@ export type TenantUncheckedUpdateWithoutAuditLogsInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutTenantNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutActiveTenantNestedInput
@@ -2403,6 +2606,7 @@ export type TenantCreateWithoutInventoryCountsInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderCreateNestedManyWithoutTenantInput
   products?: Prisma.ProductCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionCreateNestedManyWithoutActiveTenantInput
@@ -2432,6 +2636,7 @@ export type TenantUncheckedCreateWithoutInventoryCountsInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutTenantInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutActiveTenantInput
@@ -2476,6 +2681,7 @@ export type TenantUpdateWithoutInventoryCountsInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUpdateManyWithoutTenantNestedInput
   products?: Prisma.ProductUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutActiveTenantNestedInput
@@ -2505,6 +2711,7 @@ export type TenantUncheckedUpdateWithoutInventoryCountsInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutTenantNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutActiveTenantNestedInput
@@ -2533,6 +2740,7 @@ export type TenantCreateWithoutMembershipsInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderCreateNestedManyWithoutTenantInput
   products?: Prisma.ProductCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionCreateNestedManyWithoutActiveTenantInput
@@ -2562,6 +2770,7 @@ export type TenantUncheckedCreateWithoutMembershipsInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutTenantInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutActiveTenantInput
@@ -2606,6 +2815,7 @@ export type TenantUpdateWithoutMembershipsInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUpdateManyWithoutTenantNestedInput
   products?: Prisma.ProductUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutActiveTenantNestedInput
@@ -2635,6 +2845,7 @@ export type TenantUncheckedUpdateWithoutMembershipsInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutTenantNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutActiveTenantNestedInput
@@ -2663,6 +2874,7 @@ export type TenantCreateWithoutSubscriptionInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderCreateNestedManyWithoutTenantInput
   products?: Prisma.ProductCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionCreateNestedManyWithoutActiveTenantInput
@@ -2692,6 +2904,7 @@ export type TenantUncheckedCreateWithoutSubscriptionInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutTenantInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutActiveTenantInput
@@ -2736,6 +2949,7 @@ export type TenantUpdateWithoutSubscriptionInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUpdateManyWithoutTenantNestedInput
   products?: Prisma.ProductUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutActiveTenantNestedInput
@@ -2765,6 +2979,7 @@ export type TenantUncheckedUpdateWithoutSubscriptionInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutTenantNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutActiveTenantNestedInput
@@ -2793,6 +3008,7 @@ export type TenantCreateWithoutSettingsInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderCreateNestedManyWithoutTenantInput
   products?: Prisma.ProductCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionCreateNestedManyWithoutActiveTenantInput
@@ -2822,6 +3038,7 @@ export type TenantUncheckedCreateWithoutSettingsInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutTenantInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutActiveTenantInput
@@ -2866,6 +3083,7 @@ export type TenantUpdateWithoutSettingsInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUpdateManyWithoutTenantNestedInput
   products?: Prisma.ProductUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutActiveTenantNestedInput
@@ -2895,6 +3113,7 @@ export type TenantUncheckedUpdateWithoutSettingsInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutTenantNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutActiveTenantNestedInput
@@ -2923,6 +3142,7 @@ export type TenantCreateWithoutSocialPublicationsInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderCreateNestedManyWithoutTenantInput
   products?: Prisma.ProductCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionCreateNestedManyWithoutActiveTenantInput
@@ -2952,6 +3172,7 @@ export type TenantUncheckedCreateWithoutSocialPublicationsInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutTenantInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutActiveTenantInput
@@ -2996,6 +3217,7 @@ export type TenantUpdateWithoutSocialPublicationsInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUpdateManyWithoutTenantNestedInput
   products?: Prisma.ProductUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutActiveTenantNestedInput
@@ -3025,6 +3247,7 @@ export type TenantUncheckedUpdateWithoutSocialPublicationsInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutTenantNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutActiveTenantNestedInput
@@ -3053,6 +3276,7 @@ export type TenantCreateWithoutCatalogsInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderCreateNestedManyWithoutTenantInput
   products?: Prisma.ProductCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionCreateNestedManyWithoutActiveTenantInput
@@ -3082,6 +3306,7 @@ export type TenantUncheckedCreateWithoutCatalogsInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutTenantInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutActiveTenantInput
@@ -3126,6 +3351,7 @@ export type TenantUpdateWithoutCatalogsInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUpdateManyWithoutTenantNestedInput
   products?: Prisma.ProductUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutActiveTenantNestedInput
@@ -3155,6 +3381,7 @@ export type TenantUncheckedUpdateWithoutCatalogsInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutTenantNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutActiveTenantNestedInput
@@ -3183,6 +3410,7 @@ export type TenantCreateWithoutSuppliersInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderCreateNestedManyWithoutTenantInput
   products?: Prisma.ProductCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionCreateNestedManyWithoutActiveTenantInput
@@ -3212,6 +3440,7 @@ export type TenantUncheckedCreateWithoutSuppliersInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutTenantInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutActiveTenantInput
@@ -3256,6 +3485,7 @@ export type TenantUpdateWithoutSuppliersInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUpdateManyWithoutTenantNestedInput
   products?: Prisma.ProductUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutActiveTenantNestedInput
@@ -3285,6 +3515,7 @@ export type TenantUncheckedUpdateWithoutSuppliersInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutTenantNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutActiveTenantNestedInput
@@ -3313,6 +3544,7 @@ export type TenantCreateWithoutPurchaseOrdersInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderCreateNestedManyWithoutTenantInput
   products?: Prisma.ProductCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionCreateNestedManyWithoutActiveTenantInput
@@ -3342,6 +3574,7 @@ export type TenantUncheckedCreateWithoutPurchaseOrdersInput = {
   catalogType: $Enums.CatalogType
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedCreateNestedOneWithoutTenantInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutTenantInput
   products?: Prisma.ProductUncheckedCreateNestedManyWithoutTenantInput
   sessions?: Prisma.SessionUncheckedCreateNestedManyWithoutActiveTenantInput
@@ -3386,6 +3619,7 @@ export type TenantUpdateWithoutPurchaseOrdersInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUpdateManyWithoutTenantNestedInput
   products?: Prisma.ProductUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUpdateManyWithoutActiveTenantNestedInput
@@ -3415,6 +3649,7 @@ export type TenantUncheckedUpdateWithoutPurchaseOrdersInput = {
   catalogType?: Prisma.EnumCatalogTypeFieldUpdateOperationsInput | $Enums.CatalogType
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStore?: Prisma.OnlineStoreUncheckedUpdateOneWithoutTenantNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutTenantNestedInput
   products?: Prisma.ProductUncheckedUpdateManyWithoutTenantNestedInput
   sessions?: Prisma.SessionUncheckedUpdateManyWithoutActiveTenantNestedInput
@@ -3628,6 +3863,7 @@ export type TenantSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs =
   catalogType?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  onlineStore?: boolean | Prisma.Tenant$onlineStoreArgs<ExtArgs>
   orders?: boolean | Prisma.Tenant$ordersArgs<ExtArgs>
   products?: boolean | Prisma.Tenant$productsArgs<ExtArgs>
   sessions?: boolean | Prisma.Tenant$sessionsArgs<ExtArgs>
@@ -3683,6 +3919,7 @@ export type TenantSelectScalar = {
 
 export type TenantOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "name" | "slug" | "status" | "catalogType" | "createdAt" | "updatedAt", ExtArgs["result"]["tenant"]>
 export type TenantInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  onlineStore?: boolean | Prisma.Tenant$onlineStoreArgs<ExtArgs>
   orders?: boolean | Prisma.Tenant$ordersArgs<ExtArgs>
   products?: boolean | Prisma.Tenant$productsArgs<ExtArgs>
   sessions?: boolean | Prisma.Tenant$sessionsArgs<ExtArgs>
@@ -3711,6 +3948,7 @@ export type TenantIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Exten
 export type $TenantPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Tenant"
   objects: {
+    onlineStore: Prisma.$OnlineStorePayload<ExtArgs> | null
     orders: Prisma.$OrderPayload<ExtArgs>[]
     products: Prisma.$ProductPayload<ExtArgs>[]
     sessions: Prisma.$SessionPayload<ExtArgs>[]
@@ -4134,6 +4372,7 @@ readonly fields: TenantFieldRefs;
  */
 export interface Prisma__TenantClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  onlineStore<T extends Prisma.Tenant$onlineStoreArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$onlineStoreArgs<ExtArgs>>): Prisma.Prisma__OnlineStoreClient<runtime.Types.Result.GetResult<Prisma.$OnlineStorePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   orders<T extends Prisma.Tenant$ordersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$ordersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   products<T extends Prisma.Tenant$productsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$productsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProductPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   sessions<T extends Prisma.Tenant$sessionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Tenant$sessionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SessionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -4580,6 +4819,25 @@ export type TenantDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Intern
    * Limit how many Tenants to delete.
    */
   limit?: number
+}
+
+/**
+ * Tenant.onlineStore
+ */
+export type Tenant$onlineStoreArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the OnlineStore
+   */
+  select?: Prisma.OnlineStoreSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the OnlineStore
+   */
+  omit?: Prisma.OnlineStoreOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.OnlineStoreInclude<ExtArgs> | null
+  where?: Prisma.OnlineStoreWhereInput
 }
 
 /**

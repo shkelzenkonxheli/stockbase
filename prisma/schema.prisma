@@ -88,6 +88,7 @@ model Variant {
 }
 
 model Warehouse {
+    onlineStores   OnlineStore[]
   id          Int                @id @default(autoincrement())
   tenantId    Int
   name        String
@@ -239,6 +240,7 @@ model Session {
 }
 
 model Tenant {
+    onlineStore    OnlineStore?
   id             Int                @id @default(autoincrement())
   name           String
   slug           String             @unique
@@ -270,6 +272,21 @@ model Tenant {
     @@index([status])
     @@index([catalogType])
   }
+
+model OnlineStore {
+  tenantId       Int       @id
+  name           String
+  logoUrl        String?
+  whatsappNumber String?
+  warehouseId    Int?
+  categoryIds    Int[]     @default([])
+  productIds     Int[]     @default([])
+  updatedAt      DateTime  @updatedAt
+  tenant         Tenant    @relation(fields: [tenantId], references: [id], onDelete: Cascade)
+  warehouse      Warehouse? @relation(fields: [warehouseId], references: [id], onDelete: SetNull)
+
+  @@index([warehouseId])
+}
 
 model PosRegister {
   id          Int          @id @default(autoincrement())

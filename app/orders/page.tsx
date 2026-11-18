@@ -1081,28 +1081,7 @@ export default async function OrdersPage({
               </p>
             </div>
 
-            <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-              <div className="flex flex-wrap gap-2">
-                <Link
-                href={`/orders/print?date=${selectedDate}${searchQuery ? `&q=${encodeURIComponent(searchQuery)}` : ""}${selectedSource ? `&source=${selectedSource}` : ""}${selectedStatus ? `&status=${selectedStatus}` : ""}`}
-                target="_blank"
-                className="inline-flex items-center justify-center rounded-2xl border border-emerald-200 bg-white/92 px-4 py-3 text-sm font-semibold text-emerald-700 transition hover:border-emerald-300 hover:bg-emerald-50"
-              >
-                Printo daten
-              </Link>
-              </div>
-              {canCreateOrders ? (
-                <>
-                  <QuickOrderDialog />
-                  <Link
-                    href="/orders/new"
-                    className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-5 py-3 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(15,23,42,0.18)] transition hover:bg-emerald-700"
-                  >
-                    + Krijo Porosi
-                  </Link>
-                </>
-              ) : null}
-            </div>
+            {canCreateOrders ? <QuickOrderDialog /> : null}
           </div>
         </section>
 

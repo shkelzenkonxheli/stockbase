@@ -73,6 +73,11 @@ export type Session = Prisma.SessionModel
  */
 export type Tenant = Prisma.TenantModel
 /**
+ * Model OnlineStore
+ * 
+ */
+export type OnlineStore = Prisma.OnlineStoreModel
+/**
  * Model PosRegister
  * 
  */

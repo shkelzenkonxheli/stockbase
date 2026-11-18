@@ -4,6 +4,7 @@ import Link from "next/link";
 import { AutoPrintOnMount } from "./auto-print-on-mount";
 import { TopModelsPanel } from "./top-models-panel";
 import { requireRole } from "@/lib/auth";
+import { getMonthlyPurchaseOrderReport } from "@/lib/reports/monthly-purchase-order-report";
 import {
   BUSINESS_TIME_ZONE,
   getMonthStringInTimeZone,
@@ -65,7 +66,10 @@ export default async function ReportsPage({
   const defaultMonth = getMonthStringInTimeZone(new Date(), BUSINESS_TIME_ZONE);
   const rawMonth = resolvedSearchParams?.month?.trim() || defaultMonth;
   const selectedMonth = /^\d{4}-\d{2}$/.test(rawMonth) ? rawMonth : defaultMonth;
-  const report = await getMonthlySalesReport(selectedMonth, tenantId);
+  const [report, purchaseReport] = await Promise.all([
+    getMonthlySalesReport(selectedMonth, tenantId),
+    getMonthlyPurchaseOrderReport(selectedMonth, tenantId),
+  ]);
 
   const maxDailyQuantity =
     report.dailySales.reduce((max, item) => Math.max(max, item.quantity), 0) || 1;
@@ -84,7 +88,7 @@ export default async function ReportsPage({
                 Performanca mujore
               </p>
               <h1 className="mt-2 text-3xl font-semibold tracking-tight text-slate-950 sm:text-4xl">
-                Shitjet per {report.monthLabel}
+                Shitjet dhe blerjet per {report.monthLabel}
               </h1>
             </div>
 
@@ -136,6 +140,32 @@ export default async function ReportsPage({
           </div>
         </section>
 
+        <section className="rounded-[26px] border border-emerald-100 bg-white p-5 shadow-[0_14px_40px_rgba(15,23,42,0.06)] print:break-inside-avoid print:shadow-none sm:p-6">
+          <div className="flex flex-wrap items-start justify-between gap-3">
+            <div>
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-emerald-700">Blerjet</p>
+              <h2 className="mt-1 text-2xl font-semibold text-slate-950">Purchase Orders</h2>
+              <p className="mt-1 text-sm text-slate-500">PO te porositura ne muajin e zgjedhur; pranimi dhe kthimi paraqiten deri tani.</p>
+            </div>
+            <span className="rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-sm font-semibold text-emerald-800">{purchaseReport.count} PO</span>
+          </div>
+          <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+            {[
+              { label: "Vlera e porositur", value: purchaseReport.orderedValue },
+              { label: "Vlera e pranuar", value: purchaseReport.receivedValue },
+              { label: "Pritet ende", value: purchaseReport.outstandingValue },
+              { label: "Kthime furnitori", value: purchaseReport.returnedValue },
+              { label: "Mesatarja per PO", value: purchaseReport.averageValue },
+            ].map((metric) => (
+              <div key={metric.label} className="rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-4">
+                <p className="text-xs font-medium text-slate-500">{metric.label}</p>
+                <p className="mt-2 text-xl font-semibold text-slate-950">{metric.value.toFixed(2)} EUR</p>
+              </div>
+            ))}
+          </div>
+          <p className="mt-3 text-xs text-slate-500">{purchaseReport.openCount} PO te hapura ne kete grup.</p>
+        </section>
+
         <section className="grid gap-4 print:grid-cols-2 md:grid-cols-2 xl:grid-cols-4">
           <div className="rounded-[22px] border border-slate-200 bg-white px-4 py-4 shadow-sm print:break-inside-avoid print:shadow-none">
             <div className="border-l-[3px] border-blue-600 pl-4">
@@ -144,9 +174,6 @@ export default async function ReportsPage({
                 <p className="text-4xl font-semibold tracking-tight text-slate-950">
                   {report.ordersCount}
                 </p>
-                <span className="pb-1 text-sm font-medium text-emerald-600">
-                  +12.5%
-                </span>
               </div>
             </div>
           </div>

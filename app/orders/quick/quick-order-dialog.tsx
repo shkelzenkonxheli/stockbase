@@ -126,7 +126,7 @@ export function QuickOrderDialog() {
   }
 
   return <>
-    <button type="button" onClick={() => { resetSelection(); setSource("INSTAGRAM"); setShowCustomer(false); setCustomerName(""); setPhone(""); setInstagram(""); setOpen(true); }} className="inline-flex items-center justify-center rounded-2xl border border-emerald-200 bg-white/92 px-5 py-3 text-sm font-semibold text-slate-700 transition hover:border-emerald-300 hover:bg-emerald-50">Porosi te shpejta</button>
+    <button type="button" onClick={() => { resetSelection(); setSource("INSTAGRAM"); setShowCustomer(false); setCustomerName(""); setPhone(""); setInstagram(""); setOpen(true); }} className="inline-flex min-h-12 items-center justify-center gap-2 rounded-2xl bg-[#093a2d] px-5 py-3 text-sm font-semibold text-white shadow-[0_12px_30px_rgba(9,58,45,0.16)] transition hover:bg-emerald-800"><span aria-hidden="true" className="text-lg leading-none">+</span>Shto porosi</button>
     <dialog ref={dialogRef} onClose={() => setOpen(false)} onClick={(event) => { if (event.target === dialogRef.current) setOpen(false); }} aria-labelledby="quick-order-title" className="m-auto w-[min(96vw,1120px)] max-h-[94dvh] overflow-hidden rounded-[26px] border border-slate-200 bg-white p-0 text-slate-950 shadow-2xl backdrop:bg-slate-950/55">
       <form action={createQuickOrders} className="flex max-h-[94dvh] flex-col">
         <input type="hidden" name="quickModal" value="1" />

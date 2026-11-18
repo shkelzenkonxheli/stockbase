@@ -12,6 +12,7 @@ test("admin sees every enabled destination, grouped without duplicates", () => {
   assert.deepEqual(groups.find((group) => group.id === "supply")?.links.map((link) => link.href), ["/purchases", "/suppliers"]);
   assert.ok(links.includes("/stock/scan"));
   assert.ok(links.includes("/billing"));
+  assert.deepEqual(groups.find((group) => group.id === "products")?.links.map((link) => link.href), ["/products", "/catalogs", "/online-store"]);
 });
 
 test("seller only sees their permitted destinations", () => {

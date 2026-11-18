@@ -244,6 +244,7 @@ export type WarehouseWhereInput = {
   supportsPos?: Prisma.BoolFilter<"Warehouse"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Warehouse"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Warehouse"> | Date | string
+  onlineStores?: Prisma.OnlineStoreListRelationFilter
   inventories?: Prisma.VariantInventoryListRelationFilter
   orders?: Prisma.OrderListRelationFilter
   orderItems?: Prisma.OrderItemListRelationFilter
@@ -265,6 +266,7 @@ export type WarehouseOrderByWithRelationInput = {
   supportsPos?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
+  onlineStores?: Prisma.OnlineStoreOrderByRelationAggregateInput
   inventories?: Prisma.VariantInventoryOrderByRelationAggregateInput
   orders?: Prisma.OrderOrderByRelationAggregateInput
   orderItems?: Prisma.OrderItemOrderByRelationAggregateInput
@@ -291,6 +293,7 @@ export type WarehouseWhereUniqueInput = Prisma.AtLeast<{
   supportsPos?: Prisma.BoolFilter<"Warehouse"> | boolean
   createdAt?: Prisma.DateTimeFilter<"Warehouse"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"Warehouse"> | Date | string
+  onlineStores?: Prisma.OnlineStoreListRelationFilter
   inventories?: Prisma.VariantInventoryListRelationFilter
   orders?: Prisma.OrderListRelationFilter
   orderItems?: Prisma.OrderItemListRelationFilter
@@ -340,6 +343,7 @@ export type WarehouseCreateInput = {
   supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStores?: Prisma.OnlineStoreCreateNestedManyWithoutWarehouseInput
   inventories?: Prisma.VariantInventoryCreateNestedManyWithoutWarehouseInput
   orders?: Prisma.OrderCreateNestedManyWithoutWarehouseInput
   orderItems?: Prisma.OrderItemCreateNestedManyWithoutWarehouseInput
@@ -361,6 +365,7 @@ export type WarehouseUncheckedCreateInput = {
   supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStores?: Prisma.OnlineStoreUncheckedCreateNestedManyWithoutWarehouseInput
   inventories?: Prisma.VariantInventoryUncheckedCreateNestedManyWithoutWarehouseInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutWarehouseInput
   orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutWarehouseInput
@@ -379,6 +384,7 @@ export type WarehouseUpdateInput = {
   supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStores?: Prisma.OnlineStoreUpdateManyWithoutWarehouseNestedInput
   inventories?: Prisma.VariantInventoryUpdateManyWithoutWarehouseNestedInput
   orders?: Prisma.OrderUpdateManyWithoutWarehouseNestedInput
   orderItems?: Prisma.OrderItemUpdateManyWithoutWarehouseNestedInput
@@ -400,6 +406,7 @@ export type WarehouseUncheckedUpdateInput = {
   supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStores?: Prisma.OnlineStoreUncheckedUpdateManyWithoutWarehouseNestedInput
   inventories?: Prisma.VariantInventoryUncheckedUpdateManyWithoutWarehouseNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutWarehouseNestedInput
   orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutWarehouseNestedInput
@@ -619,6 +626,22 @@ export type WarehouseUncheckedUpdateManyWithoutTenantNestedInput = {
   deleteMany?: Prisma.WarehouseScalarWhereInput | Prisma.WarehouseScalarWhereInput[]
 }
 
+export type WarehouseCreateNestedOneWithoutOnlineStoresInput = {
+  create?: Prisma.XOR<Prisma.WarehouseCreateWithoutOnlineStoresInput, Prisma.WarehouseUncheckedCreateWithoutOnlineStoresInput>
+  connectOrCreate?: Prisma.WarehouseCreateOrConnectWithoutOnlineStoresInput
+  connect?: Prisma.WarehouseWhereUniqueInput
+}
+
+export type WarehouseUpdateOneWithoutOnlineStoresNestedInput = {
+  create?: Prisma.XOR<Prisma.WarehouseCreateWithoutOnlineStoresInput, Prisma.WarehouseUncheckedCreateWithoutOnlineStoresInput>
+  connectOrCreate?: Prisma.WarehouseCreateOrConnectWithoutOnlineStoresInput
+  upsert?: Prisma.WarehouseUpsertWithoutOnlineStoresInput
+  disconnect?: Prisma.WarehouseWhereInput | boolean
+  delete?: Prisma.WarehouseWhereInput | boolean
+  connect?: Prisma.WarehouseWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.WarehouseUpdateToOneWithWhereWithoutOnlineStoresInput, Prisma.WarehouseUpdateWithoutOnlineStoresInput>, Prisma.WarehouseUncheckedUpdateWithoutOnlineStoresInput>
+}
+
 export type WarehouseCreateNestedOneWithoutPosRegistersInput = {
   create?: Prisma.XOR<Prisma.WarehouseCreateWithoutPosRegistersInput, Prisma.WarehouseUncheckedCreateWithoutPosRegistersInput>
   connectOrCreate?: Prisma.WarehouseCreateOrConnectWithoutPosRegistersInput
@@ -698,6 +721,7 @@ export type WarehouseCreateWithoutInventoriesInput = {
   supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStores?: Prisma.OnlineStoreCreateNestedManyWithoutWarehouseInput
   orders?: Prisma.OrderCreateNestedManyWithoutWarehouseInput
   orderItems?: Prisma.OrderItemCreateNestedManyWithoutWarehouseInput
   purchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutWarehouseInput
@@ -718,6 +742,7 @@ export type WarehouseUncheckedCreateWithoutInventoriesInput = {
   supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStores?: Prisma.OnlineStoreUncheckedCreateNestedManyWithoutWarehouseInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutWarehouseInput
   orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutWarehouseInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutWarehouseInput
@@ -751,6 +776,7 @@ export type WarehouseUpdateWithoutInventoriesInput = {
   supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStores?: Prisma.OnlineStoreUpdateManyWithoutWarehouseNestedInput
   orders?: Prisma.OrderUpdateManyWithoutWarehouseNestedInput
   orderItems?: Prisma.OrderItemUpdateManyWithoutWarehouseNestedInput
   purchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutWarehouseNestedInput
@@ -771,6 +797,7 @@ export type WarehouseUncheckedUpdateWithoutInventoriesInput = {
   supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStores?: Prisma.OnlineStoreUncheckedUpdateManyWithoutWarehouseNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutWarehouseNestedInput
   orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutWarehouseNestedInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutWarehouseNestedInput
@@ -788,6 +815,7 @@ export type WarehouseCreateWithoutStockMovementsInput = {
   supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStores?: Prisma.OnlineStoreCreateNestedManyWithoutWarehouseInput
   inventories?: Prisma.VariantInventoryCreateNestedManyWithoutWarehouseInput
   orders?: Prisma.OrderCreateNestedManyWithoutWarehouseInput
   orderItems?: Prisma.OrderItemCreateNestedManyWithoutWarehouseInput
@@ -808,6 +836,7 @@ export type WarehouseUncheckedCreateWithoutStockMovementsInput = {
   supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStores?: Prisma.OnlineStoreUncheckedCreateNestedManyWithoutWarehouseInput
   inventories?: Prisma.VariantInventoryUncheckedCreateNestedManyWithoutWarehouseInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutWarehouseInput
   orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutWarehouseInput
@@ -841,6 +870,7 @@ export type WarehouseUpdateWithoutStockMovementsInput = {
   supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStores?: Prisma.OnlineStoreUpdateManyWithoutWarehouseNestedInput
   inventories?: Prisma.VariantInventoryUpdateManyWithoutWarehouseNestedInput
   orders?: Prisma.OrderUpdateManyWithoutWarehouseNestedInput
   orderItems?: Prisma.OrderItemUpdateManyWithoutWarehouseNestedInput
@@ -861,6 +891,7 @@ export type WarehouseUncheckedUpdateWithoutStockMovementsInput = {
   supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStores?: Prisma.OnlineStoreUncheckedUpdateManyWithoutWarehouseNestedInput
   inventories?: Prisma.VariantInventoryUncheckedUpdateManyWithoutWarehouseNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutWarehouseNestedInput
   orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutWarehouseNestedInput
@@ -878,6 +909,7 @@ export type WarehouseCreateWithoutOrdersInput = {
   supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStores?: Prisma.OnlineStoreCreateNestedManyWithoutWarehouseInput
   inventories?: Prisma.VariantInventoryCreateNestedManyWithoutWarehouseInput
   orderItems?: Prisma.OrderItemCreateNestedManyWithoutWarehouseInput
   purchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutWarehouseInput
@@ -898,6 +930,7 @@ export type WarehouseUncheckedCreateWithoutOrdersInput = {
   supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStores?: Prisma.OnlineStoreUncheckedCreateNestedManyWithoutWarehouseInput
   inventories?: Prisma.VariantInventoryUncheckedCreateNestedManyWithoutWarehouseInput
   orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutWarehouseInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutWarehouseInput
@@ -931,6 +964,7 @@ export type WarehouseUpdateWithoutOrdersInput = {
   supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStores?: Prisma.OnlineStoreUpdateManyWithoutWarehouseNestedInput
   inventories?: Prisma.VariantInventoryUpdateManyWithoutWarehouseNestedInput
   orderItems?: Prisma.OrderItemUpdateManyWithoutWarehouseNestedInput
   purchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutWarehouseNestedInput
@@ -951,6 +985,7 @@ export type WarehouseUncheckedUpdateWithoutOrdersInput = {
   supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStores?: Prisma.OnlineStoreUncheckedUpdateManyWithoutWarehouseNestedInput
   inventories?: Prisma.VariantInventoryUncheckedUpdateManyWithoutWarehouseNestedInput
   orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutWarehouseNestedInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutWarehouseNestedInput
@@ -968,6 +1003,7 @@ export type WarehouseCreateWithoutOrderItemsInput = {
   supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStores?: Prisma.OnlineStoreCreateNestedManyWithoutWarehouseInput
   inventories?: Prisma.VariantInventoryCreateNestedManyWithoutWarehouseInput
   orders?: Prisma.OrderCreateNestedManyWithoutWarehouseInput
   purchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutWarehouseInput
@@ -988,6 +1024,7 @@ export type WarehouseUncheckedCreateWithoutOrderItemsInput = {
   supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStores?: Prisma.OnlineStoreUncheckedCreateNestedManyWithoutWarehouseInput
   inventories?: Prisma.VariantInventoryUncheckedCreateNestedManyWithoutWarehouseInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutWarehouseInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutWarehouseInput
@@ -1021,6 +1058,7 @@ export type WarehouseUpdateWithoutOrderItemsInput = {
   supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStores?: Prisma.OnlineStoreUpdateManyWithoutWarehouseNestedInput
   inventories?: Prisma.VariantInventoryUpdateManyWithoutWarehouseNestedInput
   orders?: Prisma.OrderUpdateManyWithoutWarehouseNestedInput
   purchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutWarehouseNestedInput
@@ -1041,6 +1079,7 @@ export type WarehouseUncheckedUpdateWithoutOrderItemsInput = {
   supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStores?: Prisma.OnlineStoreUncheckedUpdateManyWithoutWarehouseNestedInput
   inventories?: Prisma.VariantInventoryUncheckedUpdateManyWithoutWarehouseNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutWarehouseNestedInput
   purchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutWarehouseNestedInput
@@ -1058,6 +1097,7 @@ export type WarehouseCreateWithoutTenantInput = {
   supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStores?: Prisma.OnlineStoreCreateNestedManyWithoutWarehouseInput
   inventories?: Prisma.VariantInventoryCreateNestedManyWithoutWarehouseInput
   orders?: Prisma.OrderCreateNestedManyWithoutWarehouseInput
   orderItems?: Prisma.OrderItemCreateNestedManyWithoutWarehouseInput
@@ -1077,6 +1117,7 @@ export type WarehouseUncheckedCreateWithoutTenantInput = {
   supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStores?: Prisma.OnlineStoreUncheckedCreateNestedManyWithoutWarehouseInput
   inventories?: Prisma.VariantInventoryUncheckedCreateNestedManyWithoutWarehouseInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutWarehouseInput
   orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutWarehouseInput
@@ -1128,6 +1169,100 @@ export type WarehouseScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"Warehouse"> | Date | string
 }
 
+export type WarehouseCreateWithoutOnlineStoresInput = {
+  name: string
+  slug: string
+  isActive?: boolean
+  supportsPos?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  inventories?: Prisma.VariantInventoryCreateNestedManyWithoutWarehouseInput
+  orders?: Prisma.OrderCreateNestedManyWithoutWarehouseInput
+  orderItems?: Prisma.OrderItemCreateNestedManyWithoutWarehouseInput
+  purchaseOrders?: Prisma.PurchaseOrderCreateNestedManyWithoutWarehouseInput
+  inventoryCounts?: Prisma.InventoryCountSessionCreateNestedManyWithoutWarehouseInput
+  stockMovements?: Prisma.StockMovementCreateNestedManyWithoutWarehouseInput
+  auditLogs?: Prisma.AuditLogCreateNestedManyWithoutWarehouseInput
+  posRegisters?: Prisma.PosRegisterCreateNestedManyWithoutWarehouseInput
+  posSessions?: Prisma.PosSessionCreateNestedManyWithoutWarehouseInput
+  tenant: Prisma.TenantCreateNestedOneWithoutWarehousesInput
+}
+
+export type WarehouseUncheckedCreateWithoutOnlineStoresInput = {
+  id?: number
+  tenantId: number
+  name: string
+  slug: string
+  isActive?: boolean
+  supportsPos?: boolean
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  inventories?: Prisma.VariantInventoryUncheckedCreateNestedManyWithoutWarehouseInput
+  orders?: Prisma.OrderUncheckedCreateNestedManyWithoutWarehouseInput
+  orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutWarehouseInput
+  purchaseOrders?: Prisma.PurchaseOrderUncheckedCreateNestedManyWithoutWarehouseInput
+  inventoryCounts?: Prisma.InventoryCountSessionUncheckedCreateNestedManyWithoutWarehouseInput
+  stockMovements?: Prisma.StockMovementUncheckedCreateNestedManyWithoutWarehouseInput
+  auditLogs?: Prisma.AuditLogUncheckedCreateNestedManyWithoutWarehouseInput
+  posRegisters?: Prisma.PosRegisterUncheckedCreateNestedManyWithoutWarehouseInput
+  posSessions?: Prisma.PosSessionUncheckedCreateNestedManyWithoutWarehouseInput
+}
+
+export type WarehouseCreateOrConnectWithoutOnlineStoresInput = {
+  where: Prisma.WarehouseWhereUniqueInput
+  create: Prisma.XOR<Prisma.WarehouseCreateWithoutOnlineStoresInput, Prisma.WarehouseUncheckedCreateWithoutOnlineStoresInput>
+}
+
+export type WarehouseUpsertWithoutOnlineStoresInput = {
+  update: Prisma.XOR<Prisma.WarehouseUpdateWithoutOnlineStoresInput, Prisma.WarehouseUncheckedUpdateWithoutOnlineStoresInput>
+  create: Prisma.XOR<Prisma.WarehouseCreateWithoutOnlineStoresInput, Prisma.WarehouseUncheckedCreateWithoutOnlineStoresInput>
+  where?: Prisma.WarehouseWhereInput
+}
+
+export type WarehouseUpdateToOneWithWhereWithoutOnlineStoresInput = {
+  where?: Prisma.WarehouseWhereInput
+  data: Prisma.XOR<Prisma.WarehouseUpdateWithoutOnlineStoresInput, Prisma.WarehouseUncheckedUpdateWithoutOnlineStoresInput>
+}
+
+export type WarehouseUpdateWithoutOnlineStoresInput = {
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  inventories?: Prisma.VariantInventoryUpdateManyWithoutWarehouseNestedInput
+  orders?: Prisma.OrderUpdateManyWithoutWarehouseNestedInput
+  orderItems?: Prisma.OrderItemUpdateManyWithoutWarehouseNestedInput
+  purchaseOrders?: Prisma.PurchaseOrderUpdateManyWithoutWarehouseNestedInput
+  inventoryCounts?: Prisma.InventoryCountSessionUpdateManyWithoutWarehouseNestedInput
+  stockMovements?: Prisma.StockMovementUpdateManyWithoutWarehouseNestedInput
+  auditLogs?: Prisma.AuditLogUpdateManyWithoutWarehouseNestedInput
+  posRegisters?: Prisma.PosRegisterUpdateManyWithoutWarehouseNestedInput
+  posSessions?: Prisma.PosSessionUpdateManyWithoutWarehouseNestedInput
+  tenant?: Prisma.TenantUpdateOneRequiredWithoutWarehousesNestedInput
+}
+
+export type WarehouseUncheckedUpdateWithoutOnlineStoresInput = {
+  id?: Prisma.IntFieldUpdateOperationsInput | number
+  tenantId?: Prisma.IntFieldUpdateOperationsInput | number
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.StringFieldUpdateOperationsInput | string
+  isActive?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  inventories?: Prisma.VariantInventoryUncheckedUpdateManyWithoutWarehouseNestedInput
+  orders?: Prisma.OrderUncheckedUpdateManyWithoutWarehouseNestedInput
+  orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutWarehouseNestedInput
+  purchaseOrders?: Prisma.PurchaseOrderUncheckedUpdateManyWithoutWarehouseNestedInput
+  inventoryCounts?: Prisma.InventoryCountSessionUncheckedUpdateManyWithoutWarehouseNestedInput
+  stockMovements?: Prisma.StockMovementUncheckedUpdateManyWithoutWarehouseNestedInput
+  auditLogs?: Prisma.AuditLogUncheckedUpdateManyWithoutWarehouseNestedInput
+  posRegisters?: Prisma.PosRegisterUncheckedUpdateManyWithoutWarehouseNestedInput
+  posSessions?: Prisma.PosSessionUncheckedUpdateManyWithoutWarehouseNestedInput
+}
+
 export type WarehouseCreateWithoutPosRegistersInput = {
   name: string
   slug: string
@@ -1135,6 +1270,7 @@ export type WarehouseCreateWithoutPosRegistersInput = {
   supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStores?: Prisma.OnlineStoreCreateNestedManyWithoutWarehouseInput
   inventories?: Prisma.VariantInventoryCreateNestedManyWithoutWarehouseInput
   orders?: Prisma.OrderCreateNestedManyWithoutWarehouseInput
   orderItems?: Prisma.OrderItemCreateNestedManyWithoutWarehouseInput
@@ -1155,6 +1291,7 @@ export type WarehouseUncheckedCreateWithoutPosRegistersInput = {
   supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStores?: Prisma.OnlineStoreUncheckedCreateNestedManyWithoutWarehouseInput
   inventories?: Prisma.VariantInventoryUncheckedCreateNestedManyWithoutWarehouseInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutWarehouseInput
   orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutWarehouseInput
@@ -1188,6 +1325,7 @@ export type WarehouseUpdateWithoutPosRegistersInput = {
   supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStores?: Prisma.OnlineStoreUpdateManyWithoutWarehouseNestedInput
   inventories?: Prisma.VariantInventoryUpdateManyWithoutWarehouseNestedInput
   orders?: Prisma.OrderUpdateManyWithoutWarehouseNestedInput
   orderItems?: Prisma.OrderItemUpdateManyWithoutWarehouseNestedInput
@@ -1208,6 +1346,7 @@ export type WarehouseUncheckedUpdateWithoutPosRegistersInput = {
   supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStores?: Prisma.OnlineStoreUncheckedUpdateManyWithoutWarehouseNestedInput
   inventories?: Prisma.VariantInventoryUncheckedUpdateManyWithoutWarehouseNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutWarehouseNestedInput
   orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutWarehouseNestedInput
@@ -1225,6 +1364,7 @@ export type WarehouseCreateWithoutPosSessionsInput = {
   supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStores?: Prisma.OnlineStoreCreateNestedManyWithoutWarehouseInput
   inventories?: Prisma.VariantInventoryCreateNestedManyWithoutWarehouseInput
   orders?: Prisma.OrderCreateNestedManyWithoutWarehouseInput
   orderItems?: Prisma.OrderItemCreateNestedManyWithoutWarehouseInput
@@ -1245,6 +1385,7 @@ export type WarehouseUncheckedCreateWithoutPosSessionsInput = {
   supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStores?: Prisma.OnlineStoreUncheckedCreateNestedManyWithoutWarehouseInput
   inventories?: Prisma.VariantInventoryUncheckedCreateNestedManyWithoutWarehouseInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutWarehouseInput
   orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutWarehouseInput
@@ -1278,6 +1419,7 @@ export type WarehouseUpdateWithoutPosSessionsInput = {
   supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStores?: Prisma.OnlineStoreUpdateManyWithoutWarehouseNestedInput
   inventories?: Prisma.VariantInventoryUpdateManyWithoutWarehouseNestedInput
   orders?: Prisma.OrderUpdateManyWithoutWarehouseNestedInput
   orderItems?: Prisma.OrderItemUpdateManyWithoutWarehouseNestedInput
@@ -1298,6 +1440,7 @@ export type WarehouseUncheckedUpdateWithoutPosSessionsInput = {
   supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStores?: Prisma.OnlineStoreUncheckedUpdateManyWithoutWarehouseNestedInput
   inventories?: Prisma.VariantInventoryUncheckedUpdateManyWithoutWarehouseNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutWarehouseNestedInput
   orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutWarehouseNestedInput
@@ -1315,6 +1458,7 @@ export type WarehouseCreateWithoutAuditLogsInput = {
   supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStores?: Prisma.OnlineStoreCreateNestedManyWithoutWarehouseInput
   inventories?: Prisma.VariantInventoryCreateNestedManyWithoutWarehouseInput
   orders?: Prisma.OrderCreateNestedManyWithoutWarehouseInput
   orderItems?: Prisma.OrderItemCreateNestedManyWithoutWarehouseInput
@@ -1335,6 +1479,7 @@ export type WarehouseUncheckedCreateWithoutAuditLogsInput = {
   supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStores?: Prisma.OnlineStoreUncheckedCreateNestedManyWithoutWarehouseInput
   inventories?: Prisma.VariantInventoryUncheckedCreateNestedManyWithoutWarehouseInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutWarehouseInput
   orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutWarehouseInput
@@ -1368,6 +1513,7 @@ export type WarehouseUpdateWithoutAuditLogsInput = {
   supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStores?: Prisma.OnlineStoreUpdateManyWithoutWarehouseNestedInput
   inventories?: Prisma.VariantInventoryUpdateManyWithoutWarehouseNestedInput
   orders?: Prisma.OrderUpdateManyWithoutWarehouseNestedInput
   orderItems?: Prisma.OrderItemUpdateManyWithoutWarehouseNestedInput
@@ -1388,6 +1534,7 @@ export type WarehouseUncheckedUpdateWithoutAuditLogsInput = {
   supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStores?: Prisma.OnlineStoreUncheckedUpdateManyWithoutWarehouseNestedInput
   inventories?: Prisma.VariantInventoryUncheckedUpdateManyWithoutWarehouseNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutWarehouseNestedInput
   orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutWarehouseNestedInput
@@ -1405,6 +1552,7 @@ export type WarehouseCreateWithoutInventoryCountsInput = {
   supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStores?: Prisma.OnlineStoreCreateNestedManyWithoutWarehouseInput
   inventories?: Prisma.VariantInventoryCreateNestedManyWithoutWarehouseInput
   orders?: Prisma.OrderCreateNestedManyWithoutWarehouseInput
   orderItems?: Prisma.OrderItemCreateNestedManyWithoutWarehouseInput
@@ -1425,6 +1573,7 @@ export type WarehouseUncheckedCreateWithoutInventoryCountsInput = {
   supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStores?: Prisma.OnlineStoreUncheckedCreateNestedManyWithoutWarehouseInput
   inventories?: Prisma.VariantInventoryUncheckedCreateNestedManyWithoutWarehouseInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutWarehouseInput
   orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutWarehouseInput
@@ -1458,6 +1607,7 @@ export type WarehouseUpdateWithoutInventoryCountsInput = {
   supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStores?: Prisma.OnlineStoreUpdateManyWithoutWarehouseNestedInput
   inventories?: Prisma.VariantInventoryUpdateManyWithoutWarehouseNestedInput
   orders?: Prisma.OrderUpdateManyWithoutWarehouseNestedInput
   orderItems?: Prisma.OrderItemUpdateManyWithoutWarehouseNestedInput
@@ -1478,6 +1628,7 @@ export type WarehouseUncheckedUpdateWithoutInventoryCountsInput = {
   supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStores?: Prisma.OnlineStoreUncheckedUpdateManyWithoutWarehouseNestedInput
   inventories?: Prisma.VariantInventoryUncheckedUpdateManyWithoutWarehouseNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutWarehouseNestedInput
   orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutWarehouseNestedInput
@@ -1495,6 +1646,7 @@ export type WarehouseCreateWithoutPurchaseOrdersInput = {
   supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStores?: Prisma.OnlineStoreCreateNestedManyWithoutWarehouseInput
   inventories?: Prisma.VariantInventoryCreateNestedManyWithoutWarehouseInput
   orders?: Prisma.OrderCreateNestedManyWithoutWarehouseInput
   orderItems?: Prisma.OrderItemCreateNestedManyWithoutWarehouseInput
@@ -1515,6 +1667,7 @@ export type WarehouseUncheckedCreateWithoutPurchaseOrdersInput = {
   supportsPos?: boolean
   createdAt?: Date | string
   updatedAt?: Date | string
+  onlineStores?: Prisma.OnlineStoreUncheckedCreateNestedManyWithoutWarehouseInput
   inventories?: Prisma.VariantInventoryUncheckedCreateNestedManyWithoutWarehouseInput
   orders?: Prisma.OrderUncheckedCreateNestedManyWithoutWarehouseInput
   orderItems?: Prisma.OrderItemUncheckedCreateNestedManyWithoutWarehouseInput
@@ -1548,6 +1701,7 @@ export type WarehouseUpdateWithoutPurchaseOrdersInput = {
   supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStores?: Prisma.OnlineStoreUpdateManyWithoutWarehouseNestedInput
   inventories?: Prisma.VariantInventoryUpdateManyWithoutWarehouseNestedInput
   orders?: Prisma.OrderUpdateManyWithoutWarehouseNestedInput
   orderItems?: Prisma.OrderItemUpdateManyWithoutWarehouseNestedInput
@@ -1568,6 +1722,7 @@ export type WarehouseUncheckedUpdateWithoutPurchaseOrdersInput = {
   supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStores?: Prisma.OnlineStoreUncheckedUpdateManyWithoutWarehouseNestedInput
   inventories?: Prisma.VariantInventoryUncheckedUpdateManyWithoutWarehouseNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutWarehouseNestedInput
   orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutWarehouseNestedInput
@@ -1595,6 +1750,7 @@ export type WarehouseUpdateWithoutTenantInput = {
   supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStores?: Prisma.OnlineStoreUpdateManyWithoutWarehouseNestedInput
   inventories?: Prisma.VariantInventoryUpdateManyWithoutWarehouseNestedInput
   orders?: Prisma.OrderUpdateManyWithoutWarehouseNestedInput
   orderItems?: Prisma.OrderItemUpdateManyWithoutWarehouseNestedInput
@@ -1614,6 +1770,7 @@ export type WarehouseUncheckedUpdateWithoutTenantInput = {
   supportsPos?: Prisma.BoolFieldUpdateOperationsInput | boolean
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  onlineStores?: Prisma.OnlineStoreUncheckedUpdateManyWithoutWarehouseNestedInput
   inventories?: Prisma.VariantInventoryUncheckedUpdateManyWithoutWarehouseNestedInput
   orders?: Prisma.OrderUncheckedUpdateManyWithoutWarehouseNestedInput
   orderItems?: Prisma.OrderItemUncheckedUpdateManyWithoutWarehouseNestedInput
@@ -1641,6 +1798,7 @@ export type WarehouseUncheckedUpdateManyWithoutTenantInput = {
  */
 
 export type WarehouseCountOutputType = {
+  onlineStores: number
   inventories: number
   orders: number
   orderItems: number
@@ -1653,6 +1811,7 @@ export type WarehouseCountOutputType = {
 }
 
 export type WarehouseCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  onlineStores?: boolean | WarehouseCountOutputTypeCountOnlineStoresArgs
   inventories?: boolean | WarehouseCountOutputTypeCountInventoriesArgs
   orders?: boolean | WarehouseCountOutputTypeCountOrdersArgs
   orderItems?: boolean | WarehouseCountOutputTypeCountOrderItemsArgs
@@ -1672,6 +1831,13 @@ export type WarehouseCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Ex
    * Select specific fields to fetch from the WarehouseCountOutputType
    */
   select?: Prisma.WarehouseCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * WarehouseCountOutputType without action
+ */
+export type WarehouseCountOutputTypeCountOnlineStoresArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.OnlineStoreWhereInput
 }
 
 /**
@@ -1747,6 +1913,7 @@ export type WarehouseSelect<ExtArgs extends runtime.Types.Extensions.InternalArg
   supportsPos?: boolean
   createdAt?: boolean
   updatedAt?: boolean
+  onlineStores?: boolean | Prisma.Warehouse$onlineStoresArgs<ExtArgs>
   inventories?: boolean | Prisma.Warehouse$inventoriesArgs<ExtArgs>
   orders?: boolean | Prisma.Warehouse$ordersArgs<ExtArgs>
   orderItems?: boolean | Prisma.Warehouse$orderItemsArgs<ExtArgs>
@@ -1797,6 +1964,7 @@ export type WarehouseSelectScalar = {
 
 export type WarehouseOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "tenantId" | "name" | "slug" | "isActive" | "supportsPos" | "createdAt" | "updatedAt", ExtArgs["result"]["warehouse"]>
 export type WarehouseInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  onlineStores?: boolean | Prisma.Warehouse$onlineStoresArgs<ExtArgs>
   inventories?: boolean | Prisma.Warehouse$inventoriesArgs<ExtArgs>
   orders?: boolean | Prisma.Warehouse$ordersArgs<ExtArgs>
   orderItems?: boolean | Prisma.Warehouse$orderItemsArgs<ExtArgs>
@@ -1819,6 +1987,7 @@ export type WarehouseIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
 export type $WarehousePayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "Warehouse"
   objects: {
+    onlineStores: Prisma.$OnlineStorePayload<ExtArgs>[]
     inventories: Prisma.$VariantInventoryPayload<ExtArgs>[]
     orders: Prisma.$OrderPayload<ExtArgs>[]
     orderItems: Prisma.$OrderItemPayload<ExtArgs>[]
@@ -2233,6 +2402,7 @@ readonly fields: WarehouseFieldRefs;
  */
 export interface Prisma__WarehouseClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
+  onlineStores<T extends Prisma.Warehouse$onlineStoresArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Warehouse$onlineStoresArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OnlineStorePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   inventories<T extends Prisma.Warehouse$inventoriesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Warehouse$inventoriesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$VariantInventoryPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   orders<T extends Prisma.Warehouse$ordersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Warehouse$ordersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrderPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   orderItems<T extends Prisma.Warehouse$orderItemsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Warehouse$orderItemsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrderItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -2678,6 +2848,30 @@ export type WarehouseDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.Int
    * Limit how many Warehouses to delete.
    */
   limit?: number
+}
+
+/**
+ * Warehouse.onlineStores
+ */
+export type Warehouse$onlineStoresArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the OnlineStore
+   */
+  select?: Prisma.OnlineStoreSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the OnlineStore
+   */
+  omit?: Prisma.OnlineStoreOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.OnlineStoreInclude<ExtArgs> | null
+  where?: Prisma.OnlineStoreWhereInput
+  orderBy?: Prisma.OnlineStoreOrderByWithRelationInput | Prisma.OnlineStoreOrderByWithRelationInput[]
+  cursor?: Prisma.OnlineStoreWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.OnlineStoreScalarFieldEnum | Prisma.OnlineStoreScalarFieldEnum[]
 }
 
 /**

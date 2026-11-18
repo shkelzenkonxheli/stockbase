@@ -395,6 +395,7 @@ export const ModelName = {
   User: 'User',
   Session: 'Session',
   Tenant: 'Tenant',
+  OnlineStore: 'OnlineStore',
   PosRegister: 'PosRegister',
   PosSession: 'PosSession',
   PosPayment: 'PosPayment',
@@ -427,7 +428,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "product" | "category" | "variant" | "warehouse" | "variantInventory" | "stockMovement" | "order" | "orderItem" | "user" | "session" | "tenant" | "posRegister" | "posSession" | "posPayment" | "posCashMovement" | "auditLog" | "inventoryCountSession" | "inventoryCountLine" | "tenantMembership" | "subscription" | "tenantSettings" | "socialPublication" | "catalog" | "catalogProduct" | "catalogField" | "supplier" | "purchaseOrder" | "purchaseOrderItem"
+    modelProps: "product" | "category" | "variant" | "warehouse" | "variantInventory" | "stockMovement" | "order" | "orderItem" | "user" | "session" | "tenant" | "onlineStore" | "posRegister" | "posSession" | "posPayment" | "posCashMovement" | "auditLog" | "inventoryCountSession" | "inventoryCountLine" | "tenantMembership" | "subscription" | "tenantSettings" | "socialPublication" | "catalog" | "catalogProduct" | "catalogField" | "supplier" | "purchaseOrder" | "purchaseOrderItem"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1242,6 +1243,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.TenantCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.TenantCountAggregateOutputType> | number
+        }
+      }
+    }
+    OnlineStore: {
+      payload: Prisma.$OnlineStorePayload<ExtArgs>
+      fields: Prisma.OnlineStoreFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.OnlineStoreFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OnlineStorePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.OnlineStoreFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OnlineStorePayload>
+        }
+        findFirst: {
+          args: Prisma.OnlineStoreFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OnlineStorePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.OnlineStoreFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OnlineStorePayload>
+        }
+        findMany: {
+          args: Prisma.OnlineStoreFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OnlineStorePayload>[]
+        }
+        create: {
+          args: Prisma.OnlineStoreCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OnlineStorePayload>
+        }
+        createMany: {
+          args: Prisma.OnlineStoreCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.OnlineStoreCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OnlineStorePayload>[]
+        }
+        delete: {
+          args: Prisma.OnlineStoreDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OnlineStorePayload>
+        }
+        update: {
+          args: Prisma.OnlineStoreUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OnlineStorePayload>
+        }
+        deleteMany: {
+          args: Prisma.OnlineStoreDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.OnlineStoreUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.OnlineStoreUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OnlineStorePayload>[]
+        }
+        upsert: {
+          args: Prisma.OnlineStoreUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$OnlineStorePayload>
+        }
+        aggregate: {
+          args: Prisma.OnlineStoreAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateOnlineStore>
+        }
+        groupBy: {
+          args: Prisma.OnlineStoreGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OnlineStoreGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.OnlineStoreCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.OnlineStoreCountAggregateOutputType> | number
         }
       }
     }
@@ -2712,6 +2787,20 @@ export const TenantScalarFieldEnum = {
 export type TenantScalarFieldEnum = (typeof TenantScalarFieldEnum)[keyof typeof TenantScalarFieldEnum]
 
 
+export const OnlineStoreScalarFieldEnum = {
+  tenantId: 'tenantId',
+  name: 'name',
+  logoUrl: 'logoUrl',
+  whatsappNumber: 'whatsappNumber',
+  warehouseId: 'warehouseId',
+  categoryIds: 'categoryIds',
+  productIds: 'productIds',
+  updatedAt: 'updatedAt'
+} as const
+
+export type OnlineStoreScalarFieldEnum = (typeof OnlineStoreScalarFieldEnum)[keyof typeof OnlineStoreScalarFieldEnum]
+
+
 export const PosRegisterScalarFieldEnum = {
   id: 'id',
   tenantId: 'tenantId',
@@ -3483,6 +3572,7 @@ export type GlobalOmitConfig = {
   user?: Prisma.UserOmit
   session?: Prisma.SessionOmit
   tenant?: Prisma.TenantOmit
+  onlineStore?: Prisma.OnlineStoreOmit
   posRegister?: Prisma.PosRegisterOmit
   posSession?: Prisma.PosSessionOmit
   posPayment?: Prisma.PosPaymentOmit

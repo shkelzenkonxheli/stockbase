@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
+import { UploadedImage } from "@/app/components/uploaded-image";
 import { getCategoryConfig } from "@/lib/product-taxonomy";
 
 type SupplierOption = {
@@ -17,7 +18,8 @@ type CatalogVariant = {
   id: number;
   size: string;
   color: string;
-  price: number;
+  costPrice: number;
+  imagePath: string | null;
 };
 
 type CatalogProduct = {
@@ -25,6 +27,7 @@ type CatalogProduct = {
   name: string;
   brand: string | null;
   categoryName: string;
+  imagePath: string | null;
   variants: CatalogVariant[];
 };
 
@@ -49,6 +52,8 @@ type PurchaseOrderListItem = {
   remainingQuantity: number;
   items: Array<{
     id: number;
+    variantId: number | null;
+    imagePath: string | null;
     productName: string;
     size: string;
     color: string;
@@ -200,32 +205,6 @@ function sectionCardClass() {
   return "rounded-[26px] border border-slate-200/80 bg-white/95 p-5 shadow-[0_12px_30px_rgba(15,23,42,0.045)]";
 }
 
-function MetricPill({
-  label,
-  value,
-  tone = "slate",
-}: {
-  label: string;
-  value: string;
-  tone?: "slate" | "emerald" | "amber" | "fuchsia";
-}) {
-  const styles =
-    tone === "emerald"
-      ? "border-emerald-200 bg-emerald-50 text-emerald-700"
-      : tone === "amber"
-        ? "border-amber-200 bg-amber-50 text-amber-700"
-        : tone === "fuchsia"
-          ? "border-fuchsia-200 bg-fuchsia-50 text-fuchsia-700"
-          : "border-slate-200 bg-slate-50 text-slate-700";
-
-  return (
-    <div className={`rounded-2xl border px-3 py-2 ${styles}`}>
-      <p className="text-[11px] font-semibold uppercase tracking-[0.14em]">{label}</p>
-      <p className="mt-1 text-sm font-semibold">{value}</p>
-    </div>
-  );
-}
-
 export function PurchaseOrdersManager({
   action,
   updateAction,
@@ -242,18 +221,27 @@ export function PurchaseOrdersManager({
 }: PurchaseOrdersManagerProps) {
   const createDialogRef = useRef<HTMLDialogElement>(null);
   const detailsDialogRef = useRef<HTMLDialogElement>(null);
+  const imageDialogRef = useRef<HTMLDialogElement>(null);
 
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [selectedOrderId, setSelectedOrderId] = useState<number | null>(null);
+  const [previewImage, setPreviewImage] = useState<{ src: string; alt: string } | null>(null);
+  const [draftItemSearch, setDraftItemSearch] = useState("");
+  const [draftItemProductId, setDraftItemProductId] = useState<number | null>(null);
+  const [draftItemVariantId, setDraftItemVariantId] = useState<number | null>(null);
+  const [draftItemQuantity, setDraftItemQuantity] = useState("1");
+  const [draftItemCost, setDraftItemCost] = useState("");
+  const [draftItemError, setDraftItemError] = useState("");
+  const [draftAddedItems, setDraftAddedItems] = useState<Array<{ variantId: number; quantity: number; unitCost: number }>>([]);
 
   const [supplierId, setSupplierId] = useState("");
   const [warehouseId, setWarehouseId] = useState("");
-  const [status, setStatus] = useState("ORDERED");
   const [orderedAt, setOrderedAt] = useState(new Date().toISOString().slice(0, 10));
   const [note, setNote] = useState("");
 
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedBrand, setSelectedBrand] = useState("");
+  const [productSearch, setProductSearch] = useState("");
   const [selectedProductId, setSelectedProductId] = useState("");
   const [selectedColor, setSelectedColor] = useState("");
   const [customColor, setCustomColor] = useState("");
@@ -300,10 +288,41 @@ export function PurchaseOrdersManager({
     }
   }, [selectedOrderId]);
 
+  useEffect(() => {
+    const dialog = imageDialogRef.current;
+    if (previewImage && !dialog?.open) dialog?.showModal();
+    if (!previewImage && dialog?.open) dialog.close();
+  }, [previewImage]);
+
+  function resetDraftPicker() {
+    setDraftItemSearch("");
+    setDraftItemProductId(null);
+    setDraftItemVariantId(null);
+    setDraftItemQuantity("1");
+    setDraftItemCost("");
+    setDraftItemError("");
+    setDraftAddedItems([]);
+  }
+
+  function openDetailsModal(orderId: number) {
+    resetDraftPicker();
+    setSelectedOrderId(orderId);
+  }
+
   const selectedOrder = useMemo(
     () => purchaseOrders.find((order) => order.id === selectedOrderId) ?? null,
     [purchaseOrders, selectedOrderId],
   );
+  const draftPickerProducts = useMemo(() => {
+    const query = draftItemSearch.trim().toLocaleLowerCase();
+    if (!query) return [];
+    return products.filter((product) => `${product.brand ?? ""} ${product.name} ${product.categoryName}`.toLocaleLowerCase().includes(query)).slice(0, 12);
+  }, [draftItemSearch, products]);
+  const draftPickerProduct = products.find((product) => product.id === draftItemProductId) ?? null;
+  const unavailableDraftVariants = new Set([
+    ...(selectedOrder?.items.map((item) => item.variantId).filter((id): id is number => id !== null) ?? []),
+    ...draftAddedItems.map((item) => item.variantId),
+  ]);
   const selectedOrderCanEdit = useMemo(
     () =>
       Boolean(
@@ -354,26 +373,27 @@ export function PurchaseOrdersManager({
       [
         ...new Set(
           productsInCategory
-            .map((product) => product.brand?.trim())
-            .filter(Boolean) as string[],
+            .map((product) => product.brand?.trim() || "Pa brand"),
         ),
       ].sort((a, b) => a.localeCompare(b)),
     [productsInCategory],
   );
 
-  const shouldShowBrand = brandOptions.length > 0;
+  const shouldShowBrand = brandOptions.length > 1 || (brandOptions.length === 1 && brandOptions[0] !== "Pa brand");
 
   const productOptions = useMemo(() => {
+    const query = productSearch.trim().toLocaleLowerCase();
     return productsInCategory
       .filter((product) =>
-        shouldShowBrand && selectedBrand ? product.brand === selectedBrand : true,
+        !shouldShowBrand || !selectedBrand ? true : (product.brand?.trim() || "Pa brand") === selectedBrand,
       )
+      .filter((product) => !query || `${product.brand ?? ""} ${product.name}`.toLocaleLowerCase().includes(query))
       .sort((a, b) => a.name.localeCompare(b.name));
-  }, [productsInCategory, selectedBrand, shouldShowBrand]);
+  }, [productsInCategory, productSearch, selectedBrand, shouldShowBrand]);
 
   const selectedProduct = useMemo(
-    () => productOptions.find((product) => product.id === Number(selectedProductId)) ?? null,
-    [productOptions, selectedProductId],
+    () => productsInCategory.find((product) => product.id === Number(selectedProductId)) ?? null,
+    [productsInCategory, selectedProductId],
   );
 
   const colorOptions = useMemo(
@@ -450,6 +470,17 @@ export function PurchaseOrdersManager({
       ].sort((a, b) => a.localeCompare(b)),
     [newCategoryName, newProductBrand, products],
   );
+  const matchingExistingProduct = useMemo(() => {
+    const category = newCategoryName.trim().toLocaleLowerCase();
+    const name = newProductName.trim().toLocaleLowerCase();
+    const brand = newProductBrand.trim().toLocaleLowerCase();
+    if (!category || !name) return null;
+    return products.find((product) =>
+      product.categoryName.trim().toLocaleLowerCase() === category &&
+      product.name.trim().toLocaleLowerCase() === name &&
+      (product.brand?.trim().toLocaleLowerCase() ?? "") === brand,
+    ) ?? null;
+  }, [newCategoryName, newProductName, newProductBrand, products]);
 
   const itemsPayload = useMemo(
     () =>
@@ -501,6 +532,7 @@ export function PurchaseOrdersManager({
     setPickerMode("existing");
     setSelectedCategory("");
     setSelectedBrand("");
+    setProductSearch("");
     setSelectedProductId("");
     setSelectedColor("");
     setCustomColor("");
@@ -519,7 +551,6 @@ export function PurchaseOrdersManager({
   function resetCreateState() {
     setSupplierId("");
     setWarehouseId("");
-    setStatus("ORDERED");
     setOrderedAt(new Date().toISOString().slice(0, 10));
     setNote("");
     resetActivePicker();
@@ -536,12 +567,30 @@ export function PurchaseOrdersManager({
   }
 
   function closeDetailsModal() {
+    setPreviewImage(null);
+    resetDraftPicker();
     setSelectedOrderId(null);
+  }
+
+  function addDraftItem() {
+    const variant = draftPickerProduct?.variants.find((item) => item.id === draftItemVariantId);
+    const quantity = Number(draftItemQuantity);
+    const unitCost = Number(draftItemCost);
+    if (!variant || unavailableDraftVariants.has(variant.id) || !Number.isSafeInteger(quantity) || quantity <= 0 || draftItemCost.trim() === "" || !Number.isFinite(unitCost) || unitCost < 0 || unitCost > 99999999.99) {
+      setDraftItemError("Zgjidh variantin, sasine dhe koston valide.");
+      return;
+    }
+    setDraftAddedItems((current) => [...current, { variantId: variant.id, quantity, unitCost }]);
+    setDraftItemVariantId(null);
+    setDraftItemQuantity("1");
+    setDraftItemCost("");
+    setDraftItemError("");
   }
 
   function handleCategoryChange(value: string) {
     setSelectedCategory(value);
     setSelectedBrand("");
+    setProductSearch("");
     setSelectedProductId("");
     setSelectedColor("");
     setCustomColor("");
@@ -551,6 +600,7 @@ export function PurchaseOrdersManager({
 
   function handleBrandChange(value: string) {
     setSelectedBrand(value);
+    setProductSearch("");
     setSelectedProductId("");
     setSelectedColor("");
     setSelectionMap({});
@@ -597,7 +647,7 @@ export function PurchaseOrdersManager({
           size: variant.size,
           color: variant.color,
           quantity: 1,
-          unitCost: variant.price.toFixed(2),
+          unitCost: variant.costPrice.toFixed(2),
           note: "",
         },
       };
@@ -660,7 +710,7 @@ export function PurchaseOrdersManager({
           material: undefined,
           powerWatts: undefined,
           quantity: 1,
-          unitCost: activeVariants[0]?.price?.toFixed(2) ?? "0.00",
+          unitCost: activeVariants[0]?.costPrice?.toFixed(2) ?? "0.00",
           note: "",
           isCustom: true,
         },
@@ -702,6 +752,7 @@ export function PurchaseOrdersManager({
   }
 
   function addPendingProductLine() {
+    if (matchingExistingProduct) return;
     const normalizedCategory = newCategoryName.trim();
     const normalizedProductName = newProductName.trim();
     const normalizedColor = newProductColor.trim();
@@ -733,6 +784,7 @@ export function PurchaseOrdersManager({
   }
 
   function addNewProductSelection() {
+    if (matchingExistingProduct) return;
     const normalizedCategory = newCategoryName.trim();
     const normalizedProductName = newProductName.trim();
     const normalizedColor = newProductColor.trim();
@@ -930,7 +982,7 @@ export function PurchaseOrdersManager({
                 <button
                   key={order.id}
                   type="button"
-                  onClick={() => setSelectedOrderId(order.id)}
+                  onClick={() => openDetailsModal(order.id)}
                   className="rounded-[24px] border border-emerald-100 bg-[linear-gradient(180deg,#ffffff_0%,#fbfefc_100%)] p-4 text-left transition hover:border-emerald-200 hover:bg-emerald-50/40"
                 >
                   <div className="flex items-start justify-between gap-3">
@@ -971,7 +1023,7 @@ export function PurchaseOrdersManager({
                     <tr
                       key={order.id}
                       className="cursor-pointer align-top transition hover:bg-emerald-50/45"
-                      onClick={() => setSelectedOrderId(order.id)}
+                      onClick={() => openDetailsModal(order.id)}
                     >
                       <td className="px-5 py-4">
                         <p className="font-semibold text-slate-950">PO #{order.id}</p>
@@ -1005,7 +1057,7 @@ export function PurchaseOrdersManager({
 
       <dialog
         ref={createDialogRef}
-        className="m-auto h-[min(94vh,980px)] w-[min(1240px,calc(100%-1.5rem))] rounded-[32px] border border-slate-200 bg-[#fbfdfc] p-0 text-left shadow-[0_30px_100px_rgba(15,23,42,0.22)] backdrop:bg-slate-950/45"
+        className="m-auto h-[min(90dvh,860px)] w-[min(1120px,calc(100%-1.5rem))] rounded-[28px] border border-slate-200 bg-[#fbfdfc] p-0 text-left shadow-[0_30px_100px_rgba(15,23,42,0.22)] backdrop:bg-slate-950/45"
         onClose={() => setIsCreateOpen(false)}
       >
         <div className="flex h-full flex-col">
@@ -1026,11 +1078,11 @@ export function PurchaseOrdersManager({
                   </svg>
                 </button>
                 <div>
-                  <h2 className="text-[30px] font-semibold tracking-tight text-slate-950">
-                    Create Purchase Order
+                  <h2 className="text-2xl font-semibold tracking-tight text-slate-950">
+                    Shto purchase order
                   </h2>
                   <p className="mt-1 text-sm text-slate-500">
-                    Add supplier, products and quantities
+                    Zgjidh furnitorin, depon dhe produktet qe po porosit.
                   </p>
                 </div>
               </div>
@@ -1042,9 +1094,10 @@ export function PurchaseOrdersManager({
                   form="purchase-order-create-form"
                   name="submitIntent"
                   value="draft"
-                  className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50"
+                  disabled={draftGroups.length === 0}
+                  className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-5 py-3 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  Save as Draft
+                  Ruaj draft
                 </button>
                 <button
                   type="submit"
@@ -1055,7 +1108,7 @@ export function PurchaseOrdersManager({
                   disabled={draftGroups.length === 0}
                   className="inline-flex items-center justify-center rounded-2xl bg-[linear-gradient(135deg,#10b981_0%,#059669_100%)] px-5 py-3 text-sm font-semibold text-white shadow-[0_12px_28px_rgba(16,185,129,0.28)] transition hover:brightness-105 disabled:cursor-not-allowed disabled:opacity-50"
                 >
-                  Create Purchase Order
+                  Ruaj PO
                 </button>
               </div>
             </div>
@@ -1067,7 +1120,6 @@ export function PurchaseOrdersManager({
             className="flex min-h-0 flex-1 flex-col"
           >
             <input type="hidden" name="items" value={itemsPayload} />
-            <input type="hidden" name="status" value={status} />
 
             <div className="min-h-0 flex-1 overflow-y-auto bg-[linear-gradient(180deg,#fbfdfc_0%,#f3f8f5_100%)] px-5 py-5 sm:px-6">
               <div className="grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
@@ -1085,17 +1137,17 @@ export function PurchaseOrdersManager({
                       </SectionTitleIcon>
                       <div>
                         <h3 className="text-2xl font-semibold tracking-tight text-slate-950">
-                          Order Details
+                          Detajet e porosise
                         </h3>
                         <p className="mt-1 text-sm text-slate-500">
-                          Supplier, depot and order info.
+                          Furnitori, depoja dhe data.
                         </p>
                       </div>
                     </div>
 
                     <div className="grid gap-4 md:grid-cols-2">
                       <label className="grid gap-2 text-sm font-medium text-slate-700">
-                        Supplier
+                        Furnitori
                         <select
                           name="supplierId"
                           required
@@ -1103,7 +1155,7 @@ export function PurchaseOrdersManager({
                           onChange={(event) => setSupplierId(event.target.value)}
                           className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100"
                         >
-                          <option value="">Select supplier</option>
+                          <option value="">Zgjidh furnitorin</option>
                           {suppliers.map((supplier) => (
                             <option key={supplier.id} value={supplier.id}>
                               {supplier.name}
@@ -1113,7 +1165,7 @@ export function PurchaseOrdersManager({
                       </label>
 
                       <label className="grid gap-2 text-sm font-medium text-slate-700">
-                        Order Date
+                        Data e porosise
                         <input
                           type="date"
                           name="orderedAt"
@@ -1124,19 +1176,7 @@ export function PurchaseOrdersManager({
                       </label>
 
                       <label className="grid gap-2 text-sm font-medium text-slate-700">
-                        Status
-                        <select
-                          value={status}
-                          onChange={(event) => setStatus(event.target.value)}
-                          className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100"
-                        >
-                          <option value="ORDERED">Ordered</option>
-                          <option value="DRAFT">Draft</option>
-                        </select>
-                      </label>
-
-                      <label className="grid gap-2 text-sm font-medium text-slate-700">
-                        Warehouse
+                        Depoja
                         <select
                           name="warehouseId"
                           required
@@ -1144,7 +1184,7 @@ export function PurchaseOrdersManager({
                           onChange={(event) => setWarehouseId(event.target.value)}
                           className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100"
                         >
-                          <option value="">Select warehouse</option>
+                          <option value="">Zgjidh depon</option>
                           {warehouses.map((warehouse) => (
                             <option key={warehouse.id} value={warehouse.id}>
                               {warehouse.name}
@@ -1155,14 +1195,14 @@ export function PurchaseOrdersManager({
                     </div>
 
                     <label className="mt-4 grid gap-2 text-sm font-medium text-slate-700">
-                      Reference / Note
+                      Referenca / Shenime
                       <textarea
                         name="note"
                         rows={2}
                         value={note}
                         onChange={(event) => setNote(event.target.value)}
                         className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100"
-                        placeholder="Add note or reference (optional)"
+                        placeholder="Opsionale"
                       />
                     </label>
                   </section>
@@ -1181,10 +1221,10 @@ export function PurchaseOrdersManager({
                         </SectionTitleIcon>
                         <div>
                           <h3 className="text-2xl font-semibold tracking-tight text-slate-950">
-                            Add Product
+                            Zgjidh produktin
                           </h3>
                           <p className="mt-1 text-sm text-slate-500">
-                            Select a product and add variants to this order.
+                            Gjej modelin, ngjyren dhe numrat e duhur.
                           </p>
                         </div>
                       </div>
@@ -1254,14 +1294,26 @@ export function PurchaseOrdersManager({
                           </label>
 
                           <label className="grid gap-2 text-sm font-medium text-slate-700">
-                            Model
+                            Kerko modelin
+                            <input
+                              type="search"
+                              value={productSearch}
+                              onChange={(event) => setProductSearch(event.target.value)}
+                              disabled={!selectedCategory}
+                              placeholder="Emri ose brandi"
+                              className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition disabled:bg-slate-50 focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100"
+                            />
+                          </label>
+
+                          <label className="grid gap-2 text-sm font-medium text-slate-700">
+                            Modeli ({productOptions.length})
                             <select
                               value={selectedProductId}
                               onChange={(event) => handleProductChange(event.target.value)}
-                              disabled={productOptions.length === 0}
+                              disabled={!selectedCategory || productOptions.length === 0}
                               className="rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 outline-none transition disabled:cursor-not-allowed disabled:bg-slate-50 focus:border-emerald-300 focus:ring-4 focus:ring-emerald-100"
                             >
-                              <option value="">Select model</option>
+                              <option value="">{productOptions.length === 0 ? "Nuk u gjet model" : "Zgjidh modelin"}</option>
                               {productOptions.map((product) => (
                                 <option key={product.id} value={product.id}>
                                   {product.brand ? `${product.brand} - ${product.name}` : product.name}
@@ -1340,6 +1392,21 @@ export function PurchaseOrdersManager({
                             </datalist>
                           </label>
 
+                          {matchingExistingProduct ? (
+                            <div className="rounded-xl border border-amber-200 bg-amber-50 px-3 py-3 text-sm text-amber-900 md:col-span-2">
+                              <p>Ky model ekziston tashme ne katalog. Perdore produktin ekzistues per te shmangur dublikimin.</p>
+                              <button type="button" onClick={() => {
+                                setPickerMode("existing");
+                                setSelectedCategory(matchingExistingProduct.categoryName);
+                                setSelectedBrand(matchingExistingProduct.brand?.trim() || "Pa brand");
+                                setSelectedProductId(String(matchingExistingProduct.id));
+                                setSelectedColor("");
+                                setProductSearch("");
+                                setNewProductSelections([]);
+                              }} className="mt-2 font-semibold text-amber-950 underline">Zgjidh {matchingExistingProduct.name}</button>
+                            </div>
+                          ) : null}
+
                           <label className="grid gap-2 text-sm font-medium text-slate-700">
                             Color
                             <input
@@ -1359,14 +1426,19 @@ export function PurchaseOrdersManager({
                         selectedProduct ? (
                           <div>
                             <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between">
-                              <div>
-                                <p className="text-base font-semibold text-slate-950">
-                                  {selectedProduct.brand ? `${selectedProduct.brand} ${selectedProduct.name}` : selectedProduct.name}
-                                </p>
-                                <p className="mt-1 text-sm text-slate-500">
-                                  {selectedProduct.categoryName}
-                                  {activeSelectedColor ? ` / ${activeSelectedColor}` : ""}
-                                </p>
+                              <div className="flex min-w-0 items-center gap-3">
+                                <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-slate-200 bg-white">
+                                  {selectedProduct.imagePath ? <UploadedImage src={selectedProduct.imagePath} alt={selectedProduct.name} className="h-full w-full object-contain" /> : <span className="flex h-full items-center justify-center text-[10px] text-slate-400">Pa foto</span>}
+                                </div>
+                                <div className="min-w-0">
+                                  <p className="truncate text-base font-semibold text-slate-950">
+                                    {selectedProduct.brand ? `${selectedProduct.brand} ${selectedProduct.name}` : selectedProduct.name}
+                                  </p>
+                                  <p className="mt-1 text-sm text-slate-500">
+                                    {selectedProduct.categoryName}
+                                    {activeSelectedColor ? ` / ${activeSelectedColor}` : ""}
+                                  </p>
+                                </div>
                               </div>
                               <button
                                 type="button"
@@ -1418,9 +1490,7 @@ export function PurchaseOrdersManager({
                                                 <p className="text-sm font-semibold text-slate-950">
                                                   {variant.size || "Standard"}
                                                 </p>
-                                                <p className="mt-1 text-xs text-slate-500">
-                                                  {variant.price.toFixed(2)} EUR
-                                                </p>
+                                                <p className="mt-1 text-xs text-slate-500">Kosto baze: {variant.costPrice.toFixed(2)} EUR</p>
                                               </div>
                                               <span
                                                 className={`h-5 w-5 rounded-full border ${selected ? "border-emerald-500 bg-emerald-500" : "border-slate-300 bg-white"}`}
@@ -1529,7 +1599,8 @@ export function PurchaseOrdersManager({
                             <button
                               type="button"
                               onClick={addNewProductSelection}
-                              className="inline-flex items-center justify-center rounded-xl border border-emerald-300 bg-white px-3 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50"
+                              disabled={Boolean(matchingExistingProduct)}
+                              className="inline-flex items-center justify-center rounded-xl border border-emerald-300 bg-white px-3 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50 disabled:cursor-not-allowed disabled:opacity-50"
                             >
                               Shto variant ne liste
                             </button>
@@ -1597,7 +1668,7 @@ export function PurchaseOrdersManager({
                             <button
                               type="button"
                               onClick={addPendingProductLine}
-                              disabled={newProductSelections.length === 0}
+                              disabled={newProductSelections.length === 0 || Boolean(matchingExistingProduct)}
                               className="inline-flex items-center justify-center rounded-xl border border-emerald-300 bg-white px-3 py-2 text-sm font-semibold text-emerald-700 transition hover:bg-emerald-50"
                             >
                               Shto produkt pending
@@ -1888,117 +1959,36 @@ export function PurchaseOrdersManager({
             </div>
 
             <div className="space-y-5 px-4 py-5 sm:px-6">
-              <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
-                <div className="min-w-0 rounded-2xl border border-slate-200 bg-slate-50/70 px-3 py-2.5">
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                    Artikuj
-                  </p>
-                  <p className="mt-1.5 break-words text-sm font-semibold text-slate-950">
-                    {selectedOrder.itemCount} variante / {selectedOrder.totalQuantity} cope
-                  </p>
-                </div>
-                <div className="min-w-0 rounded-2xl border border-slate-200 bg-slate-50/70 px-3 py-2.5">
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                    Vlera
-                  </p>
-                  <p className="mt-1.5 break-words text-sm font-semibold text-slate-950">
-                    {selectedOrder.totalLabel}
-                  </p>
-                </div>
-                <div className="min-w-0 rounded-2xl border border-emerald-200 bg-emerald-50/70 px-3 py-2.5">
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-emerald-700">
-                    Pranuar
-                  </p>
-                  <p className="mt-1.5 break-words text-sm font-semibold text-emerald-800">{selectedOrder.receivedLabel}</p>
-                </div>
-                <div className="min-w-0 rounded-2xl border border-amber-200 bg-amber-50/70 px-3 py-2.5">
-                  <p className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-700">
-                    Ne pritje
-                  </p>
-                  <p className="mt-1.5 break-words text-sm font-semibold text-amber-800">{selectedOrder.outstandingLabel}</p>
-                </div>
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-1 rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3 text-sm">
+                <span className="font-semibold text-slate-950">{selectedOrder.itemCount} variante / {selectedOrder.totalQuantity} cope</span>
+                <span className="text-slate-600">Totali <strong className="text-slate-950">{selectedOrder.totalLabel}</strong></span>
+                {selectedOrder.receivedQuantity > 0 ? <span className="text-emerald-700">Pranuar {selectedOrder.receivedLabel}</span> : null}
+                {selectedOrder.remainingQuantity > 0 ? <span className="text-amber-700">Ne pritje {selectedOrder.outstandingLabel}</span> : null}
+                {selectedOrder.returnedQuantity > 0 ? <span className="text-fuchsia-700">Kthyer {selectedOrder.returnedLabel}</span> : null}
               </div>
-              {selectedOrder.returnedQuantity > 0 ? (
-                <p className="text-xs font-medium text-fuchsia-700">Kthyer te furnitori: {selectedOrder.returnedQuantity} cope / {selectedOrder.returnedLabel}</p>
-              ) : null}
 
-              <div className="space-y-2">
-                <div className="flex items-center justify-between gap-3">
-                  <h3 className="text-lg font-semibold text-slate-950">Rreshtat e porosise</h3>
-                  <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 text-xs font-medium text-slate-600">
-                    {selectedOrder.itemCount} rreshta
-                  </span>
+              <section>
+                <div className="mb-3 flex items-center justify-between gap-3">
+                  <h3 className="text-base font-semibold text-slate-950">Produktet e porositura</h3>
+                  <span className="text-xs text-slate-500">{selectedOrder.itemCount} rreshta</span>
                 </div>
-
-                <div className="overflow-hidden rounded-[22px] border border-slate-200 bg-white">
-                  <div className="hidden lg:block">
-                    <table className="min-w-full table-fixed">
-                      <colgroup>
-                        <col className="w-[36%]" />
-                        <col className="w-[10%]" />
-                        <col className="w-[10%]" />
-                        <col className="w-[10%]" />
-                        <col className="w-[10%]" />
-                        <col className="w-[24%]" />
-                      </colgroup>
-                      <thead className="border-b border-slate-200 bg-slate-50">
-                        <tr className="text-left text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">
-                          <th className="px-3 py-2.5">Produkti</th>
-                          <th className="px-2 py-2.5">Ord</th>
-                          <th className="px-2 py-2.5">Pran</th>
-                          <th className="px-2 py-2.5">Kth</th>
-                          <th className="px-2 py-2.5">Mbet</th>
-                          <th className="px-2 py-2.5">Cmimi</th>
-                        </tr>
-                      </thead>
-                      <tbody className="divide-y divide-slate-100">
-                        {selectedOrder.items.map((item) => (
-                          <tr key={`summary-${item.id}`} className="align-top">
-                            <td className="px-3 py-3">
-                              <p className="truncate text-sm font-semibold text-slate-950">{item.productName}</p>
-                              <p className="mt-0.5 truncate text-xs text-slate-500">
-                                {item.color} / {item.size || "Standard"}
-                              </p>
-                              {item.note ? (
-                                <p className="mt-1 truncate text-[11px] text-slate-400">{item.note}</p>
-                              ) : null}
-                            </td>
-                            <td className="px-2 py-3 text-center text-sm font-semibold text-slate-700">{item.orderedQuantity}</td>
-                            <td className="px-2 py-3 text-center text-sm font-semibold text-emerald-700">{item.receivedQuantity}</td>
-                            <td className="px-2 py-3 text-center text-sm font-semibold text-fuchsia-700">{item.returnedQuantity}</td>
-                            <td className="px-2 py-3 text-center text-sm font-semibold text-amber-700">{item.remainingQuantity}</td>
-                            <td className="px-2 py-3 text-center text-xs font-semibold text-slate-700">{item.unitCostLabel}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                  <div className="space-y-2 p-3 lg:hidden">
-                    {selectedOrder.items.map((item) => (
-                      <div key={`summary-mobile-${item.id}`} className="rounded-2xl border border-slate-200 bg-slate-50/50 p-3">
-                        <div className="flex items-start justify-between gap-3">
-                          <div>
-                            <p className="font-semibold text-slate-950">{item.productName}</p>
-                            <p className="mt-0.5 text-sm text-slate-500">
-                              {item.color} / {item.size || "Standard"}
-                            </p>
-                          </div>
-                          <span className="text-sm font-semibold text-slate-950">{item.lineTotalLabel}</span>
-                        </div>
-                        <div className="mt-3 grid grid-cols-3 gap-2">
-                          <MetricPill label="Order" value={`${item.orderedQuantity}`} />
-                          <MetricPill label="Pranuar" value={`${item.receivedQuantity}`} tone="emerald" />
-                          <MetricPill label="Mbetur" value={`${item.remainingQuantity}`} tone="amber" />
-                        </div>
-                        {item.note ? (
-                          <p className="mt-2 text-xs text-slate-400">{item.note}</p>
-                        ) : null}
+                <div className="grid gap-2 sm:grid-cols-2">
+                  {selectedOrder.items.map((item) => (
+                    <article key={`summary-${item.id}`} className="flex min-w-0 items-center gap-3 rounded-2xl border border-slate-200 bg-white p-2.5">
+                      <button type="button" disabled={!item.imagePath} onClick={() => item.imagePath && setPreviewImage({ src: item.imagePath, alt: `${item.productName} ${item.color}` })} aria-label={`Shiko foton e ${item.productName}`} className="h-16 w-16 shrink-0 overflow-hidden rounded-xl border border-slate-100 bg-slate-50 disabled:cursor-default">
+                        {item.imagePath ? <UploadedImage src={item.imagePath} alt={`${item.productName} ${item.color}`} className="h-full w-full object-contain" /> : <span className="flex h-full items-center justify-center text-[10px] text-slate-400">Pa foto</span>}
+                      </button>
+                      <div className="min-w-0 flex-1">
+                        <p className="truncate text-sm font-semibold text-slate-950" title={item.productName}>{item.productName}</p>
+                        <p className="truncate text-xs text-slate-500">{item.color} / {item.size || "Standard"}</p>
+                        <p className="mt-1 text-xs text-slate-600">{item.orderedQuantity} cope · {item.unitCostLabel} / cope</p>
+                        {item.receivedQuantity > 0 || item.returnedQuantity > 0 ? <p className="text-[11px] text-slate-500">Pranuar {item.receivedQuantity} · Kthyer {item.returnedQuantity} · Mbetur {item.remainingQuantity}</p> : null}
                       </div>
-                    ))}
-                  </div>
+                      <span className="shrink-0 self-start text-xs font-semibold text-slate-900">{item.lineTotalLabel}</span>
+                    </article>
+                  ))}
                 </div>
-              </div>
-
+              </section>
               {selectedOrderCanEdit ? (
                 <details key={`edit-${selectedOrder.id}`} className="group overflow-hidden rounded-[22px] border border-slate-200 bg-slate-50/70 open:border-sky-200 open:bg-sky-50/40">
                   <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3.5 text-sm font-semibold text-slate-800 marker:hidden hover:bg-slate-100/70 [&::-webkit-details-marker]:hidden">
@@ -2010,18 +2000,13 @@ export function PurchaseOrdersManager({
                   className="min-w-0 border-t border-sky-100 bg-white p-4"
                 >
                   <input type="hidden" name="purchaseOrderId" value={selectedOrder.id} />
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <h3 className="text-base font-semibold text-slate-950">Ndrysho te dhenat</h3>
-                      <p className="mt-1 text-sm text-slate-500">
-                        Mund te ndryshosh daten, furnitorin, depon dhe rreshtat para pranimit.
-                      </p>
-                    </div>
+                  <input type="hidden" name="newItems" value={JSON.stringify(draftAddedItems)} />
+                  <div className="flex justify-end">
                     {selectedOrderCanCancel ? (
                       <button
                         type="submit"
                         formAction={cancelAction}
-                        className="inline-flex items-center justify-center rounded-2xl border border-rose-200 bg-rose-50 px-4 py-2.5 text-sm font-semibold text-rose-700 transition hover:bg-rose-100"
+                        className="text-xs font-semibold text-rose-600 hover:underline"
                       >
                         Anulo porosine
                       </button>
@@ -2092,21 +2077,21 @@ export function PurchaseOrdersManager({
                     />
                   </label>
 
-                  <div className="mt-4 space-y-3">
+                  <div className="mt-4 space-y-2">
                     {selectedOrder.items.map((item) => (
                       <div
                         key={`edit-${item.id}`}
-                        className="grid min-w-0 gap-3 rounded-2xl border border-slate-200 bg-slate-50/50 p-3 sm:grid-cols-[minmax(0,1fr)_100px_120px]"
+                        className="grid min-w-0 gap-2 rounded-xl border border-slate-200 bg-slate-50/50 p-2.5 sm:grid-cols-[minmax(0,1fr)_90px_110px] sm:items-center"
                       >
                         <input type="hidden" name={`item_${item.id}`} value={item.id} />
-                        <div className="min-w-0">
-                          <p className="font-semibold text-slate-950">{item.productName}</p>
-                          <p className="mt-1 text-sm text-slate-500">
-                            {item.color} / {item.size || "Standard"}
-                          </p>
-                          {item.note ? (
-                            <p className="mt-2 text-xs text-slate-400">Aktual: {item.note}</p>
-                          ) : null}
+                        <div className="flex min-w-0 items-center gap-2">
+                          <div className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-white">
+                            {item.imagePath ? <UploadedImage src={item.imagePath} alt="" className="h-full w-full object-contain" /> : null}
+                          </div>
+                          <div className="min-w-0">
+                            <p className="truncate text-sm font-semibold text-slate-950">{item.productName}</p>
+                            <p className="truncate text-xs text-slate-500">{item.color} / {item.size || "Standard"}</p>
+                          </div>
                         </div>
 
                         <label className="grid min-w-0 gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500">
@@ -2132,18 +2117,66 @@ export function PurchaseOrdersManager({
                           />
                         </label>
 
-                        <label className="grid min-w-0 gap-1 text-xs font-semibold uppercase tracking-[0.12em] text-slate-500 sm:col-span-3">
-                          Shenim rreshti
-                          <input
-                            type="text"
-                            name={`note_${item.id}`}
-                            defaultValue={item.note ?? ""}
-                            className="min-w-0 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none transition focus:border-sky-300"
-                          />
-                        </label>
+                        <details className="sm:col-span-3">
+                          <summary className="cursor-pointer text-xs text-slate-500">Shenim rreshti{item.note ? " · i plotesuar" : ""}</summary>
+                          <input type="text" name={`note_${item.id}`} defaultValue={item.note ?? ""} aria-label={`Shenim per ${item.productName}`} className="mt-2 w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm text-slate-900 outline-none focus:border-sky-300" />
+                        </details>
                       </div>
                     ))}
                   </div>
+
+                  {selectedOrder.status === "DRAFT" ? (
+                    <details className="mt-4 rounded-xl border border-emerald-200 bg-emerald-50/40 p-3">
+                      <summary className="cursor-pointer text-sm font-semibold text-emerald-900">+ Shto produkte ne draft {draftAddedItems.length > 0 ? `(${draftAddedItems.length} te reja)` : ""}</summary>
+                      <div className="mt-3 space-y-3">
+                        <input
+                          type="search"
+                          value={draftItemSearch}
+                          onChange={(event) => { setDraftItemSearch(event.target.value); setDraftItemProductId(null); setDraftItemVariantId(null); }}
+                          placeholder="Kerko modelin ose brandin"
+                          aria-label="Kerko produkt per draft"
+                          className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm outline-none focus:border-emerald-400"
+                        />
+                        {draftItemSearch.trim() && !draftPickerProduct ? (
+                          <div className="grid max-h-52 gap-1 overflow-y-auto sm:grid-cols-2">
+                            {draftPickerProducts.map((product) => (
+                              <button key={product.id} type="button" onClick={() => { setDraftItemProductId(product.id); setDraftItemVariantId(null); setDraftItemCost(""); setDraftItemError(""); }} className="flex min-w-0 items-center gap-2 rounded-xl border border-slate-200 bg-white p-1.5 text-left hover:border-emerald-400">
+                                <span className="h-10 w-10 shrink-0 overflow-hidden rounded-lg bg-slate-50">{product.imagePath ? <UploadedImage src={product.imagePath} alt="" className="h-full w-full object-contain" /> : null}</span>
+                                <span className="min-w-0"><span className="block truncate text-sm font-semibold">{product.name}</span><span className="block truncate text-xs text-slate-500">{product.brand || product.categoryName}</span></span>
+                              </button>
+                            ))}
+                            {draftPickerProducts.length === 0 ? <p className="text-sm text-slate-500">Nuk u gjet produkt.</p> : null}
+                          </div>
+                        ) : null}
+                        {draftPickerProduct ? (
+                          <div className="space-y-2 rounded-xl border border-slate-200 bg-white p-3">
+                            <div className="flex items-center justify-between gap-2"><span className="truncate text-sm font-semibold">{draftPickerProduct.name}</span><button type="button" onClick={() => { setDraftItemProductId(null); setDraftItemVariantId(null); }} className="text-xs text-emerald-700 hover:underline">Ndrysho produktin</button></div>
+                            <div className="grid gap-2 sm:grid-cols-[minmax(0,1fr)_90px_110px_auto]">
+                              <select aria-label="Varianti" value={draftItemVariantId ?? ""} onChange={(event) => { const variant = draftPickerProduct.variants.find((item) => item.id === Number(event.target.value)); setDraftItemVariantId(variant?.id ?? null); setDraftItemCost(variant ? variant.costPrice.toFixed(2) : ""); setDraftItemError(""); }} className="min-w-0 rounded-lg border border-slate-200 px-2 py-2 text-sm">
+                                <option value="">Zgjidh ngjyren dhe numrin</option>
+                                {draftPickerProduct.variants.filter((variant) => !unavailableDraftVariants.has(variant.id)).map((variant) => <option key={variant.id} value={variant.id}>{variant.color} / {variant.size || "Standard"}</option>)}
+                              </select>
+                              <input type="number" min={1} value={draftItemQuantity} onChange={(event) => setDraftItemQuantity(event.target.value)} aria-label="Sasia e re" placeholder="Sasia" className="min-w-0 rounded-lg border border-slate-200 px-2 py-2 text-sm" />
+                              <input type="number" min={0} step="0.01" value={draftItemCost} onChange={(event) => setDraftItemCost(event.target.value)} aria-label="Kosto per cope" placeholder="Kosto" className="min-w-0 rounded-lg border border-slate-200 px-2 py-2 text-sm" />
+                              <button type="button" onClick={addDraftItem} className="rounded-lg bg-emerald-800 px-3 py-2 text-sm font-semibold text-white hover:bg-emerald-700">Shto</button>
+                            </div>
+                            {draftItemError ? <p role="alert" className="text-xs text-rose-600">{draftItemError}</p> : null}
+                            {draftPickerProduct.variants.every((variant) => unavailableDraftVariants.has(variant.id)) ? <p className="text-xs text-slate-500">Te gjitha variantet e ketij modeli jane tashme ne PO.</p> : null}
+                          </div>
+                        ) : null}
+                        {draftAddedItems.length > 0 ? (
+                          <div className="space-y-1">
+                            <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Ne pritje per ruajtje</p>
+                            {draftAddedItems.map((line) => {
+                              const product = products.find((entry) => entry.variants.some((variant) => variant.id === line.variantId));
+                              const variant = product?.variants.find((entry) => entry.id === line.variantId);
+                              return <div key={line.variantId} className="flex items-center justify-between gap-2 rounded-lg bg-white px-3 py-2 text-xs"><span className="min-w-0 truncate">{product?.name} · {variant?.color} / {variant?.size || "Standard"} · {line.quantity} cope · {line.unitCost.toFixed(2)}</span><button type="button" onClick={() => setDraftAddedItems((current) => current.filter((item) => item.variantId !== line.variantId))} className="shrink-0 font-semibold text-rose-600">Hiq</button></div>;
+                            })}
+                          </div>
+                        ) : null}
+                      </div>
+                    </details>
+                  ) : null}
 
                   <div className="mt-4 flex justify-end">
                     <button
@@ -2322,6 +2355,14 @@ export function PurchaseOrdersManager({
                 </div>
               ) : null}
             </div>
+          </div>
+        ) : null}
+      </dialog>
+      <dialog ref={imageDialogRef} onClose={() => setPreviewImage(null)} className="m-auto max-h-[92dvh] w-[min(92vw,900px)] rounded-2xl border border-slate-200 bg-white p-3 shadow-2xl backdrop:bg-slate-950/70 sm:p-4">
+        {previewImage ? (
+          <div>
+            <div className="mb-3 flex items-center justify-between gap-3"><p className="truncate text-sm font-semibold text-slate-900">{previewImage.alt}</p><button type="button" onClick={() => setPreviewImage(null)} className="rounded-lg border border-slate-200 px-3 py-1.5 text-sm">Mbyll</button></div>
+            <UploadedImage src={previewImage.src} alt={previewImage.alt} className="mx-auto max-h-[75dvh] max-w-full object-contain" />
           </div>
         ) : null}
       </dialog>

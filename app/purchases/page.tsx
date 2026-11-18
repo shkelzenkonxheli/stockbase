@@ -564,6 +564,7 @@ async function updatePurchaseOrder(formData: FormData) {
   const note = formData.get("note")?.toString().trim() || null;
   const statusRaw = formData.get("status")?.toString();
   const status = statusRaw === "DRAFT" ? "DRAFT" : "ORDERED";
+  const newItemsRaw = formData.get("newItems")?.toString() || "[]";
 
   if (!tenantId || !purchaseOrderId || !supplierId || !warehouseId || !orderedAtRaw) {
     redirect("/purchases?error=update_validation");
@@ -573,6 +574,29 @@ async function updatePurchaseOrder(formData: FormData) {
   if (Number.isNaN(orderedAt.getTime())) {
     redirect("/purchases?error=update_validation");
   }
+
+  let newItemsInput: unknown;
+  try {
+    newItemsInput = JSON.parse(newItemsRaw);
+  } catch {
+    redirect("/purchases?error=update_validation");
+  }
+  if (!Array.isArray(newItemsInput) || newItemsInput.length > 100) {
+    redirect("/purchases?error=update_validation");
+  }
+  const newItems = newItemsInput.map((value) => {
+    if (!value || typeof value !== "object") return null;
+    const item = value as { variantId?: unknown; quantity?: unknown; unitCost?: unknown };
+    const variantId = Number(item.variantId);
+    const quantity = Number(item.quantity);
+    const unitCost = Number(item.unitCost);
+    if (!Number.isSafeInteger(variantId) || variantId <= 0 || !Number.isSafeInteger(quantity) || quantity <= 0 || !Number.isFinite(unitCost) || unitCost < 0 || unitCost > 99999999.99) return null;
+    return { variantId, quantity, unitCost };
+  });
+  if (newItems.some((item) => item === null) || new Set(newItems.map((item) => item?.variantId)).size !== newItems.length) {
+    redirect("/purchases?error=update_validation");
+  }
+  const validNewItems = newItems.filter((item): item is NonNullable<typeof item> => item !== null);
 
   const itemIds = Array.from(formData.entries())
     .filter(([key]) => key.startsWith("item_"))
@@ -629,6 +653,19 @@ async function updatePurchaseOrder(formData: FormData) {
       return { ok: false as const, reason: "validation" as const };
     }
 
+    if (validNewItems.length > 0 && order.status !== "DRAFT") {
+      return { ok: false as const, reason: "state" as const };
+    }
+
+    const newVariants = validNewItems.length > 0 ? await tx.variant.findMany({
+      where: { tenantId, id: { in: validNewItems.map((item) => item.variantId) } },
+      select: { id: true, productId: true },
+    }) : [];
+    if (newVariants.length !== validNewItems.length || validNewItems.some((item) => order.items.some((existing) => existing.variantId === item.variantId))) {
+      return { ok: false as const, reason: "validation" as const };
+    }
+    const newVariantById = new Map(newVariants.map((variant) => [variant.id, variant]));
+
     const itemMap = new Map(order.items.map((item) => [item.id, item]));
     const updates: Array<{
       id: number;
@@ -684,6 +721,18 @@ async function updatePurchaseOrder(formData: FormData) {
       });
     }
 
+    if (validNewItems.length > 0) {
+      await tx.purchaseOrderItem.createMany({
+        data: validNewItems.map((item) => ({
+          purchaseOrderId,
+          productId: newVariantById.get(item.variantId)!.productId,
+          variantId: item.variantId,
+          orderedQuantity: item.quantity,
+          unitCost: item.unitCost.toFixed(2),
+        })),
+      });
+    }
+
     await writeAuditLog(tx, {
       tenantId,
       userId: currentUser.id,
@@ -712,6 +761,7 @@ async function updatePurchaseOrder(formData: FormData) {
             unitCost: item.unitCost,
           };
         }),
+        addedLines: validNewItems,
       },
     });
 
@@ -1522,7 +1572,8 @@ export default async function PurchasesPage({ searchParams }: PurchasesPageProps
             id: true,
             size: true,
             color: true,
-            price: true,
+            costPrice: true,
+            imagePath: true,
           },
         },
       },
@@ -1551,6 +1602,8 @@ export default async function PurchasesPage({ searchParams }: PurchasesPageProps
         items: {
           select: {
             id: true,
+            productId: true,
+            variantId: true,
             product: {
               select: {
                 name: true,
@@ -1570,6 +1623,7 @@ export default async function PurchasesPage({ searchParams }: PurchasesPageProps
               select: {
                 size: true,
                 color: true,
+                imagePath: true,
                 product: {
                   select: {
                     name: true,
@@ -1583,7 +1637,7 @@ export default async function PurchasesPage({ searchParams }: PurchasesPageProps
     }),
   ]);
 
-  const purchaseOrderMetrics = purchaseOrders.map((order) => {
+  const purchaseOrderMetrics = new Map(purchaseOrders.map((order) => {
     const metrics = calculatePurchaseOrderMetrics(
       order.items.map((item) => ({
         orderedQuantity: item.orderedQuantity,
@@ -1593,27 +1647,16 @@ export default async function PurchasesPage({ searchParams }: PurchasesPageProps
       })),
     );
 
-    return {
-      orderId: order.id,
-      ...metrics,
-    };
-  });
-
-  const totalOrderedValue = purchaseOrderMetrics.reduce((sum, order) => sum + order.totalOrderedValue, 0);
-  const totalReceivedValue = purchaseOrderMetrics.reduce((sum, order) => sum + order.totalReceivedValue, 0);
-  const totalReturnedValue = purchaseOrderMetrics.reduce((sum, order) => sum + order.totalReturnedValue, 0);
-  const totalOutstandingValue = purchaseOrderMetrics.reduce(
-    (sum, order) => sum + order.totalOutstandingValue,
-    0,
-  );
-  const openOrdersCount = purchaseOrders.filter((order) =>
-    ["DRAFT", "ORDERED", "PARTIALLY_RECEIVED", "PARTIALLY_RETURNED"].includes(order.status),
-  ).length;
-  const avgOrderValue = purchaseOrders.length > 0 ? totalOrderedValue / purchaseOrders.length : 0;
+    return [order.id, metrics] as const;
+  }));
+  const productImages = new Map(variants.map((product) => [
+    product.id,
+    product.variants.find((variant) => variant.imagePath)?.imagePath ?? null,
+  ]));
 
   const purchaseOrderItems = purchaseOrders.map((order) => {
     const metrics =
-      purchaseOrderMetrics.find((entry) => entry.orderId === order.id) ??
+      purchaseOrderMetrics.get(order.id) ??
       calculatePurchaseOrderMetrics(
         order.items.map((item) => ({
           orderedQuantity: item.orderedQuantity,
@@ -1644,6 +1687,8 @@ export default async function PurchasesPage({ searchParams }: PurchasesPageProps
       remainingQuantity: metrics.totalRemainingQuantity,
       items: order.items.map((item) => ({
         id: item.id,
+        variantId: item.variantId,
+        imagePath: item.variant?.imagePath ?? (item.productId ? productImages.get(item.productId) ?? null : null),
         productName:
           item.variant?.product.name ??
           item.product?.name ??
@@ -1681,14 +1726,6 @@ export default async function PurchasesPage({ searchParams }: PurchasesPageProps
                 Menaxho porosite blerese, pranimin ne depo, kthimet te furnitori dhe
                 kontrollin e kostove nga nje vend.
               </p>
-              <div className="mt-4 flex flex-wrap gap-3 text-sm">
-                <span className="inline-flex items-center rounded-full border border-emerald-200 bg-white/90 px-3 py-1 text-slate-600 shadow-sm">
-                  {purchaseOrders.length} purchase orders
-                </span>
-                <span className="inline-flex items-center rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 font-medium text-emerald-700 shadow-sm">
-                  {formatMoney(totalOrderedValue)} vlere totale
-                </span>
-              </div>
             </div>
 
             <div className="flex flex-wrap gap-3">
@@ -1706,34 +1743,6 @@ export default async function PurchasesPage({ searchParams }: PurchasesPageProps
               </Link>
             </div>
           </div>
-        </section>
-
-        <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-5">
-          <article className="rounded-[24px] border border-slate-200 bg-white px-5 py-4 shadow-[0_12px_30px_rgba(15,23,42,0.05)]">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Totali i porosive</p>
-            <p className="mt-2 text-2xl font-semibold text-slate-950">{formatMoney(totalOrderedValue)}</p>
-            <p className="mt-1 text-sm text-slate-500">{purchaseOrders.length} PO</p>
-          </article>
-          <article className="rounded-[24px] border border-emerald-200 bg-[linear-gradient(180deg,#ffffff_0%,#f3fbf6_100%)] px-5 py-4 shadow-[0_12px_30px_rgba(16,185,129,0.08)]">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-emerald-700">Stok i pranuar</p>
-            <p className="mt-2 text-2xl font-semibold text-slate-950">{formatMoney(totalReceivedValue)}</p>
-            <p className="mt-1 text-sm text-slate-500">Vlera e pranuar deri tani</p>
-          </article>
-          <article className="rounded-[24px] border border-amber-200 bg-[linear-gradient(180deg,#ffffff_0%,#fff9ec_100%)] px-5 py-4 shadow-[0_12px_30px_rgba(245,158,11,0.08)]">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-amber-700">Pritet ende</p>
-            <p className="mt-2 text-2xl font-semibold text-slate-950">{formatMoney(totalOutstandingValue)}</p>
-            <p className="mt-1 text-sm text-slate-500">{openOrdersCount} porosi te hapura</p>
-          </article>
-          <article className="rounded-[24px] border border-fuchsia-200 bg-[linear-gradient(180deg,#ffffff_0%,#fff4ff_100%)] px-5 py-4 shadow-[0_12px_30px_rgba(192,38,211,0.08)]">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-fuchsia-700">Kthime furnitori</p>
-            <p className="mt-2 text-2xl font-semibold text-slate-950">{formatMoney(totalReturnedValue)}</p>
-            <p className="mt-1 text-sm text-slate-500">Vlera totale e kthyer</p>
-          </article>
-          <article className="rounded-[24px] border border-slate-200 bg-white px-5 py-4 shadow-[0_12px_30px_rgba(15,23,42,0.05)]">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.16em] text-slate-500">Mesatarja</p>
-            <p className="mt-2 text-2xl font-semibold text-slate-950">{formatMoney(avgOrderValue)}</p>
-            <p className="mt-1 text-sm text-slate-500">Vlera mesatare per PO</p>
-          </article>
         </section>
 
         {message ? (
@@ -1761,11 +1770,13 @@ export default async function PurchasesPage({ searchParams }: PurchasesPageProps
             name: product.name,
             brand: product.brand,
             categoryName: product.category.name,
+            imagePath: product.variants.find((variant) => variant.imagePath)?.imagePath ?? null,
             variants: product.variants.map((variant) => ({
               id: variant.id,
               size: variant.size,
               color: variant.color,
-              price: Number(variant.price),
+              costPrice: Number(variant.costPrice),
+              imagePath: variant.imagePath,
             })),
           }))}
           purchaseOrders={purchaseOrderItems}

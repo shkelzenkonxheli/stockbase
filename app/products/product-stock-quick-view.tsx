@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { UploadedImage } from "@/app/components/uploaded-image";
 import { QuickStockTransferModal } from "./quick-stock-transfer-modal";
 import { getStockTone, isLowStock } from "@/lib/inventory";
+import { nextStockSizeRow } from "@/lib/next-stock-size-row";
 import {
   buildVariantIdentityKey,
   type CategoryConfig,
@@ -346,6 +347,7 @@ export function ProductStockQuickView({
   const [showVariantCreator, setShowVariantCreator] = useState(false);
   const [variantColor, setVariantColor] = useState("");
   const [variantPrice, setVariantPrice] = useState("");
+  const [variantCostPrice, setVariantCostPrice] = useState("");
   const [variantMaterial, setVariantMaterial] = useState("");
   const [variantPowerWatts, setVariantPowerWatts] = useState("");
   const [variantLocation, setVariantLocation] = useState("");
@@ -528,6 +530,7 @@ export function ProductStockQuickView({
     availableColors.find(
       (color) => color.trim().toLowerCase() === normalizedVariantColor,
     ) ?? null;
+  const modelPrice = variantsState.find((variant) => variant.price !== undefined && Number.isFinite(variant.price))?.price ?? null;
 
   useEffect(() => {
     setHasMounted(true);
@@ -605,6 +608,7 @@ export function ProductStockQuickView({
     setShowVariantCreator(false);
     setVariantColor("");
     setVariantPrice("");
+    setVariantCostPrice("");
     setVariantMaterial("");
     setVariantPowerWatts("");
     setVariantLocation("");
@@ -620,81 +624,12 @@ export function ProductStockQuickView({
   }
 
   function addVariantRow() {
-    const size = variantDraftSize.trim();
-    const stock = Number(variantDraftStock);
-
-    if (!size || !Number.isInteger(stock) || stock < 0) {
-      setVariantError("Ploteso numrin dhe sasine para se ta shtosh.");
-      return;
-    }
-
-    const candidateKey = buildQuickVariantIdentityKey(
-      stockViewMode,
-      {
-        color: variantColor,
-        size,
-        material: variantMaterial,
-        powerWatts: variantPowerWatts,
-      },
-      categoryConfig,
-    );
-    const alreadyAdded = variantRows.some((row) =>
-      buildQuickVariantIdentityKey(
-        stockViewMode,
-        {
-          color: variantColor,
-          size: row.size,
-          material: variantMaterial,
-          powerWatts: variantPowerWatts,
-        },
-        categoryConfig,
-      ) === candidateKey,
-    );
-    const alreadyExists = variantsState.some(
-      (variant) =>
-        buildQuickVariantIdentityKey(
-          stockViewMode,
-          {
-            color: variant.color,
-            size: variant.size,
-            material: variant.material,
-            powerWatts: variant.powerWatts,
-          },
-          categoryConfig,
-        ) === candidateKey,
-    );
-
-    if (alreadyAdded || alreadyExists) {
-      setVariantError(
-        `Varianti ${formatQuickVariantLabel(
-          stockViewMode,
-          {
-            color: variantColor,
-            size,
-            material: variantMaterial,
-            powerWatts: variantPowerWatts,
-          },
-          categoryConfig,
-        )} ekziston tashme.`,
-      );
-      return;
-    }
-
-    setVariantRows((current) => [
-      ...current,
-      {
-        id: Date.now() + current.length,
-        size,
-        stock: String(stock),
-      },
-    ]);
-    const parsedSize = Number(size);
-    setVariantDraftSize(
-      Number.isFinite(parsedSize) && size !== ""
-        ? String(parsedSize + 1)
-        : "",
-    );
-    setVariantDraftStock("");
+    setVariantRows((current) => {
+      if (current.length >= 30) return current;
+      const previous = current[current.length - 1];
+      const next = previous ? nextStockSizeRow(previous) : { size: "", stock: "" };
+      return [...current, { id: Date.now() + Math.random(), ...next }];
+    });
     setVariantError(null);
   }
 
@@ -907,10 +842,15 @@ export function ProductStockQuickView({
       return;
     }
 
-    const parsedPrice = Number(variantPrice);
+    const parsedPrice = modelPrice ?? Number(variantPrice);
 
-    if (Number.isNaN(parsedPrice) || parsedPrice < 0) {
-      setVariantError("Jep cmimin per ngjyre te re.");
+    if ((modelPrice === null && !variantPrice.trim()) || !Number.isFinite(parsedPrice) || parsedPrice < 0) {
+      setVariantError("Cmimi i modelit mungon. Jep cmimin e shitjes.");
+      return;
+    }
+    const parsedCost = variantCostPrice.trim() ? Number(variantCostPrice) : null;
+    if (parsedCost !== null && (!Number.isFinite(parsedCost) || parsedCost < 0 || parsedCost > 99999999.99)) {
+      setVariantError("Kostoja blerese nuk eshte valide.");
       return;
     }
 
@@ -926,9 +866,10 @@ export function ProductStockQuickView({
     const cleanedRows = pendingRows
       .map((row) => ({
         size: row.size.trim(),
+        stockRaw: row.stock.trim(),
         stock: Number(row.stock),
       }))
-      .filter((row) => row.size || row.stock || row.stock === 0);
+      .filter((row) => row.size || row.stockRaw);
 
     if (stockViewMode !== "footwear" && cleanedRows.length === 0) {
       const primaryValue = variantDraftSize.trim();
@@ -939,10 +880,7 @@ export function ProductStockQuickView({
         return;
       }
 
-      cleanedRows.push({
-        size: primaryValue,
-        stock: primaryStock,
-      });
+      cleanedRows.push({ size: primaryValue, stockRaw: variantDraftStock.trim(), stock: primaryStock });
     }
 
     if (cleanedRows.length === 0) {
@@ -951,7 +889,7 @@ export function ProductStockQuickView({
     }
 
     const invalidRow = cleanedRows.find(
-      (row) => !row.size || !Number.isInteger(row.stock) || row.stock < 0,
+      (row) => !row.size || !row.stockRaw || !Number.isInteger(row.stock) || row.stock < 0,
     );
 
     if (invalidRow) {
@@ -986,6 +924,14 @@ export function ProductStockQuickView({
         );
         return;
       }
+      if (variantsState.some((variant) => buildQuickVariantIdentityKey(
+        stockViewMode,
+        { color: variant.color, size: variant.size, material: variant.material, powerWatts: variant.powerWatts },
+        categoryConfig,
+      ) === candidateKey)) {
+        setVariantError(`Varianti ${formatQuickVariantLabel(stockViewMode, { color, size: row.size, material: variantMaterial, powerWatts: variantPowerWatts }, categoryConfig)} ekziston tashme.`);
+        return;
+      }
       seenVariantKeys.add(candidateKey);
     }
 
@@ -1003,6 +949,7 @@ export function ProductStockQuickView({
         formData.append("size", row.size);
         formData.append("stock", String(row.stock));
         formData.append("price", String(parsedPrice));
+        if (parsedCost !== null) formData.append("costPrice", String(parsedCost));
         if (variantMaterial.trim()) {
           formData.append("material", variantMaterial.trim());
         }
@@ -1141,12 +1088,6 @@ export function ProductStockQuickView({
       : stockViewMode === "home"
         ? "Madhesia / dimensioni"
         : "Numri");
-  const quickVariantModalDescription =
-    stockViewMode === "electronics"
-      ? "Krijo variant te ri me model/version, ngjyre, cmim dhe stok."
-      : stockViewMode === "home"
-        ? "Krijo variant te ri me madhesi/dimension, ngjyre, cmim dhe stok."
-        : "Krijo ngjyre te re dhe shto disa numra ne nje hap.";
   const quickVariantColorLabel = categoryConfig?.colorLabel ?? "Ngjyra";
   const showQuickMaterialField =
     stockViewMode !== "footwear" && (categoryConfig?.showMaterialField ?? stockViewMode === "home");
@@ -1278,7 +1219,8 @@ export function ProductStockQuickView({
                         setShowVariantCreator(true);
                         setVariantColor("");
                         setVariantPrice("");
-                        setVariantRows([]);
+                        setVariantCostPrice("");
+                        setVariantRows(stockViewMode === "footwear" ? [{ id: Date.now(), size: "", stock: "" }] : []);
                         setVariantDraftSize("");
                         setVariantDraftStock("");
                         setVariantImageFile(null);
@@ -2492,35 +2434,16 @@ export function ProductStockQuickView({
               }}
             >
               <div
-                className={`${modalCardClass()} max-h-[76dvh] w-[min(90vw,520px)] overflow-hidden p-0 sm:max-h-[calc(100vh-32px)] sm:max-w-3xl`}
+                className={`${modalCardClass()} max-h-[90dvh] min-w-0 max-w-[600px] overflow-hidden p-0`}
+                style={{ width: "min(100%, 600px)", maxWidth: 600 }}
                 onClick={(event) => event.stopPropagation()}
               >
-            <div className="flex max-h-[80dvh] flex-col sm:max-h-[calc(100vh-32px)]">
-            <div className="flex items-start justify-between gap-4 px-4 pb-0 pt-4 sm:px-5 sm:pt-5">
-              <div>
-                <h3 className="text-lg font-semibold text-slate-950">
-                  Shto variant
-                </h3>
-                <p className="mt-1 text-sm text-slate-500">
-                  {quickVariantModalDescription}
-                </p>
-                {stockViewMode === "footwear" && availableColors.length > 0 ? (
-                  <div className="mt-3 flex flex-wrap gap-2">
-                    {availableColors.map((color) => (
-                      <span
-                        key={`variant-color-${color}`}
-                        className="inline-flex items-center gap-2 rounded-full border border-slate-200 bg-slate-50 px-3 py-1 text-[11px] font-medium text-slate-600"
-                      >
-                        <span
-                          className={`inline-flex h-2.5 w-2.5 rounded-full ${getColorSwatchClass(
-                            color,
-                          )}`}
-                        />
-                        {color}
-                      </span>
-                    ))}
-                  </div>
-                ) : null}
+            <div className="flex max-h-[90dvh] flex-col">
+            <div className="flex items-start justify-between gap-3 border-b border-slate-100 px-4 py-3 sm:px-5">
+              <div className="min-w-0">
+                <p className="text-[10px] font-bold uppercase tracking-[0.14em] text-emerald-700">Quick Stock / {warehouseName || "Depoja"}</p>
+                <h3 className="mt-0.5 text-lg font-bold tracking-tight text-slate-950">{stockViewMode === "footwear" ? "Shto ngjyre" : "Shto variant"}</h3>
+                <p className="truncate text-xs text-slate-500">{productBrand ? `${productBrand} · ` : ""}{productName}</p>
               </div>
               <button
                 type="button"
@@ -2529,17 +2452,16 @@ export function ProductStockQuickView({
                     resetVariantCreator();
                   }
                 }}
-                className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900"
+                className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full border border-slate-200 text-slate-500 transition hover:bg-slate-50 hover:text-slate-900"
                 aria-label="Mbyll"
               >
                 x
               </button>
             </div>
 
-            <div className="mt-4 flex-1 overflow-y-auto px-4 pb-6 sm:mt-5 sm:px-5">
-            <div className="rounded-[24px] border border-slate-200 bg-slate-50/80 p-3 sm:p-4">
-              <div className={`grid items-start gap-4 ${stockViewMode === "footwear" ? "lg:grid-cols-[132px_minmax(0,1fr)]" : "lg:grid-cols-[148px_minmax(0,1fr)]"}`}>
-                <div className="self-start rounded-2xl border border-slate-200 bg-white p-3 lg:max-w-[148px]">
+            <div className="min-h-0 flex-1 space-y-3 overflow-y-auto px-4 py-3 sm:px-5">
+            <div className="grid items-start gap-3 sm:grid-cols-[112px_minmax(0,1fr)]">
+                <div className="flex items-center gap-3 rounded-xl border border-dashed border-emerald-200 bg-emerald-50/30 p-2 sm:block sm:text-center">
                   <button
                     type="button"
                     onClick={() =>
@@ -2550,38 +2472,38 @@ export function ProductStockQuickView({
                           })
                         : undefined
                     }
-                    className="flex h-[88px] w-full items-center justify-center overflow-hidden rounded-2xl border border-slate-200 bg-slate-50 sm:h-[92px]"
+                    className="flex h-16 w-20 shrink-0 items-center justify-center overflow-hidden rounded-lg bg-white sm:h-20 sm:w-full"
                     title={variantImagePreview ? "Hap foton" : "Pa foto"}
                   >
                     {variantImagePreview ? (
                       <UploadedImage
                         src={variantImagePreview}
                         alt={`${productName} ${variantColor || "variant"}`}
-                        className="h-full w-full object-cover"
+                        className="h-full w-full object-contain"
                       />
                     ) : (
-                      <span className="text-[10px] font-semibold uppercase tracking-[0.18em] text-slate-400">
-                        IMG
-                      </span>
+                      <span className="text-xs text-slate-500">Foto opsionale</span>
                     )}
                   </button>
                   <input
                     id="quick-variant-image"
                     type="file"
-                    accept="image/png,image/jpeg,image/webp,image/avif"
+                    accept="image/png,image/jpeg,image/webp"
                     onChange={(event) => {
                       const file = event.target.files?.[0] ?? null;
-
-                      if (variantImagePreview) {
-                        URL.revokeObjectURL(variantImagePreview);
-                      }
 
                       if (!file) {
                         setVariantImageFile(null);
                         setVariantImagePreview(null);
                         return;
                       }
+                      if (file.size > 8 * 1024 * 1024 || !["image/png", "image/jpeg", "image/webp"].includes(file.type)) {
+                        setVariantError("Zgjidh foto JPG, PNG ose WebP deri ne 8 MB.");
+                        event.target.value = "";
+                        return;
+                      }
 
+                      setVariantError(null);
                       setVariantImageFile(file);
                       setVariantImagePreview(URL.createObjectURL(file));
                     }}
@@ -2589,143 +2511,74 @@ export function ProductStockQuickView({
                   />
                   <label
                     htmlFor="quick-variant-image"
-                    className="mt-2 inline-flex w-full cursor-pointer items-center justify-center rounded-xl border border-slate-200 bg-slate-950 px-2.5 py-2 text-[11px] font-medium text-white transition hover:bg-slate-800"
+                    className="inline-flex cursor-pointer items-center justify-center rounded-lg border border-emerald-200 bg-white px-2 py-1.5 text-xs font-semibold text-emerald-900 transition hover:bg-emerald-50 sm:mt-2 sm:w-full"
                   >
-                    Zgjidh foton
+                    {variantImageFile ? "Ndrysho foton" : "Ngarko foto"}
                   </label>
                 </div>
 
-                <div className="min-w-0 space-y-4">
-                  <div className={`grid gap-4 ${stockViewMode === "footwear" ? "sm:grid-cols-2" : "md:grid-cols-2"}`}>
-                    <label className="min-w-0 space-y-2">
-                      <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                        {quickVariantColorLabel}
-                      </span>
+                <div className="grid min-w-0 gap-2 sm:grid-cols-2">
+                    <label className="min-w-0 space-y-1.5 text-sm font-semibold text-slate-900">
+                      {quickVariantColorLabel} *
                       <input
                         type="text"
                         value={variantColor}
                         onChange={(event) => setVariantColor(event.target.value)}
                         placeholder={categoryConfig?.colorPlaceholder ?? "Blue"}
-                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-100"
+                        className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-normal text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
                       />
                     </label>
 
-                    <label className="min-w-0 space-y-2">
-                      <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                        Cmimi
-                      </span>
-                      <input
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={variantPrice}
-                        onChange={(event) => setVariantPrice(event.target.value)}
-                        placeholder="0"
-                        className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-100"
-                      />
-                    </label>
-                  </div>
-
-                  <label className="mt-1 block min-w-0 space-y-2">
-                    <span className="block text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                      Lokacioni (opsional)
-                    </span>
+                    {modelPrice !== null ? (
+                      <div className="min-w-0 space-y-1.5 text-sm font-semibold text-slate-900">
+                        Cmimi i modelit
+                        <div className="flex min-h-10 items-center rounded-xl border border-emerald-100 bg-emerald-50/60 px-3 text-sm font-semibold text-emerald-950">{modelPrice.toFixed(2)} EUR</div>
+                      </div>
+                    ) : (
+                      <label className="min-w-0 space-y-1.5 text-sm font-semibold text-slate-900">
+                        Cmimi i shitjes *
+                        <input type="number" min="0" step="0.01" value={variantPrice} onChange={(event) => setVariantPrice(event.target.value)} placeholder="0" className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-normal text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100" />
+                      </label>
+                    )}
+                  <label className="min-w-0 space-y-1.5 text-sm font-semibold text-slate-900">
+                    Kostoja blerese
+                    <input type="number" min="0" step="0.01" value={variantCostPrice} onChange={(event) => setVariantCostPrice(event.target.value)} placeholder="Opsionale" className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-normal text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100" />
+                  </label>
+                  <label className="min-w-0 space-y-1.5 text-sm font-semibold text-slate-900">
+                    Lokacioni
                     <input
                       type="text"
                       value={variantLocation}
                       onChange={(event) => setVariantLocation(event.target.value)}
-                      placeholder={stockViewMode === "footwear" ? "p.sh. Sektori 1-10 / 7" : "p.sh. Sektori 11-20 / 4"}
-                      className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-100"
+                      placeholder="p.sh. A-01"
+                      className="w-full rounded-xl border border-slate-200 bg-white px-3.5 py-2.5 text-sm font-normal text-slate-900 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
                     />
                   </label>
+                </div>
+            </div>
 
                   {stockViewMode === "footwear" && existingVariantColor ? (
-                    <div className="rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
-                      Kjo ngjyre ekziston tashme. Perdor `Shto numer`.
+                    <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+                      Kjo ngjyre ekziston tashme. Perdor Shto numer te ngjyra ekzistuese.
                     </div>
                   ) : null}
 
-                  <div className="rounded-2xl border border-slate-200 bg-white p-4">
+                  <div className="border-t border-slate-100 pt-3">
                     {stockViewMode === "footwear" ? (
                       <>
                         <div className="flex items-center justify-between gap-3">
-                          <p className="text-xs font-semibold uppercase tracking-[0.14em] text-slate-500">
-                            Numrat
-                          </p>
-                          <p className="text-[11px] text-slate-400">
-                            Shto disa numra per te njejten ngjyre
-                          </p>
+                          <p className="text-sm font-bold text-slate-950">{quickVariantPrimaryLabel} dhe stoku</p>
+                          <button type="button" disabled={creatingVariant || variantRows.length >= 30} onClick={addVariantRow} className="text-sm font-semibold text-emerald-800 disabled:opacity-40">+ Shto numer</button>
                         </div>
-
-                        <div className="mt-3 grid gap-3 rounded-2xl border border-slate-200 bg-slate-50/80 p-3 sm:grid-cols-[minmax(0,1fr)_120px_auto]">
-                          <label className="min-w-0 space-y-2">
-                            <span className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
-                              Numri
-                            </span>
-                            <input
-                              type="text"
-                              value={variantDraftSize}
-                              onChange={(event) => setVariantDraftSize(event.target.value)}
-                              placeholder="44"
-                              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-100"
-                            />
-                          </label>
-                          <label className="min-w-0 space-y-2">
-                            <span className="block text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
-                              Sasia
-                            </span>
-                            <input
-                              type="number"
-                              min="0"
-                              value={variantDraftStock}
-                              onChange={(event) => setVariantDraftStock(event.target.value)}
-                              placeholder="0"
-                              className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-900 outline-none transition focus:border-slate-900 focus:ring-4 focus:ring-slate-100"
-                            />
-                          </label>
-                          <button
-                            type="button"
-                            onClick={addVariantRow}
-                            className="inline-flex h-[46px] w-full items-center justify-center gap-1 self-end rounded-xl border border-slate-200 bg-white px-4 text-sm font-medium text-slate-700 transition hover:bg-slate-50 md:w-auto"
-                          >
-                            <IconPlus />
-                            Shto
-                          </button>
-                        </div>
-
-                        {variantRows.length > 0 ? (
-                          <div className="mt-4 rounded-2xl border border-dashed border-slate-200 bg-slate-50/70 p-3">
-                            <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400">
-                              Numrat qe po shtohen
-                            </p>
-                            <div className="mt-3 flex flex-wrap gap-2">
-                              {variantRows.map((row) => (
-                                <div
-                                  key={row.id}
-                                  className="inline-flex min-w-0 items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2"
-                                >
-                                  <span className="text-sm font-semibold text-slate-900">
-                                    Nr {row.size}
-                                  </span>
-                                  <span className="inline-flex rounded-full bg-slate-100 px-2 py-0.5 text-[11px] font-medium text-slate-600">
-                                    {row.stock} cope
-                                  </span>
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      setVariantRows((current) =>
-                                        current.filter((item) => item.id !== row.id),
-                                      )
-                                    }
-                                    className="inline-flex items-center justify-center rounded-full border border-slate-200 bg-white px-2 py-1 text-[10px] font-medium text-slate-600 transition hover:bg-slate-50"
-                                  >
-                                    Hiq
-                                  </button>
-                                </div>
-                              ))}
+                        <div className="mt-2 space-y-2">
+                          {variantRows.map((row, index) => (
+                            <div key={row.id} className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_36px] gap-2">
+                              <input aria-label={`Numri ${index + 1}`} type="text" disabled={creatingVariant} value={row.size} onChange={(event) => setVariantRows((current) => current.map((item) => item.id === row.id ? { ...item, size: event.target.value } : item))} placeholder="Numri" className="min-w-0 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100" />
+                              <input aria-label={`Stoku ${index + 1}`} type="number" min="0" step="1" disabled={creatingVariant} value={row.stock} onChange={(event) => setVariantRows((current) => current.map((item) => item.id === row.id ? { ...item, stock: event.target.value } : item))} placeholder="Stoku" className="min-w-0 rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-sm outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100" />
+                              <button type="button" disabled={creatingVariant || variantRows.length === 1} onClick={() => setVariantRows((current) => current.filter((item) => item.id !== row.id))} aria-label={`Hiq numrin ${index + 1}`} className="text-lg text-rose-600 disabled:opacity-30">×</button>
                             </div>
-                          </div>
-                        ) : null}
+                          ))}
+                        </div>
                       </>
                     ) : (
                       <div className="space-y-4">
@@ -2791,17 +2644,14 @@ export function ProductStockQuickView({
                     )}
                   </div>
                 </div>
-              </div>
-            </div>
-            </div>
 
             {variantError ? (
-              <div className="mx-5 mt-4 rounded-2xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+              <div role="alert" className="mx-4 mb-2 rounded-xl border border-rose-200 bg-rose-50 px-3 py-2 text-sm text-rose-700 sm:mx-5">
                 {variantError}
               </div>
             ) : null}
 
-            <div className="mt-4 flex flex-col-reverse gap-3 border-t border-slate-100 bg-white px-4 pb-4 pt-4 sm:mt-5 sm:flex-row sm:justify-end sm:px-5 sm:pb-5">
+            <div className="flex flex-col-reverse gap-2 border-t border-slate-100 bg-white px-4 py-3 sm:flex-row sm:justify-end sm:px-5">
               <button
                 type="button"
                 onClick={() => {
@@ -2809,7 +2659,7 @@ export function ProductStockQuickView({
                     resetVariantCreator();
                   }
                 }}
-                className="inline-flex items-center justify-center rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+                className="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
                 disabled={creatingVariant}
               >
                 Anulo
@@ -2817,7 +2667,7 @@ export function ProductStockQuickView({
               <button
                 type="button"
                 onClick={() => void saveNewVariant()}
-                className="inline-flex items-center justify-center rounded-2xl bg-slate-950 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
+                className="inline-flex items-center justify-center rounded-xl bg-[#093a2d] px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-800 disabled:cursor-not-allowed disabled:opacity-60"
                 disabled={creatingVariant}
               >
                 {!creatingVariant ? <IconCheck /> : null}

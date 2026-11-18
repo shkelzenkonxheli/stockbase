@@ -24,6 +24,10 @@ export function OrdersFilters({
   const [source, setSource] = useState(selectedSource);
   const [status, setStatus] = useState(selectedStatus);
   const [date, setDate] = useState(selectedDate);
+  const printParams = new URLSearchParams({ date });
+  if (query.trim()) printParams.set("q", query.trim());
+  if (source) printParams.set("source", source);
+  if (status) printParams.set("status", status);
 
   const updateFilters = useCallback(
     (nextQuery: string, nextSource: string, nextStatus: string, nextDate: string) => {
@@ -110,7 +114,7 @@ export function OrdersFilters({
   ]);
 
   return (
-    <div className="grid grid-cols-1 gap-3 lg:grid-cols-[180px_180px_180px_minmax(0,1fr)]">
+    <div className="grid grid-cols-1 gap-3 lg:grid-cols-[minmax(0,230px)_180px_180px_minmax(0,1fr)]">
       <div className="order-4 space-y-1 lg:order-4">
         <div className="relative">
           <svg
@@ -135,12 +139,28 @@ export function OrdersFilters({
         </p>
       </div>
 
-      <input
-        type="date"
-        value={date}
-        onChange={(event) => setDate(event.target.value)}
-        className="order-1 h-12 rounded-2xl border border-emerald-100 bg-white/90 px-4 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-300 focus:bg-emerald-50/40 focus:ring-4 focus:ring-emerald-100/70"
-      />
+      <div className="order-1 flex min-w-0 gap-2">
+        <input
+          type="date"
+          aria-label="Data e porosive"
+          value={date}
+          onChange={(event) => setDate(event.target.value)}
+          className="h-12 min-w-0 flex-1 rounded-2xl border border-emerald-100 bg-white/90 px-3 py-3 text-sm text-slate-900 outline-none transition focus:border-emerald-300 focus:bg-emerald-50/40 focus:ring-4 focus:ring-emerald-100/70"
+        />
+        <a
+          href={`/orders/print?${printParams.toString()}`}
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="Printo porosite per daten e zgjedhur"
+          title="Printo porosite per daten e zgjedhur"
+          className="inline-flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl border border-emerald-100 bg-white/90 text-emerald-800 transition hover:border-emerald-300 hover:bg-emerald-50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-emerald-600"
+        >
+          <svg viewBox="0 0 24 24" aria-hidden="true" className="h-5 w-5 fill-none stroke-current stroke-[1.7]" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2" />
+            <path d="M6 15h12v6H6zM18 12h.01" />
+          </svg>
+        </a>
+      </div>
 
       <select
         value={source}
